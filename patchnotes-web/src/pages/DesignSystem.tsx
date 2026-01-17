@@ -9,15 +9,15 @@ import {
   CardTitle,
   CardContent,
   Badge,
-} from '../components/ui';
-import { VersionBadge, ReleaseCard, PackageCard } from '../components/releases';
+} from '../components/ui'
+import { VersionBadge, ReleaseCard, PackageCard } from '../components/releases'
 
 function Section({
   title,
   children,
 }: {
-  title: string;
-  children: React.ReactNode;
+  title: string
+  children: React.ReactNode
 }) {
   return (
     <section className="mb-12">
@@ -26,7 +26,7 @@ function Section({
       </h2>
       {children}
     </section>
-  );
+  )
 }
 
 function ColorSwatch({
@@ -34,16 +34,16 @@ function ColorSwatch({
   className,
   textClass = 'text-text-primary',
 }: {
-  name: string;
-  className: string;
-  textClass?: string;
+  name: string
+  className: string
+  textClass?: string
 }) {
   return (
     <div className="flex flex-col gap-2">
       <div className={`w-full h-16 rounded-lg ${className}`} />
       <span className={`text-xs font-mono ${textClass}`}>{name}</span>
     </div>
-  );
+  )
 }
 
 export function DesignSystem() {
@@ -120,15 +120,24 @@ export function DesignSystem() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="space-y-2">
                     <ColorSwatch name="Major" className="bg-major" />
-                    <ColorSwatch name="Major Muted" className="bg-major-muted" />
+                    <ColorSwatch
+                      name="Major Muted"
+                      className="bg-major-muted"
+                    />
                   </div>
                   <div className="space-y-2">
                     <ColorSwatch name="Minor" className="bg-minor" />
-                    <ColorSwatch name="Minor Muted" className="bg-minor-muted" />
+                    <ColorSwatch
+                      name="Minor Muted"
+                      className="bg-minor-muted"
+                    />
                   </div>
                   <div className="space-y-2">
                     <ColorSwatch name="Patch" className="bg-patch" />
-                    <ColorSwatch name="Patch Muted" className="bg-patch-muted" />
+                    <ColorSwatch
+                      name="Patch Muted"
+                      className="bg-patch-muted"
+                    />
                   </div>
                   <div className="space-y-2">
                     <ColorSwatch name="Prerelease" className="bg-prerelease" />
@@ -334,7 +343,10 @@ export function DesignSystem() {
                     <Badge>Label</Badge>
                   </CardHeader>
                   <CardContent>
-                    <p>Card content goes here. Cards provide a container for related content and actions.</p>
+                    <p>
+                      Card content goes here. Cards provide a container for
+                      related content and actions.
+                    </p>
                   </CardContent>
                 </Card>
               </div>
@@ -448,9 +460,7 @@ export function DesignSystem() {
                 { name: 'full', class: 'rounded-full' },
               ].map(({ name, class: cls }) => (
                 <div key={name} className="space-y-2">
-                  <div
-                    className={`bg-brand-500 w-16 h-16 ${cls} mx-auto`}
-                  />
+                  <div className={`bg-brand-500 w-16 h-16 ${cls} mx-auto`} />
                   <p className="text-sm text-text-secondary text-center">
                     {name}
                   </p>
@@ -461,5 +471,5 @@ export function DesignSystem() {
         </Container>
       </main>
     </div>
-  );
+  )
 }

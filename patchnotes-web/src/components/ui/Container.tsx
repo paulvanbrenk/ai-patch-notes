@@ -1,9 +1,9 @@
-import { type HTMLAttributes, forwardRef } from 'react';
+import { type HTMLAttributes, forwardRef } from 'react'
 
-type ContainerSize = 'sm' | 'md' | 'lg' | 'xl' | 'full';
+type ContainerSize = 'sm' | 'md' | 'lg' | 'xl' | 'full'
 
 interface ContainerProps extends HTMLAttributes<HTMLDivElement> {
-  size?: ContainerSize;
+  size?: ContainerSize
 }
 
 const sizeStyles: Record<ContainerSize, string> = {
@@ -12,7 +12,7 @@ const sizeStyles: Record<ContainerSize, string> = {
   lg: 'max-w-6xl',
   xl: 'max-w-7xl',
   full: 'max-w-full',
-};
+}
 
 export const Container = forwardRef<HTMLDivElement, ContainerProps>(
   ({ size = 'lg', className = '', children, ...props }, ref) => {
@@ -28,8 +28,8 @@ export const Container = forwardRef<HTMLDivElement, ContainerProps>(
       >
         {children}
       </div>
-    );
+    )
   }
-);
+)
 
-Container.displayName = 'Container';
+Container.displayName = 'Container'

@@ -1,13 +1,16 @@
-import { type InputHTMLAttributes, forwardRef } from 'react';
+import { type InputHTMLAttributes, forwardRef } from 'react'
 
-interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
-  label?: string;
-  description?: string;
+interface CheckboxProps extends Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  'type'
+> {
+  label?: string
+  description?: string
 }
 
 export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
   ({ label, description, className = '', id, ...props }, ref) => {
-    const inputId = id || label?.toLowerCase().replace(/\s+/g, '-');
+    const inputId = id || label?.toLowerCase().replace(/\s+/g, '-')
 
     return (
       <label
@@ -69,8 +72,8 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
           </div>
         )}
       </label>
-    );
+    )
   }
-);
+)
 
-Checkbox.displayName = 'Checkbox';
+Checkbox.displayName = 'Checkbox'

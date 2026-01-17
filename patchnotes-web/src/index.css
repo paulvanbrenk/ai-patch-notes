@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme {
   /* Brand Colors */
@@ -11,37 +11,37 @@
   --color-brand-600: oklch(0.48 0.18 250);
   --color-brand-700: oklch(0.42 0.16 250);
   --color-brand-800: oklch(0.36 0.13 250);
-  --color-brand-900: oklch(0.30 0.10 250);
+  --color-brand-900: oklch(0.3 0.1 250);
 
   /* Semantic Colors - Release Types */
-  --color-major: oklch(0.65 0.20 25);
+  --color-major: oklch(0.65 0.2 25);
   --color-major-muted: oklch(0.92 0.04 25);
   --color-minor: oklch(0.72 0.16 145);
   --color-minor-muted: oklch(0.94 0.04 145);
-  --color-patch: oklch(0.70 0.14 230);
+  --color-patch: oklch(0.7 0.14 230);
   --color-patch-muted: oklch(0.94 0.03 230);
-  --color-prerelease: oklch(0.70 0.15 300);
+  --color-prerelease: oklch(0.7 0.15 300);
   --color-prerelease-muted: oklch(0.94 0.03 300);
 
   /* Surface Colors */
   --color-surface-primary: oklch(1 0 0);
   --color-surface-secondary: oklch(0.98 0 0);
   --color-surface-tertiary: oklch(0.96 0 0);
-  --color-surface-inverse: oklch(0.20 0.02 250);
+  --color-surface-inverse: oklch(0.2 0.02 250);
 
   /* Text Colors */
-  --color-text-primary: oklch(0.20 0.02 250);
+  --color-text-primary: oklch(0.2 0.02 250);
   --color-text-secondary: oklch(0.45 0.02 250);
-  --color-text-tertiary: oklch(0.60 0.01 250);
+  --color-text-tertiary: oklch(0.6 0.01 250);
   --color-text-inverse: oklch(0.98 0 0);
 
   /* Border Colors */
-  --color-border-default: oklch(0.90 0.01 250);
+  --color-border-default: oklch(0.9 0.01 250);
   --color-border-muted: oklch(0.94 0.005 250);
 
   /* Typography Scale */
-  --font-family-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-family-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-family-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-family-mono: 'JetBrains Mono', ui-monospace, monospace;
 
   --font-size-xs: 0.75rem;
   --font-size-sm: 0.875rem;
@@ -75,27 +75,29 @@
 
   /* Shadows */
   --shadow-sm: 0 1px 2px 0 oklch(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px oklch(0 0 0 / 0.07), 0 2px 4px -2px oklch(0 0 0 / 0.07);
-  --shadow-lg: 0 10px 15px -3px oklch(0 0 0 / 0.08), 0 4px 6px -4px oklch(0 0 0 / 0.08);
+  --shadow-md:
+    0 4px 6px -1px oklch(0 0 0 / 0.07), 0 2px 4px -2px oklch(0 0 0 / 0.07);
+  --shadow-lg:
+    0 10px 15px -3px oklch(0 0 0 / 0.08), 0 4px 6px -4px oklch(0 0 0 / 0.08);
 }
 
 /* Dark mode overrides */
 @media (prefers-color-scheme: dark) {
   :root {
     --color-surface-primary: oklch(0.16 0.02 250);
-    --color-surface-secondary: oklch(0.20 0.02 250);
+    --color-surface-secondary: oklch(0.2 0.02 250);
     --color-surface-tertiary: oklch(0.24 0.02 250);
     --color-surface-inverse: oklch(0.98 0 0);
 
     --color-text-primary: oklch(0.95 0 0);
-    --color-text-secondary: oklch(0.70 0.01 250);
+    --color-text-secondary: oklch(0.7 0.01 250);
     --color-text-tertiary: oklch(0.55 0.01 250);
     --color-text-inverse: oklch(0.15 0.02 250);
 
-    --color-border-default: oklch(0.30 0.02 250);
+    --color-border-default: oklch(0.3 0.02 250);
     --color-border-muted: oklch(0.25 0.02 250);
 
-    --color-major-muted: oklch(0.30 0.08 25);
+    --color-major-muted: oklch(0.3 0.08 25);
     --color-minor-muted: oklch(0.28 0.06 145);
     --color-patch-muted: oklch(0.28 0.05 230);
     --color-prerelease-muted: oklch(0.28 0.06 300);

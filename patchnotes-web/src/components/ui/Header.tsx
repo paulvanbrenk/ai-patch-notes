@@ -1,5 +1,5 @@
-import { type HTMLAttributes, forwardRef } from 'react';
-import { Container } from './Container';
+import { type HTMLAttributes, forwardRef } from 'react'
+import { Container } from './Container'
 
 interface HeaderProps extends HTMLAttributes<HTMLElement> {}
 
@@ -23,11 +23,11 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(
           </div>
         </Container>
       </header>
-    );
+    )
   }
-);
+)
 
-Header.displayName = 'Header';
+Header.displayName = 'Header'
 
 interface HeaderTitleProps extends HTMLAttributes<HTMLHeadingElement> {}
 
@@ -41,8 +41,8 @@ export const HeaderTitle = forwardRef<HTMLHeadingElement, HeaderTitleProps>(
       >
         {children}
       </h1>
-    );
+    )
   }
-);
+)
 
-HeaderTitle.displayName = 'HeaderTitle';
+HeaderTitle.displayName = 'HeaderTitle'

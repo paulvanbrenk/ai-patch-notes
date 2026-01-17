@@ -1,5 +1,5 @@
-import { Header, HeaderTitle, Container, Button, Input } from '../components/ui';
-import { ReleaseTimeline } from '../components/releases';
+import { Header, HeaderTitle, Container, Button, Input } from '../components/ui'
+import { ReleaseTimeline } from '../components/releases'
 
 // Mock data for timeline - includes package names for cross-package view
 const mockTimelineReleases = [
@@ -93,7 +93,7 @@ const mockTimelineReleases = [
     htmlUrl: 'https://github.com/microsoft/TypeScript/releases/tag/v5.7.0',
     packageName: 'typescript',
   },
-];
+]
 
 export function Timeline() {
   return (
@@ -114,23 +114,21 @@ export function Timeline() {
         <Container size="md">
           {/* Search/Filter */}
           <div className="mb-8">
-            <Input
-              placeholder="Filter releases..."
-              className="max-w-md"
-            />
+            <Input placeholder="Filter releases..." className="max-w-md" />
           </div>
 
           {/* Stats */}
           <div className="flex items-center gap-6 mb-8 text-sm text-text-secondary">
             <span>
-              <strong className="text-text-primary">{mockTimelineReleases.length}</strong> releases
+              <strong className="text-text-primary">
+                {mockTimelineReleases.length}
+              </strong>{' '}
+              releases
             </span>
             <span>
               <strong className="text-text-primary">5</strong> packages
             </span>
-            <span>
-              Last 3 months
-            </span>
+            <span>Last 3 months</span>
           </div>
 
           {/* Timeline */}
@@ -141,5 +139,5 @@ export function Timeline() {
         </Container>
       </main>
     </div>
-  );
+  )
 }
