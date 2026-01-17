@@ -1,7 +1,7 @@
 import { type HTMLAttributes, forwardRef } from 'react';
 import { Container } from './Container';
 
-interface HeaderProps extends HTMLAttributes<HTMLElement> {}
+type HeaderProps = HTMLAttributes<HTMLElement>;
 
 export const Header = forwardRef<HTMLElement, HeaderProps>(
   ({ className = '', children, ...props }, ref) => {
@@ -29,7 +29,7 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(
 
 Header.displayName = 'Header';
 
-interface HeaderTitleProps extends HTMLAttributes<HTMLHeadingElement> {}
+type HeaderTitleProps = HTMLAttributes<HTMLHeadingElement>;
 
 export const HeaderTitle = forwardRef<HTMLHeadingElement, HeaderTitleProps>(
   ({ className = '', children, ...props }, ref) => {
