@@ -1,10 +1,23 @@
+using Microsoft.EntityFrameworkCore;
+using PatchNotes.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+builder.Services.AddDbContext<PatchNotesDbContext>(options =>
+    options.UseSqlite("Data Source=patchnotes.db"));
 
 var app = builder.Build();
+
+// Run migrations and seed data in development
+if (app.Environment.IsDevelopment())
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
+    await db.Database.MigrateAsync();
+    await DbSeeder.SeedAsync(db);
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
