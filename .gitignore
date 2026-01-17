@@ -36,6 +36,4 @@ Thumbs.db
 
 # Runtime
 .runtime/
-
-# GT local tracking
 .beads/
