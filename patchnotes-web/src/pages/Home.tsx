@@ -1,5 +1,5 @@
-import { Header, HeaderTitle, Container, Button, Input } from '../components/ui';
-import { PackageCard, ReleaseCard } from '../components/releases';
+import { Header, HeaderTitle, Container, Button, Input } from '../components/ui'
+import { PackageCard, ReleaseCard } from '../components/releases'
 
 const mockPackages = [
   {
@@ -26,7 +26,7 @@ const mockPackages = [
     releaseCount: 64,
     lastFetchedAt: '2026-01-15T08:20:00Z',
   },
-];
+]
 
 const mockReleases = [
   {
@@ -61,7 +61,7 @@ const mockReleases = [
     publishedAt: '2025-12-01T11:00:00Z',
     htmlUrl: 'https://github.com/facebook/react/releases/tag/v18.3.0',
   },
-];
+]
 
 export function Home() {
   return (
@@ -127,5 +127,5 @@ export function Home() {
         </Container>
       </main>
     </div>
-  );
+  )
 }

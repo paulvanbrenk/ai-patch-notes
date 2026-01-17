@@ -1,23 +1,23 @@
-import { Card, CardHeader, CardTitle, CardContent, Badge } from '../ui';
+import { Card, CardHeader, CardTitle, CardContent, Badge } from '../ui'
 
 interface PackageCardProps {
-  npmName: string;
-  githubOwner: string;
-  githubRepo: string;
-  releaseCount?: number;
-  lastFetchedAt?: string | null;
-  onClick?: () => void;
+  npmName: string
+  githubOwner: string
+  githubRepo: string
+  releaseCount?: number
+  lastFetchedAt?: string | null
+  onClick?: () => void
 }
 
 function formatDate(dateString: string): string {
-  const date = new Date(dateString);
+  const date = new Date(dateString)
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
-  });
+  })
 }
 
 export function PackageCard({
@@ -28,8 +28,8 @@ export function PackageCard({
   lastFetchedAt,
   onClick,
 }: PackageCardProps) {
-  const githubUrl = `https://github.com/${githubOwner}/${githubRepo}`;
-  const npmUrl = `https://www.npmjs.com/package/${npmName}`;
+  const githubUrl = `https://github.com/${githubOwner}/${githubRepo}`
+  const npmUrl = `https://www.npmjs.com/package/${npmName}`
 
   const content = (
     <>
@@ -93,7 +93,7 @@ export function PackageCard({
         </div>
       </CardContent>
     </>
-  );
+  )
 
   if (onClick) {
     return (
@@ -103,8 +103,8 @@ export function PackageCard({
       >
         {content}
       </Card>
-    );
+    )
   }
 
-  return <Card>{content}</Card>;
+  return <Card>{content}</Card>
 }

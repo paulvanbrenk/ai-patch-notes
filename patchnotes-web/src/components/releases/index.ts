@@ -1,4 +1,4 @@
-export { VersionBadge } from './VersionBadge';
-export { ReleaseCard } from './ReleaseCard';
-export { PackageCard } from './PackageCard';
-export { ReleaseTimeline } from './ReleaseTimeline';
+export { VersionBadge } from './VersionBadge'
+export { ReleaseCard } from './ReleaseCard'
+export { PackageCard } from './PackageCard'
+export { ReleaseTimeline } from './ReleaseTimeline'

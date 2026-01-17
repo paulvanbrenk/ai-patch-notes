@@ -1,7 +1,7 @@
-import { type HTMLAttributes, forwardRef } from 'react';
+import { type HTMLAttributes, forwardRef } from 'react'
 
 interface CardProps extends HTMLAttributes<HTMLDivElement> {
-  padding?: 'none' | 'sm' | 'md' | 'lg';
+  padding?: 'none' | 'sm' | 'md' | 'lg'
 }
 
 const paddingStyles = {
@@ -9,7 +9,7 @@ const paddingStyles = {
   sm: 'p-4',
   md: 'p-5',
   lg: 'p-6',
-};
+}
 
 export const Card = forwardRef<HTMLDivElement, CardProps>(
   ({ padding = 'md', className = '', children, ...props }, ref) => {
@@ -28,11 +28,11 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
       >
         {children}
       </div>
-    );
+    )
   }
-);
+)
 
-Card.displayName = 'Card';
+Card.displayName = 'Card'
 
 type CardHeaderProps = HTMLAttributes<HTMLDivElement>;
 
@@ -46,11 +46,11 @@ export const CardHeader = forwardRef<HTMLDivElement, CardHeaderProps>(
       >
         {children}
       </div>
-    );
+    )
   }
-);
+)
 
-CardHeader.displayName = 'CardHeader';
+CardHeader.displayName = 'CardHeader'
 
 type CardTitleProps = HTMLAttributes<HTMLHeadingElement>;
 
@@ -64,11 +64,11 @@ export const CardTitle = forwardRef<HTMLHeadingElement, CardTitleProps>(
       >
         {children}
       </h3>
-    );
+    )
   }
-);
+)
 
-CardTitle.displayName = 'CardTitle';
+CardTitle.displayName = 'CardTitle'
 
 type CardContentProps = HTMLAttributes<HTMLDivElement>;
 
@@ -82,8 +82,8 @@ export const CardContent = forwardRef<HTMLDivElement, CardContentProps>(
       >
         {children}
       </div>
-    );
+    )
   }
-);
+)
 
-CardContent.displayName = 'CardContent';
+CardContent.displayName = 'CardContent'

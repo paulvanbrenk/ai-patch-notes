@@ -1,1 +1,1 @@
-export { PackagePicker } from './PackagePicker';
+export { PackagePicker } from './PackagePicker'

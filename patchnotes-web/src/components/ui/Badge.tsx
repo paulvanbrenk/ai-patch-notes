@@ -1,9 +1,9 @@
-import { type HTMLAttributes, forwardRef } from 'react';
+import { type HTMLAttributes, forwardRef } from 'react'
 
-type BadgeVariant = 'default' | 'major' | 'minor' | 'patch' | 'prerelease';
+type BadgeVariant = 'default' | 'major' | 'minor' | 'patch' | 'prerelease'
 
 interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
-  variant?: BadgeVariant;
+  variant?: BadgeVariant
 }
 
 const variantStyles: Record<BadgeVariant, string> = {
@@ -12,7 +12,7 @@ const variantStyles: Record<BadgeVariant, string> = {
   minor: 'bg-minor-muted text-minor',
   patch: 'bg-patch-muted text-patch',
   prerelease: 'bg-prerelease-muted text-prerelease',
-};
+}
 
 export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
   ({ variant = 'default', className = '', children, ...props }, ref) => {
@@ -31,8 +31,8 @@ export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
       >
         {children}
       </span>
-    );
+    )
   }
-);
+)
 
-Badge.displayName = 'Badge';
+Badge.displayName = 'Badge'

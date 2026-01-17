@@ -1,59 +1,59 @@
-import { VersionBadge } from './VersionBadge';
+import { VersionBadge } from './VersionBadge'
 
 interface TimelineRelease {
-  id: number;
-  tag: string;
-  title?: string | null;
-  body?: string | null;
-  publishedAt: string;
-  htmlUrl?: string | null;
-  packageName?: string;
+  id: number
+  tag: string
+  title?: string | null
+  body?: string | null
+  publishedAt: string
+  htmlUrl?: string | null
+  packageName?: string
 }
 
 interface ReleaseTimelineProps {
-  releases: TimelineRelease[];
-  showPackageName?: boolean;
+  releases: TimelineRelease[]
+  showPackageName?: boolean
 }
 
 function formatDate(dateString: string): string {
-  const date = new Date(dateString);
+  const date = new Date(dateString)
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
-  });
+  })
 }
 
 function formatMonthYear(dateString: string): string {
-  const date = new Date(dateString);
+  const date = new Date(dateString)
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
-  });
+  })
 }
 
 function groupByMonth(
   releases: TimelineRelease[]
 ): Map<string, TimelineRelease[]> {
-  const groups = new Map<string, TimelineRelease[]>();
+  const groups = new Map<string, TimelineRelease[]>()
 
   for (const release of releases) {
-    const monthKey = formatMonthYear(release.publishedAt);
-    const existing = groups.get(monthKey) || [];
-    groups.set(monthKey, [...existing, release]);
+    const monthKey = formatMonthYear(release.publishedAt)
+    const existing = groups.get(monthKey) || []
+    groups.set(monthKey, [...existing, release])
   }
 
-  return groups;
+  return groups
 }
 
 interface TimelineItemProps {
-  release: TimelineRelease;
-  isLast: boolean;
-  showPackageName?: boolean;
+  release: TimelineRelease
+  isLast: boolean
+  showPackageName?: boolean
 }
 
 function TimelineItem({ release, isLast, showPackageName }: TimelineItemProps) {
-  const displayTitle = release.title || release.tag;
+  const displayTitle = release.title || release.tag
 
   return (
     <div className="relative flex gap-4">
@@ -62,9 +62,7 @@ function TimelineItem({ release, isLast, showPackageName }: TimelineItemProps) {
         {/* Dot */}
         <div className="w-3 h-3 rounded-full bg-brand-500 ring-4 ring-surface-primary z-10" />
         {/* Line */}
-        {!isLast && (
-          <div className="w-0.5 flex-1 bg-border-default min-h-8" />
-        )}
+        {!isLast && <div className="w-0.5 flex-1 bg-border-default min-h-8" />}
       </div>
 
       {/* Content */}
@@ -113,14 +111,14 @@ function TimelineItem({ release, isLast, showPackageName }: TimelineItemProps) {
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 export function ReleaseTimeline({
   releases,
   showPackageName = false,
 }: ReleaseTimelineProps) {
-  const groupedReleases = groupByMonth(releases);
+  const groupedReleases = groupByMonth(releases)
 
   return (
     <div className="space-y-8">
@@ -133,7 +131,8 @@ export function ReleaseTimeline({
             </h3>
             <div className="flex-1 h-px bg-border-default" />
             <span className="text-sm text-text-tertiary">
-              {monthReleases.length} release{monthReleases.length !== 1 ? 's' : ''}
+              {monthReleases.length} release
+              {monthReleases.length !== 1 ? 's' : ''}
             </span>
           </div>
 
@@ -151,5 +150,5 @@ export function ReleaseTimeline({
         </div>
       ))}
     </div>
-  );
+  )
 }
