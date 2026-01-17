@@ -12,6 +12,9 @@ const int ExitSuccess = 0;
 const int ExitPartialFailure = 1;
 const int ExitFatalError = 2;
 
+// Parse command-line arguments
+var seedOnly = args.Contains("--seed");
+
 var builder = Host.CreateApplicationBuilder(args);
 
 // Configure logging
@@ -42,6 +45,18 @@ var syncService = host.Services.GetRequiredService<SyncService>();
 
 try
 {
+    // Handle --seed flag
+    if (seedOnly)
+    {
+        logger.LogInformation("Seeding database with sample data");
+        using var scope = host.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
+        await db.Database.MigrateAsync();
+        await DbSeeder.SeedAsync(db);
+        logger.LogInformation("Database seeded successfully");
+        return ExitSuccess;
+    }
+
     logger.LogInformation("PatchNotes Sync starting");
 
     var result = await syncService.SyncAllAsync();
