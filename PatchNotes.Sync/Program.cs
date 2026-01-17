@@ -1,2 +1,73 @@
-﻿// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using PatchNotes.Data;
+using PatchNotes.Data.GitHub;
+using PatchNotes.Sync;
+
+// Exit codes for cron monitoring
+const int ExitSuccess = 0;
+const int ExitPartialFailure = 1;
+const int ExitFatalError = 2;
+
+var builder = Host.CreateApplicationBuilder(args);
+
+// Configure logging
+builder.Logging.AddConsole();
+builder.Logging.SetMinimumLevel(
+    builder.Environment.IsDevelopment() ? LogLevel.Debug : LogLevel.Information);
+
+// Configure services
+builder.Services.AddDbContext<PatchNotesDbContext>(options =>
+    options.UseSqlite("Data Source=patchnotes.db"));
+
+builder.Services.AddGitHubClient(options =>
+{
+    var token = builder.Configuration["GitHub:Token"];
+    if (!string.IsNullOrEmpty(token))
+    {
+        options.Token = token;
+    }
+});
+
+builder.Services.AddTransient<SyncService>();
+
+using var host = builder.Build();
+
+// Get services
+var logger = host.Services.GetRequiredService<ILogger<Program>>();
+var syncService = host.Services.GetRequiredService<SyncService>();
+
+try
+{
+    logger.LogInformation("PatchNotes Sync starting");
+
+    var result = await syncService.SyncAllAsync();
+
+    if (result.Success)
+    {
+        logger.LogInformation(
+            "Sync completed successfully: {Packages} packages, {Releases} releases",
+            result.PackagesSynced,
+            result.ReleasesAdded);
+        return ExitSuccess;
+    }
+    else
+    {
+        logger.LogWarning(
+            "Sync completed with {ErrorCount} errors",
+            result.Errors.Count);
+        foreach (var error in result.Errors)
+        {
+            logger.LogWarning("  {Package}: {Message}", error.PackageName, error.Message);
+        }
+        return ExitPartialFailure;
+    }
+}
+catch (Exception ex)
+{
+    logger.LogCritical(ex, "Fatal error during sync");
+    return ExitFatalError;
+}
