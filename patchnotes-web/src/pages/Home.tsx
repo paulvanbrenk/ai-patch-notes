@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Header, HeaderTitle, Container, Button, Input } from '../components/ui'
 import { PackageCard, ReleaseCard } from '../components/releases'
 import { usePackages, useReleases } from '../api/hooks'
@@ -11,6 +12,34 @@ function getReleaseUrl(release: Release): string {
 export function Home() {
   const { data: packages, isLoading: packagesLoading } = usePackages()
   const { data: releases, isLoading: releasesLoading } = useReleases()
+  const [showAddForm, setShowAddForm] = useState(false)
+  const [newPackageName, setNewPackageName] = useState('')
+  const [isAdding, setIsAdding] = useState(false)
+
+  const handleAddPackage = async () => {
+    if (!newPackageName.trim()) return
+
+    setIsAdding(true)
+    try {
+      // TODO: Replace with actual API mutation
+      console.log('Adding package:', newPackageName.trim())
+      setNewPackageName('')
+      setShowAddForm(false)
+    } finally {
+      setIsAdding(false)
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleAddPackage()
+    } else if (e.key === 'Escape') {
+      setShowAddForm(false)
+      setNewPackageName('')
+    }
+  }
+
   return (
     <div className="min-h-screen bg-surface-secondary">
       <Header>
@@ -19,12 +48,51 @@ export function Home() {
           <Button variant="secondary" size="sm">
             Settings
           </Button>
-          <Button size="sm">Add Package</Button>
+          <Button size="sm" onClick={() => setShowAddForm(true)}>
+            Add Package
+          </Button>
         </div>
       </Header>
 
       <main className="py-8">
         <Container>
+          {/* Add Package Form */}
+          {showAddForm && (
+            <div className="mb-8 p-4 bg-surface-primary rounded-lg border border-border-default">
+              <h3 className="text-sm font-semibold text-text-primary mb-3">
+                Add New Package
+              </h3>
+              <div className="flex gap-2 max-w-md">
+                <Input
+                  placeholder="Package name (e.g., lodash)"
+                  value={newPackageName}
+                  onChange={(e) => setNewPackageName(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  disabled={isAdding}
+                  autoFocus
+                />
+                <Button
+                  size="sm"
+                  onClick={handleAddPackage}
+                  disabled={!newPackageName.trim() || isAdding}
+                >
+                  {isAdding ? 'Adding...' : 'Add'}
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    setShowAddForm(false)
+                    setNewPackageName('')
+                  }}
+                  disabled={isAdding}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+
           {/* Search */}
           <div className="mb-8">
             <Input
