@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from './client'
-import type { Package, Release } from './types'
+import type { Package, Release, AddPackageRequest } from './types'
 
 export const queryKeys = {
   packages: ['packages'] as const,
@@ -37,5 +37,28 @@ export function usePackageReleases(packageId: number) {
     queryKey: queryKeys.packageReleases(packageId),
     queryFn: () => api.get<Release[]>(`/packages/${packageId}/releases`),
     enabled: packageId > 0,
+  })
+}
+
+export function useAddPackage() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (npmName: string) =>
+      api.post<Package>('/packages', { npmName } satisfies AddPackageRequest),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.packages })
+    },
+  })
+}
+
+export function useDeletePackage() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: number) => api.delete(`/packages/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.packages })
+    },
   })
 }

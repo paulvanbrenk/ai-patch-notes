@@ -1,69 +1,16 @@
 import { Header, HeaderTitle, Container, Button, Input } from '../components/ui'
 import { PackageCard, ReleaseCard } from '../components/releases'
+import { usePackages, useReleases } from '../api/hooks'
+import type { Release } from '../api/types'
 
-const mockPackages = [
-  {
-    id: 1,
-    npmName: 'react',
-    githubOwner: 'facebook',
-    githubRepo: 'react',
-    releaseCount: 127,
-    lastFetchedAt: '2026-01-17T10:30:00Z',
-  },
-  {
-    id: 2,
-    npmName: 'typescript',
-    githubOwner: 'microsoft',
-    githubRepo: 'TypeScript',
-    releaseCount: 89,
-    lastFetchedAt: '2026-01-16T15:45:00Z',
-  },
-  {
-    id: 3,
-    npmName: 'vite',
-    githubOwner: 'vitejs',
-    githubRepo: 'vite',
-    releaseCount: 64,
-    lastFetchedAt: '2026-01-15T08:20:00Z',
-  },
-]
-
-const mockReleases = [
-  {
-    id: 1,
-    tag: 'v19.0.0',
-    title: 'React 19',
-    body: 'This major release includes Actions, new hooks like useActionState and useOptimistic, and significant improvements to ref handling.',
-    publishedAt: '2026-01-10T14:00:00Z',
-    htmlUrl: 'https://github.com/facebook/react/releases/tag/v19.0.0',
-  },
-  {
-    id: 2,
-    tag: 'v18.3.1',
-    title: null,
-    body: 'Bug fix release addressing hydration issues in concurrent mode.',
-    publishedAt: '2026-01-05T09:30:00Z',
-    htmlUrl: 'https://github.com/facebook/react/releases/tag/v18.3.1',
-  },
-  {
-    id: 3,
-    tag: 'v19.0.0-rc.1',
-    title: 'React 19 RC 1',
-    body: 'Release candidate for React 19 with all planned features.',
-    publishedAt: '2025-12-20T16:00:00Z',
-    htmlUrl: 'https://github.com/facebook/react/releases/tag/v19.0.0-rc.1',
-  },
-  {
-    id: 4,
-    tag: 'v18.3.0',
-    title: 'React 18.3',
-    body: 'Minor release with new deprecation warnings for features changing in React 19.',
-    publishedAt: '2025-12-01T11:00:00Z',
-    htmlUrl: 'https://github.com/facebook/react/releases/tag/v18.3.0',
-  },
-]
+function getReleaseUrl(release: Release): string {
+  const { githubOwner, githubRepo } = release.package
+  return `https://github.com/${githubOwner}/${githubRepo}/releases/tag/${release.tag}`
+}
 
 export function Home() {
+  const { data: packages, isLoading: packagesLoading } = usePackages()
+  const { data: releases, isLoading: releasesLoading } = useReleases()
   return (
     <div className="min-h-screen bg-surface-secondary">
       <Header>
@@ -92,17 +39,24 @@ export function Home() {
               Tracked Packages
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {mockPackages.map((pkg) => (
-                <PackageCard
-                  key={pkg.id}
-                  npmName={pkg.npmName}
-                  githubOwner={pkg.githubOwner}
-                  githubRepo={pkg.githubRepo}
-                  releaseCount={pkg.releaseCount}
-                  lastFetchedAt={pkg.lastFetchedAt}
-                  onClick={() => console.log(`Clicked ${pkg.npmName}`)}
-                />
-              ))}
+              {packagesLoading ? (
+                <p className="text-text-secondary">Loading packages...</p>
+              ) : packages?.length === 0 ? (
+                <p className="text-text-secondary">
+                  No packages tracked yet. Add a package to get started.
+                </p>
+              ) : (
+                packages?.map((pkg) => (
+                  <PackageCard
+                    key={pkg.id}
+                    npmName={pkg.npmName}
+                    githubOwner={pkg.githubOwner}
+                    githubRepo={pkg.githubRepo}
+                    lastFetchedAt={pkg.lastFetchedAt}
+                    onClick={() => console.log(`Clicked ${pkg.npmName}`)}
+                  />
+                ))
+              )}
             </div>
           </section>
 
@@ -112,16 +66,24 @@ export function Home() {
               Recent Releases
             </h2>
             <div className="space-y-4">
-              {mockReleases.map((release) => (
-                <ReleaseCard
-                  key={release.id}
-                  tag={release.tag}
-                  title={release.title}
-                  body={release.body}
-                  publishedAt={release.publishedAt}
-                  htmlUrl={release.htmlUrl}
-                />
-              ))}
+              {releasesLoading ? (
+                <p className="text-text-secondary">Loading releases...</p>
+              ) : releases?.length === 0 ? (
+                <p className="text-text-secondary">
+                  No releases found. Releases will appear here after syncing.
+                </p>
+              ) : (
+                releases?.map((release) => (
+                  <ReleaseCard
+                    key={release.id}
+                    tag={release.tag}
+                    title={release.title}
+                    body={release.body}
+                    publishedAt={release.publishedAt}
+                    htmlUrl={getReleaseUrl(release)}
+                  />
+                ))
+              )}
             </div>
           </section>
         </Container>
