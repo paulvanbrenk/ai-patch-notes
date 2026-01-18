@@ -81,27 +81,25 @@
     0 10px 15px -3px oklch(0 0 0 / 0.08), 0 4px 6px -4px oklch(0 0 0 / 0.08);
 }
 
-/* Dark mode overrides */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-surface-primary: oklch(0.16 0.02 250);
-    --color-surface-secondary: oklch(0.2 0.02 250);
-    --color-surface-tertiary: oklch(0.24 0.02 250);
-    --color-surface-inverse: oklch(0.98 0 0);
+/* Dark mode overrides - class-based for manual toggle */
+.dark {
+  --color-surface-primary: oklch(0.16 0.02 250);
+  --color-surface-secondary: oklch(0.2 0.02 250);
+  --color-surface-tertiary: oklch(0.24 0.02 250);
+  --color-surface-inverse: oklch(0.98 0 0);
 
-    --color-text-primary: oklch(0.95 0 0);
-    --color-text-secondary: oklch(0.7 0.01 250);
-    --color-text-tertiary: oklch(0.55 0.01 250);
-    --color-text-inverse: oklch(0.15 0.02 250);
+  --color-text-primary: oklch(0.95 0 0);
+  --color-text-secondary: oklch(0.7 0.01 250);
+  --color-text-tertiary: oklch(0.55 0.01 250);
+  --color-text-inverse: oklch(0.15 0.02 250);
 
-    --color-border-default: oklch(0.3 0.02 250);
-    --color-border-muted: oklch(0.25 0.02 250);
+  --color-border-default: oklch(0.3 0.02 250);
+  --color-border-muted: oklch(0.25 0.02 250);
 
-    --color-major-muted: oklch(0.3 0.08 25);
-    --color-minor-muted: oklch(0.28 0.06 145);
-    --color-patch-muted: oklch(0.28 0.05 230);
-    --color-prerelease-muted: oklch(0.28 0.06 300);
-  }
+  --color-major-muted: oklch(0.3 0.08 25);
+  --color-minor-muted: oklch(0.28 0.06 145);
+  --color-patch-muted: oklch(0.28 0.05 230);
+  --color-prerelease-muted: oklch(0.28 0.06 300);
 }
 
 /* Base styles */

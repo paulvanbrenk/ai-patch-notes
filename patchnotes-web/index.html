@@ -14,6 +14,13 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      (function() {
+        var theme = localStorage.getItem('patchnotes:theme');
+        var isDark = theme === 'dark' || (theme !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (isDark) document.documentElement.classList.add('dark');
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

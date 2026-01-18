@@ -1,4 +1,5 @@
 import { Modal, Checkbox } from '../ui'
+import { ThemeToggle } from './ThemeToggle'
 
 interface SettingsModalProps {
   open: boolean
@@ -9,6 +10,18 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
   return (
     <Modal open={open} onClose={onClose} title="Settings">
       <div className="space-y-6">
+        <section>
+          <h3 className="text-sm font-medium text-text-primary mb-3">
+            Appearance
+          </h3>
+          <div className="space-y-3">
+            <div>
+              <p className="text-sm text-text-secondary mb-2">Theme</p>
+              <ThemeToggle />
+            </div>
+          </div>
+        </section>
+
         <section>
           <h3 className="text-sm font-medium text-text-primary mb-3">
             Notifications
