@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PatchNotes.Data\PatchNotes.Data.csproj" />
+    <ProjectReference Include="..\PatchNotes.Sync\PatchNotes.Sync.csproj" />
   </ItemGroup>
 
 </Project>

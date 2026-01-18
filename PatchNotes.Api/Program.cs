@@ -1,6 +1,8 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using PatchNotes.Data;
+using PatchNotes.Data.GitHub;
+using PatchNotes.Sync;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +12,13 @@ builder.Services.AddDbContext<PatchNotesDbContext>(options =>
     options.UseSqlite("Data Source=../PatchNotes.Data/patchnotes.db"));
 
 builder.Services.AddHttpClient();
+
+builder.Services.AddGitHubClient(options =>
+{
+    options.Token = builder.Configuration["GitHub:Token"];
+});
+
+builder.Services.AddScoped<SyncService>();
 
 builder.Services.AddCors(options =>
 {
@@ -130,6 +139,38 @@ app.MapPost("/api/packages", async (AddPackageRequest request, PatchNotesDbConte
     });
 });
 
+// PATCH /api/packages/{id} - Update package GitHub mapping
+app.MapPatch("/api/packages/{id:int}", async (int id, UpdatePackageRequest request, PatchNotesDbContext db) =>
+{
+    var package = await db.Packages.FindAsync(id);
+    if (package == null)
+    {
+        return Results.NotFound(new { error = "Package not found" });
+    }
+
+    if (!string.IsNullOrWhiteSpace(request.GithubOwner))
+    {
+        package.GithubOwner = request.GithubOwner;
+    }
+
+    if (!string.IsNullOrWhiteSpace(request.GithubRepo))
+    {
+        package.GithubRepo = request.GithubRepo;
+    }
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new
+    {
+        package.Id,
+        package.NpmName,
+        package.GithubOwner,
+        package.GithubRepo,
+        package.LastFetchedAt,
+        package.CreatedAt
+    });
+});
+
 // DELETE /api/packages/{id} - Remove package from tracking
 app.MapDelete("/api/packages/{id:int}", async (int id, PatchNotesDbContext db) =>
 {
@@ -143,6 +184,26 @@ app.MapDelete("/api/packages/{id:int}", async (int id, PatchNotesDbContext db) =
     await db.SaveChangesAsync();
 
     return Results.NoContent();
+});
+
+// POST /api/packages/{id}/sync - Trigger sync for a specific package
+app.MapPost("/api/packages/{id:int}/sync", async (int id, PatchNotesDbContext db, SyncService syncService) =>
+{
+    var package = await db.Packages.FindAsync(id);
+    if (package == null)
+    {
+        return Results.NotFound(new { error = "Package not found" });
+    }
+
+    var result = await syncService.SyncPackageAsync(package);
+
+    return Results.Ok(new
+    {
+        package.Id,
+        package.NpmName,
+        package.LastFetchedAt,
+        releasesAdded = result.ReleasesAdded
+    });
 });
 
 // GET /api/releases - Query releases for selected packages
@@ -236,3 +297,4 @@ static (string? owner, string? repo) ParseGitHubUrl(string url)
 }
 
 record AddPackageRequest(string NpmName);
+record UpdatePackageRequest(string? GithubOwner, string? GithubRepo);

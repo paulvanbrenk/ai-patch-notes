@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from '@tanstack/react-router'
 import { Header, HeaderTitle, Container, Button, Input } from '../components/ui'
 import { PackageCard, ReleaseCard } from '../components/releases'
 import { usePackages, useReleases, useAddPackage } from '../api/hooks'
@@ -45,6 +46,11 @@ export function Home() {
       <Header>
         <HeaderTitle>Patch Notes</HeaderTitle>
         <div className="flex items-center gap-3">
+          <Link to="/admin">
+            <Button variant="secondary" size="sm">
+              Admin
+            </Button>
+          </Link>
           <Button
             variant="secondary"
             size="sm"

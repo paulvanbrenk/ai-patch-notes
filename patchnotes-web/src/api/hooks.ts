@@ -5,6 +5,8 @@ import type {
   Release,
   AddPackageRequest,
   AddPackageResponse,
+  UpdatePackageRequest,
+  SyncPackageResponse,
 } from './types'
 
 export const queryKeys = {
@@ -66,6 +68,31 @@ export function useDeletePackage() {
     mutationFn: (id: number) => api.delete(`/packages/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.packages })
+    },
+  })
+}
+
+export function useUpdatePackage() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ id, ...data }: UpdatePackageRequest & { id: number }) =>
+      api.patch<Package>(`/packages/${id}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.packages })
+    },
+  })
+}
+
+export function useSyncPackage() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: number) =>
+      api.post<SyncPackageResponse>(`/packages/${id}/sync`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.packages })
+      queryClient.invalidateQueries({ queryKey: queryKeys.releases })
     },
   })
 }

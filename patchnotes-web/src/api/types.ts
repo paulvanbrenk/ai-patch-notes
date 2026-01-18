@@ -37,3 +37,15 @@ export interface AddPackageResponse {
   githubRepo: string
   createdAt: string
 }
+
+export interface UpdatePackageRequest {
+  githubOwner?: string
+  githubRepo?: string
+}
+
+export interface SyncPackageResponse {
+  id: number
+  npmName: string
+  lastFetchedAt: string
+  releasesAdded: number
+}
