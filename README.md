@@ -24,11 +24,12 @@ See [REVIEW-REPORT.md](./REVIEW-REPORT.md) for detailed analysis.
 - **Release Timeline** - Mobile-first timeline view grouped by date
 - **Package Picker** - Filter releases by selected packages
 - **Sync Engine** - Fetch releases from GitHub with rate limit awareness
+- **AI Summaries** - Generate concise release note summaries using Groq LLM
 - **Design System** - Consistent visual language across components
 
 ## Architecture
 
-- **PatchNotes.Data** - EF Core models, SQLite database, GitHub API client
+- **PatchNotes.Data** - EF Core models, SQLite database, GitHub API client, Groq LLM client
 - **PatchNotes.Api** - ASP.NET Core Web API (port 5031)
 - **PatchNotes.Sync** - Console app to fetch releases from GitHub
 - **patchnotes-web** - React frontend with TanStack Router & Query
@@ -37,6 +38,27 @@ See [REVIEW-REPORT.md](./REVIEW-REPORT.md) for detailed analysis.
 
 - .NET 10 SDK
 - Node.js 18+
+- [direnv](https://direnv.net/) (recommended for secrets management)
+
+## Configuration
+
+The project uses direnv for environment-based configuration. Create a secrets file at `~/.secrets/patchnotes/.env.local`:
+
+```bash
+# Required for API authentication
+APIKEY=your-api-key
+
+# Required for GitHub API (increases rate limit)
+GITHUB__TOKEN=your-github-token
+
+# Required for AI summaries
+GROQ__APIKEY=your-groq-api-key
+
+# Optional: customize the LLM model (default: llama-3.3-70b-versatile)
+# GROQ__MODEL=llama-3.3-70b-versatile
+```
+
+Get a Groq API key at https://console.groq.com/keys
 
 ## Quick Start
 
@@ -96,7 +118,11 @@ curl "http://localhost:5031/api/releases?packages=react,vue&days=30"
 # Add a package
 curl -X POST http://localhost:5031/api/packages \
   -H "Content-Type: application/json" \
+  -H "X-API-Key: your-api-key" \
   -d '{"npmName": "lodash"}'
+
+# Get AI summary of a release
+curl -X POST http://localhost:5031/api/releases/1/summarize
 ```
 
 ### Run the sync
@@ -122,7 +148,8 @@ PatchNotes/
 ├── PatchNotes.Api/           # Web API
 ├── PatchNotes.Data/          # Data layer
 │   ├── Migrations/           # EF Core migrations
-│   └── GitHub/               # GitHub API client
+│   ├── GitHub/               # GitHub API client
+│   └── Groq/                 # Groq LLM client
 ├── PatchNotes.Sync/          # Sync console app
 └── patchnotes-web/           # React frontend
     └── src/

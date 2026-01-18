@@ -2,6 +2,7 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using PatchNotes.Data;
 using PatchNotes.Data.GitHub;
+using PatchNotes.Data.Groq;
 using PatchNotes.Sync;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,6 +24,16 @@ builder.Services.AddHttpClient();
 builder.Services.AddGitHubClient(options =>
 {
     options.Token = builder.Configuration["GitHub:Token"];
+});
+
+builder.Services.AddGroqClient(options =>
+{
+    options.ApiKey = builder.Configuration["Groq:ApiKey"];
+    var model = builder.Configuration["Groq:Model"];
+    if (!string.IsNullOrEmpty(model))
+    {
+        options.Model = model;
+    }
 });
 
 builder.Services.AddScoped<SyncService>();
@@ -273,6 +284,34 @@ app.MapGet("/api/releases", async (string? packages, int? days, PatchNotesDbCont
         .ToListAsync();
 
     return Results.Ok(releases);
+});
+
+// POST /api/releases/{id}/summarize - Generate AI summary for a release
+app.MapPost("/api/releases/{id:int}/summarize", async (int id, PatchNotesDbContext db, IGroqClient groqClient) =>
+{
+    var release = await db.Releases
+        .Include(r => r.Package)
+        .FirstOrDefaultAsync(r => r.Id == id);
+
+    if (release == null)
+    {
+        return Results.NotFound(new { error = "Release not found" });
+    }
+
+    var summary = await groqClient.SummarizeReleaseNotesAsync(release.Title, release.Body);
+
+    return Results.Ok(new
+    {
+        release.Id,
+        release.Tag,
+        release.Title,
+        summary,
+        Package = new
+        {
+            release.Package.Id,
+            release.Package.NpmName
+        }
+    });
 });
 
 // GET /api/notifications - Query notifications
