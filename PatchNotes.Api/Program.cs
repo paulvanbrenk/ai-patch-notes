@@ -6,6 +6,13 @@ using PatchNotes.Sync;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// API Key configuration - use environment variable in production
+var apiKey = builder.Configuration["ApiKey"];
+if (string.IsNullOrEmpty(apiKey))
+{
+    throw new InvalidOperationException("ApiKey configuration is required. Set it in appsettings.json or via APIKEY environment variable.");
+}
+
 builder.Services.AddOpenApi();
 
 builder.Services.AddDbContext<PatchNotesDbContext>(options =>
@@ -38,6 +45,21 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors();
+
+// API Key authentication filter for mutating endpoints
+var requireApiKey = new Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>(
+    (context, next) => async invocationContext =>
+    {
+        var httpContext = invocationContext.HttpContext;
+        var requestApiKey = httpContext.Request.Headers["X-API-Key"].FirstOrDefault();
+
+        if (string.IsNullOrEmpty(requestApiKey) || requestApiKey != apiKey)
+        {
+            return Results.Unauthorized();
+        }
+
+        return await next(invocationContext);
+    });
 
 // GET /api/packages - List all tracked packages
 app.MapGet("/api/packages", async (PatchNotesDbContext db) =>
@@ -137,7 +159,7 @@ app.MapPost("/api/packages", async (AddPackageRequest request, PatchNotesDbConte
         package.GithubRepo,
         package.CreatedAt
     });
-});
+}).AddEndpointFilterFactory(requireApiKey);
 
 // PATCH /api/packages/{id} - Update package GitHub mapping
 app.MapPatch("/api/packages/{id:int}", async (int id, UpdatePackageRequest request, PatchNotesDbContext db) =>
@@ -169,7 +191,7 @@ app.MapPatch("/api/packages/{id:int}", async (int id, UpdatePackageRequest reque
         package.LastFetchedAt,
         package.CreatedAt
     });
-});
+}).AddEndpointFilterFactory(requireApiKey);
 
 // DELETE /api/packages/{id} - Remove package from tracking
 app.MapDelete("/api/packages/{id:int}", async (int id, PatchNotesDbContext db) =>
@@ -184,7 +206,7 @@ app.MapDelete("/api/packages/{id:int}", async (int id, PatchNotesDbContext db) =
     await db.SaveChangesAsync();
 
     return Results.NoContent();
-});
+}).AddEndpointFilterFactory(requireApiKey);
 
 // POST /api/packages/{id}/sync - Trigger sync for a specific package
 app.MapPost("/api/packages/{id:int}/sync", async (int id, PatchNotesDbContext db, SyncService syncService) =>
@@ -204,7 +226,7 @@ app.MapPost("/api/packages/{id:int}/sync", async (int id, PatchNotesDbContext db
         package.LastFetchedAt,
         releasesAdded = result.ReleasesAdded
     });
-});
+}).AddEndpointFilterFactory(requireApiKey);
 
 // GET /api/releases - Query releases for selected packages
 app.MapGet("/api/releases", async (string? packages, int? days, PatchNotesDbContext db) =>
@@ -318,7 +340,7 @@ app.MapPatch("/api/notifications/{id:int}/read", async (int id, PatchNotesDbCont
     await db.SaveChangesAsync();
 
     return Results.Ok(new { notification.Id, notification.Unread, notification.LastReadAt });
-});
+}).AddEndpointFilterFactory(requireApiKey);
 
 // DELETE /api/notifications/{id} - Delete a notification
 app.MapDelete("/api/notifications/{id:int}", async (int id, PatchNotesDbContext db) =>
@@ -333,7 +355,7 @@ app.MapDelete("/api/notifications/{id:int}", async (int id, PatchNotesDbContext 
     await db.SaveChangesAsync();
 
     return Results.NoContent();
-});
+}).AddEndpointFilterFactory(requireApiKey);
 
 app.Run();
 

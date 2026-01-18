@@ -1,3 +1,8 @@
+# Environment files (production secrets)
+.env
+.env.production
+.env.local
+
 # Logs
 logs
 *.log
