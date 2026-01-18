@@ -25,3 +25,15 @@ export interface Release {
 export interface AddPackageRequest {
   npmName: string
 }
+
+export interface AddPackageRequest {
+  npmName: string
+}
+
+export interface AddPackageResponse {
+  id: number
+  npmName: string
+  githubOwner: string
+  githubRepo: string
+  createdAt: string
+}

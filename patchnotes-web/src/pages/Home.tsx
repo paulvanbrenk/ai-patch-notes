@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Header, HeaderTitle, Container, Button, Input } from '../components/ui'
 import { PackageCard, ReleaseCard } from '../components/releases'
-import { usePackages, useReleases } from '../api/hooks'
+import { usePackages, useReleases, useAddPackage } from '../api/hooks'
 import type { Release } from '../api/types'
 import { SettingsModal } from '../components/settings'
 
@@ -13,22 +13,20 @@ function getReleaseUrl(release: Release): string {
 export function Home() {
   const { data: packages, isLoading: packagesLoading } = usePackages()
   const { data: releases, isLoading: releasesLoading } = useReleases()
+  const addPackage = useAddPackage()
   const [showAddForm, setShowAddForm] = useState(false)
   const [newPackageName, setNewPackageName] = useState('')
-  const [isAdding, setIsAdding] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
 
   const handleAddPackage = async () => {
     if (!newPackageName.trim()) return
 
-    setIsAdding(true)
     try {
-      // TODO: Replace with actual API mutation
-      console.log('Adding package:', newPackageName.trim())
+      await addPackage.mutateAsync(newPackageName.trim())
       setNewPackageName('')
       setShowAddForm(false)
-    } finally {
-      setIsAdding(false)
+    } catch {
+      // Error handling could be added here
     }
   }
 
@@ -74,15 +72,15 @@ export function Home() {
                   value={newPackageName}
                   onChange={(e) => setNewPackageName(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  disabled={isAdding}
+                  disabled={addPackage.isPending}
                   autoFocus
                 />
                 <Button
                   size="sm"
                   onClick={handleAddPackage}
-                  disabled={!newPackageName.trim() || isAdding}
+                  disabled={!newPackageName.trim() || addPackage.isPending}
                 >
-                  {isAdding ? 'Adding...' : 'Add'}
+                  {addPackage.isPending ? 'Adding...' : 'Add'}
                 </Button>
                 <Button
                   variant="secondary"
@@ -91,7 +89,7 @@ export function Home() {
                     setShowAddForm(false)
                     setNewPackageName('')
                   }}
-                  disabled={isAdding}
+                  disabled={addPackage.isPending}
                 >
                   Cancel
                 </Button>
