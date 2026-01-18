@@ -2,6 +2,22 @@
 
 A GitHub release viewer for npm packages. Track release notes across your favorite packages in one place.
 
+## Project Status
+
+**Stage:** Development (MVP)
+**Health Score:** 6/10
+
+| Area | Status |
+|------|--------|
+| Architecture | ✅ Solid (.NET + React separation) |
+| Code Quality | ✅ Good |
+| CI/CD | ✅ GitHub Actions configured |
+| Testing | 🔨 Infrastructure ready, coverage in progress |
+| Security | ⚠️ Needs auth before production |
+| Error Handling | 🔨 In progress |
+
+See [REVIEW-REPORT.md](./REVIEW-REPORT.md) for detailed analysis.
+
 ## Features
 
 - **Package Tracking** - Add npm packages to monitor their GitHub releases
@@ -131,6 +147,56 @@ PatchNotes/
 - TanStack Router (type-safe routing)
 - TanStack Query (data fetching)
 - Vite (build tool)
+
+## Development
+
+### Running Tests
+
+**Backend:**
+```bash
+dotnet test PatchNotes.slnx
+```
+
+**Frontend:**
+```bash
+cd patchnotes-web
+npm test
+```
+
+### Code Quality
+
+The project uses GitHub Actions for CI. All PRs must pass:
+- `dotnet build` and `dotnet test`
+- `npm run lint` and `npm run format:check`
+- `npm run build` (includes TypeScript type checking)
+
+## Contributing
+
+### Code Style
+
+**Backend (.NET):**
+- Follow standard C# conventions
+- Use async/await for I/O operations
+- Keep controllers thin, business logic in services
+
+**Frontend (TypeScript):**
+- Use TypeScript strict mode
+- Prefer TanStack Query for data fetching
+- Follow the existing component structure
+
+### Pull Request Process
+
+1. Create a feature branch from `main`
+2. Make your changes with clear commit messages
+3. Ensure all CI checks pass
+4. Request review
+
+### Known Areas Needing Work
+
+See [REVIEW-REPORT.md](./REVIEW-REPORT.md) for prioritized improvement areas:
+- Authentication for API endpoints
+- Expanded test coverage
+- Error handling improvements
 
 ## License
 
