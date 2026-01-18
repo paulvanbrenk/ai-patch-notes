@@ -3,6 +3,7 @@ import { Header, HeaderTitle, Container, Button, Input } from '../components/ui'
 import { PackageCard, ReleaseCard } from '../components/releases'
 import { usePackages, useReleases } from '../api/hooks'
 import type { Release } from '../api/types'
+import { SettingsModal } from '../components/settings'
 
 function getReleaseUrl(release: Release): string {
   const { githubOwner, githubRepo } = release.package
@@ -15,6 +16,7 @@ export function Home() {
   const [showAddForm, setShowAddForm] = useState(false)
   const [newPackageName, setNewPackageName] = useState('')
   const [isAdding, setIsAdding] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
 
   const handleAddPackage = async () => {
     if (!newPackageName.trim()) return
@@ -45,7 +47,11 @@ export function Home() {
       <Header>
         <HeaderTitle>Patch Notes</HeaderTitle>
         <div className="flex items-center gap-3">
-          <Button variant="secondary" size="sm">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setSettingsOpen(true)}
+          >
             Settings
           </Button>
           <Button size="sm" onClick={() => setShowAddForm(true)}>
@@ -156,6 +162,11 @@ export function Home() {
           </section>
         </Container>
       </main>
+
+      <SettingsModal
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+      />
     </div>
   )
 }
