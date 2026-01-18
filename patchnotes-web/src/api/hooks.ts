@@ -101,7 +101,10 @@ export function useSyncPackage() {
   })
 }
 
-export function useNotifications(options?: { unreadOnly?: boolean; packageId?: number }) {
+export function useNotifications(options?: {
+  unreadOnly?: boolean
+  packageId?: number
+}) {
   const params = new URLSearchParams()
   if (options?.unreadOnly) {
     params.set('unreadOnly', 'true')
@@ -110,7 +113,9 @@ export function useNotifications(options?: { unreadOnly?: boolean; packageId?: n
     params.set('packageId', options.packageId.toString())
   }
   const queryString = params.toString()
-  const endpoint = queryString ? `/notifications?${queryString}` : '/notifications'
+  const endpoint = queryString
+    ? `/notifications?${queryString}`
+    : '/notifications'
 
   return useQuery({
     queryKey: [...queryKeys.notifications, options],
@@ -129,10 +134,15 @@ export function useMarkNotificationAsRead() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id: number) => api.patch<{ id: number; unread: boolean; lastReadAt: string }>(`/notifications/${id}/read`),
+    mutationFn: (id: number) =>
+      api.patch<{ id: number; unread: boolean; lastReadAt: string }>(
+        `/notifications/${id}/read`
+      ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.notifications })
-      queryClient.invalidateQueries({ queryKey: queryKeys.notificationsUnreadCount })
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.notificationsUnreadCount,
+      })
     },
   })
 }
@@ -144,7 +154,9 @@ export function useDeleteNotification() {
     mutationFn: (id: number) => api.delete(`/notifications/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.notifications })
-      queryClient.invalidateQueries({ queryKey: queryKeys.notificationsUnreadCount })
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.notificationsUnreadCount,
+      })
     },
   })
 }

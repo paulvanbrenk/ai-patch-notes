@@ -66,10 +66,7 @@ function EditPackageModal({ open, onClose, pkg }: EditPackageModalProps) {
           <Button variant="secondary" onClick={onClose}>
             Cancel
           </Button>
-          <Button
-            onClick={handleSave}
-            disabled={updatePackage.isPending}
-          >
+          <Button onClick={handleSave} disabled={updatePackage.isPending}>
             {updatePackage.isPending ? 'Saving...' : 'Save'}
           </Button>
         </div>
@@ -125,11 +122,7 @@ function PackageRow({
           >
             {isSyncing ? 'Syncing...' : 'Sync'}
           </Button>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => onEdit(pkg)}
-          >
+          <Button variant="secondary" size="sm" onClick={() => onEdit(pkg)}>
             Edit
           </Button>
           <Button
