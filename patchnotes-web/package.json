@@ -3,6 +3,9 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "overrides": {
+    "zod-validation-error": "^5.0.0"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
