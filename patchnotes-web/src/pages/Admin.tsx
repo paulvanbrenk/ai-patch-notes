@@ -173,8 +173,8 @@ export function Admin() {
       await addPackage.mutateAsync(newPackageName.trim())
       setNewPackageName('')
       setShowAddForm(false)
-    } catch {
-      // Error handling could be added here
+    } catch (error) {
+      console.error('Failed to add package:', error)
     }
   }
 
