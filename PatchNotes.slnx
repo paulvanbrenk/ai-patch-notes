@@ -2,4 +2,5 @@
   <Project Path="PatchNotes.Api/PatchNotes.Api.csproj" />
   <Project Path="PatchNotes.Data/PatchNotes.Data.csproj" />
   <Project Path="PatchNotes.Sync/PatchNotes.Sync.csproj" />
+  <Project Path="PatchNotes.Tests/PatchNotes.Tests.csproj" />
 </Solution>
