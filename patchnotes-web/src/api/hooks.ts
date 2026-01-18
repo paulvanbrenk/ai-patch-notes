@@ -1,6 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from './client'
-import type { Package, Release, AddPackageRequest, AddPackageResponse } from './types'
+import type {
+  Package,
+  Release,
+  AddPackageRequest,
+  AddPackageResponse,
+} from './types'
 
 export const queryKeys = {
   packages: ['packages'] as const,
@@ -45,7 +50,9 @@ export function useAddPackage() {
 
   return useMutation({
     mutationFn: (npmName: string) =>
-      api.post<AddPackageResponse>('/packages', { npmName } satisfies AddPackageRequest),
+      api.post<AddPackageResponse>('/packages', {
+        npmName,
+      } satisfies AddPackageRequest),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.packages })
     },

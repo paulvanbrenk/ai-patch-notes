@@ -60,7 +60,9 @@ export function Timeline() {
               releases
             </span>
             <span>
-              <strong className="text-text-primary">{uniquePackageCount}</strong>{' '}
+              <strong className="text-text-primary">
+                {uniquePackageCount}
+              </strong>{' '}
               packages
             </span>
             <span>Last 7 days</span>
