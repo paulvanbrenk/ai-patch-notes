@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import {
   Header,
@@ -30,16 +30,9 @@ interface EditPackageModalProps {
 }
 
 function EditPackageModal({ open, onClose, pkg }: EditPackageModalProps) {
-  const [githubOwner, setGithubOwner] = useState('')
-  const [githubRepo, setGithubRepo] = useState('')
+  const [githubOwner, setGithubOwner] = useState(pkg?.githubOwner ?? '')
+  const [githubRepo, setGithubRepo] = useState(pkg?.githubRepo ?? '')
   const updatePackage = useUpdatePackage()
-
-  useEffect(() => {
-    if (open && pkg) {
-      setGithubOwner(pkg.githubOwner)
-      setGithubRepo(pkg.githubRepo)
-    }
-  }, [open, pkg])
 
   const handleSave = async () => {
     if (!pkg) return
@@ -325,6 +318,7 @@ export function Admin() {
       </main>
 
       <EditPackageModal
+        key={editingPackage?.id}
         open={!!editingPackage}
         onClose={() => setEditingPackage(null)}
         pkg={editingPackage}
