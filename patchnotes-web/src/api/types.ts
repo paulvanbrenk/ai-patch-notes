@@ -5,6 +5,7 @@ export interface Package {
   githubRepo: string
   lastFetchedAt: string | null
   createdAt: string
+  releaseCount?: number
 }
 
 export interface Release {

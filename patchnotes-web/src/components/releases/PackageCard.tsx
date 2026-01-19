@@ -7,6 +7,7 @@ interface PackageCardProps {
   releaseCount?: number
   lastFetchedAt?: string | null
   onClick?: () => void
+  hoverable?: boolean
 }
 
 function formatDate(dateString: string): string {
@@ -27,6 +28,7 @@ export function PackageCard({
   releaseCount,
   lastFetchedAt,
   onClick,
+  hoverable,
 }: PackageCardProps) {
   const githubUrl = `https://github.com/${githubOwner}/${githubRepo}`
   const npmUrl = `https://www.npmjs.com/package/${npmName}`
@@ -95,7 +97,7 @@ export function PackageCard({
     </>
   )
 
-  if (onClick) {
+  if (onClick || hoverable) {
     return (
       <Card
         className="cursor-pointer hover:border-brand-300 hover:shadow-md transition-all"
