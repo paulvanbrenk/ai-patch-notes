@@ -441,3 +441,6 @@ static (string? owner, string? repo) ParseGitHubUrl(string url)
 
 record AddPackageRequest(string NpmName);
 record UpdatePackageRequest(string? GithubOwner, string? GithubRepo);
+
+// Make the Program class accessible to the test project
+public partial class Program { }
