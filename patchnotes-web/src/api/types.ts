@@ -11,7 +11,7 @@ export interface Release {
   id: number
   tag: string
   title: string | null
-  body: string
+  body: string | null
   publishedAt: string
   fetchedAt: string
   package: {
