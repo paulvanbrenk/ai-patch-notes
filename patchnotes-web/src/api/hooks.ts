@@ -15,6 +15,7 @@ export const queryKeys = {
   packages: ['packages'] as const,
   package: (id: number) => ['packages', id] as const,
   releases: ['releases'] as const,
+  release: (id: number) => ['releases', id] as const,
   packageReleases: (packageId: number) =>
     ['packages', packageId, 'releases'] as const,
   notifications: ['notifications'] as const,
@@ -40,6 +41,14 @@ export function useReleases() {
   return useQuery({
     queryKey: queryKeys.releases,
     queryFn: () => api.get<Release[]>('/releases'),
+  })
+}
+
+export function useRelease(id: number) {
+  return useQuery({
+    queryKey: queryKeys.release(id),
+    queryFn: () => api.get<Release>(`/releases/${id}`),
+    enabled: id > 0,
   })
 }
 

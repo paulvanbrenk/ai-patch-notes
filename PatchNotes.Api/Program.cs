@@ -89,6 +89,96 @@ app.MapGet("/api/packages", async (PatchNotesDbContext db) =>
     return Results.Ok(packages);
 });
 
+// GET /api/packages/{id} - Get single package details
+app.MapGet("/api/packages/{id:int}", async (int id, PatchNotesDbContext db) =>
+{
+    var package = await db.Packages
+        .Where(p => p.Id == id)
+        .Select(p => new
+        {
+            p.Id,
+            p.NpmName,
+            p.GithubOwner,
+            p.GithubRepo,
+            p.LastFetchedAt,
+            p.CreatedAt,
+            ReleaseCount = p.Releases.Count
+        })
+        .FirstOrDefaultAsync();
+
+    if (package == null)
+    {
+        return Results.NotFound(new { error = "Package not found" });
+    }
+
+    return Results.Ok(package);
+});
+
+// GET /api/packages/{id}/releases - Get all releases for a package
+app.MapGet("/api/packages/{id:int}/releases", async (int id, PatchNotesDbContext db) =>
+{
+    var packageExists = await db.Packages.AnyAsync(p => p.Id == id);
+    if (!packageExists)
+    {
+        return Results.NotFound(new { error = "Package not found" });
+    }
+
+    var releases = await db.Releases
+        .Where(r => r.PackageId == id)
+        .OrderByDescending(r => r.PublishedAt)
+        .Select(r => new
+        {
+            r.Id,
+            r.Tag,
+            r.Title,
+            r.Body,
+            r.PublishedAt,
+            r.FetchedAt,
+            Package = new
+            {
+                r.Package.Id,
+                r.Package.NpmName,
+                r.Package.GithubOwner,
+                r.Package.GithubRepo
+            }
+        })
+        .ToListAsync();
+
+    return Results.Ok(releases);
+});
+
+// GET /api/releases/{id} - Get single release details
+app.MapGet("/api/releases/{id:int}", async (int id, PatchNotesDbContext db) =>
+{
+    var release = await db.Releases
+        .Include(r => r.Package)
+        .Where(r => r.Id == id)
+        .Select(r => new
+        {
+            r.Id,
+            r.Tag,
+            r.Title,
+            r.Body,
+            r.PublishedAt,
+            r.FetchedAt,
+            Package = new
+            {
+                r.Package.Id,
+                r.Package.NpmName,
+                r.Package.GithubOwner,
+                r.Package.GithubRepo
+            }
+        })
+        .FirstOrDefaultAsync();
+
+    if (release == null)
+    {
+        return Results.NotFound(new { error = "Release not found" });
+    }
+
+    return Results.Ok(release);
+});
+
 // POST /api/packages - Add package to track
 app.MapPost("/api/packages", async (AddPackageRequest request, PatchNotesDbContext db, IHttpClientFactory httpClientFactory) =>
 {

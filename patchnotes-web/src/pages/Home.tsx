@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { Header, HeaderTitle, Container, Button, Input } from '../components/ui'
 import { PackageCard, ReleaseCard } from '../components/releases'
 import { usePackages, useReleases, useAddPackage } from '../api/hooks'
@@ -12,6 +12,7 @@ function getReleaseUrl(release: Release): string {
 }
 
 export function Home() {
+  const navigate = useNavigate()
   const { data: packages, isLoading: packagesLoading } = usePackages()
   const { data: releases, isLoading: releasesLoading } = useReleases()
   const addPackage = useAddPackage()
@@ -136,7 +137,12 @@ export function Home() {
                     githubOwner={pkg.githubOwner}
                     githubRepo={pkg.githubRepo}
                     lastFetchedAt={pkg.lastFetchedAt}
-                    onClick={() => console.log(`Clicked ${pkg.npmName}`)}
+                    onClick={() =>
+                      navigate({
+                        to: '/packages/$packageId',
+                        params: { packageId: String(pkg.id) },
+                      })
+                    }
                   />
                 ))
               )}
@@ -164,6 +170,12 @@ export function Home() {
                     body={release.body}
                     publishedAt={release.publishedAt}
                     htmlUrl={getReleaseUrl(release)}
+                    onClick={() =>
+                      navigate({
+                        to: '/releases/$releaseId',
+                        params: { releaseId: String(release.id) },
+                      })
+                    }
                   />
                 ))
               )}

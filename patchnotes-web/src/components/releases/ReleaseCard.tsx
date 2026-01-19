@@ -7,6 +7,8 @@ interface ReleaseCardProps {
   body?: string | null
   publishedAt: string
   htmlUrl?: string | null
+  hoverable?: boolean
+  onClick?: () => void
 }
 
 function formatDate(dateString: string): string {
@@ -51,11 +53,20 @@ export function ReleaseCard({
   body,
   publishedAt,
   htmlUrl,
+  hoverable,
+  onClick,
 }: ReleaseCardProps) {
   const displayTitle = title || tag
 
   return (
-    <Card>
+    <Card
+      className={
+        onClick || hoverable
+          ? 'cursor-pointer hover:border-brand-300 hover:shadow-md transition-all'
+          : ''
+      }
+      onClick={onClick}
+    >
       <CardHeader>
         <div className="flex items-center gap-3">
           <VersionBadge version={tag} />
@@ -66,6 +77,7 @@ export function ReleaseCard({
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-brand-600 transition-colors"
+                onClick={(e) => e.stopPropagation()}
               >
                 {displayTitle}
               </a>
