@@ -2,22 +2,23 @@ using System.Net.Http.Headers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace PatchNotes.Data.Groq;
+namespace PatchNotes.Data.AI;
 
 /// <summary>
-/// Extension methods for registering Groq client services.
+/// Extension methods for registering AI client services.
 /// </summary>
-public static class GroqServiceCollectionExtensions
+public static class AiServiceCollectionExtensions
 {
     /// <summary>
-    /// Adds the Groq client to the service collection.
+    /// Adds the AI client to the service collection.
+    /// Supports any OpenAI-compatible API provider.
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <param name="configureOptions">Optional action to configure options.</param>
     /// <returns>The service collection for chaining.</returns>
-    public static IServiceCollection AddGroqClient(
+    public static IServiceCollection AddAiClient(
         this IServiceCollection services,
-        Action<GroqClientOptions>? configureOptions = null)
+        Action<AiClientOptions>? configureOptions = null)
     {
         if (configureOptions != null)
         {
@@ -25,12 +26,12 @@ public static class GroqServiceCollectionExtensions
         }
         else
         {
-            services.AddOptions<GroqClientOptions>();
+            services.AddOptions<AiClientOptions>();
         }
 
-        services.AddHttpClient<IGroqClient, GroqClient>((serviceProvider, client) =>
+        services.AddHttpClient<IAiClient, AiClient>((serviceProvider, client) =>
         {
-            var options = serviceProvider.GetRequiredService<IOptions<GroqClientOptions>>().Value;
+            var options = serviceProvider.GetRequiredService<IOptions<AiClientOptions>>().Value;
 
             client.BaseAddress = new Uri(options.BaseUrl);
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));

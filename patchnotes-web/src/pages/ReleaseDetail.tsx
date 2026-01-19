@@ -12,6 +12,7 @@ import {
 } from '../components/ui'
 import { VersionBadge } from '../components/releases'
 import { useRelease } from '../api/hooks'
+import { useSummarize } from '../ai/useSummarize'
 
 interface ReleaseDetailProps {
   releaseId: number
@@ -39,6 +40,13 @@ function formatDateTime(dateString: string): string {
 
 export function ReleaseDetail({ releaseId }: ReleaseDetailProps) {
   const { data: release, isLoading, error } = useRelease(releaseId)
+  const {
+    summarize,
+    isLoading: isSummarizing,
+    summary,
+    error: summaryError,
+    reset: resetSummary,
+  } = useSummarize()
 
   if (isLoading) {
     return (
@@ -165,6 +173,53 @@ export function ReleaseDetail({ releaseId }: ReleaseDetailProps) {
               </div>
             </CardContent>
           </Card>
+
+          {/* AI Summary */}
+          <section className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold text-text-primary">
+                AI Summary
+              </h2>
+              {!summary && !isSummarizing && (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => summarize(releaseId)}
+                >
+                  Generate Summary
+                </Button>
+              )}
+              {summary && (
+                <Button variant="secondary" size="sm" onClick={resetSummary}>
+                  Clear
+                </Button>
+              )}
+            </div>
+            <Card>
+              <CardContent className="mt-0">
+                {isSummarizing && (
+                  <div className="flex items-center gap-2 text-text-secondary">
+                    <div className="animate-spin h-4 w-4 border-2 border-brand-500 border-t-transparent rounded-full" />
+                    <span>Generating summary...</span>
+                  </div>
+                )}
+                {summaryError && (
+                  <p className="text-red-600">
+                    Failed to generate summary: {summaryError.message}
+                  </p>
+                )}
+                {summary && (
+                  <p className="text-text-primary leading-relaxed">{summary}</p>
+                )}
+                {!summary && !isSummarizing && !summaryError && (
+                  <p className="text-text-tertiary italic">
+                    Click "Generate Summary" to create an AI-powered summary of
+                    this release.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </section>
 
           {/* Release Notes */}
           <section>
