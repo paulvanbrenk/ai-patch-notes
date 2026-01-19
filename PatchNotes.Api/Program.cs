@@ -2,7 +2,7 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using PatchNotes.Data;
 using PatchNotes.Data.GitHub;
-using PatchNotes.Data.Groq;
+using PatchNotes.Data.AI;
 using PatchNotes.Sync;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,10 +26,15 @@ builder.Services.AddGitHubClient(options =>
     options.Token = builder.Configuration["GitHub:Token"];
 });
 
-builder.Services.AddGroqClient(options =>
+builder.Services.AddAiClient(options =>
 {
-    options.ApiKey = builder.Configuration["Groq:ApiKey"];
-    var model = builder.Configuration["Groq:Model"];
+    options.ApiKey = builder.Configuration["AI:ApiKey"];
+    var baseUrl = builder.Configuration["AI:BaseUrl"];
+    if (!string.IsNullOrEmpty(baseUrl))
+    {
+        options.BaseUrl = baseUrl;
+    }
+    var model = builder.Configuration["AI:Model"];
     if (!string.IsNullOrEmpty(model))
     {
         options.Model = model;
@@ -377,7 +382,7 @@ app.MapGet("/api/releases", async (string? packages, int? days, PatchNotesDbCont
 });
 
 // POST /api/releases/{id}/summarize - Generate AI summary for a release
-app.MapPost("/api/releases/{id:int}/summarize", async (int id, PatchNotesDbContext db, IGroqClient groqClient) =>
+app.MapPost("/api/releases/{id:int}/summarize", async (int id, HttpContext httpContext, PatchNotesDbContext db, IAiClient aiClient) =>
 {
     var release = await db.Releases
         .Include(r => r.Package)
@@ -388,7 +393,45 @@ app.MapPost("/api/releases/{id:int}/summarize", async (int id, PatchNotesDbConte
         return Results.NotFound(new { error = "Release not found" });
     }
 
-    var summary = await groqClient.SummarizeReleaseNotesAsync(release.Title, release.Body);
+    var acceptHeader = httpContext.Request.Headers.Accept.ToString();
+
+    // Support Server-Sent Events for streaming
+    if (acceptHeader.Contains("text/event-stream"))
+    {
+        httpContext.Response.ContentType = "text/event-stream";
+        httpContext.Response.Headers.CacheControl = "no-cache";
+        httpContext.Response.Headers.Connection = "keep-alive";
+
+        var fullSummary = new System.Text.StringBuilder();
+
+        await foreach (var chunk in aiClient.SummarizeReleaseNotesStreamAsync(release.Title, release.Body, httpContext.RequestAborted))
+        {
+            fullSummary.Append(chunk);
+            var chunkData = JsonSerializer.Serialize(new { type = "chunk", content = chunk });
+            await httpContext.Response.WriteAsync($"data: {chunkData}\n\n", httpContext.RequestAborted);
+            await httpContext.Response.Body.FlushAsync(httpContext.RequestAborted);
+        }
+
+        var completeData = JsonSerializer.Serialize(new
+        {
+            type = "complete",
+            result = new
+            {
+                releaseId = release.Id,
+                release.Tag,
+                release.Title,
+                summary = fullSummary.ToString(),
+                package = new { release.Package.Id, release.Package.NpmName }
+            }
+        });
+        await httpContext.Response.WriteAsync($"data: {completeData}\n\n", httpContext.RequestAborted);
+        await httpContext.Response.WriteAsync("data: [DONE]\n\n", httpContext.RequestAborted);
+
+        return Results.Empty;
+    }
+
+    // Non-streaming JSON response
+    var summary = await aiClient.SummarizeReleaseNotesAsync(release.Title, release.Body);
 
     return Results.Ok(new
     {

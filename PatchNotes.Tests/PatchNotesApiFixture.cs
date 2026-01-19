@@ -50,7 +50,7 @@ public class PatchNotesApiFixture : WebApplicationFactory<Program>, IAsyncLifeti
 
         builder.UseSetting("ApiKey", TestApiKey);
         builder.UseSetting("GitHub:Token", "test-github-token");
-        builder.UseSetting("Groq:ApiKey", "test-groq-key");
+        builder.UseSetting("AI:ApiKey", "test-ai-key");
     }
 
     public async Task InitializeAsync()
