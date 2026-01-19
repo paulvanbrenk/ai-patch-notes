@@ -19,12 +19,13 @@ public class PatchNotesDbContext : DbContext
 
         modelBuilder.Entity<Package>(entity =>
         {
-            entity.HasIndex(e => e.NpmName);
+            entity.HasIndex(e => e.NpmName).IsUnique();
         });
 
         modelBuilder.Entity<Release>(entity =>
         {
             entity.HasIndex(e => e.PublishedAt);
+            entity.HasIndex(e => new { e.PackageId, e.Tag }).IsUnique();
             entity.HasOne(e => e.Package)
                 .WithMany(p => p.Releases)
                 .HasForeignKey(e => e.PackageId);
