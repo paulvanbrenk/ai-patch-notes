@@ -1,5 +1,10 @@
 import { http, HttpResponse } from 'msw'
-import type { Package, Release, Notification, UnreadCount } from '../../api/types'
+import type {
+  Package,
+  Release,
+  Notification,
+  UnreadCount,
+} from '../../api/types'
 
 const API_BASE = '/api'
 

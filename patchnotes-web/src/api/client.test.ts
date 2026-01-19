@@ -58,9 +58,12 @@ describe('api client', () => {
         })
       )
 
-      const result = await api.put<{ id: number; updated: boolean }>('/test/1', {
-        name: 'updated',
-      })
+      const result = await api.put<{ id: number; updated: boolean }>(
+        '/test/1',
+        {
+          name: 'updated',
+        }
+      )
 
       expect(result).toEqual({ id: 1, updated: true })
       expect(capturedBody).toEqual({ name: 'updated' })
@@ -249,7 +252,9 @@ describe('getErrorMessage', () => {
 
   it('handles unknown errors', () => {
     expect(getErrorMessage(null)).toBe('An unexpected error occurred.')
-    expect(getErrorMessage('string error')).toBe('An unexpected error occurred.')
+    expect(getErrorMessage('string error')).toBe(
+      'An unexpected error occurred.'
+    )
     expect(getErrorMessage(123)).toBe('An unexpected error occurred.')
   })
 })
