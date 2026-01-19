@@ -3,7 +3,11 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactNode } from 'react'
 import { http, HttpResponse } from 'msw'
 import { server } from '../test/mocks/server'
-import { mockPackages, mockReleases, mockNotifications } from '../test/mocks/handlers'
+import {
+  mockPackages,
+  mockReleases,
+  mockNotifications,
+} from '../test/mocks/handlers'
 import {
   usePackages,
   usePackage,
@@ -246,9 +250,12 @@ describe('useNotifications', () => {
       })
     )
 
-    const { result } = renderHook(() => useNotifications({ unreadOnly: true }), {
-      wrapper: createWrapper(),
-    })
+    const { result } = renderHook(
+      () => useNotifications({ unreadOnly: true }),
+      {
+        wrapper: createWrapper(),
+      }
+    )
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
   })
