@@ -4,13 +4,49 @@ const API_KEY = import.meta.env.VITE_API_KEY || ''
 export class ApiError extends Error {
   status: number
   data?: unknown
+  isNetworkError: boolean
 
-  constructor(status: number, message: string, data?: unknown) {
+  constructor(
+    status: number,
+    message: string,
+    data?: unknown,
+    isNetworkError = false
+  ) {
     super(message)
     this.name = 'ApiError'
     this.status = status
     this.data = data
+    this.isNetworkError = isNetworkError
   }
+}
+
+export function isApiError(error: unknown): error is ApiError {
+  return error instanceof ApiError
+}
+
+export function getErrorMessage(error: unknown): string {
+  if (isApiError(error)) {
+    if (error.isNetworkError) {
+      return 'Unable to connect to server. Please check your internet connection.'
+    }
+    if (error.status === 401) {
+      return 'Authentication required. Please check your API key.'
+    }
+    if (error.status === 403) {
+      return 'Access denied. You do not have permission for this action.'
+    }
+    if (error.status === 404) {
+      return 'The requested resource was not found.'
+    }
+    if (error.status >= 500) {
+      return 'Server error. Please try again later.'
+    }
+    return error.message || 'An unexpected error occurred.'
+  }
+  if (error instanceof Error) {
+    return error.message
+  }
+  return 'An unexpected error occurred.'
 }
 
 interface RequestOptions extends Omit<RequestInit, 'body'> {
@@ -36,7 +72,18 @@ async function request<T>(
     config.body = JSON.stringify(body)
   }
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, config)
+  let response: Response
+  try {
+    response = await fetch(`${API_BASE_URL}${endpoint}`, config)
+  } catch (error) {
+    // Network error (DNS failure, no internet, CORS, etc.)
+    throw new ApiError(
+      0,
+      error instanceof Error ? error.message : 'Network request failed',
+      undefined,
+      true
+    )
+  }
 
   if (!response.ok) {
     const data = await response.json().catch(() => null)
