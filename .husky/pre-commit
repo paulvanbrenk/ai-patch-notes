@@ -1,0 +1,1 @@
+cd patchnotes-web && npx lint-staged

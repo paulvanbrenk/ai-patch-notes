@@ -37,3 +37,6 @@ Thumbs.db
 # Runtime
 .runtime/
 .beads/
+
+# Node (root-level husky)
+node_modules/
