@@ -16,16 +16,16 @@ describe('api client', () => {
     })
 
     it('includes API key header when configured', async () => {
-      let capturedHeaders: Headers | null = null
+      let capturedContentType: string | null = null
       server.use(
         http.get('/api/test', ({ request }) => {
-          capturedHeaders = request.headers
+          capturedContentType = request.headers.get('Content-Type')
           return HttpResponse.json({ data: 'success' })
         })
       )
 
       await api.get('/test')
-      expect(capturedHeaders?.get('Content-Type')).toBe('application/json')
+      expect(capturedContentType).toBe('application/json')
     })
   })
 

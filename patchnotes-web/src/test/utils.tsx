@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
-import { ReactElement, ReactNode } from 'react'
-import { render, RenderOptions } from '@testing-library/react'
+import type { ReactElement, ReactNode } from 'react'
+import { render } from '@testing-library/react'
+import type { RenderOptions } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 function createTestQueryClient() {
