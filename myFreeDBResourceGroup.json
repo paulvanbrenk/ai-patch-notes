@@ -1,0 +1,597 @@
+WARNING: Export template operation completed with errors. Some resources were not exported. Please see details for more information.
+ERROR: Could not get resources of the type 'Microsoft.Sql/servers/databases/advisors'. Resources of this type will not be exported.
+ERROR: Could not get resources of the type 'Microsoft.Sql/servers/databases/workloadGroups'. Resources of this type will not be exported.
+ERROR: Could not get resources of the type 'Microsoft.Sql/servers/databases/dataMaskingPolicies'. Resources of this type will not be exported.
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "servers_myfreesqldbserver_tiny_tools_name": {
+      "type": "String"
+    },
+    "vulnerabilityAssessments_Default_storageContainerPath": {
+      "type": "SecureString"
+    }
+  },
+  "resources": [
+    {
+      "apiVersion": "2024-05-01-preview",
+      "kind": "v12.0",
+      "location": "centralus",
+      "name": "[parameters('servers_myfreesqldbserver_tiny_tools_name')]",
+      "properties": {
+        "administratorLogin": "sql-azure-admin",
+        "administrators": {
+          "administratorType": "ActiveDirectory",
+          "azureADOnlyAuthentication": false,
+          "login": "paul.van.brenk_gmail.com#EXT#@paulvanbrenkgmail.onmicrosoft.com",
+          "principalType": "User",
+          "sid": "4a57885f-9fc7-4ad2-8806-73c6f70cff03",
+          "tenantId": "77dd1a7b-29ca-4d8d-8aff-fdfd52debe70"
+        },
+        "minimalTlsVersion": "1.2",
+        "publicNetworkAccess": "Enabled",
+        "restrictOutboundNetworkAccess": "Disabled",
+        "version": "12.0"
+      },
+      "type": "Microsoft.Sql/servers"
+    },
+    {
+      "apiVersion": "2024-05-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_myfreesqldbserver_tiny_tools_name'))]"
+      ],
+      "name": "[concat(parameters('servers_myfreesqldbserver_tiny_tools_name'), '/ActiveDirectory')]",
+      "properties": {
+        "administratorType": "ActiveDirectory",
+        "login": "paul.van.brenk_gmail.com#EXT#@paulvanbrenkgmail.onmicrosoft.com",
+        "sid": "4a57885f-9fc7-4ad2-8806-73c6f70cff03",
+        "tenantId": "77dd1a7b-29ca-4d8d-8aff-fdfd52debe70"
+      },
+      "type": "Microsoft.Sql/servers/administrators"
+    },
+    {
+      "apiVersion": "2024-05-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_myfreesqldbserver_tiny_tools_name'))]"
+      ],
+      "name": "[concat(parameters('servers_myfreesqldbserver_tiny_tools_name'), '/Default')]",
+      "properties": {
+        "state": "Disabled"
+      },
+      "type": "Microsoft.Sql/servers/advancedThreatProtectionSettings"
+    },
+    {
+      "apiVersion": "2014-04-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_myfreesqldbserver_tiny_tools_name'))]"
+      ],
+      "name": "[concat(parameters('servers_myfreesqldbserver_tiny_tools_name'), '/CreateIndex')]",
+      "properties": {
+        "autoExecuteValue": "Disabled"
+      },
+      "type": "Microsoft.Sql/servers/advisors"
+    },
+    {
+      "apiVersion": "2014-04-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_myfreesqldbserver_tiny_tools_name'))]"
+      ],
+      "name": "[concat(parameters('servers_myfreesqldbserver_tiny_tools_name'), '/DbParameterization')]",
+      "properties": {
+        "autoExecuteValue": "Disabled"
+      },
+      "type": "Microsoft.Sql/servers/advisors"
+    },
+    {
+      "apiVersion": "2014-04-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_myfreesqldbserver_tiny_tools_name'))]"
+      ],
+      "name": "[concat(parameters('servers_myfreesqldbserver_tiny_tools_name'), '/DefragmentIndex')]",
+      "properties": {
+        "autoExecuteValue": "Disabled"
+      },
+      "type": "Microsoft.Sql/servers/advisors"
+    },
+    {
+      "apiVersion": "2014-04-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_myfreesqldbserver_tiny_tools_name'))]"
+      ],
+      "name": "[concat(parameters('servers_myfreesqldbserver_tiny_tools_name'), '/DropIndex')]",
+      "properties": {
+        "autoExecuteValue": "Disabled"
+      },
+      "type": "Microsoft.Sql/servers/advisors"
+    },
+    {
+      "apiVersion": "2014-04-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_myfreesqldbserver_tiny_tools_name'))]"
+      ],
+      "name": "[concat(parameters('servers_myfreesqldbserver_tiny_tools_name'), '/ForceLastGoodPlan')]",
+      "properties": {
+        "autoExecuteValue": "Enabled"
+      },
+      "type": "Microsoft.Sql/servers/advisors"
+    },
+    {
+      "apiVersion": "2014-04-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_myfreesqldbserver_tiny_tools_name'))]"
+      ],
+      "location": "Central US",
+      "name": "[concat(parameters('servers_myfreesqldbserver_tiny_tools_name'), '/Default')]",
+      "properties": {
+        "auditingState": "Disabled"
+      },
+      "type": "Microsoft.Sql/servers/auditingPolicies"
+    },
+    {
+      "apiVersion": "2024-05-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_myfreesqldbserver_tiny_tools_name'))]"
+      ],
+      "name": "[concat(parameters('servers_myfreesqldbserver_tiny_tools_name'), '/Default')]",
+      "properties": {
+        "auditActionsAndGroups": [],
+        "isAzureMonitorTargetEnabled": false,
+        "isManagedIdentityInUse": false,
+        "isStorageSecondaryKeyInUse": false,
+        "retentionDays": 0,
+        "state": "Disabled",
+        "storageAccountSubscriptionId": "00000000-0000-0000-0000-000000000000"
+      },
+      "type": "Microsoft.Sql/servers/auditingSettings"
+    },
+    {
+      "apiVersion": "2024-05-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_myfreesqldbserver_tiny_tools_name'))]"
+      ],
+      "name": "[concat(parameters('servers_myfreesqldbserver_tiny_tools_name'), '/Default')]",
+      "properties": {
+        "azureADOnlyAuthentication": false
+      },
+      "type": "Microsoft.Sql/servers/azureADOnlyAuthentications"
+    },
+    {
+      "apiVersion": "2024-05-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_myfreesqldbserver_tiny_tools_name'))]"
+      ],
+      "location": "centralus",
+      "name": "[concat(parameters('servers_myfreesqldbserver_tiny_tools_name'), '/default')]",
+      "properties": {
+        "connectionType": "Default"
+      },
+      "type": "Microsoft.Sql/servers/connectionPolicies"
+    },
+    {
+      "apiVersion": "2024-05-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_myfreesqldbserver_tiny_tools_name'))]"
+      ],
+      "kind": "v12.0,user,vcore,serverless,freelimit",
+      "location": "centralus",
+      "name": "[concat(parameters('servers_myfreesqldbserver_tiny_tools_name'), '/myFreeDB')]",
+      "properties": {
+        "autoPauseDelay": 60,
+        "availabilityZone": "NoPreference",
+        "catalogCollation": "SQL_Latin1_General_CP1_CI_AS",
+        "collation": "SQL_Latin1_General_CP1_CI_AS",
+        "freeLimitExhaustionBehavior": "AutoPause",
+        "isLedgerOn": false,
+        "maintenanceConfigurationId": "/subscriptions/ba83d8be-06cc-420e-a64e-e2297d620466/providers/Microsoft.Maintenance/publicMaintenanceConfigurations/SQL_Default",
+        "maxSizeBytes": 34359738368,
+        "minCapacity": 0.5,
+        "readScale": "Disabled",
+        "requestedBackupStorageRedundancy": "Local",
+        "useFreeLimit": true,
+        "zoneRedundant": false
+      },
+      "sku": {
+        "capacity": 2,
+        "family": "Gen5",
+        "name": "GP_S_Gen5",
+        "tier": "GeneralPurpose"
+      },
+      "type": "Microsoft.Sql/servers/databases"
+    },
+    {
+      "apiVersion": "2024-05-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_myfreesqldbserver_tiny_tools_name'))]"
+      ],
+      "name": "[concat(parameters('servers_myfreesqldbserver_tiny_tools_name'), '/master/Default')]",
+      "properties": {
+        "state": "Disabled"
+      },
+      "type": "Microsoft.Sql/servers/databases/advancedThreatProtectionSettings"
+    },
+    {
+      "apiVersion": "2014-04-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_myfreesqldbserver_tiny_tools_name'))]"
+      ],
+      "location": "Central US",
+      "name": "[concat(parameters('servers_myfreesqldbserver_tiny_tools_name'), '/master/Default')]",
+      "properties": {
+        "auditingState": "Disabled"
+      },
+      "type": "Microsoft.Sql/servers/databases/auditingPolicies"
+    },
+    {
+      "apiVersion": "2024-05-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_myfreesqldbserver_tiny_tools_name'))]"
+      ],
+      "name": "[concat(parameters('servers_myfreesqldbserver_tiny_tools_name'), '/master/Default')]",
+      "properties": {
+        "isAzureMonitorTargetEnabled": false,
+        "retentionDays": 0,
+        "state": "Disabled",
+        "storageAccountSubscriptionId": "00000000-0000-0000-0000-000000000000"
+      },
+      "type": "Microsoft.Sql/servers/databases/auditingSettings"
+    },
+    {
+      "apiVersion": "2024-05-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_myfreesqldbserver_tiny_tools_name'))]"
+      ],
+      "name": "[concat(parameters('servers_myfreesqldbserver_tiny_tools_name'), '/master/Default')]",
+      "properties": {
+        "isAzureMonitorTargetEnabled": false,
+        "retentionDays": 0,
+        "state": "Disabled",
+        "storageAccountSubscriptionId": "00000000-0000-0000-0000-000000000000"
+      },
+      "type": "Microsoft.Sql/servers/databases/extendedAuditingSettings"
+    },
+    {
+      "apiVersion": "2024-05-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_myfreesqldbserver_tiny_tools_name'))]"
+      ],
+      "name": "[concat(parameters('servers_myfreesqldbserver_tiny_tools_name'), '/master/Default')]",
+      "properties": {
+        "state": "Disabled"
+      },
+      "type": "Microsoft.Sql/servers/databases/geoBackupPolicies"
+    },
+    {
+      "apiVersion": "2024-05-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_myfreesqldbserver_tiny_tools_name'))]"
+      ],
+      "name": "[concat(parameters('servers_myfreesqldbserver_tiny_tools_name'), '/master/Current')]",
+      "properties": {},
+      "type": "Microsoft.Sql/servers/databases/ledgerDigestUploads"
+    },
+    {
+      "apiVersion": "2024-05-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_myfreesqldbserver_tiny_tools_name'))]"
+      ],
+      "name": "[concat(parameters('servers_myfreesqldbserver_tiny_tools_name'), '/master/Default')]",
+      "properties": {
+        "disabledAlerts": [
+          ""
+        ],
+        "emailAccountAdmins": false,
+        "emailAddresses": [
+          ""
+        ],
+        "retentionDays": 0,
+        "state": "Disabled"
+      },
+      "type": "Microsoft.Sql/servers/databases/securityAlertPolicies"
+    },
+    {
+      "apiVersion": "2024-05-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_myfreesqldbserver_tiny_tools_name'))]"
+      ],
+      "name": "[concat(parameters('servers_myfreesqldbserver_tiny_tools_name'), '/master/Current')]",
+      "properties": {
+        "state": "Disabled"
+      },
+      "type": "Microsoft.Sql/servers/databases/transparentDataEncryption"
+    },
+    {
+      "apiVersion": "2024-05-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_myfreesqldbserver_tiny_tools_name'))]"
+      ],
+      "name": "[concat(parameters('servers_myfreesqldbserver_tiny_tools_name'), '/master/Default')]",
+      "properties": {
+        "recurringScans": {
+          "emailSubscriptionAdmins": true,
+          "isEnabled": false
+        }
+      },
+      "type": "Microsoft.Sql/servers/databases/vulnerabilityAssessments"
+    },
+    {
+      "apiVersion": "2024-05-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_myfreesqldbserver_tiny_tools_name'))]"
+      ],
+      "name": "[concat(parameters('servers_myfreesqldbserver_tiny_tools_name'), '/Default')]",
+      "properties": {
+        "isAzureMonitorTargetEnabled": false,
+        "isManagedIdentityInUse": false,
+        "state": "Disabled",
+        "storageAccountSubscriptionId": "00000000-0000-0000-0000-000000000000"
+      },
+      "type": "Microsoft.Sql/servers/devOpsAuditingSettings"
+    },
+    {
+      "apiVersion": "2024-05-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_myfreesqldbserver_tiny_tools_name'))]"
+      ],
+      "kind": "servicemanaged",
+      "name": "[concat(parameters('servers_myfreesqldbserver_tiny_tools_name'), '/current')]",
+      "properties": {
+        "autoRotationEnabled": false,
+        "serverKeyName": "ServiceManaged",
+        "serverKeyType": "ServiceManaged"
+      },
+      "type": "Microsoft.Sql/servers/encryptionProtector"
+    },
+    {
+      "apiVersion": "2024-05-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_myfreesqldbserver_tiny_tools_name'))]"
+      ],
+      "name": "[concat(parameters('servers_myfreesqldbserver_tiny_tools_name'), '/Default')]",
+      "properties": {
+        "auditActionsAndGroups": [],
+        "isAzureMonitorTargetEnabled": false,
+        "isManagedIdentityInUse": false,
+        "isStorageSecondaryKeyInUse": false,
+        "retentionDays": 0,
+        "state": "Disabled",
+        "storageAccountSubscriptionId": "00000000-0000-0000-0000-000000000000"
+      },
+      "type": "Microsoft.Sql/servers/extendedAuditingSettings"
+    },
+    {
+      "apiVersion": "2024-05-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_myfreesqldbserver_tiny_tools_name'))]"
+      ],
+      "name": "[concat(parameters('servers_myfreesqldbserver_tiny_tools_name'), '/AllowAllWindowsAzureIps')]",
+      "properties": {
+        "endIpAddress": "0.0.0.0",
+        "startIpAddress": "0.0.0.0"
+      },
+      "type": "Microsoft.Sql/servers/firewallRules"
+    },
+    {
+      "apiVersion": "2024-05-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_myfreesqldbserver_tiny_tools_name'))]"
+      ],
+      "name": "[concat(parameters('servers_myfreesqldbserver_tiny_tools_name'), '/ClientIPAddress_2026-1-19_15-3-1')]",
+      "properties": {
+        "endIpAddress": "108.41.241.156",
+        "startIpAddress": "108.41.241.156"
+      },
+      "type": "Microsoft.Sql/servers/firewallRules"
+    },
+    {
+      "apiVersion": "2024-05-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_myfreesqldbserver_tiny_tools_name'))]"
+      ],
+      "kind": "servicemanaged",
+      "name": "[concat(parameters('servers_myfreesqldbserver_tiny_tools_name'), '/ServiceManaged')]",
+      "properties": {
+        "serverKeyType": "ServiceManaged"
+      },
+      "type": "Microsoft.Sql/servers/keys"
+    },
+    {
+      "apiVersion": "2024-05-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_myfreesqldbserver_tiny_tools_name'))]"
+      ],
+      "name": "[concat(parameters('servers_myfreesqldbserver_tiny_tools_name'), '/Default')]",
+      "properties": {
+        "disabledAlerts": [
+          ""
+        ],
+        "emailAccountAdmins": false,
+        "emailAddresses": [
+          ""
+        ],
+        "retentionDays": 0,
+        "state": "Disabled"
+      },
+      "type": "Microsoft.Sql/servers/securityAlertPolicies"
+    },
+    {
+      "apiVersion": "2024-05-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_myfreesqldbserver_tiny_tools_name'))]"
+      ],
+      "name": "[concat(parameters('servers_myfreesqldbserver_tiny_tools_name'), '/Default')]",
+      "properties": {
+        "state": "Disabled"
+      },
+      "type": "Microsoft.Sql/servers/sqlVulnerabilityAssessments"
+    },
+    {
+      "apiVersion": "2024-05-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_myfreesqldbserver_tiny_tools_name'))]"
+      ],
+      "name": "[concat(parameters('servers_myfreesqldbserver_tiny_tools_name'), '/Default')]",
+      "properties": {
+        "recurringScans": {
+          "emailSubscriptionAdmins": true,
+          "isEnabled": false
+        },
+        "storageContainerPath": "[parameters('vulnerabilityAssessments_Default_storageContainerPath')]"
+      },
+      "type": "Microsoft.Sql/servers/vulnerabilityAssessments"
+    },
+    {
+      "apiVersion": "2024-05-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers/databases', parameters('servers_myfreesqldbserver_tiny_tools_name'), 'myFreeDB')]",
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_myfreesqldbserver_tiny_tools_name'))]"
+      ],
+      "name": "[concat(parameters('servers_myfreesqldbserver_tiny_tools_name'), '/myFreeDB/Default')]",
+      "properties": {
+        "state": "Disabled"
+      },
+      "type": "Microsoft.Sql/servers/databases/advancedThreatProtectionSettings"
+    },
+    {
+      "apiVersion": "2014-04-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers/databases', parameters('servers_myfreesqldbserver_tiny_tools_name'), 'myFreeDB')]",
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_myfreesqldbserver_tiny_tools_name'))]"
+      ],
+      "location": "Central US",
+      "name": "[concat(parameters('servers_myfreesqldbserver_tiny_tools_name'), '/myFreeDB/Default')]",
+      "properties": {
+        "auditingState": "Disabled"
+      },
+      "type": "Microsoft.Sql/servers/databases/auditingPolicies"
+    },
+    {
+      "apiVersion": "2024-05-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers/databases', parameters('servers_myfreesqldbserver_tiny_tools_name'), 'myFreeDB')]",
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_myfreesqldbserver_tiny_tools_name'))]"
+      ],
+      "name": "[concat(parameters('servers_myfreesqldbserver_tiny_tools_name'), '/myFreeDB/Default')]",
+      "properties": {
+        "isAzureMonitorTargetEnabled": false,
+        "retentionDays": 0,
+        "state": "Disabled",
+        "storageAccountSubscriptionId": "00000000-0000-0000-0000-000000000000"
+      },
+      "type": "Microsoft.Sql/servers/databases/auditingSettings"
+    },
+    {
+      "apiVersion": "2024-05-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers/databases', parameters('servers_myfreesqldbserver_tiny_tools_name'), 'myFreeDB')]",
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_myfreesqldbserver_tiny_tools_name'))]"
+      ],
+      "name": "[concat(parameters('servers_myfreesqldbserver_tiny_tools_name'), '/myFreeDB/default')]",
+      "properties": {
+        "monthlyRetention": "PT0S",
+        "weekOfYear": 0,
+        "weeklyRetention": "PT0S",
+        "yearlyRetention": "PT0S"
+      },
+      "type": "Microsoft.Sql/servers/databases/backupLongTermRetentionPolicies"
+    },
+    {
+      "apiVersion": "2024-05-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers/databases', parameters('servers_myfreesqldbserver_tiny_tools_name'), 'myFreeDB')]",
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_myfreesqldbserver_tiny_tools_name'))]"
+      ],
+      "name": "[concat(parameters('servers_myfreesqldbserver_tiny_tools_name'), '/myFreeDB/default')]",
+      "properties": {
+        "diffBackupIntervalInHours": 12,
+        "retentionDays": 7
+      },
+      "type": "Microsoft.Sql/servers/databases/backupShortTermRetentionPolicies"
+    },
+    {
+      "apiVersion": "2024-05-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers/databases', parameters('servers_myfreesqldbserver_tiny_tools_name'), 'myFreeDB')]",
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_myfreesqldbserver_tiny_tools_name'))]"
+      ],
+      "name": "[concat(parameters('servers_myfreesqldbserver_tiny_tools_name'), '/myFreeDB/Default')]",
+      "properties": {
+        "isAzureMonitorTargetEnabled": false,
+        "retentionDays": 0,
+        "state": "Disabled",
+        "storageAccountSubscriptionId": "00000000-0000-0000-0000-000000000000"
+      },
+      "type": "Microsoft.Sql/servers/databases/extendedAuditingSettings"
+    },
+    {
+      "apiVersion": "2024-05-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers/databases', parameters('servers_myfreesqldbserver_tiny_tools_name'), 'myFreeDB')]",
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_myfreesqldbserver_tiny_tools_name'))]"
+      ],
+      "name": "[concat(parameters('servers_myfreesqldbserver_tiny_tools_name'), '/myFreeDB/Default')]",
+      "properties": {
+        "state": "Disabled"
+      },
+      "type": "Microsoft.Sql/servers/databases/geoBackupPolicies"
+    },
+    {
+      "apiVersion": "2024-05-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers/databases', parameters('servers_myfreesqldbserver_tiny_tools_name'), 'myFreeDB')]",
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_myfreesqldbserver_tiny_tools_name'))]"
+      ],
+      "name": "[concat(parameters('servers_myfreesqldbserver_tiny_tools_name'), '/myFreeDB/Current')]",
+      "properties": {},
+      "type": "Microsoft.Sql/servers/databases/ledgerDigestUploads"
+    },
+    {
+      "apiVersion": "2024-05-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers/databases', parameters('servers_myfreesqldbserver_tiny_tools_name'), 'myFreeDB')]",
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_myfreesqldbserver_tiny_tools_name'))]"
+      ],
+      "name": "[concat(parameters('servers_myfreesqldbserver_tiny_tools_name'), '/myFreeDB/Default')]",
+      "properties": {
+        "disabledAlerts": [
+          ""
+        ],
+        "emailAccountAdmins": false,
+        "emailAddresses": [
+          ""
+        ],
+        "retentionDays": 0,
+        "state": "Disabled"
+      },
+      "type": "Microsoft.Sql/servers/databases/securityAlertPolicies"
+    },
+    {
+      "apiVersion": "2024-05-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers/databases', parameters('servers_myfreesqldbserver_tiny_tools_name'), 'myFreeDB')]",
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_myfreesqldbserver_tiny_tools_name'))]"
+      ],
+      "name": "[concat(parameters('servers_myfreesqldbserver_tiny_tools_name'), '/myFreeDB/Current')]",
+      "properties": {
+        "state": "Enabled"
+      },
+      "type": "Microsoft.Sql/servers/databases/transparentDataEncryption"
+    },
+    {
+      "apiVersion": "2024-05-01-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.Sql/servers/databases', parameters('servers_myfreesqldbserver_tiny_tools_name'), 'myFreeDB')]",
+        "[resourceId('Microsoft.Sql/servers', parameters('servers_myfreesqldbserver_tiny_tools_name'))]"
+      ],
+      "name": "[concat(parameters('servers_myfreesqldbserver_tiny_tools_name'), '/myFreeDB/Default')]",
+      "properties": {
+        "recurringScans": {
+          "emailSubscriptionAdmins": true,
+          "isEnabled": false
+        }
+      },
+      "type": "Microsoft.Sql/servers/databases/vulnerabilityAssessments"
+    }
+  ],
+  "variables": {}
+}
