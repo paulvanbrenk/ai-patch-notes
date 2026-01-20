@@ -1,0 +1,979 @@
+WARNING: Export template operation completed with errors. Some resources were not exported. Please see details for more information.
+ERROR: Could not get resources of the type 'Microsoft.Web/sites/certificates'. Resources of this type will not be exported.
+ERROR: Could not get resources of the type 'Microsoft.Web/sites/sitecontainers'. Resources of this type will not be exported.
+ERROR: Could not get resources of the type 'Microsoft.Web/sites/hybridconnection'. Resources of this type will not be exported.
+ERROR: Could not get resources of the type 'microsoft.insights/components/pricingPlans'. Resources of this type will not be exported.
+ERROR: Could not get resources of the type 'microsoft.insights/components/myanalyticsItems'. Resources of this type will not be exported.
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "components_func_mypkgupdate_name": {
+      "type": "String"
+    },
+    "serverfarms_ASP_MyPkgUpdate_name": {
+      "type": "String"
+    },
+    "serverfarms_CentralUSPlan_name": {
+      "type": "String"
+    },
+    "sites_api_mypkgupdate_com_name": {
+      "type": "String"
+    },
+    "sites_func_mypkgupdate_name": {
+      "type": "String"
+    },
+    "staticSites_mypkgupdate_name": {
+      "type": "String"
+    },
+    "storageAccounts_mypkgupdatest_name": {
+      "type": "String"
+    },
+    "userAssignedIdentities_api_mypkgupdate_id_name": {
+      "type": "String"
+    },
+    "workspaces_DefaultWorkspace_ba83d8be_06cc_420e_a64e_e2297d620466_CUS_externalid": {
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "apiVersion": "2020-02-02",
+      "kind": "web",
+      "location": "centralus",
+      "name": "[parameters('components_func_mypkgupdate_name')]",
+      "properties": {
+        "Application_Type": "web",
+        "IngestionMode": "LogAnalytics",
+        "RetentionInDays": 90,
+        "WorkspaceResourceId": "[parameters('workspaces_DefaultWorkspace_ba83d8be_06cc_420e_a64e_e2297d620466_CUS_externalid')]",
+        "publicNetworkAccessForIngestion": "Enabled",
+        "publicNetworkAccessForQuery": "Enabled"
+      },
+      "type": "microsoft.insights/components"
+    },
+    {
+      "apiVersion": "2025-01-31-preview",
+      "location": "centralus",
+      "name": "[parameters('userAssignedIdentities_api_mypkgupdate_id_name')]",
+      "type": "Microsoft.ManagedIdentity/userAssignedIdentities"
+    },
+    {
+      "apiVersion": "2025-01-01",
+      "kind": "StorageV2",
+      "location": "centralus",
+      "name": "[parameters('storageAccounts_mypkgupdatest_name')]",
+      "properties": {
+        "accessTier": "Hot",
+        "allowBlobPublicAccess": false,
+        "allowCrossTenantReplication": false,
+        "encryption": {
+          "keySource": "Microsoft.Storage",
+          "services": {
+            "blob": {
+              "enabled": true,
+              "keyType": "Account"
+            },
+            "file": {
+              "enabled": true,
+              "keyType": "Account"
+            }
+          }
+        },
+        "minimumTlsVersion": "TLS1_0",
+        "networkAcls": {
+          "bypass": "AzureServices",
+          "defaultAction": "Allow",
+          "ipRules": [],
+          "virtualNetworkRules": []
+        },
+        "supportsHttpsTrafficOnly": true
+      },
+      "sku": {
+        "name": "Standard_LRS",
+        "tier": "Standard"
+      },
+      "type": "Microsoft.Storage/storageAccounts"
+    },
+    {
+      "apiVersion": "2024-11-01",
+      "kind": "app",
+      "location": "Central US",
+      "name": "[parameters('serverfarms_ASP_MyPkgUpdate_name')]",
+      "properties": {
+        "asyncScalingEnabled": false,
+        "elasticScaleEnabled": false,
+        "hyperV": false,
+        "isSpot": false,
+        "isXenon": false,
+        "maximumElasticWorkerCount": 1,
+        "perSiteScaling": false,
+        "reserved": false,
+        "targetWorkerCount": 0,
+        "targetWorkerSizeId": 0,
+        "zoneRedundant": false
+      },
+      "sku": {
+        "capacity": 0,
+        "family": "F",
+        "name": "F1",
+        "size": "F1",
+        "tier": "Free"
+      },
+      "type": "Microsoft.Web/serverfarms"
+    },
+    {
+      "apiVersion": "2024-11-01",
+      "kind": "functionapp",
+      "location": "Central US",
+      "name": "[parameters('serverfarms_CentralUSPlan_name')]",
+      "properties": {
+        "asyncScalingEnabled": false,
+        "elasticScaleEnabled": false,
+        "hyperV": false,
+        "isSpot": false,
+        "isXenon": false,
+        "maximumElasticWorkerCount": 1,
+        "perSiteScaling": false,
+        "reserved": false,
+        "targetWorkerCount": 0,
+        "targetWorkerSizeId": 0,
+        "zoneRedundant": false
+      },
+      "sku": {
+        "capacity": 0,
+        "family": "Y",
+        "name": "Y1",
+        "size": "Y1",
+        "tier": "Dynamic"
+      },
+      "type": "Microsoft.Web/serverfarms"
+    },
+    {
+      "apiVersion": "2024-11-01",
+      "location": "Central US",
+      "name": "[parameters('staticSites_mypkgupdate_name')]",
+      "properties": {
+        "allowConfigFileUpdates": true,
+        "enterpriseGradeCdnStatus": "Disabled",
+        "provider": "None",
+        "stagingEnvironmentPolicy": "Enabled"
+      },
+      "sku": {
+        "name": "Free",
+        "tier": "Free"
+      },
+      "type": "Microsoft.Web/staticSites"
+    },
+    {
+      "apiVersion": "2018-05-01-preview",
+      "dependsOn": [
+        "[resourceId('microsoft.insights/components', parameters('components_func_mypkgupdate_name'))]"
+      ],
+      "location": "centralus",
+      "name": "[concat(parameters('components_func_mypkgupdate_name'), '/degradationindependencyduration')]",
+      "properties": {
+        "customEmails": [],
+        "enabled": true,
+        "ruleDefinitions": {
+          "Description": "Smart Detection rules notify you of performance anomaly issues.",
+          "DisplayName": "Degradation in dependency duration",
+          "HelpUrl": "https://docs.microsoft.com/en-us/azure/application-insights/app-insights-proactive-performance-diagnostics",
+          "IsEnabledByDefault": true,
+          "IsHidden": false,
+          "IsInPreview": false,
+          "Name": "degradationindependencyduration",
+          "SupportsEmailNotifications": true
+        },
+        "sendEmailsToSubscriptionOwners": true
+      },
+      "type": "microsoft.insights/components/ProactiveDetectionConfigs"
+    },
+    {
+      "apiVersion": "2018-05-01-preview",
+      "dependsOn": [
+        "[resourceId('microsoft.insights/components', parameters('components_func_mypkgupdate_name'))]"
+      ],
+      "location": "centralus",
+      "name": "[concat(parameters('components_func_mypkgupdate_name'), '/degradationinserverresponsetime')]",
+      "properties": {
+        "customEmails": [],
+        "enabled": true,
+        "ruleDefinitions": {
+          "Description": "Smart Detection rules notify you of performance anomaly issues.",
+          "DisplayName": "Degradation in server response time",
+          "HelpUrl": "https://docs.microsoft.com/en-us/azure/application-insights/app-insights-proactive-performance-diagnostics",
+          "IsEnabledByDefault": true,
+          "IsHidden": false,
+          "IsInPreview": false,
+          "Name": "degradationinserverresponsetime",
+          "SupportsEmailNotifications": true
+        },
+        "sendEmailsToSubscriptionOwners": true
+      },
+      "type": "microsoft.insights/components/ProactiveDetectionConfigs"
+    },
+    {
+      "apiVersion": "2018-05-01-preview",
+      "dependsOn": [
+        "[resourceId('microsoft.insights/components', parameters('components_func_mypkgupdate_name'))]"
+      ],
+      "location": "centralus",
+      "name": "[concat(parameters('components_func_mypkgupdate_name'), '/digestMailConfiguration')]",
+      "properties": {
+        "customEmails": [],
+        "enabled": true,
+        "ruleDefinitions": {
+          "Description": "This rule describes the digest mail preferences",
+          "DisplayName": "Digest Mail Configuration",
+          "HelpUrl": "www.homail.com",
+          "IsEnabledByDefault": true,
+          "IsHidden": true,
+          "IsInPreview": false,
+          "Name": "digestMailConfiguration",
+          "SupportsEmailNotifications": true
+        },
+        "sendEmailsToSubscriptionOwners": true
+      },
+      "type": "microsoft.insights/components/ProactiveDetectionConfigs"
+    },
+    {
+      "apiVersion": "2018-05-01-preview",
+      "dependsOn": [
+        "[resourceId('microsoft.insights/components', parameters('components_func_mypkgupdate_name'))]"
+      ],
+      "location": "centralus",
+      "name": "[concat(parameters('components_func_mypkgupdate_name'), '/extension_billingdatavolumedailyspikeextension')]",
+      "properties": {
+        "customEmails": [],
+        "enabled": true,
+        "ruleDefinitions": {
+          "Description": "This detection rule automatically analyzes the billing data generated by your application, and can warn you about an unusual increase in your application's billing costs",
+          "DisplayName": "Abnormal rise in daily data volume (preview)",
+          "HelpUrl": "https://github.com/Microsoft/ApplicationInsights-Home/tree/master/SmartDetection/billing-data-volume-daily-spike.md",
+          "IsEnabledByDefault": true,
+          "IsHidden": false,
+          "IsInPreview": true,
+          "Name": "extension_billingdatavolumedailyspikeextension",
+          "SupportsEmailNotifications": false
+        },
+        "sendEmailsToSubscriptionOwners": true
+      },
+      "type": "microsoft.insights/components/ProactiveDetectionConfigs"
+    },
+    {
+      "apiVersion": "2018-05-01-preview",
+      "dependsOn": [
+        "[resourceId('microsoft.insights/components', parameters('components_func_mypkgupdate_name'))]"
+      ],
+      "location": "centralus",
+      "name": "[concat(parameters('components_func_mypkgupdate_name'), '/extension_canaryextension')]",
+      "properties": {
+        "customEmails": [],
+        "enabled": true,
+        "ruleDefinitions": {
+          "Description": "Canary extension",
+          "DisplayName": "Canary extension",
+          "HelpUrl": "https://github.com/Microsoft/ApplicationInsights-Home/blob/master/SmartDetection/",
+          "IsEnabledByDefault": true,
+          "IsHidden": true,
+          "IsInPreview": true,
+          "Name": "extension_canaryextension",
+          "SupportsEmailNotifications": false
+        },
+        "sendEmailsToSubscriptionOwners": true
+      },
+      "type": "microsoft.insights/components/ProactiveDetectionConfigs"
+    },
+    {
+      "apiVersion": "2018-05-01-preview",
+      "dependsOn": [
+        "[resourceId('microsoft.insights/components', parameters('components_func_mypkgupdate_name'))]"
+      ],
+      "location": "centralus",
+      "name": "[concat(parameters('components_func_mypkgupdate_name'), '/extension_exceptionchangeextension')]",
+      "properties": {
+        "customEmails": [],
+        "enabled": true,
+        "ruleDefinitions": {
+          "Description": "This detection rule automatically analyzes the exceptions thrown in your application, and can warn you about unusual patterns in your exception telemetry.",
+          "DisplayName": "Abnormal rise in exception volume (preview)",
+          "HelpUrl": "https://github.com/Microsoft/ApplicationInsights-Home/blob/master/SmartDetection/abnormal-rise-in-exception-volume.md",
+          "IsEnabledByDefault": true,
+          "IsHidden": false,
+          "IsInPreview": true,
+          "Name": "extension_exceptionchangeextension",
+          "SupportsEmailNotifications": false
+        },
+        "sendEmailsToSubscriptionOwners": true
+      },
+      "type": "microsoft.insights/components/ProactiveDetectionConfigs"
+    },
+    {
+      "apiVersion": "2018-05-01-preview",
+      "dependsOn": [
+        "[resourceId('microsoft.insights/components', parameters('components_func_mypkgupdate_name'))]"
+      ],
+      "location": "centralus",
+      "name": "[concat(parameters('components_func_mypkgupdate_name'), '/extension_memoryleakextension')]",
+      "properties": {
+        "customEmails": [],
+        "enabled": true,
+        "ruleDefinitions": {
+          "Description": "This detection rule automatically analyzes the memory consumption of each process in your application, and can warn you about potential memory leaks or increased memory consumption.",
+          "DisplayName": "Potential memory leak detected (preview)",
+          "HelpUrl": "https://github.com/Microsoft/ApplicationInsights-Home/tree/master/SmartDetection/memory-leak.md",
+          "IsEnabledByDefault": true,
+          "IsHidden": false,
+          "IsInPreview": true,
+          "Name": "extension_memoryleakextension",
+          "SupportsEmailNotifications": false
+        },
+        "sendEmailsToSubscriptionOwners": true
+      },
+      "type": "microsoft.insights/components/ProactiveDetectionConfigs"
+    },
+    {
+      "apiVersion": "2018-05-01-preview",
+      "dependsOn": [
+        "[resourceId('microsoft.insights/components', parameters('components_func_mypkgupdate_name'))]"
+      ],
+      "location": "centralus",
+      "name": "[concat(parameters('components_func_mypkgupdate_name'), '/extension_securityextensionspackage')]",
+      "properties": {
+        "customEmails": [],
+        "enabled": true,
+        "ruleDefinitions": {
+          "Description": "This detection rule automatically analyzes the telemetry generated by your application and detects potential security issues.",
+          "DisplayName": "Potential security issue detected (preview)",
+          "HelpUrl": "https://github.com/Microsoft/ApplicationInsights-Home/blob/master/SmartDetection/application-security-detection-pack.md",
+          "IsEnabledByDefault": true,
+          "IsHidden": false,
+          "IsInPreview": true,
+          "Name": "extension_securityextensionspackage",
+          "SupportsEmailNotifications": false
+        },
+        "sendEmailsToSubscriptionOwners": true
+      },
+      "type": "microsoft.insights/components/ProactiveDetectionConfigs"
+    },
+    {
+      "apiVersion": "2018-05-01-preview",
+      "dependsOn": [
+        "[resourceId('microsoft.insights/components', parameters('components_func_mypkgupdate_name'))]"
+      ],
+      "location": "centralus",
+      "name": "[concat(parameters('components_func_mypkgupdate_name'), '/extension_traceseveritydetector')]",
+      "properties": {
+        "customEmails": [],
+        "enabled": true,
+        "ruleDefinitions": {
+          "Description": "This detection rule automatically analyzes the trace logs emitted from your application, and can warn you about unusual patterns in the severity of your trace telemetry.",
+          "DisplayName": "Degradation in trace severity ratio (preview)",
+          "HelpUrl": "https://github.com/Microsoft/ApplicationInsights-Home/blob/master/SmartDetection/degradation-in-trace-severity-ratio.md",
+          "IsEnabledByDefault": true,
+          "IsHidden": false,
+          "IsInPreview": true,
+          "Name": "extension_traceseveritydetector",
+          "SupportsEmailNotifications": false
+        },
+        "sendEmailsToSubscriptionOwners": true
+      },
+      "type": "microsoft.insights/components/ProactiveDetectionConfigs"
+    },
+    {
+      "apiVersion": "2018-05-01-preview",
+      "dependsOn": [
+        "[resourceId('microsoft.insights/components', parameters('components_func_mypkgupdate_name'))]"
+      ],
+      "location": "centralus",
+      "name": "[concat(parameters('components_func_mypkgupdate_name'), '/longdependencyduration')]",
+      "properties": {
+        "customEmails": [],
+        "enabled": true,
+        "ruleDefinitions": {
+          "Description": "Smart Detection rules notify you of performance anomaly issues.",
+          "DisplayName": "Long dependency duration",
+          "HelpUrl": "https://docs.microsoft.com/en-us/azure/application-insights/app-insights-proactive-performance-diagnostics",
+          "IsEnabledByDefault": true,
+          "IsHidden": false,
+          "IsInPreview": false,
+          "Name": "longdependencyduration",
+          "SupportsEmailNotifications": true
+        },
+        "sendEmailsToSubscriptionOwners": true
+      },
+      "type": "microsoft.insights/components/ProactiveDetectionConfigs"
+    },
+    {
+      "apiVersion": "2018-05-01-preview",
+      "dependsOn": [
+        "[resourceId('microsoft.insights/components', parameters('components_func_mypkgupdate_name'))]"
+      ],
+      "location": "centralus",
+      "name": "[concat(parameters('components_func_mypkgupdate_name'), '/migrationToAlertRulesCompleted')]",
+      "properties": {
+        "customEmails": [],
+        "enabled": false,
+        "ruleDefinitions": {
+          "Description": "A configuration that controls the migration state of Smart Detection to Smart Alerts",
+          "DisplayName": "Migration To Alert Rules Completed",
+          "HelpUrl": "https://docs.microsoft.com/en-us/azure/application-insights/app-insights-proactive-performance-diagnostics",
+          "IsEnabledByDefault": false,
+          "IsHidden": true,
+          "IsInPreview": true,
+          "Name": "migrationToAlertRulesCompleted",
+          "SupportsEmailNotifications": false
+        },
+        "sendEmailsToSubscriptionOwners": true
+      },
+      "type": "microsoft.insights/components/ProactiveDetectionConfigs"
+    },
+    {
+      "apiVersion": "2018-05-01-preview",
+      "dependsOn": [
+        "[resourceId('microsoft.insights/components', parameters('components_func_mypkgupdate_name'))]"
+      ],
+      "location": "centralus",
+      "name": "[concat(parameters('components_func_mypkgupdate_name'), '/slowpageloadtime')]",
+      "properties": {
+        "customEmails": [],
+        "enabled": true,
+        "ruleDefinitions": {
+          "Description": "Smart Detection rules notify you of performance anomaly issues.",
+          "DisplayName": "Slow page load time",
+          "HelpUrl": "https://docs.microsoft.com/en-us/azure/application-insights/app-insights-proactive-performance-diagnostics",
+          "IsEnabledByDefault": true,
+          "IsHidden": false,
+          "IsInPreview": false,
+          "Name": "slowpageloadtime",
+          "SupportsEmailNotifications": true
+        },
+        "sendEmailsToSubscriptionOwners": true
+      },
+      "type": "microsoft.insights/components/ProactiveDetectionConfigs"
+    },
+    {
+      "apiVersion": "2018-05-01-preview",
+      "dependsOn": [
+        "[resourceId('microsoft.insights/components', parameters('components_func_mypkgupdate_name'))]"
+      ],
+      "location": "centralus",
+      "name": "[concat(parameters('components_func_mypkgupdate_name'), '/slowserverresponsetime')]",
+      "properties": {
+        "customEmails": [],
+        "enabled": true,
+        "ruleDefinitions": {
+          "Description": "Smart Detection rules notify you of performance anomaly issues.",
+          "DisplayName": "Slow server response time",
+          "HelpUrl": "https://docs.microsoft.com/en-us/azure/application-insights/app-insights-proactive-performance-diagnostics",
+          "IsEnabledByDefault": true,
+          "IsHidden": false,
+          "IsInPreview": false,
+          "Name": "slowserverresponsetime",
+          "SupportsEmailNotifications": true
+        },
+        "sendEmailsToSubscriptionOwners": true
+      },
+      "type": "microsoft.insights/components/ProactiveDetectionConfigs"
+    },
+    {
+      "apiVersion": "2025-01-31-preview",
+      "dependsOn": [
+        "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', parameters('userAssignedIdentities_api_mypkgupdate_id_name'))]"
+      ],
+      "name": "[concat(parameters('userAssignedIdentities_api_mypkgupdate_id_name'), '/github-actions-main')]",
+      "properties": {
+        "audiences": [
+          "api://AzureADTokenExchange"
+        ],
+        "issuer": "https://token.actions.githubusercontent.com",
+        "subject": "repo:paulvanbrenk/ai-patch-notes:ref:refs/heads/main"
+      },
+      "type": "Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials"
+    },
+    {
+      "apiVersion": "2025-01-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_mypkgupdatest_name'))]"
+      ],
+      "name": "[concat(parameters('storageAccounts_mypkgupdatest_name'), '/default')]",
+      "properties": {
+        "cors": {
+          "corsRules": []
+        },
+        "deleteRetentionPolicy": {
+          "allowPermanentDelete": false,
+          "enabled": false
+        }
+      },
+      "sku": {
+        "name": "Standard_LRS",
+        "tier": "Standard"
+      },
+      "type": "Microsoft.Storage/storageAccounts/blobServices"
+    },
+    {
+      "apiVersion": "2025-01-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_mypkgupdatest_name'))]"
+      ],
+      "name": "[concat(parameters('storageAccounts_mypkgupdatest_name'), '/default')]",
+      "properties": {
+        "cors": {
+          "corsRules": []
+        },
+        "protocolSettings": {
+          "smb": {}
+        },
+        "shareDeleteRetentionPolicy": {
+          "days": 7,
+          "enabled": true
+        }
+      },
+      "sku": {
+        "name": "Standard_LRS",
+        "tier": "Standard"
+      },
+      "type": "Microsoft.Storage/storageAccounts/fileServices"
+    },
+    {
+      "apiVersion": "2025-01-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_mypkgupdatest_name'))]"
+      ],
+      "name": "[concat(parameters('storageAccounts_mypkgupdatest_name'), '/default')]",
+      "properties": {
+        "cors": {
+          "corsRules": []
+        }
+      },
+      "type": "Microsoft.Storage/storageAccounts/queueServices"
+    },
+    {
+      "apiVersion": "2025-01-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_mypkgupdatest_name'))]"
+      ],
+      "name": "[concat(parameters('storageAccounts_mypkgupdatest_name'), '/default')]",
+      "properties": {
+        "cors": {
+          "corsRules": []
+        }
+      },
+      "type": "Microsoft.Storage/storageAccounts/tableServices"
+    },
+    {
+      "apiVersion": "2024-11-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_ASP_MyPkgUpdate_name'))]"
+      ],
+      "kind": "app",
+      "location": "Central US",
+      "name": "[parameters('sites_api_mypkgupdate_com_name')]",
+      "properties": {
+        "clientAffinityEnabled": true,
+        "clientAffinityProxyEnabled": false,
+        "clientCertEnabled": false,
+        "clientCertMode": "Required",
+        "containerSize": 0,
+        "customDomainVerificationId": "465564FA63887B38EB4E08230E1D9B74B995C1E509441E81B51D23D6A58F9686",
+        "dailyMemoryTimeQuota": 0,
+        "dnsConfiguration": {},
+        "enabled": true,
+        "endToEndEncryptionEnabled": false,
+        "hostNameSslStates": [
+          {
+            "hostType": "Standard",
+            "name": "[concat(parameters('sites_api_mypkgupdate_com_name'), '.azurewebsites.net')]",
+            "sslState": "Disabled"
+          },
+          {
+            "hostType": "Repository",
+            "name": "[concat(parameters('sites_api_mypkgupdate_com_name'), '.scm.azurewebsites.net')]",
+            "sslState": "Disabled"
+          }
+        ],
+        "hostNamesDisabled": false,
+        "httpsOnly": true,
+        "hyperV": false,
+        "ipMode": "IPv4",
+        "isXenon": false,
+        "keyVaultReferenceIdentity": "SystemAssigned",
+        "outboundVnetRouting": {
+          "allTraffic": false,
+          "applicationTraffic": false,
+          "backupRestoreTraffic": false,
+          "contentShareTraffic": false,
+          "imagePullTraffic": false
+        },
+        "publicNetworkAccess": "Enabled",
+        "redundancyMode": "None",
+        "reserved": false,
+        "scmSiteAlsoStopped": false,
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_ASP_MyPkgUpdate_name'))]",
+        "siteConfig": {
+          "acrUseManagedIdentityCreds": false,
+          "alwaysOn": false,
+          "functionAppScaleLimit": 0,
+          "http20Enabled": true,
+          "minimumElasticInstanceCount": 1,
+          "numberOfWorkers": 1
+        },
+        "storageAccountRequired": false
+      },
+      "type": "Microsoft.Web/sites"
+    },
+    {
+      "apiVersion": "2024-11-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_CentralUSPlan_name'))]"
+      ],
+      "kind": "functionapp",
+      "location": "Central US",
+      "name": "[parameters('sites_func_mypkgupdate_name')]",
+      "properties": {
+        "clientAffinityEnabled": false,
+        "clientAffinityProxyEnabled": false,
+        "clientCertEnabled": false,
+        "clientCertMode": "Required",
+        "containerSize": 1536,
+        "customDomainVerificationId": "465564FA63887B38EB4E08230E1D9B74B995C1E509441E81B51D23D6A58F9686",
+        "dailyMemoryTimeQuota": 0,
+        "dnsConfiguration": {},
+        "enabled": true,
+        "endToEndEncryptionEnabled": false,
+        "hostNameSslStates": [
+          {
+            "hostType": "Standard",
+            "name": "[concat(parameters('sites_func_mypkgupdate_name'), '.azurewebsites.net')]",
+            "sslState": "Disabled"
+          },
+          {
+            "hostType": "Repository",
+            "name": "[concat(parameters('sites_func_mypkgupdate_name'), '.scm.azurewebsites.net')]",
+            "sslState": "Disabled"
+          }
+        ],
+        "hostNamesDisabled": false,
+        "httpsOnly": false,
+        "hyperV": false,
+        "ipMode": "IPv4",
+        "isXenon": false,
+        "keyVaultReferenceIdentity": "SystemAssigned",
+        "outboundVnetRouting": {
+          "allTraffic": false,
+          "applicationTraffic": false,
+          "backupRestoreTraffic": false,
+          "contentShareTraffic": false,
+          "imagePullTraffic": false
+        },
+        "publicNetworkAccess": "Enabled",
+        "redundancyMode": "None",
+        "reserved": false,
+        "scmSiteAlsoStopped": false,
+        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_CentralUSPlan_name'))]",
+        "siteConfig": {
+          "acrUseManagedIdentityCreds": false,
+          "alwaysOn": false,
+          "functionAppScaleLimit": 200,
+          "http20Enabled": true,
+          "minimumElasticInstanceCount": 0,
+          "numberOfWorkers": 1
+        },
+        "storageAccountRequired": false
+      },
+      "type": "Microsoft.Web/sites"
+    },
+    {
+      "apiVersion": "2024-11-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', parameters('sites_api_mypkgupdate_com_name'))]"
+      ],
+      "location": "Central US",
+      "name": "[concat(parameters('sites_api_mypkgupdate_com_name'), '/ftp')]",
+      "properties": {
+        "allow": false
+      },
+      "type": "Microsoft.Web/sites/basicPublishingCredentialsPolicies"
+    },
+    {
+      "apiVersion": "2024-11-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', parameters('sites_func_mypkgupdate_name'))]"
+      ],
+      "location": "Central US",
+      "name": "[concat(parameters('sites_func_mypkgupdate_name'), '/ftp')]",
+      "properties": {
+        "allow": false
+      },
+      "type": "Microsoft.Web/sites/basicPublishingCredentialsPolicies"
+    },
+    {
+      "apiVersion": "2024-11-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', parameters('sites_api_mypkgupdate_com_name'))]"
+      ],
+      "location": "Central US",
+      "name": "[concat(parameters('sites_api_mypkgupdate_com_name'), '/scm')]",
+      "properties": {
+        "allow": false
+      },
+      "type": "Microsoft.Web/sites/basicPublishingCredentialsPolicies"
+    },
+    {
+      "apiVersion": "2024-11-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', parameters('sites_func_mypkgupdate_name'))]"
+      ],
+      "location": "Central US",
+      "name": "[concat(parameters('sites_func_mypkgupdate_name'), '/scm')]",
+      "properties": {
+        "allow": false
+      },
+      "type": "Microsoft.Web/sites/basicPublishingCredentialsPolicies"
+    },
+    {
+      "apiVersion": "2024-11-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', parameters('sites_api_mypkgupdate_com_name'))]"
+      ],
+      "location": "Central US",
+      "name": "[concat(parameters('sites_api_mypkgupdate_com_name'), '/web')]",
+      "properties": {
+        "acrUseManagedIdentityCreds": false,
+        "alwaysOn": false,
+        "autoHealEnabled": false,
+        "azureStorageAccounts": {},
+        "defaultDocuments": [
+          "Default.htm",
+          "Default.html",
+          "Default.asp",
+          "index.htm",
+          "index.html",
+          "iisstart.htm",
+          "default.aspx",
+          "index.php",
+          "hostingstart.html"
+        ],
+        "detailedErrorLoggingEnabled": false,
+        "elasticWebAppScaleLimit": 0,
+        "experiments": {
+          "rampUpRules": []
+        },
+        "ftpsState": "FtpsOnly",
+        "functionsRuntimeScaleMonitoringEnabled": false,
+        "http20Enabled": true,
+        "http20ProxyFlag": 0,
+        "httpLoggingEnabled": false,
+        "ipSecurityRestrictions": [
+          {
+            "action": "Allow",
+            "description": "Allow all access",
+            "ipAddress": "Any",
+            "name": "Allow all",
+            "priority": 2147483647
+          }
+        ],
+        "loadBalancing": "LeastRequests",
+        "localMySqlEnabled": false,
+        "logsDirectorySizeLimit": 35,
+        "managedPipelineMode": "Integrated",
+        "minTlsVersion": "1.2",
+        "minimumElasticInstanceCount": 1,
+        "netFrameworkVersion": "v8.0",
+        "numberOfWorkers": 1,
+        "phpVersion": "5.6",
+        "preWarmedInstanceCount": 0,
+        "publicNetworkAccess": "Enabled",
+        "publishingUsername": "REDACTED",
+        "remoteDebuggingEnabled": false,
+        "remoteDebuggingVersion": "VS2022",
+        "requestTracingEnabled": false,
+        "scmIpSecurityRestrictions": [
+          {
+            "action": "Allow",
+            "description": "Allow all access",
+            "ipAddress": "Any",
+            "name": "Allow all",
+            "priority": 2147483647
+          }
+        ],
+        "scmIpSecurityRestrictionsUseMain": false,
+        "scmMinTlsVersion": "1.2",
+        "scmType": "None",
+        "use32BitWorkerProcess": true,
+        "virtualApplications": [
+          {
+            "physicalPath": "site\\wwwroot",
+            "preloadEnabled": false,
+            "virtualPath": "/"
+          }
+        ],
+        "vnetPrivatePortsCount": 0,
+        "vnetRouteAllEnabled": false,
+        "webSocketsEnabled": false
+      },
+      "type": "Microsoft.Web/sites/config"
+    },
+    {
+      "apiVersion": "2024-11-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', parameters('sites_func_mypkgupdate_name'))]"
+      ],
+      "location": "Central US",
+      "name": "[concat(parameters('sites_func_mypkgupdate_name'), '/web')]",
+      "properties": {
+        "acrUseManagedIdentityCreds": false,
+        "alwaysOn": false,
+        "autoHealEnabled": false,
+        "azureStorageAccounts": {},
+        "defaultDocuments": [
+          "Default.htm",
+          "Default.html",
+          "Default.asp",
+          "index.htm",
+          "index.html",
+          "iisstart.htm",
+          "default.aspx",
+          "index.php"
+        ],
+        "detailedErrorLoggingEnabled": false,
+        "experiments": {
+          "rampUpRules": []
+        },
+        "ftpsState": "FtpsOnly",
+        "functionAppScaleLimit": 200,
+        "functionsRuntimeScaleMonitoringEnabled": false,
+        "http20Enabled": true,
+        "http20ProxyFlag": 0,
+        "httpLoggingEnabled": false,
+        "ipSecurityRestrictions": [
+          {
+            "action": "Allow",
+            "description": "Allow all access",
+            "ipAddress": "Any",
+            "name": "Allow all",
+            "priority": 2147483647
+          }
+        ],
+        "loadBalancing": "LeastRequests",
+        "localMySqlEnabled": false,
+        "logsDirectorySizeLimit": 35,
+        "managedPipelineMode": "Integrated",
+        "minTlsVersion": "1.2",
+        "minimumElasticInstanceCount": 0,
+        "netFrameworkVersion": "v8.0",
+        "numberOfWorkers": 1,
+        "preWarmedInstanceCount": 0,
+        "publishingUsername": "REDACTED",
+        "remoteDebuggingEnabled": false,
+        "requestTracingEnabled": false,
+        "scmIpSecurityRestrictions": [
+          {
+            "action": "Allow",
+            "description": "Allow all access",
+            "ipAddress": "Any",
+            "name": "Allow all",
+            "priority": 2147483647
+          }
+        ],
+        "scmIpSecurityRestrictionsUseMain": false,
+        "scmMinTlsVersion": "1.2",
+        "scmType": "None",
+        "use32BitWorkerProcess": false,
+        "virtualApplications": [
+          {
+            "physicalPath": "site\\wwwroot",
+            "preloadEnabled": false,
+            "virtualPath": "/"
+          }
+        ],
+        "vnetPrivatePortsCount": 0,
+        "vnetRouteAllEnabled": false,
+        "webSocketsEnabled": false
+      },
+      "type": "Microsoft.Web/sites/config"
+    },
+    {
+      "apiVersion": "2024-11-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', parameters('sites_api_mypkgupdate_com_name'))]"
+      ],
+      "location": "Central US",
+      "name": "[concat(parameters('sites_api_mypkgupdate_com_name'), '/', parameters('sites_api_mypkgupdate_com_name'), '.azurewebsites.net')]",
+      "properties": {
+        "hostNameType": "Verified",
+        "siteName": "api-mypkgupdate-com"
+      },
+      "type": "Microsoft.Web/sites/hostNameBindings"
+    },
+    {
+      "apiVersion": "2024-11-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', parameters('sites_func_mypkgupdate_name'))]"
+      ],
+      "location": "Central US",
+      "name": "[concat(parameters('sites_func_mypkgupdate_name'), '/', parameters('sites_func_mypkgupdate_name'), '.azurewebsites.net')]",
+      "properties": {
+        "hostNameType": "Verified",
+        "siteName": "func-mypkgupdate"
+      },
+      "type": "Microsoft.Web/sites/hostNameBindings"
+    },
+    {
+      "apiVersion": "2024-11-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/staticSites', parameters('staticSites_mypkgupdate_name'))]"
+      ],
+      "location": "Central US",
+      "name": "[concat(parameters('staticSites_mypkgupdate_name'), '/default')]",
+      "properties": {
+        "applicableEnvironmentsMode": "SpecifiedEnvironments"
+      },
+      "type": "Microsoft.Web/staticSites/basicAuth"
+    },
+    {
+      "apiVersion": "2024-11-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/staticSites', parameters('staticSites_mypkgupdate_name'))]"
+      ],
+      "location": "Central US",
+      "name": "[concat(parameters('staticSites_mypkgupdate_name'), '/', parameters('staticSites_mypkgupdate_name'), '.com')]",
+      "properties": {},
+      "type": "Microsoft.Web/staticSites/customDomains"
+    },
+    {
+      "apiVersion": "2025-01-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_mypkgupdatest_name'), 'default')]",
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_mypkgupdatest_name'))]"
+      ],
+      "name": "[concat(parameters('storageAccounts_mypkgupdatest_name'), '/default/azure-webjobs-secrets')]",
+      "properties": {
+        "defaultEncryptionScope": "$account-encryption-key",
+        "denyEncryptionScopeOverride": false,
+        "immutableStorageWithVersioning": {
+          "enabled": false
+        },
+        "publicAccess": "None"
+      },
+      "type": "Microsoft.Storage/storageAccounts/blobServices/containers"
+    },
+    {
+      "apiVersion": "2025-01-01",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts/fileServices', parameters('storageAccounts_mypkgupdatest_name'), 'default')]",
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_mypkgupdatest_name'))]"
+      ],
+      "name": "[concat(parameters('storageAccounts_mypkgupdatest_name'), '/default/func-mypkgupdate70f89dd782e6')]",
+      "properties": {
+        "accessTier": "TransactionOptimized",
+        "enabledProtocols": "SMB",
+        "shareQuota": 102400
+      },
+      "type": "Microsoft.Storage/storageAccounts/fileServices/shares"
+    }
+  ],
+  "variables": {}
+}
