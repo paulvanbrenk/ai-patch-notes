@@ -1,5 +1,4 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'
-const API_KEY = import.meta.env.VITE_API_KEY || ''
 
 export class ApiError extends Error {
   status: number
@@ -30,7 +29,7 @@ export function getErrorMessage(error: unknown): string {
       return 'Unable to connect to server. Please check your internet connection.'
     }
     if (error.status === 401) {
-      return 'Authentication required. Please check your API key.'
+      return 'Authentication required. Please sign in to continue.'
     }
     if (error.status === 403) {
       return 'Access denied. You do not have permission for this action.'
@@ -61,9 +60,9 @@ async function request<T>(
 
   const config: RequestInit = {
     ...rest,
+    credentials: 'include', // Include cookies for Stytch session auth
     headers: {
       'Content-Type': 'application/json',
-      ...(API_KEY && { 'X-API-Key': API_KEY }),
       ...headers,
     },
   }
