@@ -21,7 +21,7 @@
 - **API:** https://api-mypkgupdate-com.azurewebsites.net
 - **Functions:** https://func-mypkgupdate.azurewebsites.net
 - **Static Site:** https://polite-mud-08a17f610.4.azurestaticapps.net
-- **Custom Domain:** https://mypkgupdate.com
+- **Custom Domain:** https://app.mypkgupdate.com
 
 ## GitHub Actions Configuration
 
@@ -33,4 +33,4 @@ Required secrets (already configured in repo):
 
 ## DNS Configuration
 
-Domain `mypkgupdate.com` is configured and validated, pointing to the static web app.
+`app.mypkgupdate.com` CNAME points to the static web app.
