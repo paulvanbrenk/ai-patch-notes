@@ -13,7 +13,7 @@
 | Managed Identity | `api-mypkgupdate-id` | Federated for GitHub Actions |
 | Static Web App | `mypkgupdate` | Custom domain pending |
 | Storage Account | `mypkgupdatest` | Standard LRS |
-| Function App | `func-mypkgupdate` | .NET 8 Isolated, Consumption plan |
+| Function App | `func-mypkgupdate` | .NET 10 Isolated, Consumption plan |
 | Application Insights | `func-mypkgupdate` | Monitoring for Function App |
 
 ## URLs
