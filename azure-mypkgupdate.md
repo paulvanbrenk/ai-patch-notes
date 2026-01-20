@@ -9,7 +9,7 @@
 | Resource | Name | Details |
 |----------|------|---------|
 | App Service Plan | `ASP-MyPkgUpdate` | Free tier (F1) |
-| Web App | `api-mypkgupdate-com` | .NET 8, HTTPS-only |
+| Web App | `api-mypkgupdate-com` | .NET 10, HTTPS-only |
 | Managed Identity | `api-mypkgupdate-id` | Federated for GitHub Actions |
 | Static Web App | `mypkgupdate` | Custom domain pending |
 | Storage Account | `mypkgupdatest` | Standard LRS |
