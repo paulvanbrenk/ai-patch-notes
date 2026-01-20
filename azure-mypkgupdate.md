@@ -25,11 +25,15 @@
 
 ## GitHub Actions Configuration
 
-Required secrets (already configured in repo):
+Required secrets:
 
+**Federated Identity (for App Service deployment):**
 - `AZURE_CLIENT_ID`
 - `AZURE_TENANT_ID`
 - `AZURE_SUBSCRIPTION_ID`
+
+**Static Web Apps Deployment:**
+- `AZURE_STATIC_WEB_APPS_API_TOKEN` - Get from Azure Portal > Static Web App > Manage deployment token
 
 ## DNS Configuration
 
