@@ -16,8 +16,7 @@ if (string.IsNullOrEmpty(apiKey))
 
 builder.Services.AddOpenApi();
 
-builder.Services.AddDbContext<PatchNotesDbContext>(options =>
-    options.UseSqlite("Data Source=../PatchNotes.Data/patchnotes.db"));
+builder.Services.AddPatchNotesDbContext(builder.Configuration);
 
 builder.Services.AddHttpClient();
 

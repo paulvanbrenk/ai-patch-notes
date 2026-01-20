@@ -23,8 +23,7 @@ builder.Logging.SetMinimumLevel(
     builder.Environment.IsDevelopment() ? LogLevel.Debug : LogLevel.Information);
 
 // Configure services
-builder.Services.AddDbContext<PatchNotesDbContext>(options =>
-    options.UseSqlite("Data Source=patchnotes.db"));
+builder.Services.AddPatchNotesDbContext(builder.Configuration);
 
 builder.Services.AddGitHubClient(options =>
 {
