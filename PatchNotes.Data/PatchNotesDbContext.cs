@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace PatchNotes.Data;
 
@@ -7,6 +8,12 @@ public class PatchNotesDbContext : DbContext
     public PatchNotesDbContext(DbContextOptions<PatchNotesDbContext> options)
         : base(options)
     {
+    }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.ConfigureWarnings(warnings =>
+            warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
     }
 
     public DbSet<Package> Packages => Set<Package>();
