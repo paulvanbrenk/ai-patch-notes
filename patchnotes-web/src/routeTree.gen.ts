@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PreviewRouteImport } from './routes/preview'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticateRouteImport } from './routes/authenticate'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -16,6 +17,11 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ReleasesReleaseIdRouteImport } from './routes/releases.$releaseId'
 import { Route as PackagesPackageIdRouteImport } from './routes/packages.$packageId'
 
+const PreviewRoute = PreviewRouteImport.update({
+  id: '/preview',
+  path: '/preview',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -52,6 +58,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/authenticate': typeof AuthenticateRoute
   '/login': typeof LoginRoute
+  '/preview': typeof PreviewRoute
   '/packages/$packageId': typeof PackagesPackageIdRoute
   '/releases/$releaseId': typeof ReleasesReleaseIdRoute
 }
@@ -60,6 +67,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/authenticate': typeof AuthenticateRoute
   '/login': typeof LoginRoute
+  '/preview': typeof PreviewRoute
   '/packages/$packageId': typeof PackagesPackageIdRoute
   '/releases/$releaseId': typeof ReleasesReleaseIdRoute
 }
@@ -69,6 +77,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/authenticate': typeof AuthenticateRoute
   '/login': typeof LoginRoute
+  '/preview': typeof PreviewRoute
   '/packages/$packageId': typeof PackagesPackageIdRoute
   '/releases/$releaseId': typeof ReleasesReleaseIdRoute
 }
@@ -79,6 +88,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/authenticate'
     | '/login'
+    | '/preview'
     | '/packages/$packageId'
     | '/releases/$releaseId'
   fileRoutesByTo: FileRoutesByTo
@@ -87,6 +97,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/authenticate'
     | '/login'
+    | '/preview'
     | '/packages/$packageId'
     | '/releases/$releaseId'
   id:
@@ -95,6 +106,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/authenticate'
     | '/login'
+    | '/preview'
     | '/packages/$packageId'
     | '/releases/$releaseId'
   fileRoutesById: FileRoutesById
@@ -104,12 +116,20 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   AuthenticateRoute: typeof AuthenticateRoute
   LoginRoute: typeof LoginRoute
+  PreviewRoute: typeof PreviewRoute
   PackagesPackageIdRoute: typeof PackagesPackageIdRoute
   ReleasesReleaseIdRoute: typeof ReleasesReleaseIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/preview': {
+      id: '/preview'
+      path: '/preview'
+      fullPath: '/preview'
+      preLoaderRoute: typeof PreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -160,6 +180,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   AuthenticateRoute: AuthenticateRoute,
   LoginRoute: LoginRoute,
+  PreviewRoute: PreviewRoute,
   PackagesPackageIdRoute: PackagesPackageIdRoute,
   ReleasesReleaseIdRoute: ReleasesReleaseIdRoute,
 }

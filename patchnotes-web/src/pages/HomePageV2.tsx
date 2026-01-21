@@ -1,0 +1,657 @@
+import { useState } from 'react'
+import { Link } from '@tanstack/react-router'
+import {
+  Header,
+  HeaderTitle,
+  Container,
+  Button,
+  Badge,
+  Card,
+} from '../components/ui'
+
+// ============================================================================
+// Types
+// ============================================================================
+
+interface Release {
+  id: number
+  tag: string
+  title: string
+  publishedAt: string
+  body: string
+}
+
+interface VersionGroup {
+  id: string
+  packageName: string
+  packageId: number
+  versionRange: string
+  majorVersion: number
+  isPrerelease: boolean
+  prereleaseType?: 'canary' | 'beta' | 'alpha' | 'rc' | 'next'
+  summary: string
+  releaseCount: number
+  lastUpdated: string
+  releases: Release[]
+}
+
+// ============================================================================
+// Mock Data
+// ============================================================================
+
+const MOCK_VERSION_GROUPS: VersionGroup[] = [
+  {
+    id: 'next-16-stable',
+    packageName: 'Next.js',
+    packageId: 1,
+    versionRange: 'v16.x',
+    majorVersion: 16,
+    isPrerelease: false,
+    summary:
+      'Next.js 16 introduces the new App Router as the default, improved server components with streaming SSR, and significant performance improvements. Turbopack is now stable for development builds, offering up to 10x faster refresh times. The new `next/image` component includes automatic format optimization and improved lazy loading.',
+    releaseCount: 8,
+    lastUpdated: '2026-01-20T14:30:00Z',
+    releases: [
+      {
+        id: 101,
+        tag: 'v16.2.0',
+        title: 'Next.js 16.2.0',
+        publishedAt: '2026-01-20T14:30:00Z',
+        body: 'Performance improvements for server components',
+      },
+      {
+        id: 102,
+        tag: 'v16.1.0',
+        title: 'Next.js 16.1.0',
+        publishedAt: '2026-01-15T10:00:00Z',
+        body: 'Bug fixes and stability improvements',
+      },
+      {
+        id: 103,
+        tag: 'v16.0.0',
+        title: 'Next.js 16.0.0',
+        publishedAt: '2026-01-10T09:00:00Z',
+        body: 'Major release with App Router as default',
+      },
+    ],
+  },
+  {
+    id: 'next-16-canary',
+    packageName: 'Next.js',
+    packageId: 1,
+    versionRange: 'v16.x',
+    majorVersion: 16,
+    isPrerelease: true,
+    prereleaseType: 'canary',
+    summary:
+      'Experimental features including React 19 Server Actions improvements, partial prerendering enhancements, and new caching strategies. Testing ground for upcoming stable features.',
+    releaseCount: 24,
+    lastUpdated: '2026-01-21T08:15:00Z',
+    releases: [
+      {
+        id: 104,
+        tag: 'v16.3.0-canary.12',
+        title: 'Next.js 16.3.0-canary.12',
+        publishedAt: '2026-01-21T08:15:00Z',
+        body: 'Experimental: New partial prerendering API',
+      },
+      {
+        id: 105,
+        tag: 'v16.3.0-canary.11',
+        title: 'Next.js 16.3.0-canary.11',
+        publishedAt: '2026-01-20T16:00:00Z',
+        body: 'Fix: Server action serialization',
+      },
+    ],
+  },
+  {
+    id: 'react-19-stable',
+    packageName: 'React',
+    packageId: 2,
+    versionRange: 'v19.x',
+    majorVersion: 19,
+    isPrerelease: false,
+    summary:
+      'React 19 brings Actions for handling async operations in transitions, new hooks including `useOptimistic` and `useFormStatus`, and the new `use` API for reading resources in render. Server Components are now fully supported with improved streaming.',
+    releaseCount: 4,
+    lastUpdated: '2026-01-18T11:00:00Z',
+    releases: [
+      {
+        id: 201,
+        tag: 'v19.1.0',
+        title: 'React 19.1.0',
+        publishedAt: '2026-01-18T11:00:00Z',
+        body: 'Improved Actions error handling',
+      },
+      {
+        id: 202,
+        tag: 'v19.0.0',
+        title: 'React 19.0.0',
+        publishedAt: '2026-01-05T09:00:00Z',
+        body: 'Major release introducing Actions and new hooks',
+      },
+    ],
+  },
+  {
+    id: 'typescript-5-stable',
+    packageName: 'TypeScript',
+    packageId: 3,
+    versionRange: 'v5.x',
+    majorVersion: 5,
+    isPrerelease: false,
+    summary:
+      'TypeScript 5.7 includes improved type inference for computed properties, faster incremental builds with isolated declarations, and new decorators syntax support. The `--verbatimModuleSyntax` flag is now default for new projects.',
+    releaseCount: 12,
+    lastUpdated: '2026-01-19T15:45:00Z',
+    releases: [
+      {
+        id: 301,
+        tag: 'v5.7.3',
+        title: 'TypeScript 5.7.3',
+        publishedAt: '2026-01-19T15:45:00Z',
+        body: 'Bug fix release',
+      },
+      {
+        id: 302,
+        tag: 'v5.7.2',
+        title: 'TypeScript 5.7.2',
+        publishedAt: '2026-01-12T10:00:00Z',
+        body: 'Performance improvements',
+      },
+    ],
+  },
+  {
+    id: 'typescript-5-beta',
+    packageName: 'TypeScript',
+    packageId: 3,
+    versionRange: 'v5.8',
+    majorVersion: 5,
+    isPrerelease: true,
+    prereleaseType: 'beta',
+    summary:
+      'Preview of TypeScript 5.8 featuring improved inference for generic functions, new `using` keyword support for resource management, and experimental isolated modules mode.',
+    releaseCount: 3,
+    lastUpdated: '2026-01-17T09:30:00Z',
+    releases: [
+      {
+        id: 303,
+        tag: 'v5.8.0-beta',
+        title: 'TypeScript 5.8.0 Beta',
+        publishedAt: '2026-01-17T09:30:00Z',
+        body: 'Beta release for testing',
+      },
+    ],
+  },
+  {
+    id: 'vite-6-stable',
+    packageName: 'Vite',
+    packageId: 4,
+    versionRange: 'v6.x',
+    majorVersion: 6,
+    isPrerelease: false,
+    summary:
+      'Vite 6 delivers Environment API for unified dev/build environments, improved Rolldown integration for faster production builds, and enhanced HMR with module graph visualization. CSS processing is now 2x faster with new Lightning CSS backend.',
+    releaseCount: 6,
+    lastUpdated: '2026-01-16T13:20:00Z',
+    releases: [
+      {
+        id: 401,
+        tag: 'v6.1.0',
+        title: 'Vite 6.1.0',
+        publishedAt: '2026-01-16T13:20:00Z',
+        body: 'Environment API improvements',
+      },
+      {
+        id: 402,
+        tag: 'v6.0.0',
+        title: 'Vite 6.0.0',
+        publishedAt: '2026-01-02T09:00:00Z',
+        body: 'Major release with Environment API',
+      },
+    ],
+  },
+]
+
+const MOCK_WATCHLIST_IDS = [1, 2] // Next.js and React
+
+// ============================================================================
+// Utility Functions
+// ============================================================================
+
+function formatRelativeTime(dateString: string): string {
+  const date = new Date(dateString)
+  const now = new Date()
+  const diffMs = now.getTime() - date.getTime()
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
+
+  if (diffHours < 1) return 'Just now'
+  if (diffHours < 24) return `${diffHours}h ago`
+  if (diffDays === 1) return 'Yesterday'
+  if (diffDays < 7) return `${diffDays}d ago`
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`
+  return `${Math.floor(diffDays / 30)}mo ago`
+}
+
+function formatDate(dateString: string): string {
+  return new Date(dateString).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+}
+
+// ============================================================================
+// Components
+// ============================================================================
+
+function SkeletonCard() {
+  return (
+    <Card className="animate-pulse">
+      <div className="flex items-start justify-between gap-4 mb-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-surface-tertiary" />
+          <div>
+            <div className="h-5 w-32 bg-surface-tertiary rounded mb-2" />
+            <div className="h-4 w-20 bg-surface-tertiary rounded" />
+          </div>
+        </div>
+        <div className="h-6 w-16 bg-surface-tertiary rounded-full" />
+      </div>
+      <div className="space-y-2">
+        <div className="h-4 w-full bg-surface-tertiary rounded" />
+        <div className="h-4 w-5/6 bg-surface-tertiary rounded" />
+        <div className="h-4 w-4/6 bg-surface-tertiary rounded" />
+      </div>
+      <div className="flex items-center gap-4 mt-4 pt-4 border-t border-border-muted">
+        <div className="h-4 w-24 bg-surface-tertiary rounded" />
+        <div className="h-4 w-20 bg-surface-tertiary rounded" />
+      </div>
+    </Card>
+  )
+}
+
+function PackageIcon({ name }: { name: string }) {
+  // Generate a consistent color based on package name
+  const colors: Record<string, { bg: string; text: string }> = {
+    'Next.js': {
+      bg: 'bg-black dark:bg-white',
+      text: 'text-white dark:text-black',
+    },
+    React: { bg: 'bg-[#61dafb]/20', text: 'text-[#61dafb]' },
+    TypeScript: { bg: 'bg-[#3178c6]/20', text: 'text-[#3178c6]' },
+    Vite: { bg: 'bg-[#646cff]/20', text: 'text-[#646cff]' },
+  }
+  const { bg, text } = colors[name] || {
+    bg: 'bg-brand-100',
+    text: 'text-brand-600',
+  }
+
+  const initial = name.charAt(0).toUpperCase()
+
+  return (
+    <div
+      className={`w-10 h-10 rounded-lg flex items-center justify-center font-semibold text-lg ${bg} ${text}`}
+    >
+      {initial}
+    </div>
+  )
+}
+
+function PrereleaseTag({ type }: { type?: string }) {
+  if (!type) return null
+
+  const colors: Record<string, string> = {
+    canary:
+      'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+    beta: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+    alpha:
+      'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+    rc: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+    next: 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400',
+  }
+
+  return (
+    <span
+      className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full ${colors[type] || colors.beta}`}
+    >
+      {type}
+    </span>
+  )
+}
+
+function SummaryCard({
+  group,
+  isExpanded,
+  onToggle,
+}: {
+  group: VersionGroup
+  isExpanded: boolean
+  onToggle: () => void
+}) {
+  return (
+    <Card
+      padding="none"
+      className="overflow-hidden hover:shadow-md transition-shadow"
+    >
+      {/* Main Summary Section */}
+      <div className="p-5">
+        {/* Header */}
+        <div className="flex items-start justify-between gap-4 mb-3">
+          <div className="flex items-center gap-3">
+            <PackageIcon name={group.packageName} />
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="font-semibold text-text-primary">
+                  {group.packageName}
+                </h3>
+                <span className="text-sm font-mono text-text-secondary">
+                  {group.versionRange}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 mt-0.5">
+                {group.isPrerelease ? (
+                  <PrereleaseTag type={group.prereleaseType} />
+                ) : (
+                  <Badge variant="minor">stable</Badge>
+                )}
+              </div>
+            </div>
+          </div>
+          <time
+            dateTime={group.lastUpdated}
+            title={formatDate(group.lastUpdated)}
+            className="text-sm text-text-tertiary whitespace-nowrap"
+          >
+            {formatRelativeTime(group.lastUpdated)}
+          </time>
+        </div>
+
+        {/* Summary */}
+        <p className="text-sm text-text-secondary leading-relaxed">
+          {group.summary}
+        </p>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between mt-4 pt-4 border-t border-border-muted">
+          <div className="flex items-center gap-4 text-sm text-text-tertiary">
+            <span className="flex items-center gap-1.5">
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"
+                />
+              </svg>
+              {group.releaseCount} release{group.releaseCount !== 1 && 's'}
+            </span>
+          </div>
+          <button
+            onClick={onToggle}
+            className="flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:text-brand-700 transition-colors"
+          >
+            {isExpanded ? 'Hide releases' : 'Show releases'}
+            <svg
+              className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* Expanded Releases */}
+      {isExpanded && (
+        <div className="border-t border-border-default bg-surface-secondary/50">
+          <div className="divide-y divide-border-muted">
+            {group.releases.map((release) => (
+              <div
+                key={release.id}
+                className="px-5 py-3 hover:bg-surface-tertiary/50 transition-colors"
+              >
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <code className="text-sm font-mono text-brand-600 bg-brand-50 dark:bg-brand-900/20 px-2 py-0.5 rounded">
+                      {release.tag}
+                    </code>
+                    <span className="text-sm text-text-primary">
+                      {release.title}
+                    </span>
+                  </div>
+                  <time className="text-xs text-text-tertiary whitespace-nowrap">
+                    {formatDate(release.publishedAt)}
+                  </time>
+                </div>
+                {release.body && (
+                  <p className="mt-1.5 text-sm text-text-secondary pl-[calc(theme(spacing.3)+theme(spacing.2)+4ch)]">
+                    {release.body}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+          <div className="px-5 py-3 bg-surface-tertiary/30">
+            <a
+              href="#"
+              className="text-sm text-brand-600 hover:text-brand-700 font-medium"
+            >
+              View all {group.releaseCount} releases →
+            </a>
+          </div>
+        </div>
+      )}
+    </Card>
+  )
+}
+
+function TabButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean
+  onClick: () => void
+  children: React.ReactNode
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`
+        px-4 py-2 text-sm font-medium rounded-lg transition-all
+        ${
+          active
+            ? 'bg-surface-primary text-text-primary shadow-sm'
+            : 'text-text-secondary hover:text-text-primary hover:bg-surface-primary/50'
+        }
+      `}
+    >
+      {children}
+    </button>
+  )
+}
+
+// ============================================================================
+// Main Component
+// ============================================================================
+
+export function HomePageV2() {
+  const [activeTab, setActiveTab] = useState<'all' | 'watchlist'>('all')
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
+  const [isLoading, setIsLoading] = useState(false)
+
+  // Simulate loading for demo
+  const simulateLoading = () => {
+    setIsLoading(true)
+    setTimeout(() => setIsLoading(false), 1000)
+  }
+
+  const toggleExpanded = (groupId: string) => {
+    setExpandedGroups((prev) => {
+      const next = new Set(prev)
+      if (next.has(groupId)) {
+        next.delete(groupId)
+      } else {
+        next.add(groupId)
+      }
+      return next
+    })
+  }
+
+  // Filter groups based on active tab
+  const filteredGroups =
+    activeTab === 'watchlist'
+      ? MOCK_VERSION_GROUPS.filter((g) =>
+          MOCK_WATCHLIST_IDS.includes(g.packageId)
+        )
+      : MOCK_VERSION_GROUPS
+
+  // Group by package for display
+  const groupedByPackage = filteredGroups.reduce(
+    (acc, group) => {
+      if (!acc[group.packageName]) {
+        acc[group.packageName] = []
+      }
+      acc[group.packageName].push(group)
+      return acc
+    },
+    {} as Record<string, VersionGroup[]>
+  )
+
+  return (
+    <div className="min-h-screen bg-surface-secondary">
+      <Header>
+        <HeaderTitle>Patch Notes</HeaderTitle>
+        <div className="flex items-center gap-3">
+          <Link to="/">
+            <Button variant="secondary" size="sm">
+              ← Back
+            </Button>
+          </Link>
+          <Badge variant="prerelease">Preview</Badge>
+        </div>
+      </Header>
+
+      <main className="py-8">
+        <Container>
+          {/* Page Header */}
+          <div className="mb-8">
+            <h1 className="text-2xl font-bold text-text-primary mb-2">
+              Release Summaries
+            </h1>
+            <p className="text-text-secondary">
+              AI-generated summaries of the latest releases from your tracked
+              packages.
+            </p>
+          </div>
+
+          {/* Tabs */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-1 p-1 bg-surface-tertiary rounded-lg">
+              <TabButton
+                active={activeTab === 'all'}
+                onClick={() => {
+                  setActiveTab('all')
+                  simulateLoading()
+                }}
+              >
+                All Packages
+              </TabButton>
+              <TabButton
+                active={activeTab === 'watchlist'}
+                onClick={() => {
+                  setActiveTab('watchlist')
+                  simulateLoading()
+                }}
+              >
+                My Watchlist
+              </TabButton>
+            </div>
+            <div className="text-sm text-text-tertiary">
+              {filteredGroups.length} version group
+              {filteredGroups.length !== 1 && 's'}
+            </div>
+          </div>
+
+          {/* Content */}
+          {isLoading ? (
+            <div className="space-y-4">
+              <SkeletonCard />
+              <SkeletonCard />
+              <SkeletonCard />
+            </div>
+          ) : (
+            <div className="space-y-8">
+              {Object.entries(groupedByPackage).map(([packageName, groups]) => (
+                <section key={packageName}>
+                  <h2 className="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
+                    <PackageIcon name={packageName} />
+                    {packageName}
+                    <span className="text-sm font-normal text-text-tertiary">
+                      ({groups.length} version
+                      {groups.length !== 1 && 's'})
+                    </span>
+                  </h2>
+                  <div className="space-y-4">
+                    {groups.map((group) => (
+                      <SummaryCard
+                        key={group.id}
+                        group={group}
+                        isExpanded={expandedGroups.has(group.id)}
+                        onToggle={() => toggleExpanded(group.id)}
+                      />
+                    ))}
+                  </div>
+                </section>
+              ))}
+            </div>
+          )}
+
+          {/* Empty State */}
+          {!isLoading && filteredGroups.length === 0 && (
+            <div className="text-center py-16">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-surface-tertiary flex items-center justify-center">
+                <svg
+                  className="w-8 h-8 text-text-tertiary"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-text-primary mb-2">
+                No packages in your watchlist
+              </h3>
+              <p className="text-text-secondary mb-4">
+                Add packages to your watchlist to see their release summaries
+                here.
+              </p>
+              <Button onClick={() => setActiveTab('all')}>
+                Browse All Packages
+              </Button>
+            </div>
+          )}
+        </Container>
+      </main>
+    </div>
+  )
+}

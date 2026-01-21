@@ -123,6 +123,8 @@ Allow users to maintain a personal watchlist of packages they want to track. Use
 
 Rebuild the home page to display grouped release summaries instead of individual releases.
 
+**Preview:** `HomePageV2.tsx` with mock data available at `/preview` (branch: `feature/homepage-v2`)
+
 ### Feature: Summary Display
 
 - [ ] Replace individual release cards with summary cards
