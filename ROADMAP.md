@@ -257,3 +257,9 @@ Allow users to purchase Pro or Max subscriptions via Stripe hosted checkout. Sub
 
 - [ ] **Duplicate type definition** - `AddPackageRequest` defined twice in `types.ts`
 - [ ] **API auth inconsistency** - `/api/releases/{id}/summarize` has auth but README says "No"
+
+---
+
+## Infrastructure
+
+- [ ] **Set up Dependabot** - Configure automated dependency updates for npm and NuGet packages
