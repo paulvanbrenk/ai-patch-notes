@@ -257,6 +257,8 @@ Allow users to purchase Pro or Max subscriptions via Stripe hosted checkout. Sub
 
 - [ ] **Duplicate type definition** - `AddPackageRequest` defined twice in `types.ts`
 - [ ] **API auth inconsistency** - `/api/releases/{id}/summarize` has auth but README says "No"
+- [ ] **Wrong API Endpoint** - The API endpoint is wrong in the Readme, and should be a GH variable
+- [ ] **Finish setting up Stytch** - Configure Stytch keys in both FE and backend, and setup project in Stytch portal
 
 ---
 
