@@ -14,7 +14,9 @@ public class SyncServiceTests : IDisposable
     private readonly PatchNotesDbContext _db;
     private readonly Mock<IGitHubClient> _mockGitHub;
     private readonly Mock<ILogger<SyncService>> _mockLogger;
+    private readonly Mock<ILogger<NotificationSyncService>> _mockNotificationLogger;
     private readonly SyncService _syncService;
+    private readonly NotificationSyncService _notificationSyncService;
 
     public SyncServiceTests()
     {
@@ -25,7 +27,9 @@ public class SyncServiceTests : IDisposable
         _db = new PatchNotesDbContext(options);
         _mockGitHub = new Mock<IGitHubClient>();
         _mockLogger = new Mock<ILogger<SyncService>>();
+        _mockNotificationLogger = new Mock<ILogger<NotificationSyncService>>();
         _syncService = new SyncService(_db, _mockGitHub.Object, _mockLogger.Object);
+        _notificationSyncService = new NotificationSyncService(_db, _mockGitHub.Object, _mockNotificationLogger.Object);
     }
 
     public void Dispose()
@@ -313,7 +317,7 @@ public class SyncServiceTests : IDisposable
         ]);
 
         // Act
-        var result = await _syncService.SyncNotificationsAsync();
+        var result = await _notificationSyncService.SyncNotificationsAsync();
 
         // Assert
         result.Added.Should().Be(1);
@@ -348,7 +352,7 @@ public class SyncServiceTests : IDisposable
         ]);
 
         // Act
-        var result = await _syncService.SyncNotificationsAsync();
+        var result = await _notificationSyncService.SyncNotificationsAsync();
 
         // Assert
         result.Added.Should().Be(0);
@@ -373,7 +377,7 @@ public class SyncServiceTests : IDisposable
         ]);
 
         // Act
-        var result = await _syncService.SyncNotificationsAsync();
+        var result = await _notificationSyncService.SyncNotificationsAsync();
 
         // Assert
         result.Added.Should().Be(2);
@@ -392,7 +396,7 @@ public class SyncServiceTests : IDisposable
         SetupGitHubNotifications([]);
 
         // Act
-        await _syncService.SyncNotificationsAsync(all: true, since: since);
+        await _notificationSyncService.SyncNotificationsAsync(all: true, since: since);
 
         // Assert
         _mockGitHub.Verify(x => x.GetAllNotificationsAsync(
