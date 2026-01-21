@@ -5,6 +5,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using PatchNotes.Data.GitHub;
+using PatchNotes.Data.GitHub.Models;
 
 namespace PatchNotes.Tests;
 
