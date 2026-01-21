@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import Markdown from 'react-markdown'
+import rehypeSanitize from 'rehype-sanitize'
 import {
   Header,
   HeaderTitle,
@@ -230,7 +231,9 @@ export function ReleaseDetail({ releaseId }: ReleaseDetailProps) {
               <CardContent className="mt-0">
                 {release.body ? (
                   <div className="prose-release">
-                    <Markdown>{release.body}</Markdown>
+                    <Markdown rehypePlugins={[rehypeSanitize]}>
+                      {release.body}
+                    </Markdown>
                   </div>
                 ) : (
                   <p className="text-text-tertiary italic">

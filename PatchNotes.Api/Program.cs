@@ -80,6 +80,36 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+// Security headers middleware
+app.Use(async (context, next) =>
+{
+    // Content Security Policy - restrict resource loading
+    context.Response.Headers["Content-Security-Policy"] =
+        "default-src 'self'; " +
+        "script-src 'self'; " +
+        "style-src 'self' 'unsafe-inline'; " +
+        "img-src 'self' data: https:; " +
+        "font-src 'self'; " +
+        "connect-src 'self' https://api.stytch.com; " +
+        "frame-ancestors 'none'; " +
+        "base-uri 'self'; " +
+        "form-action 'self';";
+
+    // Prevent MIME type sniffing
+    context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+
+    // Prevent clickjacking
+    context.Response.Headers["X-Frame-Options"] = "DENY";
+
+    // Enable browser XSS filter
+    context.Response.Headers["X-XSS-Protection"] = "1; mode=block";
+
+    // Control referrer information
+    context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+
+    await next();
+});
+
 app.UseCors();
 
 // Stytch session authentication filter for protected endpoints
