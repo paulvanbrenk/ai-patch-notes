@@ -262,6 +262,12 @@ Allow users to purchase Pro or Max subscriptions via Stripe hosted checkout. Sub
 
 ---
 
+## Data
+
+- [ ] **Figure out default packages** - Figure out if we want the top 10 packages from NPM or top 10 projects in GitHub
+
+---
+
 ## Infrastructure
 
 - [ ] **Set up Dependabot** - Configure automated dependency updates for npm and NuGet packages
