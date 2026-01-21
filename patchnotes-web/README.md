@@ -17,17 +17,17 @@ The app runs on `http://localhost:5173` by default.
 
 ## Scripts
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start development server |
-| `npm run build` | Build for production |
-| `npm run preview` | Preview production build |
-| `npm test` | Run tests in watch mode |
-| `npm run test:run` | Run tests once |
-| `npm run test:coverage` | Run tests with coverage |
-| `npm run lint` | Run ESLint |
-| `npm run format` | Format code with Prettier |
-| `npm run format:check` | Check formatting |
+| Command                 | Description               |
+| ----------------------- | ------------------------- |
+| `npm run dev`           | Start development server  |
+| `npm run build`         | Build for production      |
+| `npm run preview`       | Preview production build  |
+| `npm test`              | Run tests in watch mode   |
+| `npm run test:run`      | Run tests once            |
+| `npm run test:coverage` | Run tests with coverage   |
+| `npm run lint`          | Run ESLint                |
+| `npm run format`        | Format code with Prettier |
+| `npm run format:check`  | Check formatting          |
 
 ## Tech Stack
 
