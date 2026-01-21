@@ -37,10 +37,33 @@ export function usePackage(id: number) {
   })
 }
 
-export function useReleases() {
+export interface ReleasesOptions {
+  packages?: number[]
+  days?: number
+  excludePrerelease?: boolean
+  majorVersion?: number
+}
+
+export function useReleases(options?: ReleasesOptions) {
+  const params = new URLSearchParams()
+  if (options?.packages?.length) {
+    params.set('packages', options.packages.join(','))
+  }
+  if (options?.days) {
+    params.set('days', options.days.toString())
+  }
+  if (options?.excludePrerelease) {
+    params.set('excludePrerelease', 'true')
+  }
+  if (options?.majorVersion !== undefined) {
+    params.set('majorVersion', options.majorVersion.toString())
+  }
+  const queryString = params.toString()
+  const endpoint = queryString ? `/releases?${queryString}` : '/releases'
+
   return useQuery({
-    queryKey: queryKeys.releases,
-    queryFn: () => api.get<Release[]>('/releases'),
+    queryKey: [...queryKeys.releases, options],
+    queryFn: () => api.get<Release[]>(endpoint),
   })
 }
 
