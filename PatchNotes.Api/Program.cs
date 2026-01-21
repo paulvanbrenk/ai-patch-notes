@@ -63,9 +63,12 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("http://localhost:5173", "http://localhost:3000")
-              .AllowAnyHeader()
-              .AllowAnyMethod()
+        policy.WithOrigins(
+                  "https://app.mypkgupdate.com",
+                  "http://localhost:5173",
+                  "http://localhost:3000")
+              .WithHeaders("Content-Type", "X-API-Key", "Accept")
+              .WithMethods("GET", "POST", "PATCH", "DELETE")
               .AllowCredentials();
     });
 });
