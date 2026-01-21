@@ -368,7 +368,7 @@ app.MapPost("/api/packages/{id:int}/sync", async (int id, PatchNotesDbContext db
 }).AddEndpointFilterFactory(requireAuth);
 
 // GET /api/releases - Query releases for selected packages
-app.MapGet("/api/releases", async (string? packages, int? days, PatchNotesDbContext db) =>
+app.MapGet("/api/releases", async (string? packages, int? days, bool? excludePrerelease, int? majorVersion, PatchNotesDbContext db) =>
 {
     var daysToQuery = days ?? 7;
     var cutoffDate = DateTime.UtcNow.AddDays(-daysToQuery);
@@ -410,6 +410,18 @@ app.MapGet("/api/releases", async (string? packages, int? days, PatchNotesDbCont
             }
         })
         .ToListAsync();
+
+    // Filter out prereleases if requested
+    if (excludePrerelease == true)
+    {
+        releases = releases.Where(r => !IsPrerelease(r.Tag)).ToList();
+    }
+
+    // Filter by major version if specified
+    if (majorVersion.HasValue)
+    {
+        releases = releases.Where(r => GetMajorVersion(r.Tag) == majorVersion.Value).ToList();
+    }
 
     return Results.Ok(releases);
 });
@@ -801,6 +813,31 @@ static (string? owner, string? repo) ParseGitHubUrl(string url)
     }
 
     return (null, null);
+}
+
+static bool IsPrerelease(string tag)
+{
+    var lowerTag = tag.ToLowerInvariant();
+    return lowerTag.Contains("alpha") ||
+           lowerTag.Contains("beta") ||
+           lowerTag.Contains("canary") ||
+           lowerTag.Contains("preview") ||
+           lowerTag.Contains("rc") ||
+           lowerTag.Contains("next") ||
+           lowerTag.Contains("nightly") ||
+           lowerTag.Contains("dev") ||
+           lowerTag.Contains("experimental");
+}
+
+static int? GetMajorVersion(string tag)
+{
+    // Extract major version from tags like "v15.0.0", "15.0.0", "v15.0.0-rc.1"
+    var match = System.Text.RegularExpressions.Regex.Match(tag, @"v?(\d+)\.");
+    if (match.Success && int.TryParse(match.Groups[1].Value, out var major))
+    {
+        return major;
+    }
+    return null;
 }
 
 record AddPackageRequest(string NpmName);
