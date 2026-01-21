@@ -84,3 +84,17 @@ One more thing to verify
 Ensure the federated credential is on the same Entra App Registration as the client-id you’re using (people sometimes add things to the wrong app/service principal).
 
 If you paste your deploy.yml (just the permissions: + jobs.<jobname>: section) I can tell you whether GitHub will emit an environment: or ref: subject and what the federated credential subject must be.
+
+## Required GitHub Secrets
+
+The following secrets must be configured in your GitHub repository (Settings → Secrets and variables → Actions):
+
+| Secret | Description |
+|--------|-------------|
+| `AZURE_CLIENT_ID` | Application (client) ID from your Entra App Registration |
+| `AZURE_TENANT_ID` | Directory (tenant) ID from Azure |
+| `AZURE_SUBSCRIPTION_ID` | Azure subscription ID |
+| `AZURE_STATIC_WEB_APPS_API_TOKEN` | Deployment token for Azure Static Web Apps |
+| `DATABASE_CONNECTION_STRING` | Production database connection string for EF Core migrations |
+
+The `DATABASE_CONNECTION_STRING` is used by the `migrate-database` job to apply EF Core migrations to the production database before deploying the API.

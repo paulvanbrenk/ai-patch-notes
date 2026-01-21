@@ -76,9 +76,31 @@ jobs:
           name: frontend
           path: patchnotes-web/dist
 
+  migrate-database:
+    name: Migrate Database
+    needs: build-api
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Install EF Core tools
+        run: dotnet tool install --global dotnet-ef
+
+      - name: Apply migrations
+        run: dotnet ef database update --project PatchNotes.Data/PatchNotes.Data.csproj --startup-project PatchNotes.Api/PatchNotes.Api.csproj
+        env:
+          ConnectionStrings__PatchNotes: ${{ secrets.DATABASE_CONNECTION_STRING }}
+
   deploy-api:
     name: Deploy API to App Service
-    needs: build-api
+    needs: [build-api, migrate-database]
     runs-on: ubuntu-latest
     environment:
       name: production
