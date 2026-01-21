@@ -1,0 +1,66 @@
+version: 2
+updates:
+  # npm dependencies for root (husky)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      dev-dependencies:
+        patterns:
+          - "*"
+        dependency-type: "development"
+
+  # npm dependencies for React frontend
+  - package-ecosystem: "npm"
+    directory: "/patchnotes-web"
+    schedule:
+      interval: "weekly"
+    groups:
+      react:
+        patterns:
+          - "react*"
+          - "@types/react*"
+      tanstack:
+        patterns:
+          - "@tanstack/*"
+      testing:
+        patterns:
+          - "@testing-library/*"
+          - "vitest*"
+          - "@vitest/*"
+          - "msw"
+          - "jsdom"
+      linting:
+        patterns:
+          - "eslint*"
+          - "prettier*"
+          - "typescript-eslint"
+          - "lint-staged"
+      build:
+        patterns:
+          - "vite*"
+          - "@vitejs/*"
+          - "typescript"
+          - "tailwindcss"
+          - "@tailwindcss/*"
+
+  # NuGet dependencies for .NET projects
+  - package-ecosystem: "nuget"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      dotnet:
+        patterns:
+          - "*"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      actions:
+        patterns:
+          - "*"
