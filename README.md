@@ -2,6 +2,15 @@
 
 A GitHub release viewer for npm packages. Track release notes across your favorite packages in one place.
 
+*Forged in Gas Town*
+
+## Deployment
+
+| Environment | URL | Status |
+|-------------|-----|--------|
+| Frontend | https://app.mypkgupdate.com | Live |
+| API | https://api-mypkgupdate-com.azurewebsites.net | Live |
+
 ## Project Status
 
 **Stage:** Development (MVP)
@@ -11,9 +20,9 @@ A GitHub release viewer for npm packages. Track release notes across your favori
 |------|--------|
 | Architecture | ✅ Solid (.NET + React separation) |
 | Code Quality | ✅ Good |
-| CI/CD | ✅ GitHub Actions configured |
+| CI/CD | ✅ GitHub Actions (build, test, deploy) |
 | Testing | ✅ 141 Vitest tests + xUnit API/Sync tests |
-| Security | ⚠️ Needs auth before production |
+| Authentication | ✅ Stytch B2C configured |
 | Error Handling | ✅ Error boundaries + toast notifications |
 
 ## Features
@@ -57,6 +66,26 @@ GROQ__APIKEY=your-groq-api-key
 ```
 
 Get a Groq API key at https://console.groq.com/keys
+
+## Authentication
+
+The app uses [Stytch](https://stytch.com/) for B2C authentication.
+
+### Frontend Configuration
+
+Add these environment variables to the frontend (via `.env` or Vite config):
+
+```bash
+VITE_STYTCH_PROJECT_ID=your-project-id
+VITE_STYTCH_PUBLIC_TOKEN=your-public-token
+```
+
+### Stytch Setup
+
+1. Create a Stytch account at https://stytch.com/
+2. Create a new Consumer project
+3. Configure allowed redirect URLs for your domains
+4. Copy the Project ID and Public Token to your environment
 
 ## Quick Start
 
