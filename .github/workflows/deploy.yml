@@ -34,7 +34,7 @@ jobs:
         run: dotnet publish PatchNotes.Api/PatchNotes.Api.csproj --configuration Release --output ./publish/api
 
       - name: Upload API artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: api
           path: ./publish/api
@@ -71,7 +71,7 @@ jobs:
         run: npm run build
 
       - name: Upload frontend artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: frontend
           path: patchnotes-web/dist
@@ -113,7 +113,7 @@ jobs:
       url: https://api-mypkgupdate-com.azurewebsites.net
     steps:
       - name: Download API artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: api
           path: ./api
@@ -142,7 +142,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Download frontend artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: frontend
           path: patchnotes-web/dist
