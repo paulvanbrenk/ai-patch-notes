@@ -4,14 +4,16 @@ import { afterEach, beforeAll, afterAll, vi } from 'vitest'
 import { server } from './mocks/server'
 
 // Mock @stytch/react to avoid StytchProvider requirement in tests
+// Default mock returns an authenticated user for existing tests
 vi.mock('@stytch/react', () => ({
   StytchProvider: ({ children }: { children: React.ReactNode }) => children,
   useStytch: () => ({
     magicLinks: { authenticate: vi.fn() },
     oauth: { authenticate: vi.fn() },
+    session: { revoke: vi.fn() },
   }),
   useStytchUser: () => ({
-    user: null,
+    user: { user_id: 'test-user-id', emails: [{ email: 'test@example.com' }] },
     isInitialized: true,
   }),
 }))
