@@ -35,6 +35,7 @@ builder.Services.AddGitHubClient(options =>
 });
 
 builder.Services.AddTransient<SyncService>();
+builder.Services.AddTransient<NotificationSyncService>();
 
 using var host = builder.Build();
 
