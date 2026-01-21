@@ -93,11 +93,14 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore PatchNotes.slnx
 
+      - name: Build
+        run: dotnet build PatchNotes.slnx --no-restore --configuration Release
+
       - name: Install EF Core tools
         run: dotnet tool install --global dotnet-ef
 
       - name: Apply migrations
-        run: dotnet ef database update --project PatchNotes.Data/PatchNotes.Data.csproj --startup-project PatchNotes.Api/PatchNotes.Api.csproj
+        run: dotnet ef database update --project PatchNotes.Data/PatchNotes.Data.csproj --startup-project PatchNotes.Api/PatchNotes.Api.csproj --no-build
         env:
           ConnectionStrings__PatchNotes: ${{ secrets.DATABASE_CONNECTION_STRING }}
 
