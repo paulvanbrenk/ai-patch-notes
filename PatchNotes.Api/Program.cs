@@ -534,14 +534,14 @@ app.MapGet("/api/notifications", async (bool? unreadOnly, int? packageId, PatchN
         .ToListAsync();
 
     return Results.Ok(notifications);
-});
+}).AddEndpointFilterFactory(requireAuth);
 
 // GET /api/notifications/unread-count - Get count of unread notifications
 app.MapGet("/api/notifications/unread-count", async (PatchNotesDbContext db) =>
 {
     var count = await db.Notifications.CountAsync(n => n.Unread);
     return Results.Ok(new { count });
-});
+}).AddEndpointFilterFactory(requireAuth);
 
 // PATCH /api/notifications/{id}/read - Mark notification as read
 app.MapPatch("/api/notifications/{id:int}/read", async (int id, PatchNotesDbContext db) =>
