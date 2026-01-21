@@ -1,28 +1,30 @@
 import { useStytch, useStytchUser } from '@stytch/react'
 import { useNavigate } from '@tanstack/react-router'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Container } from '../components/ui'
 
 export function Authenticate() {
   const stytch = useStytch()
   const { user, isInitialized } = useStytchUser()
   const navigate = useNavigate()
-  const [error, setError] = useState<string | null>(null)
+
+  const { token, tokenType } = useMemo(() => {
+    const params = new URLSearchParams(window.location.search)
+    return {
+      token: params.get('token'),
+      tokenType: params.get('stytch_token_type'),
+    }
+  }, [])
+
+  const [error, setError] = useState<string | null>(
+    !token || !tokenType ? 'Invalid authentication link' : null
+  )
 
   useEffect(() => {
-    if (!isInitialized) return
+    if (!isInitialized || error) return
 
     if (user) {
       navigate({ to: '/' })
-      return
-    }
-
-    const params = new URLSearchParams(window.location.search)
-    const token = params.get('token')
-    const tokenType = params.get('stytch_token_type')
-
-    if (!token || !tokenType) {
-      setError('Invalid authentication link')
       return
     }
 
@@ -48,7 +50,7 @@ export function Authenticate() {
     }
 
     authenticate()
-  }, [stytch, user, isInitialized, navigate])
+  }, [stytch, token, tokenType, user, isInitialized, navigate, error])
 
   if (error) {
     return (
