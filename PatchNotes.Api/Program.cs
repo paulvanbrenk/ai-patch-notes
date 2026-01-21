@@ -490,7 +490,7 @@ app.MapPost("/api/releases/{id:int}/summarize", async (int id, HttpContext httpC
             release.Package.NpmName
         }
     });
-});
+}).AddEndpointFilterFactory(requireAuth);
 
 // GET /api/notifications - Query notifications
 app.MapGet("/api/notifications", async (bool? unreadOnly, int? packageId, PatchNotesDbContext db) =>
