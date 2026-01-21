@@ -5,7 +5,10 @@ namespace PatchNotes.Data;
 
 public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<PatchNotesDbContext>
 {
-    private const string DefaultConnection = "Data Source=patchnotes.db";
+    // Use a dummy SQL Server connection string for migration generation
+    // This ensures migrations are generated with SQL Server column types
+    // which are required for Azure SQL production
+    private const string DefaultConnection = "Server=(localdb)\\mssqllocaldb;Database=PatchNotes;Trusted_Connection=True;";
 
     public PatchNotesDbContext CreateDbContext(string[] args)
     {
