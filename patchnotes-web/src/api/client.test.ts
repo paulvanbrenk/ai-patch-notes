@@ -213,7 +213,7 @@ describe('getErrorMessage', () => {
   it('returns 401 error message', () => {
     const error = new ApiError(401, 'Unauthorized')
     expect(getErrorMessage(error)).toBe(
-      'Authentication required. Please check your API key.'
+      'Authentication required. Please sign in to continue.'
     )
   })
 
