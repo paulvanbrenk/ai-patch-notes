@@ -7,12 +7,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using PatchNotes.Data;
+using PatchNotes.Data.Stytch;
 
 namespace PatchNotes.Tests;
 
 public class PatchNotesApiFixture : WebApplicationFactory<Program>, IAsyncLifetime
 {
     public const string TestApiKey = "test-api-key-12345";
+    public const string TestSessionToken = "test-session-token-12345";
+    public const string TestUserId = "test-user-id";
 
     private readonly MockNpmHandler _npmHandler = new();
     private SqliteConnection? _connection;
@@ -46,6 +49,10 @@ public class PatchNotesApiFixture : WebApplicationFactory<Program>, IAsyncLifeti
             // Remove existing HttpClientFactory and add mock
             services.RemoveAll<IHttpClientFactory>();
             services.AddSingleton<IHttpClientFactory>(new MockHttpClientFactory(_npmHandler));
+
+            // Remove existing Stytch client and add mock
+            services.RemoveAll<IStytchClient>();
+            services.AddSingleton<IStytchClient>(new MockStytchClient(TestSessionToken, TestUserId));
         });
 
         builder.UseSetting("ApiKey", TestApiKey);
@@ -68,9 +75,31 @@ public class PatchNotesApiFixture : WebApplicationFactory<Program>, IAsyncLifeti
 
     public HttpClient CreateAuthenticatedClient()
     {
-        var client = CreateClient();
-        client.DefaultRequestHeaders.Add("X-API-Key", TestApiKey);
+        var handler = new SessionCookieHandler(Server.CreateHandler(), TestSessionToken);
+        var client = new HttpClient(handler)
+        {
+            BaseAddress = Server.BaseAddress
+        };
         return client;
+    }
+
+    /// <summary>
+    /// Handler that adds the Stytch session cookie to all requests.
+    /// </summary>
+    private class SessionCookieHandler : DelegatingHandler
+    {
+        private readonly string _sessionToken;
+
+        public SessionCookieHandler(HttpMessageHandler inner, string sessionToken) : base(inner)
+        {
+            _sessionToken = sessionToken;
+        }
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            request.Headers.Add("Cookie", $"stytch_session={_sessionToken}");
+            return base.SendAsync(request, cancellationToken);
+        }
     }
 
     public async Task ResetDatabaseAsync()
@@ -161,5 +190,32 @@ public class MockNpmHandler : HttpMessageHandler
         {
             Content = new StringContent("""{"error": "Not found"}""", System.Text.Encoding.UTF8, "application/json")
         });
+    }
+}
+
+public class MockStytchClient : IStytchClient
+{
+    private readonly string _validSessionToken;
+    private readonly string _userId;
+
+    public MockStytchClient(string validSessionToken, string userId)
+    {
+        _validSessionToken = validSessionToken;
+        _userId = userId;
+    }
+
+    public Task<StytchSessionResult?> AuthenticateSessionAsync(string sessionToken, CancellationToken cancellationToken = default)
+    {
+        if (sessionToken == _validSessionToken)
+        {
+            return Task.FromResult<StytchSessionResult?>(new StytchSessionResult
+            {
+                UserId = _userId,
+                SessionId = "test-session-id",
+                Email = "test@example.com"
+            });
+        }
+
+        return Task.FromResult<StytchSessionResult?>(null);
     }
 }

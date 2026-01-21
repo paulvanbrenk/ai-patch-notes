@@ -1,12 +1,9 @@
-import { createRoute } from '@tanstack/react-router'
-import { rootRoute } from './__root'
+import { createFileRoute } from '@tanstack/react-router'
 import { PackageDetail } from '../pages/PackageDetail'
 
-export const packageDetailRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/packages/$packageId',
+export const Route = createFileRoute('/packages/$packageId')({
   component: function PackageDetailWrapper() {
-    const { packageId } = packageDetailRoute.useParams()
+    const { packageId } = Route.useParams()
     return <PackageDetail packageId={parseInt(packageId, 10)} />
   },
 })

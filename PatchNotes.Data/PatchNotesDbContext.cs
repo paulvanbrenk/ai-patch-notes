@@ -12,6 +12,7 @@ public class PatchNotesDbContext : DbContext
     public DbSet<Package> Packages => Set<Package>();
     public DbSet<Release> Releases => Set<Release>();
     public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<User> Users => Set<User>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -40,6 +41,12 @@ public class PatchNotesDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(e => e.PackageId)
                 .IsRequired(false);
+        });
+
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.HasIndex(e => e.StytchUserId).IsUnique();
+            entity.HasIndex(e => e.Email);
         });
     }
 }

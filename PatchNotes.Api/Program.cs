@@ -3,15 +3,19 @@ using Microsoft.EntityFrameworkCore;
 using PatchNotes.Data;
 using PatchNotes.Data.GitHub;
 using PatchNotes.Data.AI;
+using PatchNotes.Data.Stytch;
 using PatchNotes.Sync;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// API Key configuration - use environment variable in production
-var apiKey = builder.Configuration["ApiKey"];
-if (string.IsNullOrEmpty(apiKey))
+// Stytch configuration
+var stytchProjectId = builder.Configuration["Stytch:ProjectId"];
+var stytchSecret = builder.Configuration["Stytch:Secret"];
+var stytchWebhookSecret = builder.Configuration["Stytch:WebhookSecret"];
+
+if (string.IsNullOrEmpty(stytchProjectId) || string.IsNullOrEmpty(stytchSecret))
 {
-    throw new InvalidOperationException("ApiKey configuration is required. Set it in appsettings.json or via APIKEY environment variable.");
+    Console.WriteLine("WARNING: Stytch:ProjectId and Stytch:Secret are not configured. Authentication will not work.");
 }
 
 builder.Services.AddOpenApi();
@@ -40,6 +44,19 @@ builder.Services.AddAiClient(options =>
     }
 });
 
+builder.Services.AddStytchClient(options =>
+{
+    options.ProjectId = stytchProjectId;
+    options.Secret = stytchSecret;
+    options.WebhookSecret = stytchWebhookSecret;
+    // Use production URL if configured
+    var baseUrl = builder.Configuration["Stytch:BaseUrl"];
+    if (!string.IsNullOrEmpty(baseUrl))
+    {
+        options.BaseUrl = baseUrl;
+    }
+});
+
 builder.Services.AddScoped<SyncService>();
 
 builder.Services.AddCors(options =>
@@ -48,7 +65,8 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins("http://localhost:5173", "http://localhost:3000")
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
 
@@ -61,17 +79,33 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors();
 
-// API Key authentication filter for mutating endpoints
-var requireApiKey = new Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>(
+// Stytch session authentication filter for protected endpoints
+var requireAuth = new Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>(
     (context, next) => async invocationContext =>
     {
         var httpContext = invocationContext.HttpContext;
-        var requestApiKey = httpContext.Request.Headers["X-API-Key"].FirstOrDefault();
+        var stytchClient = httpContext.RequestServices.GetRequiredService<IStytchClient>();
 
-        if (string.IsNullOrEmpty(requestApiKey) || requestApiKey != apiKey)
+        // Get session token from cookie (set by Stytch frontend SDK)
+        var sessionToken = httpContext.Request.Cookies["stytch_session"];
+
+        if (string.IsNullOrEmpty(sessionToken))
         {
             return Results.Unauthorized();
         }
+
+        // Validate session with Stytch API
+        var session = await stytchClient.AuthenticateSessionAsync(sessionToken, httpContext.RequestAborted);
+
+        if (session == null)
+        {
+            return Results.Unauthorized();
+        }
+
+        // Store authenticated user info in HttpContext for use in endpoints
+        httpContext.Items["StytchUserId"] = session.UserId;
+        httpContext.Items["StytchSessionId"] = session.SessionId;
+        httpContext.Items["StytchEmail"] = session.Email;
 
         return await next(invocationContext);
     });
@@ -264,7 +298,7 @@ app.MapPost("/api/packages", async (AddPackageRequest request, PatchNotesDbConte
         package.GithubRepo,
         package.CreatedAt
     });
-}).AddEndpointFilterFactory(requireApiKey);
+}).AddEndpointFilterFactory(requireAuth);
 
 // PATCH /api/packages/{id} - Update package GitHub mapping
 app.MapPatch("/api/packages/{id:int}", async (int id, UpdatePackageRequest request, PatchNotesDbContext db) =>
@@ -296,7 +330,7 @@ app.MapPatch("/api/packages/{id:int}", async (int id, UpdatePackageRequest reque
         package.LastFetchedAt,
         package.CreatedAt
     });
-}).AddEndpointFilterFactory(requireApiKey);
+}).AddEndpointFilterFactory(requireAuth);
 
 // DELETE /api/packages/{id} - Remove package from tracking
 app.MapDelete("/api/packages/{id:int}", async (int id, PatchNotesDbContext db) =>
@@ -311,7 +345,7 @@ app.MapDelete("/api/packages/{id:int}", async (int id, PatchNotesDbContext db) =
     await db.SaveChangesAsync();
 
     return Results.NoContent();
-}).AddEndpointFilterFactory(requireApiKey);
+}).AddEndpointFilterFactory(requireAuth);
 
 // POST /api/packages/{id}/sync - Trigger sync for a specific package
 app.MapPost("/api/packages/{id:int}/sync", async (int id, PatchNotesDbContext db, SyncService syncService) =>
@@ -331,7 +365,7 @@ app.MapPost("/api/packages/{id:int}/sync", async (int id, PatchNotesDbContext db
         package.LastFetchedAt,
         releasesAdded = result.ReleasesAdded
     });
-}).AddEndpointFilterFactory(requireApiKey);
+}).AddEndpointFilterFactory(requireAuth);
 
 // GET /api/releases - Query releases for selected packages
 app.MapGet("/api/releases", async (string? packages, int? days, PatchNotesDbContext db) =>
@@ -511,7 +545,7 @@ app.MapPatch("/api/notifications/{id:int}/read", async (int id, PatchNotesDbCont
     await db.SaveChangesAsync();
 
     return Results.Ok(new { notification.Id, notification.Unread, notification.LastReadAt });
-}).AddEndpointFilterFactory(requireApiKey);
+}).AddEndpointFilterFactory(requireAuth);
 
 // DELETE /api/notifications/{id} - Delete a notification
 app.MapDelete("/api/notifications/{id:int}", async (int id, PatchNotesDbContext db) =>
@@ -526,7 +560,205 @@ app.MapDelete("/api/notifications/{id:int}", async (int id, PatchNotesDbContext 
     await db.SaveChangesAsync();
 
     return Results.NoContent();
-}).AddEndpointFilterFactory(requireApiKey);
+}).AddEndpointFilterFactory(requireAuth);
+
+// GET /api/users/me - Get current user by Stytch user ID
+app.MapGet("/api/users/me", async (string stytchUserId, PatchNotesDbContext db) =>
+{
+    if (string.IsNullOrEmpty(stytchUserId))
+    {
+        return Results.BadRequest(new { error = "stytchUserId query parameter is required" });
+    }
+
+    var user = await db.Users
+        .Where(u => u.StytchUserId == stytchUserId)
+        .Select(u => new
+        {
+            u.Id,
+            u.StytchUserId,
+            u.Email,
+            u.Name,
+            u.CreatedAt,
+            u.LastLoginAt
+        })
+        .FirstOrDefaultAsync();
+
+    if (user == null)
+    {
+        return Results.NotFound(new { error = "User not found" });
+    }
+
+    return Results.Ok(user);
+});
+
+// POST /api/users/login - Create or update user on login (called from frontend)
+app.MapPost("/api/users/login", async (UserLoginRequest request, PatchNotesDbContext db) =>
+{
+    if (string.IsNullOrEmpty(request.StytchUserId))
+    {
+        return Results.BadRequest(new { error = "stytchUserId is required" });
+    }
+
+    var user = await db.Users.FirstOrDefaultAsync(u => u.StytchUserId == request.StytchUserId);
+
+    if (user == null)
+    {
+        user = new User
+        {
+            StytchUserId = request.StytchUserId,
+            Email = request.Email,
+            Name = request.Name,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            LastLoginAt = DateTime.UtcNow
+        };
+        db.Users.Add(user);
+    }
+    else
+    {
+        user.Email = request.Email ?? user.Email;
+        user.Name = request.Name ?? user.Name;
+        user.UpdatedAt = DateTime.UtcNow;
+        user.LastLoginAt = DateTime.UtcNow;
+    }
+
+    await db.SaveChangesAsync();
+
+    return Results.Ok(new
+    {
+        user.Id,
+        user.StytchUserId,
+        user.Email,
+        user.Name,
+        user.CreatedAt,
+        user.LastLoginAt
+    });
+});
+
+// POST /api/webhooks/stytch - Handle Stytch webhook events
+app.MapPost("/api/webhooks/stytch", async (HttpContext httpContext, PatchNotesDbContext db) =>
+{
+    // Read the raw body for signature verification
+    using var reader = new StreamReader(httpContext.Request.Body);
+    var body = await reader.ReadToEndAsync();
+
+    // In production, verify the webhook signature
+    // See: https://stytch.com/docs/api/webhooks
+    if (!string.IsNullOrEmpty(stytchWebhookSecret))
+    {
+        var signature = httpContext.Request.Headers["X-Stytch-Signature"].FirstOrDefault();
+        if (string.IsNullOrEmpty(signature))
+        {
+            return Results.Unauthorized();
+        }
+
+        // Verify HMAC-SHA256 signature
+        using var hmac = new System.Security.Cryptography.HMACSHA256(
+            System.Text.Encoding.UTF8.GetBytes(stytchWebhookSecret));
+        var computedHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(body));
+        var computedSignature = Convert.ToBase64String(computedHash);
+
+        if (signature != computedSignature)
+        {
+            return Results.Unauthorized();
+        }
+    }
+
+    var payload = JsonDocument.Parse(body);
+    var root = payload.RootElement;
+
+    if (!root.TryGetProperty("event_type", out var eventTypeElement))
+    {
+        return Results.BadRequest(new { error = "Missing event_type" });
+    }
+
+    var eventType = eventTypeElement.GetString();
+
+    // Handle different Stytch webhook events
+    switch (eventType)
+    {
+        case "user.created":
+        case "user.updated":
+            if (root.TryGetProperty("data", out var data) &&
+                data.TryGetProperty("user_id", out var userIdElement))
+            {
+                var stytchUserId = userIdElement.GetString();
+                if (string.IsNullOrEmpty(stytchUserId)) break;
+
+                string? email = null;
+                string? name = null;
+
+                // Extract email from emails array
+                if (data.TryGetProperty("emails", out var emails) &&
+                    emails.ValueKind == JsonValueKind.Array &&
+                    emails.GetArrayLength() > 0)
+                {
+                    var firstEmail = emails[0];
+                    if (firstEmail.TryGetProperty("email", out var emailElement))
+                    {
+                        email = emailElement.GetString();
+                    }
+                }
+
+                // Extract name if available
+                if (data.TryGetProperty("name", out var nameObj))
+                {
+                    var firstName = nameObj.TryGetProperty("first_name", out var fn) ? fn.GetString() : null;
+                    var lastName = nameObj.TryGetProperty("last_name", out var ln) ? ln.GetString() : null;
+                    name = string.Join(" ", new[] { firstName, lastName }.Where(n => !string.IsNullOrEmpty(n)));
+                    if (string.IsNullOrEmpty(name)) name = null;
+                }
+
+                var user = await db.Users.FirstOrDefaultAsync(u => u.StytchUserId == stytchUserId);
+
+                if (user == null)
+                {
+                    user = new User
+                    {
+                        StytchUserId = stytchUserId,
+                        Email = email,
+                        Name = name,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
+                    };
+                    db.Users.Add(user);
+                }
+                else
+                {
+                    user.Email = email ?? user.Email;
+                    user.Name = name ?? user.Name;
+                    user.UpdatedAt = DateTime.UtcNow;
+                }
+
+                await db.SaveChangesAsync();
+            }
+            break;
+
+        case "user.deleted":
+            if (root.TryGetProperty("data", out var deleteData) &&
+                deleteData.TryGetProperty("user_id", out var deleteUserIdElement))
+            {
+                var stytchUserId = deleteUserIdElement.GetString();
+                if (!string.IsNullOrEmpty(stytchUserId))
+                {
+                    var user = await db.Users.FirstOrDefaultAsync(u => u.StytchUserId == stytchUserId);
+                    if (user != null)
+                    {
+                        db.Users.Remove(user);
+                        await db.SaveChangesAsync();
+                    }
+                }
+            }
+            break;
+
+        default:
+            // Log unknown event types but don't fail
+            Console.WriteLine($"Received unknown Stytch webhook event: {eventType}");
+            break;
+    }
+
+    return Results.Ok(new { received = true });
+});
 
 app.Run();
 
@@ -573,6 +805,7 @@ static (string? owner, string? repo) ParseGitHubUrl(string url)
 
 record AddPackageRequest(string NpmName);
 record UpdatePackageRequest(string? GithubOwner, string? GithubRepo);
+record UserLoginRequest(string StytchUserId, string? Email, string? Name);
 
 // Make the Program class accessible to the test project
 public partial class Program { }

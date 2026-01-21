@@ -1,12 +1,9 @@
-import { createRoute } from '@tanstack/react-router'
-import { rootRoute } from './__root'
+import { createFileRoute } from '@tanstack/react-router'
 import { ReleaseDetail } from '../pages/ReleaseDetail'
 
-export const releaseDetailRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/releases/$releaseId',
+export const Route = createFileRoute('/releases/$releaseId')({
   component: function ReleaseDetailWrapper() {
-    const { releaseId } = releaseDetailRoute.useParams()
+    const { releaseId } = Route.useParams()
     return <ReleaseDetail releaseId={parseInt(releaseId, 10)} />
   },
 })

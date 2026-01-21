@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
+import { useStytchUser } from '@stytch/react'
 import { Header, HeaderTitle, Container, Button, Input } from '../components/ui'
 import { PackageCard, ReleaseCard } from '../components/releases'
 import { usePackages, useReleases, useAddPackage } from '../api/hooks'
 import type { Release } from '../api/types'
 import { SettingsModal } from '../components/settings'
+import { UserMenu } from '../components/auth'
 
 function getReleaseUrl(release: Release): string {
   const { githubOwner, githubRepo } = release.package
@@ -13,12 +15,15 @@ function getReleaseUrl(release: Release): string {
 
 export function Home() {
   const navigate = useNavigate()
+  const { user } = useStytchUser()
   const { data: packages, isLoading: packagesLoading } = usePackages()
   const { data: releases, isLoading: releasesLoading } = useReleases()
   const addPackage = useAddPackage()
   const [showAddForm, setShowAddForm] = useState(false)
   const [newPackageName, setNewPackageName] = useState('')
   const [settingsOpen, setSettingsOpen] = useState(false)
+
+  const isLoggedIn = !!user
 
   const handleAddPackage = async () => {
     if (!newPackageName.trim()) return
@@ -59,16 +64,21 @@ export function Home() {
           >
             Settings
           </Button>
-          <Button size="sm" onClick={() => setShowAddForm(true)}>
-            Add Package
-          </Button>
+          {isLoggedIn && (
+            <Button size="sm" onClick={() => setShowAddForm(true)}>
+              Add Package
+            </Button>
+          )}
+          <div className="ml-2 border-l border-border-default pl-4">
+            <UserMenu />
+          </div>
         </div>
       </Header>
 
       <main className="py-8">
         <Container>
           {/* Add Package Form */}
-          {showAddForm && (
+          {isLoggedIn && showAddForm && (
             <div className="mb-8 p-4 bg-surface-primary rounded-lg border border-border-default">
               <h3 className="text-sm font-semibold text-text-primary mb-3">
                 Add New Package
