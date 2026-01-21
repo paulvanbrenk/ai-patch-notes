@@ -16,7 +16,7 @@ public class NotificationsApiTests : IAsyncLifetime
     {
         _fixture = new PatchNotesApiFixture();
         await _fixture.InitializeAsync();
-        _client = _fixture.CreateClient();
+        _client = _fixture.CreateAuthenticatedClient();
     }
 
     public async Task DisposeAsync()
