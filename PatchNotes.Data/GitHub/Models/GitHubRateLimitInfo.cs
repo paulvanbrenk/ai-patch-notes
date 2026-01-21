@@ -1,4 +1,4 @@
-namespace PatchNotes.Data.GitHub;
+namespace PatchNotes.Data.GitHub.Models;
 
 /// <summary>
 /// Contains rate limit information from GitHub API responses.

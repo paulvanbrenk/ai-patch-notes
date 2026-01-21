@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using PatchNotes.Data.AI.Models;
 
 namespace PatchNotes.Data.AI;
 
@@ -177,53 +178,5 @@ public class AiClient : IAiClient
             : string.IsNullOrWhiteSpace(releaseBody)
                 ? releaseTitle
                 : $"# {releaseTitle}\n\n{releaseBody}";
-    }
-
-    private class ChatCompletionRequest
-    {
-        public required string Model { get; set; }
-        public required List<ChatMessage> Messages { get; set; }
-        public int MaxTokens { get; set; }
-        public double Temperature { get; set; }
-        public bool Stream { get; set; }
-    }
-
-    private class ChatMessage
-    {
-        public required string Role { get; set; }
-        public required string Content { get; set; }
-    }
-
-    private class ChatCompletionResponse
-    {
-        public List<Choice>? Choices { get; set; }
-        public UsageInfo? Usage { get; set; }
-    }
-
-    private class Choice
-    {
-        public ChatMessage? Message { get; set; }
-    }
-
-    private class UsageInfo
-    {
-        public int PromptTokens { get; set; }
-        public int CompletionTokens { get; set; }
-        public int TotalTokens { get; set; }
-    }
-
-    private class ChatCompletionChunk
-    {
-        public List<ChunkChoice>? Choices { get; set; }
-    }
-
-    private class ChunkChoice
-    {
-        public DeltaContent? Delta { get; set; }
-    }
-
-    private class DeltaContent
-    {
-        public string? Content { get; set; }
     }
 }

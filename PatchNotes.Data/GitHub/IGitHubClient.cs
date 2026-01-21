@@ -1,3 +1,5 @@
+using PatchNotes.Data.GitHub.Models;
+
 namespace PatchNotes.Data.GitHub;
 
 /// <summary>

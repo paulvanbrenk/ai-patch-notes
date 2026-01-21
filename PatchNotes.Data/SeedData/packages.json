@@ -1,0 +1,160 @@
+[
+  {
+    "npmName": "react",
+    "githubOwner": "facebook",
+    "githubRepo": "react",
+    "releases": [
+      {
+        "tag": "v19.0.0",
+        "title": "React 19",
+        "body": "## What's New in React 19\n\n### Actions\nActions are functions that handle data mutations and state updates. They can be used with `useTransition` and the new `useActionState` hook.\n\n### New Hooks\n- `useActionState` - manage state of async actions\n- `useFormStatus` - read form status from within form components\n- `useOptimistic` - optimistically update UI while async request is in flight\n\n### Server Components\nServer Components are now stable and allow rendering components on the server.\n\n### Document Metadata\nBuilt-in support for `<title>`, `<meta>`, and `<link>` tags in components.",
+        "publishedAt": "2024-12-05T00:00:00Z"
+      },
+      {
+        "tag": "v18.3.1",
+        "title": "React 18.3.1",
+        "body": "## Bug Fixes\n- Fixed a regression in `useSyncExternalStore` that caused incorrect behavior with concurrent features\n- Fixed memory leak in server rendering",
+        "publishedAt": "2024-04-26T00:00:00Z"
+      },
+      {
+        "tag": "v18.2.0",
+        "title": "React 18.2.0",
+        "body": "## Improvements\n- Allow `Suspense` to be used as a server component\n- Fix edge case with `useSyncExternalStore`",
+        "publishedAt": "2022-06-14T00:00:00Z"
+      }
+    ]
+  },
+  {
+    "npmName": "vue",
+    "githubOwner": "vuejs",
+    "githubRepo": "core",
+    "releases": [
+      {
+        "tag": "v3.5.13",
+        "title": "Vue 3.5.13",
+        "body": "## Bug Fixes\n- **compiler-sfc:** fix prefixIdentifiers: false handling for inline mode\n- **reactivity:** fix regression with computed getters tracking\n- **runtime-core:** handle edge case in slot normalization",
+        "publishedAt": "2024-11-15T00:00:00Z"
+      },
+      {
+        "tag": "v3.5.0",
+        "title": "Vue 3.5 \"Tengen Toppa Gurren Lagann\"",
+        "body": "## Highlights\n\n### Reactive Props Destructure\nProps destructure is now stable. Variables destructured from `defineProps` are now reactive.\n\n### SSR Improvements\n- Lazy hydration with `defineAsyncComponent()`\n- `useId()` for generating unique IDs\n\n### Custom Elements Improvements\n- `useHost()` for accessing the host element\n- `useShadowRoot()` for accessing the shadow root",
+        "publishedAt": "2024-09-03T00:00:00Z"
+      }
+    ]
+  },
+  {
+    "npmName": "next",
+    "githubOwner": "vercel",
+    "githubRepo": "next.js",
+    "releases": [
+      {
+        "tag": "v15.1.0",
+        "title": "Next.js 15.1",
+        "body": "## What's Changed\n\n### `after` API (Stable)\nThe `after` API is now stable. Use it to execute code after a response has finished streaming.\n\n### `forbidden` and `unauthorized` APIs\nNew APIs for handling 403 and 401 responses in your application with proper error boundaries.\n\n### Improvements\n- Improved error overlay with better source maps\n- React 19 support improvements\n- Turbopack performance optimizations",
+        "publishedAt": "2024-12-10T00:00:00Z"
+      },
+      {
+        "tag": "v15.0.0",
+        "title": "Next.js 15",
+        "body": "## Next.js 15\n\n### React 19 Support\nNext.js 15 includes support for React 19, including the new React Compiler.\n\n### Async Request APIs\n`cookies`, `headers`, and `params` are now async. This is a breaking change.\n\n### Caching Changes\n- `fetch` requests are no longer cached by default\n- Route Handlers are no longer cached by default\n- Client Router Cache no longer caches Page components by default\n\n### Turbopack Dev (Stable)\nTurbopack is now stable for development with up to 76% faster local server startup.",
+        "publishedAt": "2024-10-21T00:00:00Z"
+      }
+    ]
+  },
+  {
+    "npmName": "typescript",
+    "githubOwner": "microsoft",
+    "githubRepo": "TypeScript",
+    "releases": [
+      {
+        "tag": "v5.7.2",
+        "title": "TypeScript 5.7.2",
+        "body": "## Bug Fixes\n- Fixed crash when using `satisfies` with certain generic types\n- Fixed incorrect narrowing with `in` operator\n- Performance improvements for large union types",
+        "publishedAt": "2024-12-03T00:00:00Z"
+      },
+      {
+        "tag": "v5.7.0",
+        "title": "TypeScript 5.7",
+        "body": "## What's New\n\n### Checked Imports\nTypeScript now validates that `import` attributes are correct at compile time.\n\n### Path Rewriting for Relative Paths\nNew compiler option `--rewriteRelativeImportExtensions` for rewriting `.ts` to `.js` in output.\n\n### Support for V8 Compile Caching\nNode.js 22 compile caching is now supported for faster startup times.\n\n### Searching Ancestor Configuration Files\n`--build` mode now searches for `tsconfig.json` files in ancestor directories.",
+        "publishedAt": "2024-11-22T00:00:00Z"
+      }
+    ]
+  },
+  {
+    "npmName": "tailwindcss",
+    "githubOwner": "tailwindlabs",
+    "githubRepo": "tailwindcss",
+    "releases": [
+      {
+        "tag": "v4.0.0",
+        "title": "Tailwind CSS v4.0",
+        "body": "## Tailwind CSS v4.0\n\nA ground-up rewrite with a new high-performance engine, unified toolchain, and CSS-first configuration.\n\n### Highlights\n- **10x faster** - Full builds complete in milliseconds\n- **CSS-first configuration** - Configure Tailwind directly in CSS using `@theme`\n- **Native CSS features** - Built on `@layer`, `@property`, and container queries\n- **Zero configuration content detection** - Automatic template detection\n\n### Breaking Changes\n- Configuration is now done in CSS, not JavaScript\n- Some utility classes have been renamed for consistency\n- Default color palette changes",
+        "publishedAt": "2025-01-15T00:00:00Z"
+      },
+      {
+        "tag": "v3.4.17",
+        "title": "Tailwind CSS v3.4.17",
+        "body": "## Bug Fixes\n- Fixed regression with `@apply` in certain edge cases\n- Fixed color opacity modifier with CSS variables",
+        "publishedAt": "2024-12-18T00:00:00Z"
+      }
+    ]
+  },
+  {
+    "npmName": "vite",
+    "githubOwner": "vitejs",
+    "githubRepo": "vite",
+    "releases": [
+      {
+        "tag": "v6.0.7",
+        "title": "Vite 6.0.7",
+        "body": "## Bug Fixes\n- fix: handle special characters in module ids during HMR\n- fix: preserve query parameters in optimized deps\n- fix(css): handle `@import` with layer correctly",
+        "publishedAt": "2025-01-07T00:00:00Z"
+      },
+      {
+        "tag": "v6.0.0",
+        "title": "Vite 6",
+        "body": "## Vite 6.0\n\n### Environment API\nNew Environment API for better SSR and multi-environment builds.\n\n### Default Value Changes\n- `resolve.conditions` default value changed\n- JSON stringify default changed to `'auto'`\n- `build.cssMinify` defaults to `'esbuild'`\n\n### Performance\n- Faster dependency optimization\n- Improved HMR performance\n- Better tree-shaking",
+        "publishedAt": "2024-11-26T00:00:00Z"
+      }
+    ]
+  },
+  {
+    "npmName": "eslint",
+    "githubOwner": "eslint",
+    "githubRepo": "eslint",
+    "releases": [
+      {
+        "tag": "v9.17.0",
+        "title": "ESLint v9.17.0",
+        "body": "## Features\n- Add `no-useless-template-literals` rule\n- Support `ignoreComputedKeys` option in `sort-keys` rule\n\n## Bug Fixes\n- Fix false positive in `no-unused-vars` with destructuring\n- Fix `no-restricted-imports` with type imports",
+        "publishedAt": "2024-12-13T00:00:00Z"
+      },
+      {
+        "tag": "v9.0.0",
+        "title": "ESLint v9.0.0",
+        "body": "## ESLint v9.0.0\n\n### Flat Config by Default\nThe new flat config system is now the default. Legacy `.eslintrc` files are no longer supported by default.\n\n### Breaking Changes\n- Node.js 18.18.0+ required\n- `eslint:recommended` updated with new rules\n- Removed deprecated rules and formatters\n\n### New Rules\n- `no-new-native-nonconstructor`\n- `no-constant-binary-expression`",
+        "publishedAt": "2024-04-05T00:00:00Z"
+      }
+    ]
+  },
+  {
+    "npmName": "zod",
+    "githubOwner": "colinhacks",
+    "githubRepo": "zod",
+    "releases": [
+      {
+        "tag": "v3.24.1",
+        "title": "Zod 3.24.1",
+        "body": "## Bug Fixes\n- Fixed `z.function()` parameter inference with transforms\n- Fixed `z.discriminatedUnion()` error messages\n- Performance improvements for large schemas",
+        "publishedAt": "2024-12-20T00:00:00Z"
+      },
+      {
+        "tag": "v3.24.0",
+        "title": "Zod 3.24",
+        "body": "## New Features\n\n### File Schema\nNew `z.file()` schema for validating `File` objects in the browser.\n\n### Number Coercion Options\n`z.coerce.number()` now accepts options for controlling coercion behavior.\n\n### Improved Error Messages\nBetter default error messages for common validation failures.",
+        "publishedAt": "2024-12-05T00:00:00Z"
+      }
+    ]
+  }
+]
