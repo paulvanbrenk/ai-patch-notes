@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace PatchNotes.Data;
 
@@ -8,12 +7,6 @@ public class PatchNotesDbContext : DbContext
     public PatchNotesDbContext(DbContextOptions<PatchNotesDbContext> options)
         : base(options)
     {
-    }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        optionsBuilder.ConfigureWarnings(warnings =>
-            warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
     }
 
     public DbSet<Package> Packages => Set<Package>();
@@ -27,11 +20,15 @@ public class PatchNotesDbContext : DbContext
 
         modelBuilder.Entity<Package>(entity =>
         {
+            entity.Property(e => e.NpmName).HasMaxLength(256);
+            entity.Property(e => e.GithubOwner).HasMaxLength(128);
+            entity.Property(e => e.GithubRepo).HasMaxLength(128);
             entity.HasIndex(e => e.NpmName).IsUnique();
         });
 
         modelBuilder.Entity<Release>(entity =>
         {
+            entity.Property(e => e.Tag).HasMaxLength(128);
             entity.HasIndex(e => e.PublishedAt);
             entity.HasIndex(e => new { e.PackageId, e.Tag }).IsUnique();
             entity.HasOne(e => e.Package)
@@ -41,6 +38,10 @@ public class PatchNotesDbContext : DbContext
 
         modelBuilder.Entity<Notification>(entity =>
         {
+            entity.Property(e => e.GitHubId).HasMaxLength(64);
+            entity.Property(e => e.Reason).HasMaxLength(64);
+            entity.Property(e => e.SubjectType).HasMaxLength(64);
+            entity.Property(e => e.RepositoryFullName).HasMaxLength(256);
             entity.HasIndex(e => e.GitHubId).IsUnique();
             entity.HasIndex(e => e.UpdatedAt);
             entity.HasIndex(e => e.Unread);
@@ -52,6 +53,9 @@ public class PatchNotesDbContext : DbContext
 
         modelBuilder.Entity<User>(entity =>
         {
+            entity.Property(e => e.StytchUserId).HasMaxLength(128);
+            entity.Property(e => e.Email).HasMaxLength(256);
+            entity.Property(e => e.Name).HasMaxLength(256);
             entity.HasIndex(e => e.StytchUserId).IsUnique();
             entity.HasIndex(e => e.Email);
         });
