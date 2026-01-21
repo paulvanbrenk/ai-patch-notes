@@ -5,6 +5,6 @@ function RootLayout() {
   return <Outlet />
 }
 
-export const rootRoute = createRootRoute({
+export const Route = createRootRoute({
   component: RootLayout,
 })

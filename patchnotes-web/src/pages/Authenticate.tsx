@@ -29,6 +29,7 @@ export function Authenticate() {
     }
 
     const authenticate = async () => {
+      if (!token) return // TypeScript guard - error state already handles this
       try {
         if (tokenType === 'magic_links') {
           await stytch.magicLinks.authenticate(token, {
