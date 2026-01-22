@@ -7,13 +7,10 @@ public static class UserRoutes
 {
     public static WebApplication MapUserRoutes(this WebApplication app)
     {
-        // GET /api/users/me - Get current user by Stytch user ID
-        app.MapGet("/api/users/me", async (string stytchUserId, PatchNotesDbContext db) =>
+        // GET /api/users/me - Get current authenticated user
+        app.MapGet("/api/users/me", async (HttpContext httpContext, PatchNotesDbContext db) =>
         {
-            if (string.IsNullOrEmpty(stytchUserId))
-            {
-                return Results.BadRequest(new { error = "stytchUserId query parameter is required" });
-            }
+            var stytchUserId = httpContext.Items["StytchUserId"] as string;
 
             var user = await db.Users
                 .Where(u => u.StytchUserId == stytchUserId)
@@ -34,25 +31,23 @@ public static class UserRoutes
             }
 
             return Results.Ok(user);
-        });
+        })
+        .AddEndpointFilterFactory(RouteUtils.CreateAuthFilter());
 
-        // POST /api/users/login - Create or update user on login (called from frontend)
-        app.MapPost("/api/users/login", async (UserLoginRequest request, PatchNotesDbContext db) =>
+        // POST /api/users/login - Create or update user on login (called from frontend after auth)
+        app.MapPost("/api/users/login", async (HttpContext httpContext, PatchNotesDbContext db) =>
         {
-            if (string.IsNullOrEmpty(request.StytchUserId))
-            {
-                return Results.BadRequest(new { error = "stytchUserId is required" });
-            }
+            var stytchUserId = httpContext.Items["StytchUserId"] as string;
+            var email = httpContext.Items["StytchEmail"] as string;
 
-            var user = await db.Users.FirstOrDefaultAsync(u => u.StytchUserId == request.StytchUserId);
+            var user = await db.Users.FirstOrDefaultAsync(u => u.StytchUserId == stytchUserId);
 
             if (user == null)
             {
                 user = new User
                 {
-                    StytchUserId = request.StytchUserId,
-                    Email = request.Email,
-                    Name = request.Name,
+                    StytchUserId = stytchUserId!,
+                    Email = email,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow,
                     LastLoginAt = DateTime.UtcNow
@@ -61,8 +56,7 @@ public static class UserRoutes
             }
             else
             {
-                user.Email = request.Email ?? user.Email;
-                user.Name = request.Name ?? user.Name;
+                user.Email = email ?? user.Email;
                 user.UpdatedAt = DateTime.UtcNow;
                 user.LastLoginAt = DateTime.UtcNow;
             }
@@ -78,7 +72,8 @@ public static class UserRoutes
                 user.CreatedAt,
                 user.LastLoginAt
             });
-        });
+        })
+        .AddEndpointFilterFactory(RouteUtils.CreateAuthFilter());
 
         return app;
     }

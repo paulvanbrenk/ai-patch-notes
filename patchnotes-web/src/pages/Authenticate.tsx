@@ -2,6 +2,7 @@ import { useStytch, useStytchUser } from '@stytch/react'
 import { useNavigate } from '@tanstack/react-router'
 import { useEffect, useMemo, useState } from 'react'
 import { Container } from '../components/ui'
+import { api } from '../api/client'
 
 export function Authenticate() {
   const stytch = useStytch()
@@ -35,6 +36,9 @@ export function Authenticate() {
           await stytch.magicLinks.authenticate(token, {
             session_duration_minutes: 60,
           })
+
+          // Sync user to backend database
+          await api.post('/users/login')
         } else {
           setError(`Unknown token type: ${tokenType}`)
           return
