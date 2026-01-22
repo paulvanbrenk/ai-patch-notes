@@ -1,13 +1,20 @@
 import { StytchLogin } from '@stytch/react'
 import { useStytchUser } from '@stytch/react'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { useEffect } from 'react'
-import { stytchLoginConfig } from '../auth/stytch'
+import { useEffect, useMemo } from 'react'
+import { stytchLoginConfig, getStytchStyles } from '../auth/stytch'
 import { Container } from '../components/ui'
+import { useTheme } from '../components/theme'
 
 export function Login() {
   const { user, isInitialized } = useStytchUser()
   const navigate = useNavigate()
+  const { resolvedTheme } = useTheme()
+
+  const stytchStyles = useMemo(
+    () => getStytchStyles(resolvedTheme === 'dark'),
+    [resolvedTheme]
+  )
 
   useEffect(() => {
     if (isInitialized && user) {
@@ -19,7 +26,7 @@ export function Login() {
     return (
       <Container>
         <div className="flex min-h-screen items-center justify-center">
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-text-secondary">Loading...</p>
         </div>
       </Container>
     )
@@ -34,16 +41,16 @@ export function Login() {
       <div className="flex min-h-screen flex-col items-center justify-center">
         <Link
           to="/"
-          className="mb-6 text-text-secondary hover:text-text-primary"
+          className="mb-6 text-text-secondary hover:text-text-primary transition-colors"
         >
           ← Back to home
         </Link>
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-gray-900">Welcome</h1>
-          <p className="mt-2 text-gray-600">Sign in to continue</p>
+          <h1 className="text-3xl font-bold text-text-primary">Welcome</h1>
+          <p className="mt-2 text-text-secondary">Sign in to continue</p>
         </div>
         <div className="w-full max-w-md">
-          <StytchLogin config={stytchLoginConfig} />
+          <StytchLogin config={stytchLoginConfig} styles={stytchStyles} />
         </div>
       </div>
     </Container>
