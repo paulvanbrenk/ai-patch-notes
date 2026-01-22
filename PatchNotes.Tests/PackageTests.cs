@@ -9,6 +9,8 @@ public class PackageTests
     {
         var package = new Package
         {
+            Name = "test-package",
+            Url = "https://github.com/owner/repo",
             NpmName = "test-package",
             GithubOwner = "owner",
             GithubRepo = "repo"
@@ -23,6 +25,8 @@ public class PackageTests
     {
         var package = new Package
         {
+            Name = "test-package",
+            Url = "https://github.com/owner/repo",
             NpmName = "test-package",
             GithubOwner = "owner",
             GithubRepo = "repo"
@@ -47,6 +51,8 @@ public class PackageTests
     {
         var package = new Package
         {
+            Name = "test-package",
+            Url = "https://github.com/owner/repo",
             NpmName = "test-package",
             GithubOwner = "owner",
             GithubRepo = "repo"

@@ -40,6 +40,8 @@ public static class DbSeeder
 
         return seedPackages.Select(sp => new Package
         {
+            Name = sp.Name,
+            Url = sp.Url,
             NpmName = sp.NpmName,
             GithubOwner = sp.GithubOwner,
             GithubRepo = sp.GithubRepo,

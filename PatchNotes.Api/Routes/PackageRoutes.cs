@@ -18,6 +18,8 @@ public static class PackageRoutes
                 .Select(p => new
                 {
                     p.Id,
+                    p.Name,
+                    p.Url,
                     p.NpmName,
                     p.GithubOwner,
                     p.GithubRepo,
@@ -36,6 +38,8 @@ public static class PackageRoutes
                 .Select(p => new
                 {
                     p.Id,
+                    p.Name,
+                    p.Url,
                     p.NpmName,
                     p.GithubOwner,
                     p.GithubRepo,
@@ -76,6 +80,8 @@ public static class PackageRoutes
                     Package = new
                     {
                         r.Package.Id,
+                        r.Package.Name,
+                        r.Package.Url,
                         r.Package.NpmName,
                         r.Package.GithubOwner,
                         r.Package.GithubRepo
@@ -149,6 +155,8 @@ public static class PackageRoutes
 
             var package = new Package
             {
+                Name = request.NpmName,
+                Url = $"https://github.com/{owner}/{repoName}",
                 NpmName = request.NpmName,
                 GithubOwner = owner,
                 GithubRepo = repoName,
@@ -161,6 +169,8 @@ public static class PackageRoutes
             return Results.Created($"/api/packages/{package.Id}", new
             {
                 package.Id,
+                package.Name,
+                package.Url,
                 package.NpmName,
                 package.GithubOwner,
                 package.GithubRepo,
@@ -192,6 +202,8 @@ public static class PackageRoutes
             return Results.Ok(new
             {
                 package.Id,
+                package.Name,
+                package.Url,
                 package.NpmName,
                 package.GithubOwner,
                 package.GithubRepo,
@@ -229,6 +241,7 @@ public static class PackageRoutes
             return Results.Ok(new
             {
                 package.Id,
+                package.Name,
                 package.NpmName,
                 package.LastFetchedAt,
                 releasesAdded = result.ReleasesAdded

@@ -91,7 +91,7 @@ public class NotificationsApiTests : IAsyncLifetime
         using var scope = _fixture.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
 
-        var package = new Package { NpmName = "test-pkg", GithubOwner = "owner", GithubRepo = "repo", CreatedAt = DateTime.UtcNow };
+        var package = new Package { Name = "test-pkg", Url = "https://github.com/owner/repo", NpmName = "test-pkg", GithubOwner = "owner", GithubRepo = "repo", CreatedAt = DateTime.UtcNow };
         db.Packages.Add(package);
         await db.SaveChangesAsync();
 
@@ -143,7 +143,7 @@ public class NotificationsApiTests : IAsyncLifetime
         using var scope = _fixture.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
 
-        var package = new Package { NpmName = "my-pkg", GithubOwner = "owner", GithubRepo = "repo", CreatedAt = DateTime.UtcNow };
+        var package = new Package { Name = "my-pkg", Url = "https://github.com/owner/repo", NpmName = "my-pkg", GithubOwner = "owner", GithubRepo = "repo", CreatedAt = DateTime.UtcNow };
         db.Packages.Add(package);
         await db.SaveChangesAsync();
 
