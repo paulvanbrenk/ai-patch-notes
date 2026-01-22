@@ -13,7 +13,6 @@ namespace PatchNotes.Tests;
 
 public class PatchNotesApiFixture : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    public const string TestApiKey = "test-api-key-12345";
     public const string TestSessionToken = "test-session-token-12345";
     public const string TestUserId = "test-user-id";
 
@@ -55,7 +54,6 @@ public class PatchNotesApiFixture : WebApplicationFactory<Program>, IAsyncLifeti
             services.AddSingleton<IStytchClient>(new MockStytchClient(TestSessionToken, TestUserId));
         });
 
-        builder.UseSetting("ApiKey", TestApiKey);
         builder.UseSetting("GitHub:Token", "test-github-token");
         builder.UseSetting("AI:ApiKey", "test-ai-key");
         builder.UseSetting("Stytch:ProjectId", "test-project-id");
