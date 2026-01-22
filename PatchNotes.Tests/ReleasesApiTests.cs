@@ -42,7 +42,7 @@ public class ReleasesApiTests : IAsyncLifetime
         // Arrange
         using var scope = _fixture.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
-        var package = new Package { NpmName = "test-pkg", GithubOwner = "owner", GithubRepo = "repo", CreatedAt = DateTime.UtcNow };
+        var package = new Package { Name = "test-pkg", Url = "https://github.com/owner/repo", NpmName = "test-pkg", GithubOwner = "owner", GithubRepo = "repo", CreatedAt = DateTime.UtcNow };
         db.Packages.Add(package);
         await db.SaveChangesAsync();
 
@@ -82,7 +82,7 @@ public class ReleasesApiTests : IAsyncLifetime
         // Arrange
         using var scope = _fixture.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
-        var package = new Package { NpmName = "test-pkg", GithubOwner = "owner", GithubRepo = "repo", CreatedAt = DateTime.UtcNow };
+        var package = new Package { Name = "test-pkg", Url = "https://github.com/owner/repo", NpmName = "test-pkg", GithubOwner = "owner", GithubRepo = "repo", CreatedAt = DateTime.UtcNow };
         db.Packages.Add(package);
         await db.SaveChangesAsync();
 
@@ -108,8 +108,8 @@ public class ReleasesApiTests : IAsyncLifetime
         // Arrange
         using var scope = _fixture.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
-        var package1 = new Package { NpmName = "pkg1", GithubOwner = "owner", GithubRepo = "repo1", CreatedAt = DateTime.UtcNow };
-        var package2 = new Package { NpmName = "pkg2", GithubOwner = "owner", GithubRepo = "repo2", CreatedAt = DateTime.UtcNow };
+        var package1 = new Package { Name = "pkg1", Url = "https://github.com/owner/repo1", NpmName = "pkg1", GithubOwner = "owner", GithubRepo = "repo1", CreatedAt = DateTime.UtcNow };
+        var package2 = new Package { Name = "pkg2", Url = "https://github.com/owner/repo2", NpmName = "pkg2", GithubOwner = "owner", GithubRepo = "repo2", CreatedAt = DateTime.UtcNow };
         db.Packages.AddRange(package1, package2);
         await db.SaveChangesAsync();
 
@@ -135,9 +135,9 @@ public class ReleasesApiTests : IAsyncLifetime
         // Arrange
         using var scope = _fixture.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
-        var package1 = new Package { NpmName = "pkg1", GithubOwner = "owner", GithubRepo = "repo1", CreatedAt = DateTime.UtcNow };
-        var package2 = new Package { NpmName = "pkg2", GithubOwner = "owner", GithubRepo = "repo2", CreatedAt = DateTime.UtcNow };
-        var package3 = new Package { NpmName = "pkg3", GithubOwner = "owner", GithubRepo = "repo3", CreatedAt = DateTime.UtcNow };
+        var package1 = new Package { Name = "pkg1", Url = "https://github.com/owner/repo1", NpmName = "pkg1", GithubOwner = "owner", GithubRepo = "repo1", CreatedAt = DateTime.UtcNow };
+        var package2 = new Package { Name = "pkg2", Url = "https://github.com/owner/repo2", NpmName = "pkg2", GithubOwner = "owner", GithubRepo = "repo2", CreatedAt = DateTime.UtcNow };
+        var package3 = new Package { Name = "pkg3", Url = "https://github.com/owner/repo3", NpmName = "pkg3", GithubOwner = "owner", GithubRepo = "repo3", CreatedAt = DateTime.UtcNow };
         db.Packages.AddRange(package1, package2, package3);
         await db.SaveChangesAsync();
 
@@ -163,7 +163,7 @@ public class ReleasesApiTests : IAsyncLifetime
         // Arrange
         using var scope = _fixture.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
-        var package = new Package { NpmName = "test-pkg", GithubOwner = "owner", GithubRepo = "repo", CreatedAt = DateTime.UtcNow };
+        var package = new Package { Name = "test-pkg", Url = "https://github.com/owner/repo", NpmName = "test-pkg", GithubOwner = "owner", GithubRepo = "repo", CreatedAt = DateTime.UtcNow };
         db.Packages.Add(package);
         await db.SaveChangesAsync();
 
@@ -192,7 +192,7 @@ public class ReleasesApiTests : IAsyncLifetime
         // Arrange
         using var scope = _fixture.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
-        var package = new Package { NpmName = "my-package", GithubOwner = "my-owner", GithubRepo = "my-repo", CreatedAt = DateTime.UtcNow };
+        var package = new Package { Name = "my-package", Url = "https://github.com/my-owner/my-repo", NpmName = "my-package", GithubOwner = "my-owner", GithubRepo = "my-repo", CreatedAt = DateTime.UtcNow };
         db.Packages.Add(package);
         await db.SaveChangesAsync();
 
