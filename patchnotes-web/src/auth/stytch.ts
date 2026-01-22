@@ -57,7 +57,7 @@ export function getStytchStyles(isDark: boolean) {
 
   return {
     fontFamily: '"Inter", ui-sans-serif, system-ui, sans-serif',
-    hideHeaderText: true,
+    hideHeaderText: false,
     container: {
       backgroundColor: colors.surface,
       borderColor: 'transparent',

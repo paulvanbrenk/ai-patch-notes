@@ -63,14 +63,16 @@ export function Login() {
       {/* Main content */}
       <main className="relative z-10 flex flex-col items-center justify-center px-4 pt-12 pb-24">
         {/* Logo/Brand */}
-        <div className="mb-10 text-center">
-          <div className="inline-flex items-center justify-center w-12 h-12 mb-5 rounded-lg bg-gradient-to-br from-brand-500 to-brand-600 shadow-lg shadow-brand-500/25">
-            <FileText className="w-6 h-6 text-white" strokeWidth={1.5} />
+        <div className="mb-8 text-center">
+          <div className="flex items-center justify-center gap-3 mb-2">
+            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-brand-500 to-brand-600 shadow-lg shadow-brand-500/25">
+              <FileText className="w-5 h-5 text-white" strokeWidth={1.5} />
+            </div>
+            <h1 className="text-2xl font-semibold text-text-primary tracking-tight">
+              Patch Notes
+            </h1>
           </div>
-          <h1 className="text-2xl font-semibold text-text-primary tracking-tight">
-            Patch Notes
-          </h1>
-          <p className="mt-2 text-text-tertiary text-sm">
+          <p className="text-text-tertiary text-sm">
             AI-powered release summaries
           </p>
         </div>
@@ -85,22 +87,10 @@ export function Login() {
               shadow-xl shadow-black/5
               dark:shadow-black/20
               overflow-hidden
+              p-6
             "
           >
-            {/* Card header */}
-            <div className="px-8 pt-8 pb-2">
-              <h2 className="text-lg font-semibold text-text-primary text-center">
-                Welcome back
-              </h2>
-              <p className="mt-1 text-sm text-text-tertiary text-center">
-                Enter your email to sign in
-              </p>
-            </div>
-
-            {/* Stytch component wrapper - hide their header since we have our own */}
-            <div className="px-6 pb-6 stytch-wrapper">
-              <StytchLogin config={stytchLoginConfig} styles={stytchStyles} />
-            </div>
+            <StytchLogin config={stytchLoginConfig} styles={stytchStyles} />
           </div>
 
           {/* Footer text */}
