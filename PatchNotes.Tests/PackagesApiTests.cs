@@ -109,17 +109,6 @@ public class PackagesApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task PostPackage_ReturnsUnauthorized_WithInvalidApiKey()
-    {
-        var client = _fixture.CreateClient();
-        client.DefaultRequestHeaders.Add("X-API-Key", "invalid-key");
-
-        var response = await client.PostAsJsonAsync("/api/packages", new { npmName = "test" });
-
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-    }
-
-    [Fact]
     public async Task PostPackage_ReturnsBadRequest_WhenNpmNameMissing()
     {
         var response = await _authClient.PostAsJsonAsync("/api/packages", new { npmName = "" });

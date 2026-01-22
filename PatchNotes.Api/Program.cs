@@ -13,9 +13,16 @@ var stytchProjectId = builder.Configuration["Stytch:ProjectId"];
 var stytchSecret = builder.Configuration["Stytch:Secret"];
 var stytchWebhookSecret = builder.Configuration["Stytch:WebhookSecret"];
 
-if (string.IsNullOrEmpty(stytchProjectId) || string.IsNullOrEmpty(stytchSecret))
+var missingStytchKeys = new List<string>();
+if (string.IsNullOrEmpty(stytchProjectId)) missingStytchKeys.Add("Stytch:ProjectId");
+if (string.IsNullOrEmpty(stytchSecret)) missingStytchKeys.Add("Stytch:Secret");
+if (string.IsNullOrEmpty(stytchWebhookSecret)) missingStytchKeys.Add("Stytch:WebhookSecret");
+
+if (missingStytchKeys.Count > 0)
 {
-    Console.WriteLine("WARNING: Stytch:ProjectId and Stytch:Secret are not configured. Authentication will not work.");
+    throw new InvalidOperationException(
+        $"Missing required Stytch configuration: {string.Join(", ", missingStytchKeys)}. " +
+        "Please configure these values in appsettings.json or environment variables.");
 }
 
 builder.Services.AddOpenApi();
@@ -42,17 +49,7 @@ builder.Services.AddAiClient(options =>
     }
 });
 
-builder.Services.AddStytchClient(options =>
-{
-    options.ProjectId = stytchProjectId;
-    options.Secret = stytchSecret;
-    options.WebhookSecret = stytchWebhookSecret;
-    var baseUrl = builder.Configuration["Stytch:BaseUrl"];
-    if (!string.IsNullOrEmpty(baseUrl))
-    {
-        options.BaseUrl = baseUrl;
-    }
-});
+builder.Services.AddSingleton<IStytchClient, StytchClient>();
 
 builder.Services.AddScoped<SyncService>();
 

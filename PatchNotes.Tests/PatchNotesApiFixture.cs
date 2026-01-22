@@ -13,7 +13,6 @@ namespace PatchNotes.Tests;
 
 public class PatchNotesApiFixture : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    public const string TestApiKey = "test-api-key-12345";
     public const string TestSessionToken = "test-session-token-12345";
     public const string TestUserId = "test-user-id";
 
@@ -55,9 +54,11 @@ public class PatchNotesApiFixture : WebApplicationFactory<Program>, IAsyncLifeti
             services.AddSingleton<IStytchClient>(new MockStytchClient(TestSessionToken, TestUserId));
         });
 
-        builder.UseSetting("ApiKey", TestApiKey);
         builder.UseSetting("GitHub:Token", "test-github-token");
         builder.UseSetting("AI:ApiKey", "test-ai-key");
+        builder.UseSetting("Stytch:ProjectId", "test-project-id");
+        builder.UseSetting("Stytch:Secret", "test-secret");
+        builder.UseSetting("Stytch:WebhookSecret", "test-webhook-secret");
     }
 
     public async Task InitializeAsync()
@@ -217,5 +218,21 @@ public class MockStytchClient : IStytchClient
         }
 
         return Task.FromResult<StytchSessionResult?>(null);
+    }
+
+    public Task<StytchUser?> GetUserAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        if (userId == _userId)
+        {
+            return Task.FromResult<StytchUser?>(new StytchUser
+            {
+                UserId = _userId,
+                Email = "test@example.com",
+                Name = "Test User",
+                Status = "active"
+            });
+        }
+
+        return Task.FromResult<StytchUser?>(null);
     }
 }

@@ -106,4 +106,3 @@ public static class RouteUtils
 
 public record AddPackageRequest(string NpmName);
 public record UpdatePackageRequest(string? GithubOwner, string? GithubRepo);
-public record UserLoginRequest(string StytchUserId, string? Email, string? Name);

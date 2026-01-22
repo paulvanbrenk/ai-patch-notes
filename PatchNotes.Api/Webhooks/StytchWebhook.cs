@@ -1,139 +1,136 @@
-using System.Security.Cryptography;
-using System.Text;
+using System.Net;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using PatchNotes.Data;
+using PatchNotes.Data.Stytch;
 
 namespace PatchNotes.Api.Webhooks;
+
+/// <summary>
+/// Webhook event from Stytch (via Svix).
+/// </summary>
+public record StytchWebhookEvent(
+    string action,
+    string id,
+    string object_type
+);
 
 public static class StytchWebhook
 {
     public static WebApplication MapStytchWebhook(this WebApplication app)
     {
         // POST /api/webhooks/stytch - Handle Stytch webhook events
-        app.MapPost("/api/webhooks/stytch", async (HttpContext httpContext, PatchNotesDbContext db, IConfiguration configuration) =>
+        app.MapPost("/api/webhooks/stytch", async (HttpContext httpContext, PatchNotesDbContext db, IStytchClient stytchClient, IConfiguration configuration) =>
         {
             var stytchWebhookSecret = configuration["Stytch:WebhookSecret"];
+
+            // Read Svix headers for signature verification
+            var svixId = httpContext.Request.Headers["svix-id"].FirstOrDefault();
+            var svixTimestamp = httpContext.Request.Headers["svix-timestamp"].FirstOrDefault();
+            var svixSignature = httpContext.Request.Headers["svix-signature"].FirstOrDefault();
 
             // Read the raw body for signature verification
             using var reader = new StreamReader(httpContext.Request.Body);
             var body = await reader.ReadToEndAsync();
 
-            // In production, verify the webhook signature
-            // See: https://stytch.com/docs/api/webhooks
+            // Verify webhook signature using Svix
             if (!string.IsNullOrEmpty(stytchWebhookSecret))
             {
-                var signature = httpContext.Request.Headers["X-Stytch-Signature"].FirstOrDefault();
-                if (string.IsNullOrEmpty(signature))
+                if (string.IsNullOrEmpty(svixId) || string.IsNullOrEmpty(svixTimestamp) || string.IsNullOrEmpty(svixSignature))
                 {
                     return Results.Unauthorized();
                 }
 
-                // Verify HMAC-SHA256 signature
-                using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(stytchWebhookSecret));
-                var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(body));
-                var computedSignature = Convert.ToBase64String(computedHash);
+                var svix = new Svix.Webhook(stytchWebhookSecret);
+                var headers = new WebHeaderCollection();
+                headers.Set("svix-id", svixId);
+                headers.Set("svix-timestamp", svixTimestamp);
+                headers.Set("svix-signature", svixSignature);
 
-                if (signature != computedSignature)
+                try
+                {
+                    svix.Verify(body, headers);
+                }
+                catch
                 {
                     return Results.Unauthorized();
                 }
             }
 
-            var payload = JsonDocument.Parse(body);
-            var root = payload.RootElement;
-
-            if (!root.TryGetProperty("event_type", out var eventTypeElement))
+            try
             {
-                return Results.BadRequest(new { error = "Missing event_type" });
-            }
+                var stytchEvent = JsonSerializer.Deserialize<StytchWebhookEvent>(body);
 
-            var eventType = eventTypeElement.GetString();
+                if (stytchEvent == null)
+                {
+                    return Results.BadRequest(new { error = "Invalid webhook payload" });
+                }
 
-            // Handle different Stytch webhook events
-            switch (eventType)
-            {
-                case "user.created":
-                case "user.updated":
-                    if (root.TryGetProperty("data", out var data) &&
-                        data.TryGetProperty("user_id", out var userIdElement))
-                    {
-                        var stytchUserId = userIdElement.GetString();
-                        if (string.IsNullOrEmpty(stytchUserId)) break;
-
-                        string? email = null;
-                        string? name = null;
-
-                        // Extract email from emails array
-                        if (data.TryGetProperty("emails", out var emails) &&
-                            emails.ValueKind == JsonValueKind.Array &&
-                            emails.GetArrayLength() > 0)
+                // Handle different Stytch webhook events based on object_type and action
+                // IMPORTANT: Don't trust data in the webhook payload - fetch fresh data from Stytch API
+                switch (stytchEvent)
+                {
+                    case { object_type: "user", action: "created" or "updated" }:
                         {
-                            var firstEmail = emails[0];
-                            if (firstEmail.TryGetProperty("email", out var emailElement))
+                            // Fetch fresh user data from Stytch API (webhook data may be stale)
+                            var stytchUser = await stytchClient.GetUserAsync(stytchEvent.id);
+
+                            if (stytchUser == null)
                             {
-                                email = emailElement.GetString();
+                                Console.WriteLine($"Failed to fetch user {stytchEvent.id} from Stytch API");
+                                // Return OK to acknowledge receipt - Stytch will retry if we fail
+                                return Results.Ok(new { received = true, warning = "Could not fetch user data" });
                             }
-                        }
 
-                        // Extract name if available
-                        if (data.TryGetProperty("name", out var nameObj))
-                        {
-                            var firstName = nameObj.TryGetProperty("first_name", out var fn) ? fn.GetString() : null;
-                            var lastName = nameObj.TryGetProperty("last_name", out var ln) ? ln.GetString() : null;
-                            name = string.Join(" ", new[] { firstName, lastName }.Where(n => !string.IsNullOrEmpty(n)));
-                            if (string.IsNullOrEmpty(name)) name = null;
-                        }
+                            var user = await db.Users.FirstOrDefaultAsync(u => u.StytchUserId == stytchEvent.id);
 
-                        var user = await db.Users.FirstOrDefaultAsync(u => u.StytchUserId == stytchUserId);
-
-                        if (user == null)
-                        {
-                            user = new User
+                            if (user == null)
                             {
-                                StytchUserId = stytchUserId,
-                                Email = email,
-                                Name = name,
-                                CreatedAt = DateTime.UtcNow,
-                                UpdatedAt = DateTime.UtcNow
-                            };
-                            db.Users.Add(user);
-                        }
-                        else
-                        {
-                            user.Email = email ?? user.Email;
-                            user.Name = name ?? user.Name;
-                            user.UpdatedAt = DateTime.UtcNow;
+                                user = new User
+                                {
+                                    StytchUserId = stytchUser.UserId,
+                                    Email = stytchUser.Email,
+                                    Name = stytchUser.Name,
+                                    CreatedAt = DateTime.UtcNow,
+                                    UpdatedAt = DateTime.UtcNow
+                                };
+                                db.Users.Add(user);
+                            }
+                            else
+                            {
+                                user.Email = stytchUser.Email ?? user.Email;
+                                user.Name = stytchUser.Name ?? user.Name;
+                                user.UpdatedAt = DateTime.UtcNow;
+                            }
+
+                            await db.SaveChangesAsync();
+                            break;
                         }
 
-                        await db.SaveChangesAsync();
-                    }
-                    break;
-
-                case "user.deleted":
-                    if (root.TryGetProperty("data", out var deleteData) &&
-                        deleteData.TryGetProperty("user_id", out var deleteUserIdElement))
-                    {
-                        var stytchUserId = deleteUserIdElement.GetString();
-                        if (!string.IsNullOrEmpty(stytchUserId))
+                    case { object_type: "user", action: "deleted" }:
                         {
-                            var user = await db.Users.FirstOrDefaultAsync(u => u.StytchUserId == stytchUserId);
+                            var user = await db.Users.FirstOrDefaultAsync(u => u.StytchUserId == stytchEvent.id);
                             if (user != null)
                             {
                                 db.Users.Remove(user);
                                 await db.SaveChangesAsync();
                             }
+                            break;
                         }
-                    }
-                    break;
 
-                default:
-                    // Log unknown event types but don't fail
-                    Console.WriteLine($"Received unknown Stytch webhook event: {eventType}");
-                    break;
+                    default:
+                        // Log unknown event types but don't fail
+                        Console.WriteLine($"Received Stytch webhook: object_type={stytchEvent.object_type}, action={stytchEvent.action}");
+                        break;
+                }
+
+                return Results.Ok(new { received = true });
             }
-
-            return Results.Ok(new { received = true });
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Stytch webhook error: {ex.Message}");
+                return Results.BadRequest(new { error = "Invalid webhook payload" });
+            }
         });
 
         return app;
