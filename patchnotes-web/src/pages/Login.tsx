@@ -2,7 +2,7 @@ import { StytchLogin } from '@stytch/react'
 import { useStytchUser } from '@stytch/react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { useEffect, useMemo } from 'react'
-import { FileText, ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { stytchLoginConfig, getStytchStyles } from '../auth/stytch'
 import { useTheme } from '../components/theme'
 import { ThemeToggle } from '../components/theme'
@@ -61,43 +61,13 @@ export function Login() {
       </header>
 
       {/* Main content */}
-      <main className="relative z-10 flex flex-col items-center justify-center px-4 pt-12 pb-24">
-        {/* Logo/Brand */}
-        <div className="mb-8 text-center">
-          <div className="flex items-center justify-center gap-3 mb-2">
-            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-brand-500 to-brand-600 shadow-lg shadow-brand-500/25">
-              <FileText className="w-5 h-5 text-white" strokeWidth={1.5} />
-            </div>
-            <h1 className="text-2xl font-semibold text-text-primary tracking-tight">
-              Patch Notes
-            </h1>
-          </div>
-          <p className="text-text-tertiary text-sm">
-            AI-powered release summaries
-          </p>
-        </div>
+      <main className="relative z-10 flex flex-col items-center justify-center px-4 pt-24 pb-24">
+        <StytchLogin config={stytchLoginConfig} styles={stytchStyles} />
 
-        {/* Login card */}
-        <div className="w-full max-w-sm">
-          <div
-            className="
-              bg-surface-primary
-              border border-border-default
-              rounded-lg
-              shadow-xl shadow-black/5
-              dark:shadow-black/20
-              overflow-hidden
-              p-6
-            "
-          >
-            <StytchLogin config={stytchLoginConfig} styles={stytchStyles} />
-          </div>
-
-          {/* Footer text */}
-          <p className="mt-6 text-center text-xs text-text-tertiary">
-            By continuing, you agree to our terms of service
-          </p>
-        </div>
+        {/* Footer text */}
+        <p className="mt-6 text-center text-xs text-text-tertiary">
+          By continuing, you agree to our terms of service
+        </p>
       </main>
     </div>
   )

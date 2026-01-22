@@ -57,12 +57,10 @@ export function getStytchStyles(isDark: boolean) {
 
   return {
     fontFamily: '"Inter", ui-sans-serif, system-ui, sans-serif',
-    hideHeaderText: false,
     container: {
       backgroundColor: colors.surface,
-      borderColor: 'transparent',
-      borderRadius: '8px',
-      width: '100%',
+      borderColor: colors.border,
+      borderRadius: '12px',
     },
     colors: {
       primary: colors.text,
