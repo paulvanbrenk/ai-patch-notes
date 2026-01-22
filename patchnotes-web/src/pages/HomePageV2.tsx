@@ -17,6 +17,7 @@ import {
 } from '../components/ui'
 import { ThemeToggle } from '../components/theme'
 import { UserMenuV2 } from '../components/auth'
+import { useFilterStore } from '../stores/filterStore'
 
 // ============================================================================
 // Types
@@ -508,9 +509,14 @@ function FilterButton({
 // ============================================================================
 
 export function HomePageV2() {
-  const [showPrerelease, setShowPrerelease] = useState(true)
-  const [sortBy, setSortBy] = useState<'date' | 'name'>('date')
-  const [groupByPackage, setGroupByPackage] = useState(false)
+  const {
+    showPrerelease,
+    sortBy,
+    groupByPackage,
+    togglePrerelease,
+    setSortBy,
+    toggleGroupByPackage,
+  } = useFilterStore()
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
   const [isLoading] = useState(false)
 
@@ -575,7 +581,7 @@ export function HomePageV2() {
           <div className="flex items-center justify-end gap-2 mb-6">
             <FilterButton
               active={showPrerelease}
-              onClick={() => setShowPrerelease(!showPrerelease)}
+              onClick={togglePrerelease}
               title={showPrerelease ? 'Hide pre-releases' : 'Show pre-releases'}
             >
               {showPrerelease ? (
@@ -586,7 +592,7 @@ export function HomePageV2() {
             </FilterButton>
             <FilterButton
               active={groupByPackage}
-              onClick={() => setGroupByPackage(!groupByPackage)}
+              onClick={toggleGroupByPackage}
               title={groupByPackage ? 'Disable grouping' : 'Group by package'}
             >
               <Group className="w-4 h-4" />
