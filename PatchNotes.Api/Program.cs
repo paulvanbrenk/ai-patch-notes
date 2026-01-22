@@ -54,11 +54,6 @@ builder.Services.AddStytchClient(options =>
     options.ProjectId = stytchProjectId;
     options.Secret = stytchSecret;
     options.WebhookSecret = stytchWebhookSecret;
-    var baseUrl = builder.Configuration["Stytch:BaseUrl"];
-    if (!string.IsNullOrEmpty(baseUrl))
-    {
-        options.BaseUrl = baseUrl;
-    }
 });
 
 builder.Services.AddScoped<SyncService>();

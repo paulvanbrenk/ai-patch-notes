@@ -1,7 +1,4 @@
-using System.Net.Http.Headers;
-using System.Text;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace PatchNotes.Data.Stytch;
 
@@ -29,20 +26,8 @@ public static class StytchServiceCollectionExtensions
             services.AddOptions<StytchClientOptions>();
         }
 
-        services.AddHttpClient<IStytchClient, StytchClient>((serviceProvider, client) =>
-        {
-            var options = serviceProvider.GetRequiredService<IOptions<StytchClientOptions>>().Value;
-
-            client.BaseAddress = new Uri(options.BaseUrl);
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-            // Stytch uses Basic auth with project_id:secret
-            if (!string.IsNullOrWhiteSpace(options.ProjectId) && !string.IsNullOrWhiteSpace(options.Secret))
-            {
-                var credentials = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{options.ProjectId}:{options.Secret}"));
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", credentials);
-            }
-        });
+        // The Stytch SDK handles HTTP internally, so we just register as singleton
+        services.AddSingleton<IStytchClient, StytchClient>();
 
         return services;
     }

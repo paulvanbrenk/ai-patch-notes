@@ -11,18 +11,13 @@ public class StytchClientOptions
     public const string SectionName = "Stytch";
 
     /// <summary>
-    /// The Stytch API base URL. Defaults to test environment.
-    /// Use https://api.stytch.com for production.
-    /// </summary>
-    public string BaseUrl { get; set; } = "https://test.stytch.com";
-
-    /// <summary>
-    /// The Stytch project ID (used as username for Basic auth).
+    /// The Stytch project ID.
+    /// The SDK determines test vs live environment based on the project ID prefix.
     /// </summary>
     public string? ProjectId { get; set; }
 
     /// <summary>
-    /// The Stytch secret key (used as password for Basic auth).
+    /// The Stytch secret key.
     /// </summary>
     public string? Secret { get; set; }
 

@@ -1,88 +1,49 @@
-using System.Net.Http.Json;
-using System.Text.Json;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Stytch.net.Clients;
+using Stytch.net.Models;
+using Stytch.net.Models.Consumer;
 
 namespace PatchNotes.Data.Stytch;
 
 /// <summary>
-/// Client for interacting with the Stytch API.
+/// Client for interacting with the Stytch API using the official SDK.
 /// </summary>
 public class StytchClient : IStytchClient
 {
-    private readonly HttpClient _httpClient;
+    private readonly ConsumerClient _client;
     private readonly ILogger<StytchClient> _logger;
 
-    public StytchClient(HttpClient httpClient, ILogger<StytchClient> logger)
+    public StytchClient(IOptions<StytchClientOptions> options, ILogger<StytchClient> logger)
     {
-        _httpClient = httpClient;
         _logger = logger;
+        _client = new ConsumerClient(new ClientConfig
+        {
+            ProjectId = options.Value.ProjectId,
+            ProjectSecret = options.Value.Secret
+        });
     }
 
     public async Task<StytchSessionResult?> AuthenticateSessionAsync(string sessionToken, CancellationToken cancellationToken = default)
     {
         try
         {
-            var response = await _httpClient.PostAsJsonAsync(
-                "/v1/sessions/authenticate",
-                new { session_token = sessionToken },
-                cancellationToken);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                _logger.LogWarning("Stytch session authentication failed with status {StatusCode}", response.StatusCode);
-                return null;
-            }
-
-            var json = await response.Content.ReadAsStringAsync(cancellationToken);
-            var doc = JsonDocument.Parse(json);
-            var root = doc.RootElement;
-
-            string? userId = null;
-            string? sessionId = null;
-            string? email = null;
-
-            if (root.TryGetProperty("session", out var session))
-            {
-                if (session.TryGetProperty("user_id", out var userIdElement))
+            var response = await _client.Sessions.Authenticate(
+                new SessionsAuthenticateRequest
                 {
-                    userId = userIdElement.GetString();
-                }
-                if (session.TryGetProperty("session_id", out var sessionIdElement))
-                {
-                    sessionId = sessionIdElement.GetString();
-                }
-            }
-
-            if (root.TryGetProperty("user", out var user))
-            {
-                if (user.TryGetProperty("emails", out var emails) &&
-                    emails.ValueKind == JsonValueKind.Array &&
-                    emails.GetArrayLength() > 0)
-                {
-                    var firstEmail = emails[0];
-                    if (firstEmail.TryGetProperty("email", out var emailElement))
-                    {
-                        email = emailElement.GetString();
-                    }
-                }
-            }
-
-            if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(sessionId))
-            {
-                _logger.LogWarning("Stytch session response missing required fields");
-                return null;
-            }
+                    SessionToken = sessionToken
+                });
 
             return new StytchSessionResult
             {
-                UserId = userId,
-                SessionId = sessionId,
-                Email = email
+                UserId = response.Session.UserId,
+                SessionId = response.Session.SessionId,
+                Email = response.User.Emails?.FirstOrDefault()?.Email
             };
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error authenticating Stytch session");
+            _logger.LogWarning(ex, "Stytch session authentication failed");
             return null;
         }
     }
@@ -91,61 +52,28 @@ public class StytchClient : IStytchClient
     {
         try
         {
-            var response = await _httpClient.GetAsync($"/v1/users/{userId}", cancellationToken);
+            var response = await _client.Users.Get(new UsersGetRequest(userId));
 
-            if (!response.IsSuccessStatusCode)
-            {
-                _logger.LogWarning("Stytch get user failed with status {StatusCode} for user {UserId}", response.StatusCode, userId);
-                return null;
-            }
-
-            var json = await response.Content.ReadAsStringAsync(cancellationToken);
-            var doc = JsonDocument.Parse(json);
-            var root = doc.RootElement;
-
-            string? email = null;
             string? name = null;
-            string? status = null;
-
-            // Extract email from emails array
-            if (root.TryGetProperty("emails", out var emails) &&
-                emails.ValueKind == JsonValueKind.Array &&
-                emails.GetArrayLength() > 0)
+            if (response.Name != null)
             {
-                var firstEmail = emails[0];
-                if (firstEmail.TryGetProperty("email", out var emailElement))
-                {
-                    email = emailElement.GetString();
-                }
-            }
-
-            // Extract name
-            if (root.TryGetProperty("name", out var nameObj))
-            {
-                var firstName = nameObj.TryGetProperty("first_name", out var fn) ? fn.GetString() : null;
-                var lastName = nameObj.TryGetProperty("last_name", out var ln) ? ln.GetString() : null;
-                var nameParts = new[] { firstName, lastName }.Where(n => !string.IsNullOrEmpty(n));
+                var nameParts = new[] { response.Name.FirstName, response.Name.LastName }
+                    .Where(n => !string.IsNullOrEmpty(n));
                 name = string.Join(" ", nameParts);
                 if (string.IsNullOrEmpty(name)) name = null;
             }
 
-            // Extract status
-            if (root.TryGetProperty("status", out var statusElement))
-            {
-                status = statusElement.GetString();
-            }
-
             return new StytchUser
             {
-                UserId = userId,
-                Email = email,
+                UserId = response.UserId,
+                Email = response.Emails?.FirstOrDefault()?.Email,
                 Name = name,
-                Status = status
+                Status = response.Status
             };
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting Stytch user {UserId}", userId);
+            _logger.LogWarning(ex, "Stytch get user failed for user {UserId}", userId);
             return null;
         }
     }
