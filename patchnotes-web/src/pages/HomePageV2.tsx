@@ -677,30 +677,14 @@ export function HomePageV2() {
           {!isLoading && filteredGroups.length === 0 && (
             <div className="text-center py-16">
               <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-surface-tertiary flex items-center justify-center">
-                <svg
-                  className="w-8 h-8 text-text-tertiary"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                  />
-                </svg>
+                <FlaskConicalOff className="w-8 h-8 text-text-tertiary" />
               </div>
               <h3 className="text-lg font-semibold text-text-primary mb-2">
-                No packages in your watchlist
+                No releases found
               </h3>
-              <p className="text-text-secondary mb-4">
-                Add packages to your watchlist to see their release summaries
-                here.
+              <p className="text-text-secondary">
+                Try adjusting your filters to see more releases.
               </p>
-              <Button onClick={() => setActiveTab('all')}>
-                Browse All Packages
-              </Button>
             </div>
           )}
         </Container>
