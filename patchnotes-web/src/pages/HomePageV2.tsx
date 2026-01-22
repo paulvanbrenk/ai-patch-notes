@@ -1,6 +1,13 @@
 import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import {
+  FlaskConical,
+  FlaskConicalOff,
+  ArrowDownAZ,
+  CalendarArrowDown,
+  Group,
+} from 'lucide-react'
+import {
   Header,
   HeaderTitle,
   Container,
@@ -213,8 +220,6 @@ const MOCK_VERSION_GROUPS: VersionGroup[] = [
     ],
   },
 ]
-
-const MOCK_WATCHLIST_IDS = [1, 2] // Next.js and React
 
 // ============================================================================
 // Utility Functions
@@ -469,23 +474,26 @@ function SummaryCard({
   )
 }
 
-function TabButton({
+function FilterButton({
   active,
   onClick,
   children,
+  title,
 }: {
   active: boolean
   onClick: () => void
   children: React.ReactNode
+  title?: string
 }) {
   return (
     <button
       onClick={onClick}
+      title={title}
       className={`
-        px-4 py-2 text-sm font-medium rounded-lg transition-all
+        flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-all
         ${
           active
-            ? 'bg-surface-primary text-text-primary shadow-sm'
+            ? 'bg-surface-primary text-text-primary shadow-sm ring-1 ring-border-default'
             : 'text-text-secondary hover:text-text-primary hover:bg-surface-primary/50'
         }
       `}
@@ -500,15 +508,11 @@ function TabButton({
 // ============================================================================
 
 export function HomePageV2() {
-  const [activeTab, setActiveTab] = useState<'all' | 'watchlist'>('all')
+  const [showPrerelease, setShowPrerelease] = useState(true)
+  const [sortBy, setSortBy] = useState<'date' | 'name'>('date')
+  const [groupByPackage, setGroupByPackage] = useState(false)
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
-  const [isLoading, setIsLoading] = useState(false)
-
-  // Simulate loading for demo
-  const simulateLoading = () => {
-    setIsLoading(true)
-    setTimeout(() => setIsLoading(false), 1000)
-  }
+  const [isLoading] = useState(false)
 
   const toggleExpanded = (groupId: string) => {
     setExpandedGroups((prev) => {
@@ -522,16 +526,22 @@ export function HomePageV2() {
     })
   }
 
-  // Filter groups based on active tab
-  const filteredGroups =
-    activeTab === 'watchlist'
-      ? MOCK_VERSION_GROUPS.filter((g) =>
-          MOCK_WATCHLIST_IDS.includes(g.packageId)
-        )
-      : MOCK_VERSION_GROUPS
+  // Filter groups based on prerelease toggle
+  const filteredGroups = showPrerelease
+    ? MOCK_VERSION_GROUPS
+    : MOCK_VERSION_GROUPS.filter((g) => !g.isPrerelease)
+
+  // Sort groups
+  const sortedGroups = [...filteredGroups].sort((a, b) => {
+    if (sortBy === 'name') {
+      return a.packageName.localeCompare(b.packageName)
+    }
+    // Sort by date (most recent first)
+    return new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime()
+  })
 
   // Group by package for display
-  const groupedByPackage = filteredGroups.reduce(
+  const groupedByPackageMap = sortedGroups.reduce(
     (acc, group) => {
       if (!acc[group.packageName]) {
         acc[group.packageName] = []
@@ -561,42 +571,52 @@ export function HomePageV2() {
 
       <main className="py-8">
         <Container>
-          {/* Page Header */}
-          <div className="mb-8">
-            <h1 className="text-2xl font-bold text-text-primary mb-2">
-              Release Summaries
-            </h1>
-            <p className="text-text-secondary">
-              AI-generated summaries of the latest releases from your tracked
-              packages.
-            </p>
-          </div>
-
-          {/* Tabs */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-1 p-1 bg-surface-tertiary rounded-lg">
-              <TabButton
-                active={activeTab === 'all'}
-                onClick={() => {
-                  setActiveTab('all')
-                  simulateLoading()
-                }}
+          {/* Filters */}
+          <div className="flex items-center justify-end gap-2 mb-6">
+            <FilterButton
+              active={showPrerelease}
+              onClick={() => setShowPrerelease(!showPrerelease)}
+              title={showPrerelease ? 'Hide pre-releases' : 'Show pre-releases'}
+            >
+              {showPrerelease ? (
+                <FlaskConical className="w-4 h-4" />
+              ) : (
+                <FlaskConicalOff className="w-4 h-4" />
+              )}
+            </FilterButton>
+            <FilterButton
+              active={groupByPackage}
+              onClick={() => setGroupByPackage(!groupByPackage)}
+              title={groupByPackage ? 'Disable grouping' : 'Group by package'}
+            >
+              <Group className="w-4 h-4" />
+            </FilterButton>
+            <div className="flex items-center rounded-lg border border-border-default overflow-hidden">
+              <button
+                onClick={() => setSortBy('name')}
+                title="Sort by name"
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors
+                  ${
+                    sortBy === 'name'
+                      ? 'bg-surface-primary text-text-primary'
+                      : 'bg-transparent text-text-secondary hover:text-text-primary hover:bg-surface-tertiary/50'
+                  }`}
               >
-                All Packages
-              </TabButton>
-              <TabButton
-                active={activeTab === 'watchlist'}
-                onClick={() => {
-                  setActiveTab('watchlist')
-                  simulateLoading()
-                }}
+                <ArrowDownAZ className="w-4 h-4" />
+              </button>
+              <div className="w-px h-5 bg-border-default" />
+              <button
+                onClick={() => setSortBy('date')}
+                title="Sort by date"
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors
+                  ${
+                    sortBy === 'date'
+                      ? 'bg-surface-primary text-text-primary'
+                      : 'bg-transparent text-text-secondary hover:text-text-primary hover:bg-surface-tertiary/50'
+                  }`}
               >
-                My Watchlist
-              </TabButton>
-            </div>
-            <div className="text-sm text-text-tertiary">
-              {filteredGroups.length} version group
-              {filteredGroups.length !== 1 && 's'}
+                <CalendarArrowDown className="w-4 h-4" />
+              </button>
             </div>
           </div>
 
@@ -607,29 +627,42 @@ export function HomePageV2() {
               <SkeletonCard />
               <SkeletonCard />
             </div>
-          ) : (
+          ) : groupByPackage ? (
             <div className="space-y-8">
-              {Object.entries(groupedByPackage).map(([packageName, groups]) => (
-                <section key={packageName}>
-                  <h2 className="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
-                    <PackageIcon name={packageName} />
-                    {packageName}
-                    <span className="text-sm font-normal text-text-tertiary">
-                      ({groups.length} version
-                      {groups.length !== 1 && 's'})
-                    </span>
-                  </h2>
-                  <div className="space-y-4">
-                    {groups.map((group) => (
-                      <SummaryCard
-                        key={group.id}
-                        group={group}
-                        isExpanded={expandedGroups.has(group.id)}
-                        onToggle={() => toggleExpanded(group.id)}
-                      />
-                    ))}
-                  </div>
-                </section>
+              {Object.entries(groupedByPackageMap).map(
+                ([packageName, groups]) => (
+                  <section key={packageName}>
+                    <h2 className="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
+                      <PackageIcon name={packageName} />
+                      {packageName}
+                      <span className="text-sm font-normal text-text-tertiary">
+                        ({groups.length} version
+                        {groups.length !== 1 && 's'})
+                      </span>
+                    </h2>
+                    <div className="space-y-4">
+                      {groups.map((group) => (
+                        <SummaryCard
+                          key={group.id}
+                          group={group}
+                          isExpanded={expandedGroups.has(group.id)}
+                          onToggle={() => toggleExpanded(group.id)}
+                        />
+                      ))}
+                    </div>
+                  </section>
+                )
+              )}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {sortedGroups.map((group) => (
+                <SummaryCard
+                  key={group.id}
+                  group={group}
+                  isExpanded={expandedGroups.has(group.id)}
+                  onToggle={() => toggleExpanded(group.id)}
+                />
               ))}
             </div>
           )}

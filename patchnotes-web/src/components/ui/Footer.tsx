@@ -1,5 +1,5 @@
 import { type HTMLAttributes, forwardRef } from 'react'
-import { Hammer } from 'lucide-react'
+import { Hammer, Anvil } from 'lucide-react'
 import { Container } from './Container'
 
 type FooterProps = HTMLAttributes<HTMLElement>
@@ -24,6 +24,7 @@ export const Footer = forwardRef<HTMLElement, FooterProps>(
             <span className="text-sm text-text-secondary">
               Forged in Gas Town
             </span>
+            <Anvil className="w-4 h-4 text-text-tertiary" strokeWidth={1.5} />
           </div>
         </Container>
       </footer>
