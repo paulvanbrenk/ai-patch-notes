@@ -1,5 +1,5 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Stytch.net.Clients;
 using Stytch.net.Models;
 using Stytch.net.Models.Consumer;
@@ -14,13 +14,13 @@ public class StytchClient : IStytchClient
     private readonly ConsumerClient _client;
     private readonly ILogger<StytchClient> _logger;
 
-    public StytchClient(IOptions<StytchClientOptions> options, ILogger<StytchClient> logger)
+    public StytchClient(IConfiguration configuration, ILogger<StytchClient> logger)
     {
         _logger = logger;
         _client = new ConsumerClient(new ClientConfig
         {
-            ProjectId = options.Value.ProjectId,
-            ProjectSecret = options.Value.Secret
+            ProjectId = configuration["Stytch:ProjectId"],
+            ProjectSecret = configuration["Stytch:Secret"]
         });
     }
 

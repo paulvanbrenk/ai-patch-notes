@@ -49,12 +49,6 @@ builder.Services.AddAiClient(options =>
     }
 });
 
-builder.Services.Configure<StytchClientOptions>(options =>
-{
-    options.ProjectId = stytchProjectId;
-    options.Secret = stytchSecret;
-    options.WebhookSecret = stytchWebhookSecret;
-});
 builder.Services.AddSingleton<IStytchClient, StytchClient>();
 
 builder.Services.AddScoped<SyncService>();
