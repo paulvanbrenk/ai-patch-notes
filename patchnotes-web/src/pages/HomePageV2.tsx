@@ -8,6 +8,8 @@ import {
   Badge,
   Card,
 } from '../components/ui'
+import { ThemeToggle } from '../components/theme'
+import { UserMenuV2 } from '../components/auth'
 
 // ============================================================================
 // Types
@@ -272,19 +274,28 @@ function SkeletonCard() {
 }
 
 function PackageIcon({ name }: { name: string }) {
-  // Generate a consistent color based on package name
-  const colors: Record<string, { bg: string; text: string }> = {
+  // Brand colors for well-known packages
+  const icons: Record<string, { bg: string; text: string; icon?: string }> = {
     'Next.js': {
-      bg: 'bg-black dark:bg-white',
-      text: 'text-white dark:text-black',
+      bg: 'bg-black',
+      text: 'text-white',
     },
-    React: { bg: 'bg-[#61dafb]/20', text: 'text-[#61dafb]' },
-    TypeScript: { bg: 'bg-[#3178c6]/20', text: 'text-[#3178c6]' },
-    Vite: { bg: 'bg-[#646cff]/20', text: 'text-[#646cff]' },
+    React: {
+      bg: 'bg-sky-500/15',
+      text: 'text-sky-600 dark:text-sky-400',
+    },
+    TypeScript: {
+      bg: 'bg-blue-500/15',
+      text: 'text-blue-600 dark:text-blue-400',
+    },
+    Vite: {
+      bg: 'bg-violet-500/15',
+      text: 'text-violet-600 dark:text-violet-400',
+    },
   }
-  const { bg, text } = colors[name] || {
-    bg: 'bg-brand-100',
-    text: 'text-brand-600',
+  const { bg, text } = icons[name] || {
+    bg: 'bg-brand-100 dark:bg-brand-900/30',
+    text: 'text-brand-600 dark:text-brand-400',
   }
 
   const initial = name.charAt(0).toUpperCase()
@@ -303,12 +314,12 @@ function PrereleaseTag({ type }: { type?: string }) {
 
   const colors: Record<string, string> = {
     canary:
-      'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-    beta: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+      'bg-orange-100 text-orange-900 dark:bg-orange-900/40 dark:text-orange-200',
+    beta: 'bg-blue-50 text-blue-800 ring-1 ring-inset ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-300 dark:ring-blue-500/30',
     alpha:
-      'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
-    rc: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-    next: 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400',
+      'bg-purple-50 text-purple-800 ring-1 ring-inset ring-purple-600/20 dark:bg-purple-900/30 dark:text-purple-300 dark:ring-purple-500/30',
+    rc: 'bg-emerald-50 text-emerald-800 ring-1 ring-inset ring-emerald-600/20 dark:bg-emerald-900/30 dark:text-emerald-300 dark:ring-emerald-500/30',
+    next: 'bg-pink-50 text-pink-800 ring-1 ring-inset ring-pink-600/20 dark:bg-pink-900/30 dark:text-pink-300 dark:ring-pink-500/30',
   }
 
   return (
@@ -535,13 +546,16 @@ export function HomePageV2() {
     <div className="min-h-screen bg-surface-secondary">
       <Header>
         <HeaderTitle>Patch Notes</HeaderTitle>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <Link to="/">
-            <Button variant="secondary" size="sm">
+            <Button variant="ghost" size="sm">
               ← Back
             </Button>
           </Link>
           <Badge variant="prerelease">Preview</Badge>
+          <div className="w-px h-6 bg-border-muted mx-1" />
+          <ThemeToggle />
+          <UserMenuV2 />
         </div>
       </Header>
 

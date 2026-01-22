@@ -1,4 +1,5 @@
 import { type HTMLAttributes, forwardRef } from 'react'
+import { Hammer } from 'lucide-react'
 import { Container } from './Container'
 
 type FooterProps = HTMLAttributes<HTMLElement>
@@ -18,7 +19,8 @@ export const Footer = forwardRef<HTMLElement, FooterProps>(
         {...props}
       >
         <Container>
-          <div className="h-12 flex items-center justify-center">
+          <div className="h-12 flex items-center justify-center gap-1.5">
+            <Hammer className="w-4 h-4 text-text-tertiary" strokeWidth={1.5} />
             <span className="text-sm text-text-secondary">
               Forged in Gas Town
             </span>
