@@ -58,6 +58,9 @@ public class PatchNotesApiFixture : WebApplicationFactory<Program>, IAsyncLifeti
         builder.UseSetting("ApiKey", TestApiKey);
         builder.UseSetting("GitHub:Token", "test-github-token");
         builder.UseSetting("AI:ApiKey", "test-ai-key");
+        builder.UseSetting("Stytch:ProjectId", "test-project-id");
+        builder.UseSetting("Stytch:Secret", "test-secret");
+        builder.UseSetting("Stytch:WebhookSecret", "test-webhook-secret");
     }
 
     public async Task InitializeAsync()
