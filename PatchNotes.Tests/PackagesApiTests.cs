@@ -48,8 +48,8 @@ public class PackagesApiTests : IAsyncLifetime
         using var scope = _fixture.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
         db.Packages.AddRange(
-            new Package { NpmName = "react", GithubOwner = "facebook", GithubRepo = "react", CreatedAt = DateTime.UtcNow },
-            new Package { NpmName = "vue", GithubOwner = "vuejs", GithubRepo = "core", CreatedAt = DateTime.UtcNow }
+            new Package { Name = "react", Url = "https://github.com/facebook/react", NpmName = "react", GithubOwner = "facebook", GithubRepo = "react", CreatedAt = DateTime.UtcNow },
+            new Package { Name = "vue", Url = "https://github.com/vuejs/core", NpmName = "vue", GithubOwner = "vuejs", GithubRepo = "core", CreatedAt = DateTime.UtcNow }
         );
         await db.SaveChangesAsync();
 
@@ -71,6 +71,8 @@ public class PackagesApiTests : IAsyncLifetime
         var createdAt = DateTime.UtcNow;
         db.Packages.Add(new Package
         {
+            Name = "lodash",
+            Url = "https://github.com/lodash/lodash",
             NpmName = "lodash",
             GithubOwner = "lodash",
             GithubRepo = "lodash",
@@ -175,6 +177,8 @@ public class PackagesApiTests : IAsyncLifetime
         var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
         db.Packages.Add(new Package
         {
+            Name = "duplicate-pkg",
+            Url = "https://github.com/owner/repo",
             NpmName = "duplicate-pkg",
             GithubOwner = "owner",
             GithubRepo = "repo",
@@ -220,6 +224,8 @@ public class PackagesApiTests : IAsyncLifetime
         var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
         var pkg = new Package
         {
+            Name = "to-delete",
+            Url = "https://github.com/owner/repo",
             NpmName = "to-delete",
             GithubOwner = "owner",
             GithubRepo = "repo",

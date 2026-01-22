@@ -55,18 +55,18 @@ public class SyncService
                 {
                     _logger.LogInformation(
                         "Synced {Package}: {Count} new releases",
-                        package.NpmName,
+                        package.Name,
                         packageResult.ReleasesAdded);
                 }
                 else
                 {
-                    _logger.LogDebug("Synced {Package}: no new releases", package.NpmName);
+                    _logger.LogDebug("Synced {Package}: no new releases", package.Name);
                 }
             }
             catch (Exception ex)
             {
-                result.Errors.Add(new SyncError(package.NpmName, ex.Message));
-                _logger.LogError(ex, "Failed to sync {Package}", package.NpmName);
+                result.Errors.Add(new SyncError(package.Name, ex.Message));
+                _logger.LogError(ex, "Failed to sync {Package}", package.Name);
             }
         }
 
@@ -93,7 +93,7 @@ public class SyncService
         {
             _logger.LogWarning(
                 "Skipping {Package}: missing GitHub owner/repo",
-                package.NpmName);
+                package.Name);
             return new PackageSyncResult(0);
         }
 

@@ -4,8 +4,14 @@ namespace PatchNotes.Data.SeedData;
 
 public class SeedPackage
 {
+    [JsonPropertyName("name")]
+    public required string Name { get; set; }
+
+    [JsonPropertyName("url")]
+    public required string Url { get; set; }
+
     [JsonPropertyName("npmName")]
-    public required string NpmName { get; set; }
+    public string? NpmName { get; set; }
 
     [JsonPropertyName("githubOwner")]
     public required string GithubOwner { get; set; }

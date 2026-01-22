@@ -55,8 +55,8 @@ public class SyncServiceTests : IDisposable
     public async Task SyncAllAsync_WithMultiplePackages_SyncsAll()
     {
         // Arrange
-        var package1 = new Package { NpmName = "pkg1", GithubOwner = "owner1", GithubRepo = "repo1" };
-        var package2 = new Package { NpmName = "pkg2", GithubOwner = "owner2", GithubRepo = "repo2" };
+        var package1 = new Package { Name = "pkg1", Url = "https://github.com/owner1/repo1", NpmName = "pkg1", GithubOwner = "owner1", GithubRepo = "repo1" };
+        var package2 = new Package { Name = "pkg2", Url = "https://github.com/owner2/repo2", NpmName = "pkg2", GithubOwner = "owner2", GithubRepo = "repo2" };
         _db.Packages.AddRange(package1, package2);
         await _db.SaveChangesAsync();
 
@@ -81,8 +81,8 @@ public class SyncServiceTests : IDisposable
     public async Task SyncAllAsync_WithFailingPackage_ContinuesAndRecordsError()
     {
         // Arrange
-        var package1 = new Package { NpmName = "pkg1", GithubOwner = "owner1", GithubRepo = "repo1" };
-        var package2 = new Package { NpmName = "pkg2", GithubOwner = "owner2", GithubRepo = "repo2" };
+        var package1 = new Package { Name = "pkg1", Url = "https://github.com/owner1/repo1", NpmName = "pkg1", GithubOwner = "owner1", GithubRepo = "repo1" };
+        var package2 = new Package { Name = "pkg2", Url = "https://github.com/owner2/repo2", NpmName = "pkg2", GithubOwner = "owner2", GithubRepo = "repo2" };
         _db.Packages.AddRange(package1, package2);
         await _db.SaveChangesAsync();
 
@@ -107,7 +107,7 @@ public class SyncServiceTests : IDisposable
     public async Task SyncAllAsync_PassesCancellationTokenToGitHubClient()
     {
         // Arrange
-        var package = new Package { NpmName = "pkg1", GithubOwner = "owner1", GithubRepo = "repo1" };
+        var package = new Package { Name = "pkg1", Url = "https://github.com/owner1/repo1", NpmName = "pkg1", GithubOwner = "owner1", GithubRepo = "repo1" };
         _db.Packages.Add(package);
         await _db.SaveChangesAsync();
 
@@ -138,7 +138,7 @@ public class SyncServiceTests : IDisposable
     public async Task SyncPackageAsync_WithMissingGitHubInfo_ReturnsZeroReleases()
     {
         // Arrange
-        var package = new Package { NpmName = "pkg", GithubOwner = "", GithubRepo = "repo" };
+        var package = new Package { Name = "pkg", Url = "https://github.com//repo", NpmName = "pkg", GithubOwner = "", GithubRepo = "repo" };
 
         // Act
         var result = await _syncService.SyncPackageAsync(package);
@@ -153,7 +153,7 @@ public class SyncServiceTests : IDisposable
     public async Task SyncPackageAsync_WithNewReleases_AddsToDatabase()
     {
         // Arrange
-        var package = new Package { NpmName = "pkg", GithubOwner = "owner", GithubRepo = "repo" };
+        var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", NpmName = "pkg", GithubOwner = "owner", GithubRepo = "repo" };
         _db.Packages.Add(package);
         await _db.SaveChangesAsync();
 
@@ -179,7 +179,7 @@ public class SyncServiceTests : IDisposable
     public async Task SyncPackageAsync_SkipsDraftReleases()
     {
         // Arrange
-        var package = new Package { NpmName = "pkg", GithubOwner = "owner", GithubRepo = "repo" };
+        var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", NpmName = "pkg", GithubOwner = "owner", GithubRepo = "repo" };
         _db.Packages.Add(package);
         await _db.SaveChangesAsync();
 
@@ -202,7 +202,7 @@ public class SyncServiceTests : IDisposable
     public async Task SyncPackageAsync_SkipsReleasesWithoutPublishedDate()
     {
         // Arrange
-        var package = new Package { NpmName = "pkg", GithubOwner = "owner", GithubRepo = "repo" };
+        var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", NpmName = "pkg", GithubOwner = "owner", GithubRepo = "repo" };
         _db.Packages.Add(package);
         await _db.SaveChangesAsync();
 
@@ -222,7 +222,7 @@ public class SyncServiceTests : IDisposable
     public async Task SyncPackageAsync_SkipsDuplicateTags()
     {
         // Arrange
-        var package = new Package { NpmName = "pkg", GithubOwner = "owner", GithubRepo = "repo" };
+        var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", NpmName = "pkg", GithubOwner = "owner", GithubRepo = "repo" };
         _db.Packages.Add(package);
         await _db.SaveChangesAsync();
 
@@ -258,6 +258,8 @@ public class SyncServiceTests : IDisposable
         var lastFetched = DateTime.UtcNow.AddDays(-1);
         var package = new Package
         {
+            Name = "pkg",
+            Url = "https://github.com/owner/repo",
             NpmName = "pkg",
             GithubOwner = "owner",
             GithubRepo = "repo",
@@ -285,7 +287,7 @@ public class SyncServiceTests : IDisposable
     public async Task SyncPackageAsync_UpdatesLastFetchedAt()
     {
         // Arrange
-        var package = new Package { NpmName = "pkg", GithubOwner = "owner", GithubRepo = "repo" };
+        var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", NpmName = "pkg", GithubOwner = "owner", GithubRepo = "repo" };
         _db.Packages.Add(package);
         await _db.SaveChangesAsync();
 
@@ -308,7 +310,7 @@ public class SyncServiceTests : IDisposable
     public async Task SyncNotificationsAsync_WithNewNotifications_AddsToDatabase()
     {
         // Arrange
-        var package = new Package { NpmName = "pkg", GithubOwner = "owner", GithubRepo = "repo" };
+        var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", NpmName = "pkg", GithubOwner = "owner", GithubRepo = "repo" };
         _db.Packages.Add(package);
         await _db.SaveChangesAsync();
 
@@ -367,7 +369,7 @@ public class SyncServiceTests : IDisposable
     public async Task SyncNotificationsAsync_LinksToMatchingPackage()
     {
         // Arrange
-        var package = new Package { NpmName = "pkg", GithubOwner = "owner", GithubRepo = "repo" };
+        var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", NpmName = "pkg", GithubOwner = "owner", GithubRepo = "repo" };
         _db.Packages.Add(package);
         await _db.SaveChangesAsync();
 
