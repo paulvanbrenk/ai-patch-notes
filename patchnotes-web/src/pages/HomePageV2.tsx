@@ -1,6 +1,13 @@
 import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import {
+  FlaskConical,
+  FlaskConicalOff,
+  ArrowDownAZ,
+  CalendarArrowDown,
+  Group,
+} from 'lucide-react'
+import {
   Header,
   HeaderTitle,
   Container,
@@ -8,6 +15,9 @@ import {
   Badge,
   Card,
 } from '../components/ui'
+import { ThemeToggle } from '../components/theme'
+import { UserMenuV2 } from '../components/auth'
+import { useFilterStore } from '../stores/filterStore'
 
 // ============================================================================
 // Types
@@ -212,8 +222,6 @@ const MOCK_VERSION_GROUPS: VersionGroup[] = [
   },
 ]
 
-const MOCK_WATCHLIST_IDS = [1, 2] // Next.js and React
-
 // ============================================================================
 // Utility Functions
 // ============================================================================
@@ -272,19 +280,28 @@ function SkeletonCard() {
 }
 
 function PackageIcon({ name }: { name: string }) {
-  // Generate a consistent color based on package name
-  const colors: Record<string, { bg: string; text: string }> = {
+  // Brand colors for well-known packages
+  const icons: Record<string, { bg: string; text: string; icon?: string }> = {
     'Next.js': {
-      bg: 'bg-black dark:bg-white',
-      text: 'text-white dark:text-black',
+      bg: 'bg-black',
+      text: 'text-white',
     },
-    React: { bg: 'bg-[#61dafb]/20', text: 'text-[#61dafb]' },
-    TypeScript: { bg: 'bg-[#3178c6]/20', text: 'text-[#3178c6]' },
-    Vite: { bg: 'bg-[#646cff]/20', text: 'text-[#646cff]' },
+    React: {
+      bg: 'bg-sky-500/15',
+      text: 'text-sky-600 dark:text-sky-400',
+    },
+    TypeScript: {
+      bg: 'bg-blue-500/15',
+      text: 'text-blue-600 dark:text-blue-400',
+    },
+    Vite: {
+      bg: 'bg-violet-500/15',
+      text: 'text-violet-600 dark:text-violet-400',
+    },
   }
-  const { bg, text } = colors[name] || {
-    bg: 'bg-brand-100',
-    text: 'text-brand-600',
+  const { bg, text } = icons[name] || {
+    bg: 'bg-brand-100 dark:bg-brand-900/30',
+    text: 'text-brand-600 dark:text-brand-400',
   }
 
   const initial = name.charAt(0).toUpperCase()
@@ -303,12 +320,12 @@ function PrereleaseTag({ type }: { type?: string }) {
 
   const colors: Record<string, string> = {
     canary:
-      'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-    beta: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+      'bg-orange-100 text-orange-900 dark:bg-orange-900/40 dark:text-orange-200',
+    beta: 'bg-blue-50 text-blue-800 ring-1 ring-inset ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-300 dark:ring-blue-500/30',
     alpha:
-      'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
-    rc: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-    next: 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400',
+      'bg-purple-50 text-purple-800 ring-1 ring-inset ring-purple-600/20 dark:bg-purple-900/30 dark:text-purple-300 dark:ring-purple-500/30',
+    rc: 'bg-emerald-50 text-emerald-800 ring-1 ring-inset ring-emerald-600/20 dark:bg-emerald-900/30 dark:text-emerald-300 dark:ring-emerald-500/30',
+    next: 'bg-pink-50 text-pink-800 ring-1 ring-inset ring-pink-600/20 dark:bg-pink-900/30 dark:text-pink-300 dark:ring-pink-500/30',
   }
 
   return (
@@ -458,23 +475,26 @@ function SummaryCard({
   )
 }
 
-function TabButton({
+function FilterButton({
   active,
   onClick,
   children,
+  title,
 }: {
   active: boolean
   onClick: () => void
   children: React.ReactNode
+  title?: string
 }) {
   return (
     <button
       onClick={onClick}
+      title={title}
       className={`
-        px-4 py-2 text-sm font-medium rounded-lg transition-all
+        flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-all
         ${
           active
-            ? 'bg-surface-primary text-text-primary shadow-sm'
+            ? 'bg-surface-primary text-text-primary shadow-sm ring-1 ring-border-default'
             : 'text-text-secondary hover:text-text-primary hover:bg-surface-primary/50'
         }
       `}
@@ -489,15 +509,16 @@ function TabButton({
 // ============================================================================
 
 export function HomePageV2() {
-  const [activeTab, setActiveTab] = useState<'all' | 'watchlist'>('all')
+  const {
+    showPrerelease,
+    sortBy,
+    groupByPackage,
+    togglePrerelease,
+    setSortBy,
+    toggleGroupByPackage,
+  } = useFilterStore()
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
-  const [isLoading, setIsLoading] = useState(false)
-
-  // Simulate loading for demo
-  const simulateLoading = () => {
-    setIsLoading(true)
-    setTimeout(() => setIsLoading(false), 1000)
-  }
+  const [isLoading] = useState(false)
 
   const toggleExpanded = (groupId: string) => {
     setExpandedGroups((prev) => {
@@ -511,16 +532,22 @@ export function HomePageV2() {
     })
   }
 
-  // Filter groups based on active tab
-  const filteredGroups =
-    activeTab === 'watchlist'
-      ? MOCK_VERSION_GROUPS.filter((g) =>
-          MOCK_WATCHLIST_IDS.includes(g.packageId)
-        )
-      : MOCK_VERSION_GROUPS
+  // Filter groups based on prerelease toggle
+  const filteredGroups = showPrerelease
+    ? MOCK_VERSION_GROUPS
+    : MOCK_VERSION_GROUPS.filter((g) => !g.isPrerelease)
+
+  // Sort groups
+  const sortedGroups = [...filteredGroups].sort((a, b) => {
+    if (sortBy === 'name') {
+      return a.packageName.localeCompare(b.packageName)
+    }
+    // Sort by date (most recent first)
+    return new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime()
+  })
 
   // Group by package for display
-  const groupedByPackage = filteredGroups.reduce(
+  const groupedByPackageMap = sortedGroups.reduce(
     (acc, group) => {
       if (!acc[group.packageName]) {
         acc[group.packageName] = []
@@ -535,54 +562,67 @@ export function HomePageV2() {
     <div className="min-h-screen bg-surface-secondary">
       <Header>
         <HeaderTitle>Patch Notes</HeaderTitle>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <Link to="/">
-            <Button variant="secondary" size="sm">
+            <Button variant="ghost" size="sm">
               ← Back
             </Button>
           </Link>
           <Badge variant="prerelease">Preview</Badge>
+          <div className="w-px h-6 bg-border-muted mx-1" />
+          <ThemeToggle />
+          <UserMenuV2 />
         </div>
       </Header>
 
       <main className="py-8">
         <Container>
-          {/* Page Header */}
-          <div className="mb-8">
-            <h1 className="text-2xl font-bold text-text-primary mb-2">
-              Release Summaries
-            </h1>
-            <p className="text-text-secondary">
-              AI-generated summaries of the latest releases from your tracked
-              packages.
-            </p>
-          </div>
-
-          {/* Tabs */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-1 p-1 bg-surface-tertiary rounded-lg">
-              <TabButton
-                active={activeTab === 'all'}
-                onClick={() => {
-                  setActiveTab('all')
-                  simulateLoading()
-                }}
+          {/* Filters */}
+          <div className="flex items-center justify-end gap-2 mb-6">
+            <FilterButton
+              active={showPrerelease}
+              onClick={togglePrerelease}
+              title={showPrerelease ? 'Hide pre-releases' : 'Show pre-releases'}
+            >
+              {showPrerelease ? (
+                <FlaskConical className="w-4 h-4" />
+              ) : (
+                <FlaskConicalOff className="w-4 h-4" />
+              )}
+            </FilterButton>
+            <FilterButton
+              active={groupByPackage}
+              onClick={toggleGroupByPackage}
+              title={groupByPackage ? 'Disable grouping' : 'Group by package'}
+            >
+              <Group className="w-4 h-4" />
+            </FilterButton>
+            <div className="flex items-center rounded-lg border border-border-default overflow-hidden">
+              <button
+                onClick={() => setSortBy('name')}
+                title="Sort by name"
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors
+                  ${
+                    sortBy === 'name'
+                      ? 'bg-surface-primary text-text-primary'
+                      : 'bg-transparent text-text-secondary hover:text-text-primary hover:bg-surface-tertiary/50'
+                  }`}
               >
-                All Packages
-              </TabButton>
-              <TabButton
-                active={activeTab === 'watchlist'}
-                onClick={() => {
-                  setActiveTab('watchlist')
-                  simulateLoading()
-                }}
+                <ArrowDownAZ className="w-4 h-4" />
+              </button>
+              <div className="w-px h-5 bg-border-default" />
+              <button
+                onClick={() => setSortBy('date')}
+                title="Sort by date"
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors
+                  ${
+                    sortBy === 'date'
+                      ? 'bg-surface-primary text-text-primary'
+                      : 'bg-transparent text-text-secondary hover:text-text-primary hover:bg-surface-tertiary/50'
+                  }`}
               >
-                My Watchlist
-              </TabButton>
-            </div>
-            <div className="text-sm text-text-tertiary">
-              {filteredGroups.length} version group
-              {filteredGroups.length !== 1 && 's'}
+                <CalendarArrowDown className="w-4 h-4" />
+              </button>
             </div>
           </div>
 
@@ -593,29 +633,42 @@ export function HomePageV2() {
               <SkeletonCard />
               <SkeletonCard />
             </div>
-          ) : (
+          ) : groupByPackage ? (
             <div className="space-y-8">
-              {Object.entries(groupedByPackage).map(([packageName, groups]) => (
-                <section key={packageName}>
-                  <h2 className="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
-                    <PackageIcon name={packageName} />
-                    {packageName}
-                    <span className="text-sm font-normal text-text-tertiary">
-                      ({groups.length} version
-                      {groups.length !== 1 && 's'})
-                    </span>
-                  </h2>
-                  <div className="space-y-4">
-                    {groups.map((group) => (
-                      <SummaryCard
-                        key={group.id}
-                        group={group}
-                        isExpanded={expandedGroups.has(group.id)}
-                        onToggle={() => toggleExpanded(group.id)}
-                      />
-                    ))}
-                  </div>
-                </section>
+              {Object.entries(groupedByPackageMap).map(
+                ([packageName, groups]) => (
+                  <section key={packageName}>
+                    <h2 className="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
+                      <PackageIcon name={packageName} />
+                      {packageName}
+                      <span className="text-sm font-normal text-text-tertiary">
+                        ({groups.length} version
+                        {groups.length !== 1 && 's'})
+                      </span>
+                    </h2>
+                    <div className="space-y-4">
+                      {groups.map((group) => (
+                        <SummaryCard
+                          key={group.id}
+                          group={group}
+                          isExpanded={expandedGroups.has(group.id)}
+                          onToggle={() => toggleExpanded(group.id)}
+                        />
+                      ))}
+                    </div>
+                  </section>
+                )
+              )}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {sortedGroups.map((group) => (
+                <SummaryCard
+                  key={group.id}
+                  group={group}
+                  isExpanded={expandedGroups.has(group.id)}
+                  onToggle={() => toggleExpanded(group.id)}
+                />
               ))}
             </div>
           )}
@@ -624,30 +677,14 @@ export function HomePageV2() {
           {!isLoading && filteredGroups.length === 0 && (
             <div className="text-center py-16">
               <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-surface-tertiary flex items-center justify-center">
-                <svg
-                  className="w-8 h-8 text-text-tertiary"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                  />
-                </svg>
+                <FlaskConicalOff className="w-8 h-8 text-text-tertiary" />
               </div>
               <h3 className="text-lg font-semibold text-text-primary mb-2">
-                No packages in your watchlist
+                No releases found
               </h3>
-              <p className="text-text-secondary mb-4">
-                Add packages to your watchlist to see their release summaries
-                here.
+              <p className="text-text-secondary">
+                Try adjusting your filters to see more releases.
               </p>
-              <Button onClick={() => setActiveTab('all')}>
-                Browse All Packages
-              </Button>
             </div>
           )}
         </Container>

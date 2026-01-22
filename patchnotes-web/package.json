@@ -27,11 +27,13 @@
     "@tanstack/ai-react": "^0.2.2",
     "@tanstack/react-query": "^5.90.18",
     "@tanstack/react-router": "^1.154.5",
+    "lucide-react": "^0.562.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-error-boundary": "^6.1.0",
     "react-markdown": "^10.1.0",
-    "react-router-dom": "^7.12.0"
+    "react-router-dom": "^7.12.0",
+    "zustand": "^5.0.10"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
