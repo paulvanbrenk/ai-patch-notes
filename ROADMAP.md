@@ -46,6 +46,18 @@ Refactor the sync tool to intelligently fetch releases and generate grouped summ
 - [ ] Detect releases that are new or missing summaries
 - [ ] Track which releases need summary generation
 
+### Feature: External Changelog Resolution
+
+Handle releases that link to external changelog files instead of containing release notes directly (e.g., Vite's "Please refer to CHANGELOG.md for details" pattern).
+
+- [ ] Detect minimal release bodies that reference external files (CHANGELOG.md, HISTORY.md, etc.)
+- [ ] Parse changelog link from release body (supports relative and absolute GitHub URLs)
+- [ ] Fetch external changelog file content from GitHub API
+- [ ] Extract relevant version section from changelog (match version tag to changelog heading)
+- [ ] Handle common changelog formats (Keep a Changelog, conventional commits, custom formats)
+- [ ] Cache fetched changelog content to avoid redundant requests
+- [ ] Fallback gracefully if changelog fetch/parse fails (keep original release body)
+
 ### Feature: Version Grouping
 
 - [ ] Parse semantic versions from release tags
