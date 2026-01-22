@@ -12,6 +12,14 @@ public interface IStytchClient
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The session result with user info, or null if invalid.</returns>
     Task<StytchSessionResult?> AuthenticateSessionAsync(string sessionToken, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets a user by their Stytch user ID.
+    /// </summary>
+    /// <param name="userId">The Stytch user ID.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The user info, or null if not found.</returns>
+    Task<StytchUser?> GetUserAsync(string userId, CancellationToken cancellationToken = default);
 }
 
 /// <summary>
@@ -33,4 +41,30 @@ public class StytchSessionResult
     /// The user's primary email, if available.
     /// </summary>
     public string? Email { get; set; }
+}
+
+/// <summary>
+/// Stytch user information.
+/// </summary>
+public class StytchUser
+{
+    /// <summary>
+    /// The Stytch user ID.
+    /// </summary>
+    public required string UserId { get; set; }
+
+    /// <summary>
+    /// The user's primary email, if available.
+    /// </summary>
+    public string? Email { get; set; }
+
+    /// <summary>
+    /// The user's name, if available.
+    /// </summary>
+    public string? Name { get; set; }
+
+    /// <summary>
+    /// The user's status (active, pending, deleted).
+    /// </summary>
+    public string? Status { get; set; }
 }

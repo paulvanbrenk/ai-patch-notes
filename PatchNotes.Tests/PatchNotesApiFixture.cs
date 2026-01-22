@@ -219,4 +219,20 @@ public class MockStytchClient : IStytchClient
 
         return Task.FromResult<StytchSessionResult?>(null);
     }
+
+    public Task<StytchUser?> GetUserAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        if (userId == _userId)
+        {
+            return Task.FromResult<StytchUser?>(new StytchUser
+            {
+                UserId = _userId,
+                Email = "test@example.com",
+                Name = "Test User",
+                Status = "active"
+            });
+        }
+
+        return Task.FromResult<StytchUser?>(null);
+    }
 }
