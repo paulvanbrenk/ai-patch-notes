@@ -35,33 +35,33 @@ export const stytchLoginConfig = {
 
 // Theme-aware styles for Stytch login component
 export function getStytchStyles(isDark: boolean) {
+  // Use transparent container to blend with page background
+  // Style inputs with borders instead of background contrast
   const colors = isDark
     ? {
-        surface: '#1f2937',
-        surfaceSecondary: '#111827',
-        text: '#f3f4f6',
+        surface: 'transparent',
+        text: '#e5e7eb',
         textSecondary: '#9ca3af',
         border: '#374151',
-        brand: '#6366f1',
-        brandHover: '#4f46e5',
+        inputBg: 'rgba(255, 255, 255, 0.05)',
+        brand: '#818cf8',
       }
     : {
-        surface: '#ffffff',
-        surfaceSecondary: '#f9fafb',
+        surface: 'transparent',
         text: '#1f2937',
         textSecondary: '#6b7280',
-        border: '#e5e7eb',
+        border: '#d1d5db',
+        inputBg: '#ffffff',
         brand: '#4f46e5',
-        brandHover: '#4338ca',
       }
 
   return {
     fontFamily: '"Inter", ui-sans-serif, system-ui, sans-serif',
-    hideHeaderText: false,
+    hideHeaderText: true,
     container: {
       backgroundColor: colors.surface,
-      borderColor: colors.border,
-      borderRadius: '12px',
+      borderColor: 'transparent',
+      borderRadius: '8px',
       width: '100%',
     },
     colors: {
@@ -85,7 +85,7 @@ export function getStytchStyles(isDark: boolean) {
       },
     },
     inputs: {
-      backgroundColor: colors.surfaceSecondary,
+      backgroundColor: colors.inputBg,
       borderColor: colors.border,
       borderRadius: '8px',
       textColor: colors.text,
