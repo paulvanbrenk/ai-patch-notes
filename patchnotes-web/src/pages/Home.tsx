@@ -24,6 +24,8 @@ export function Home() {
   const [settingsOpen, setSettingsOpen] = useState(false)
 
   const isLoggedIn = !!user
+  const isAdmin =
+    user?.roles?.some((r) => r.role_id === 'patch_notes_admin') ?? false
 
   const handleAddPackage = async () => {
     if (!newPackageName.trim()) return
@@ -57,11 +59,13 @@ export function Home() {
               Preview
             </Button>
           </Link>
-          <Link to="/admin">
-            <Button variant="secondary" size="sm">
-              Admin
-            </Button>
-          </Link>
+          {isAdmin && (
+            <Link to="/admin">
+              <Button variant="secondary" size="sm">
+                Admin
+              </Button>
+            </Link>
+          )}
           <Button
             variant="secondary"
             size="sm"
