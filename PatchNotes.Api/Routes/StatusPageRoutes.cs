@@ -34,12 +34,12 @@ public static class StatusPageRoutes
         var statusText = isHealthy ? "All Systems Operational" : "Service Degraded";
         var timestamp = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
         var apiStatus = errorMessage != null ? "Error" : "Operational";
-        var apiStatusEmoji = errorMessage != null ? "\u26a0\ufe0f" : "\u2705";
-        var dbStatusEmoji = isHealthy ? "\u2705" : "\u26a0\ufe0f";
+        var apiStatusEmoji = errorMessage != null ? "⚠️" : "✅";
+        var dbStatusEmoji = isHealthy ? "✅" : "⚠️";
 
         var errorSection = errorMessage != null
             ? $@"<div class=""error-message"">
-                    <strong>\u26a0\ufe0f Error:</strong> {System.Web.HttpUtility.HtmlEncode(errorMessage)}
+                    <strong>⚠️ Error:</strong> {System.Web.HttpUtility.HtmlEncode(errorMessage)}
                 </div>"
             : "";
 
@@ -186,7 +186,7 @@ public static class StatusPageRoutes
                 <div class=""service"">
                     <span class=""service-name"">Authentication</span>
                     <span class=""service-status healthy"">
-                        \u2705 Operational
+                        ✅ Operational
                     </span>
                 </div>
             </div>
@@ -196,7 +196,7 @@ public static class StatusPageRoutes
             <p class=""timestamp"">Last checked: {timestamp} UTC</p>
         </div>
     </div>
-    <footer>\ud83d\udd28 Forged in Gas Town \u2692\ufe0f</footer>
+    <footer>🔨 Forged in Gas Town ⛽</footer>
 </body>
 </html>";
     }
