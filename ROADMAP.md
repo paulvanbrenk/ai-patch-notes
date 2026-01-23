@@ -1,5 +1,11 @@
 # PatchNotes Roadmap
 
+## Branding
+
+- [ ] Rebrand to **"AI Patch Notes by Tiny Tools"**
+
+---
+
 ## Open PRs (Ready to Merge)
 
 - [ ] **PR #32** - Split API routes into separate files
