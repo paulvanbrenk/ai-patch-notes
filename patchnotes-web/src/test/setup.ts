@@ -13,7 +13,11 @@ vi.mock('@stytch/react', () => ({
     session: { revoke: vi.fn() },
   }),
   useStytchUser: () => ({
-    user: { user_id: 'test-user-id', emails: [{ email: 'test@example.com' }] },
+    user: {
+      user_id: 'test-user-id',
+      emails: [{ email: 'test@example.com' }],
+      roles: [{ role_id: 'patch_notes_admin' }],
+    },
     isInitialized: true,
   }),
 }))
