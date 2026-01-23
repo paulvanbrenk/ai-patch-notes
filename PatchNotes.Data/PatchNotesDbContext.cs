@@ -56,8 +56,12 @@ public class PatchNotesDbContext : DbContext
             entity.Property(e => e.StytchUserId).HasMaxLength(128);
             entity.Property(e => e.Email).HasMaxLength(256);
             entity.Property(e => e.Name).HasMaxLength(256);
+            entity.Property(e => e.StripeCustomerId).HasMaxLength(64);
+            entity.Property(e => e.StripeSubscriptionId).HasMaxLength(64);
+            entity.Property(e => e.SubscriptionStatus).HasMaxLength(32);
             entity.HasIndex(e => e.StytchUserId).IsUnique();
             entity.HasIndex(e => e.Email);
+            entity.HasIndex(e => e.StripeCustomerId);
         });
     }
 }
