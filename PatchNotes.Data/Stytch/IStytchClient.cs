@@ -41,6 +41,21 @@ public class StytchSessionResult
     /// The user's primary email, if available.
     /// </summary>
     public string? Email { get; set; }
+
+    /// <summary>
+    /// The user's role IDs.
+    /// </summary>
+    public List<string> Roles { get; set; } = [];
+
+    /// <summary>
+    /// Checks if the user has the specified role.
+    /// </summary>
+    public bool HasRole(string roleId) => Roles.Contains(roleId);
+
+    /// <summary>
+    /// Checks if the user has the admin role.
+    /// </summary>
+    public bool IsAdmin => HasRole("patch_notes_admin");
 }
 
 /// <summary>

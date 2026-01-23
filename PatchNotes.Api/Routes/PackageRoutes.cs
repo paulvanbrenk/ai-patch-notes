@@ -10,6 +10,7 @@ public static class PackageRoutes
     public static WebApplication MapPackageRoutes(this WebApplication app)
     {
         var requireAuth = RouteUtils.CreateAuthFilter();
+        var requireAdmin = RouteUtils.CreateAdminFilter();
 
         // GET /api/packages - List all tracked packages
         app.MapGet("/api/packages", async (PatchNotesDbContext db) =>
@@ -176,7 +177,8 @@ public static class PackageRoutes
                 package.GithubRepo,
                 package.CreatedAt
             });
-        }).AddEndpointFilterFactory(requireAuth);
+        }).AddEndpointFilterFactory(requireAuth)
+          .AddEndpointFilterFactory(requireAdmin);
 
         // PATCH /api/packages/{id} - Update package GitHub mapping
         app.MapPatch("/api/packages/{id:int}", async (int id, UpdatePackageRequest request, PatchNotesDbContext db) =>
@@ -210,7 +212,8 @@ public static class PackageRoutes
                 package.LastFetchedAt,
                 package.CreatedAt
             });
-        }).AddEndpointFilterFactory(requireAuth);
+        }).AddEndpointFilterFactory(requireAuth)
+          .AddEndpointFilterFactory(requireAdmin);
 
         // DELETE /api/packages/{id} - Remove package from tracking
         app.MapDelete("/api/packages/{id:int}", async (int id, PatchNotesDbContext db) =>
@@ -225,7 +228,8 @@ public static class PackageRoutes
             await db.SaveChangesAsync();
 
             return Results.NoContent();
-        }).AddEndpointFilterFactory(requireAuth);
+        }).AddEndpointFilterFactory(requireAuth)
+          .AddEndpointFilterFactory(requireAdmin);
 
         // POST /api/packages/{id}/sync - Trigger sync for a specific package
         app.MapPost("/api/packages/{id:int}/sync", async (int id, PatchNotesDbContext db, SyncService syncService) =>
@@ -246,7 +250,8 @@ public static class PackageRoutes
                 package.LastFetchedAt,
                 releasesAdded = result.ReleasesAdded
             });
-        }).AddEndpointFilterFactory(requireAuth);
+        }).AddEndpointFilterFactory(requireAuth)
+          .AddEndpointFilterFactory(requireAdmin);
 
         return app;
     }
