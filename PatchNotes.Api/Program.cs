@@ -73,10 +73,29 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+else
+{
+    // In production, show error status page for unhandled exceptions
+    app.UseExceptionHandler(errorApp =>
+    {
+        errorApp.Run(async context =>
+        {
+            context.Response.StatusCode = 500;
+            context.Response.ContentType = "text/html";
+
+            var exceptionFeature = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>();
+            var errorMessage = exceptionFeature?.Error?.Message ?? "An unexpected error occurred";
+
+            var html = StatusPageRoutes.GetStatusPageHtml(false, "Unknown", errorMessage);
+            await context.Response.WriteAsync(html);
+        });
+    });
+}
 
 app.UseCors();
 
 // Map routes
+app.MapStatusPageRoutes();
 app.MapPackageRoutes();
 app.MapReleaseRoutes();
 app.MapNotificationRoutes();
