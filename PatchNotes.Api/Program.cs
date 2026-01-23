@@ -5,6 +5,7 @@ using PatchNotes.Data.Stytch;
 using PatchNotes.Sync;
 using PatchNotes.Api.Routes;
 using PatchNotes.Api.Webhooks;
+using Stripe;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +24,13 @@ if (missingStytchKeys.Count > 0)
     throw new InvalidOperationException(
         $"Missing required Stytch configuration: {string.Join(", ", missingStytchKeys)}. " +
         "Please configure these values in appsettings.json or environment variables.");
+}
+
+// Stripe configuration
+var stripeSecretKey = builder.Configuration["Stripe:SecretKey"];
+if (!string.IsNullOrEmpty(stripeSecretKey))
+{
+    StripeConfiguration.ApiKey = stripeSecretKey;
 }
 
 builder.Services.AddOpenApi();
@@ -100,7 +108,9 @@ app.MapPackageRoutes();
 app.MapReleaseRoutes();
 app.MapUserRoutes();
 app.MapWatchlistRoutes();
+app.MapSubscriptionRoutes();
 app.MapStytchWebhook();
+app.MapStripeWebhook();
 
 app.Run();
 

@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
+import { Link } from '@tanstack/react-router'
+import { Sparkles } from 'lucide-react'
 import { Card } from '../ui/Card'
 import { Button } from '../ui/Button'
 import { Input } from '../ui/Input'
@@ -19,6 +21,8 @@ interface PackagePickerProps {
   storageKey?: string
   watchlistIds?: string[]
   onWatchlistChange?: (selectedIds: string[]) => void
+  isPro?: boolean
+  packageLimit?: number
 }
 
 const STORAGE_KEY_PREFIX = 'patchnotes:package-selection:'
@@ -43,6 +47,8 @@ export function PackagePicker({
   storageKey = 'default',
   watchlistIds,
   onWatchlistChange,
+  isPro = false,
+  packageLimit = 5,
 }: PackagePickerProps) {
   const useWatchlist = watchlistIds !== undefined
   const fullStorageKey = `${STORAGE_KEY_PREFIX}${storageKey}`
@@ -149,6 +155,7 @@ export function PackagePicker({
   const someSelected =
     selectedIds.size > 0 && selectedIds.size < packages.length
   const selectedCount = selectedIds.size
+  const isAtLimit = !isPro && packages.length >= packageLimit
 
   return (
     <Card padding="none" className="overflow-hidden">
@@ -162,6 +169,16 @@ export function PackagePicker({
             {!isLoading && packages.length > 0 && (
               <span className="text-xs text-text-tertiary tabular-nums">
                 {selectedCount} of {packages.length} selected
+                {!isPro && (
+                  <span
+                    className={
+                      isAtLimit ? 'text-amber-600 dark:text-amber-400' : ''
+                    }
+                  >
+                    {' '}
+                    ({packages.length}/{packageLimit})
+                  </span>
+                )}
               </span>
             )}
           </div>
@@ -222,51 +239,65 @@ export function PackagePicker({
       {/* Add Package Input */}
       {onAddPackage && (
         <div className="px-4 py-3 border-t border-border-default bg-surface-secondary/30">
-          <div className="flex gap-2">
-            <div className="flex-1">
-              <Input
-                placeholder="Add package (e.g., lodash)"
-                value={newPackageName}
-                onChange={(e) => setNewPackageName(e.target.value)}
-                onKeyDown={handleKeyDown}
-                disabled={isAdding}
-                className="text-sm"
-              />
+          {isAtLimit ? (
+            <div className="flex items-center justify-between gap-3 py-1">
+              <p className="text-sm text-text-secondary">
+                You've reached the {packageLimit} package limit
+              </p>
+              <Link to="/pricing">
+                <Button size="sm" className="flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4" />
+                  Upgrade
+                </Button>
+              </Link>
             </div>
-            <Button
-              size="sm"
-              onClick={handleAddPackage}
-              disabled={!newPackageName.trim() || isAdding}
-              className="flex-shrink-0"
-            >
-              {isAdding ? (
-                <span className="inline-flex items-center gap-1.5">
-                  <svg
-                    className="w-4 h-4 animate-spin"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                    />
-                  </svg>
-                  Adding...
-                </span>
-              ) : (
-                'Add'
-              )}
-            </Button>
-          </div>
+          ) : (
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <Input
+                  placeholder="Add package (e.g., lodash)"
+                  value={newPackageName}
+                  onChange={(e) => setNewPackageName(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  disabled={isAdding}
+                  className="text-sm"
+                />
+              </div>
+              <Button
+                size="sm"
+                onClick={handleAddPackage}
+                disabled={!newPackageName.trim() || isAdding}
+                className="flex-shrink-0"
+              >
+                {isAdding ? (
+                  <span className="inline-flex items-center gap-1.5">
+                    <svg
+                      className="w-4 h-4 animate-spin"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                      />
+                    </svg>
+                    Adding...
+                  </span>
+                ) : (
+                  'Add'
+                )}
+              </Button>
+            </div>
+          )}
         </div>
       )}
     </Card>

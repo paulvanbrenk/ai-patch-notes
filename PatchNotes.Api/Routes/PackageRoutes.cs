@@ -97,11 +97,38 @@ public static class PackageRoutes
         });
 
         // POST /api/packages - Add package to track
-        app.MapPost("/api/packages", async (AddPackageRequest request, PatchNotesDbContext db, IHttpClientFactory httpClientFactory) =>
+        app.MapPost("/api/packages", async (AddPackageRequest request, HttpContext httpContext, PatchNotesDbContext db, IHttpClientFactory httpClientFactory) =>
         {
             if (string.IsNullOrWhiteSpace(request.NpmName))
             {
                 return Results.BadRequest(new { error = "npmName is required" });
+            }
+
+            // Check package limit for free users
+            var stytchUserId = httpContext.Items["StytchUserId"] as string;
+            if (!string.IsNullOrEmpty(stytchUserId))
+            {
+                var user = await db.Users.FirstOrDefaultAsync(u => u.StytchUserId == stytchUserId);
+                if (user != null)
+                {
+                    var isPro = user.SubscriptionStatus == "active" ||
+                        (user.SubscriptionStatus == "canceled" && user.SubscriptionExpiresAt > DateTime.UtcNow);
+
+                    if (!isPro)
+                    {
+                        var packageCount = await db.Packages.CountAsync();
+                        if (packageCount >= 5)
+                        {
+                            return Results.Json(new
+                            {
+                                error = "Package limit reached",
+                                message = "Free accounts can track up to 5 packages. Upgrade to Pro for unlimited packages.",
+                                limit = 5,
+                                current = packageCount
+                            }, statusCode: 403);
+                        }
+                    }
+                }
             }
 
             var existing = await db.Packages.FirstOrDefaultAsync(p => p.NpmName == request.NpmName);
