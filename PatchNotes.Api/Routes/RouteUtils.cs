@@ -46,30 +46,17 @@ public static class RouteUtils
         return (null, null);
     }
 
-    public static bool IsPrerelease(string tag)
-    {
-        var lowerTag = tag.ToLowerInvariant();
-        return lowerTag.Contains("alpha") ||
-               lowerTag.Contains("beta") ||
-               lowerTag.Contains("canary") ||
-               lowerTag.Contains("preview") ||
-               lowerTag.Contains("rc") ||
-               lowerTag.Contains("next") ||
-               lowerTag.Contains("nightly") ||
-               lowerTag.Contains("dev") ||
-               lowerTag.Contains("experimental");
-    }
+    /// <summary>
+    /// Determines if a tag represents a pre-release version.
+    /// Delegates to VersionParser for comprehensive detection.
+    /// </summary>
+    public static bool IsPrerelease(string tag) => VersionParser.IsPrerelease(tag);
 
-    public static int? GetMajorVersion(string tag)
-    {
-        // Extract major version from tags like "v15.0.0", "15.0.0", "v15.0.0-rc.1"
-        var match = Regex.Match(tag, @"v?(\d+)\.");
-        if (match.Success && int.TryParse(match.Groups[1].Value, out var major))
-        {
-            return major;
-        }
-        return null;
-    }
+    /// <summary>
+    /// Extracts the major version from a tag.
+    /// Delegates to VersionParser for comprehensive format support.
+    /// </summary>
+    public static int? GetMajorVersion(string tag) => VersionParser.GetMajorVersion(tag);
 
     public static Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate> CreateAuthFilter()
     {
