@@ -213,7 +213,8 @@ public class MockStytchClient : IStytchClient
             {
                 UserId = _userId,
                 SessionId = "test-session-id",
-                Email = "test@example.com"
+                Email = "test@example.com",
+                Roles = ["patch_notes_admin"]
             });
         }
 
