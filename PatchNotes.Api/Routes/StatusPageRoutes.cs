@@ -154,12 +154,8 @@ public static class StatusPageRoutes
             text-align: center;
             padding: 1rem;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
-            color: #64748b;
-            font-size: 0.75rem;
-        }}
-        footer .brand {{
-            color: #fff;
-            font-weight: 500;
+            color: #94a3b8;
+            font-size: 0.875rem;
         }}
     </style>
 </head>
@@ -200,7 +196,7 @@ public static class StatusPageRoutes
             <p class=""timestamp"">Last checked: {timestamp} UTC</p>
         </div>
     </div>
-    <footer><span class=""brand"">Small Batch</span>, Crafted in Brooklyn \ud83d\uddfd</footer>
+    <footer>\ud83d\udd28 Forged in Gas Town \u2692\ufe0f</footer>
 </body>
 </html>";
     }
