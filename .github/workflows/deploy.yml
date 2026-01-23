@@ -104,7 +104,7 @@ jobs:
         run: dotnet tool install --global dotnet-ef
 
       - name: Apply migrations
-        run: dotnet ef database update --project PatchNotes.Data/PatchNotes.Data.csproj --startup-project PatchNotes.Api/PatchNotes.Api.csproj --configuration Release --no-build
+        run: dotnet ef database update --context SqlServerContext --project PatchNotes.Data/PatchNotes.Data.csproj --startup-project PatchNotes.Api/PatchNotes.Api.csproj --configuration Release --no-build
         env:
           ConnectionStrings__PatchNotes: ${{ secrets.DATABASE_CONNECTION_STRING }}
 
