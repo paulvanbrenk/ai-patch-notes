@@ -73,6 +73,8 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          VITE_STYTCH_PUBLIC_TOKEN: ${{ secrets.VITE_STYTCH_PUBLIC_TOKEN }}
 
       - name: Upload frontend artifact
         uses: actions/upload-artifact@v6
