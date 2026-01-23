@@ -16,7 +16,7 @@ vi.mock('@stytch/react', () => ({
     user: {
       user_id: 'test-user-id',
       emails: [{ email: 'test@example.com' }],
-      roles: [{ role_id: 'patch_notes_admin' }],
+      roles: ['patch_notes_admin'],
     },
     isInitialized: true,
   }),

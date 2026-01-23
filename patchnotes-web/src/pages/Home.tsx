@@ -24,8 +24,7 @@ export function Home() {
   const [settingsOpen, setSettingsOpen] = useState(false)
 
   const isLoggedIn = !!user
-  const isAdmin =
-    user?.roles?.some((r) => r.role_id === 'patch_notes_admin') ?? false
+  const isAdmin = user?.roles?.includes('patch_notes_admin') ?? false
 
   const handleAddPackage = async () => {
     if (!newPackageName.trim()) return
