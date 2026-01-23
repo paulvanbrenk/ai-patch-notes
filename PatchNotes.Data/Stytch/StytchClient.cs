@@ -38,7 +38,8 @@ public class StytchClient : IStytchClient
             {
                 UserId = response.Session.UserId,
                 SessionId = response.Session.SessionId,
-                Email = response.User.Emails?.FirstOrDefault()?.Email
+                Email = response.User.Emails?.FirstOrDefault()?.Email,
+                Roles = response.User.Roles?.ToList() ?? []
             };
         }
         catch (Exception ex)
