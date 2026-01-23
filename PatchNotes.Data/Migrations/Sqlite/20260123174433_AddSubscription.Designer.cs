@@ -11,7 +11,7 @@ using PatchNotes.Data;
 namespace PatchNotes.Data.Migrations.Sqlite
 {
     [DbContext(typeof(SqliteContext))]
-    [Migration("20260123172108_AddSubscription")]
+    [Migration("20260123174433_AddSubscription")]
     partial class AddSubscription
     {
         /// <inheritdoc />
