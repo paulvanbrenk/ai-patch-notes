@@ -6,6 +6,12 @@
 
 ---
 
+## Pre-commit Hook
+
+- [ ] Fix pre-commit lint configuration - should only run full lint when JS/TS files are staged
+
+---
+
 ## Open PRs (Ready to Merge)
 
 - [ ] **PR #32** - Split API routes into separate files

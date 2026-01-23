@@ -1,3 +1,2 @@
 cd patchnotes-web
 npx lint-staged
-npm run lint -- --quiet
