@@ -74,6 +74,7 @@ jobs:
       - name: Build
         run: npm run build
         env:
+          VITE_API_URL: https://api-mypkgupdate-com.azurewebsites.net
           VITE_STYTCH_PUBLIC_TOKEN: ${{ secrets.VITE_STYTCH_PUBLIC_TOKEN }}
 
       - name: Upload frontend artifact
