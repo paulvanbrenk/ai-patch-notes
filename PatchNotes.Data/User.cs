@@ -33,4 +33,24 @@ public class User
     /// Last time the user logged in
     /// </summary>
     public DateTime? LastLoginAt { get; set; }
+
+    /// <summary>
+    /// Stripe customer ID for subscription management
+    /// </summary>
+    public string? StripeCustomerId { get; set; }
+
+    /// <summary>
+    /// Stripe subscription ID for the Pro plan
+    /// </summary>
+    public string? StripeSubscriptionId { get; set; }
+
+    /// <summary>
+    /// Current subscription status: "active", "canceled", "past_due", or null
+    /// </summary>
+    public string? SubscriptionStatus { get; set; }
+
+    /// <summary>
+    /// When the current subscription period expires
+    /// </summary>
+    public DateTime? SubscriptionExpiresAt { get; set; }
 }
