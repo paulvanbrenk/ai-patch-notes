@@ -15,19 +15,44 @@ This project contains:
 
 ## Database
 
-The application supports both SQLite (development) and SQL Server (production).
+The application supports both SQLite (development) and SQL Server (production) with separate migration folders.
 
-### Running Migrations
-
-```bash
-cd PatchNotes.Data
-dotnet ef database update
+```
+Migrations/
+├── Sqlite/      # Local development migrations
+└── SqlServer/   # Production migrations
 ```
 
 ### Creating a New Migration
 
+Use the helper script to generate migrations for both providers:
+
 ```bash
-dotnet ef migrations add MigrationName
+# Set SQL Server connection string (required for SqlServer migrations)
+export ConnectionStrings__PatchNotes="Server=...;Database=...;User Id=...;Password=..."
+
+# Generate both migrations
+./scripts/add-migration.sh MigrationName
+```
+
+Or manually:
+
+```bash
+# SQLite migration
+dotnet ef migrations add MigrationName --context SqliteContext --output-dir Migrations/Sqlite --startup-project ../PatchNotes.Api
+
+# SQL Server migration (requires connection string env var)
+dotnet ef migrations add MigrationName --context SqlServerContext --output-dir Migrations/SqlServer --startup-project ../PatchNotes.Api
+```
+
+### Running Migrations
+
+```bash
+# Local (SQLite)
+dotnet ef database update --context SqliteContext --startup-project ../PatchNotes.Api
+
+# Production (SQL Server) - done automatically by GitHub Actions
+dotnet ef database update --context SqlServerContext --startup-project ../PatchNotes.Api
 ```
 
 ## Service Registration
