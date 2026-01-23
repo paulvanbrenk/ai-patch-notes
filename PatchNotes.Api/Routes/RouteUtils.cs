@@ -85,6 +85,29 @@ public static class RouteUtils
             httpContext.Items["StytchUserId"] = session.UserId;
             httpContext.Items["StytchSessionId"] = session.SessionId;
             httpContext.Items["StytchEmail"] = session.Email;
+            httpContext.Items["StytchSession"] = session;
+
+            return await next(invocationContext);
+        };
+    }
+
+    /// <summary>
+    /// Creates an endpoint filter that requires admin role (patch_notes_admin).
+    /// Must be used after CreateAuthFilter().
+    /// </summary>
+    public static Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate> CreateAdminFilter()
+    {
+        return (context, next) => async invocationContext =>
+        {
+            var httpContext = invocationContext.HttpContext;
+
+            // Get session from HttpContext (set by auth filter)
+            var session = httpContext.Items["StytchSession"] as StytchSessionResult;
+
+            if (session == null || !session.IsAdmin)
+            {
+                return Results.Forbid();
+            }
 
             return await next(invocationContext);
         };
