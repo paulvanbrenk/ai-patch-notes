@@ -25,6 +25,19 @@ jobs:
       - name: Build
         run: dotnet build PatchNotes.slnx --no-restore --configuration Release
 
+      - name: Install EF Core tools
+        run: dotnet tool install --global dotnet-ef
+
+      - name: Check for pending model changes
+        run: |
+          dotnet ef migrations has-pending-model-changes \
+            --context SqliteContext \
+            --project PatchNotes.Data \
+            --startup-project PatchNotes.Api \
+            --configuration Release \
+            --no-build
+        continue-on-error: false
+
       - name: Test
         run: dotnet test PatchNotes.slnx --no-build --configuration Release --verbosity normal
 
