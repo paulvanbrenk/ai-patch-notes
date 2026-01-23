@@ -19,8 +19,8 @@ public static class StytchWebhook
 {
     public static WebApplication MapStytchWebhook(this WebApplication app)
     {
-        // POST /api/webhooks/stytch - Handle Stytch webhook events
-        app.MapPost("/api/webhooks/stytch", async (HttpContext httpContext, PatchNotesDbContext db, IStytchClient stytchClient, IConfiguration configuration) =>
+        // POST /webhooks/stytch - Handle Stytch webhook events
+        app.MapPost("/webhooks/stytch", async (HttpContext httpContext, PatchNotesDbContext db, IStytchClient stytchClient, IConfiguration configuration) =>
         {
             var stytchWebhookSecret = configuration["Stytch:WebhookSecret"];
 

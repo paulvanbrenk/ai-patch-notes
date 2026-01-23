@@ -51,7 +51,12 @@ The API runs on `http://localhost:5031` by default.
 |--------|----------|-------------|
 | GET | `/api/users/me?stytchUserId=...` | Get current user |
 | POST | `/api/users/login` | Create/update user on login |
-| POST | `/api/webhooks/stytch` | Handle Stytch webhook events |
+
+### Webhooks
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/webhooks/stytch` | Handle Stytch webhook events (user sync) |
 
 ## Configuration
 

@@ -56,12 +56,14 @@ src/
 
 ## Configuration
 
-Create a `.env.local` file:
+Create a `.env.local` file for local development:
 
 ```bash
 VITE_API_URL=http://localhost:5031
-VITE_STYTCH_PUBLIC_TOKEN=your-stytch-public-token
+VITE_STYTCH_PUBLIC_TOKEN=<test-public-token>
 ```
+
+For production, `VITE_STYTCH_PUBLIC_TOKEN` is set as a GitHub secret.
 
 ## Testing
 

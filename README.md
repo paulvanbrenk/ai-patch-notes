@@ -69,23 +69,26 @@ Get a Groq API key at https://console.groq.com/keys
 
 ## Authentication
 
-The app uses [Stytch](https://stytch.com/) for B2C authentication.
+The app uses [Stytch](https://stytch.com/) for B2C authentication with Email Magic Links.
 
-### Frontend Configuration
+| Environment | Domain |
+|-------------|--------|
+| Live | `https://app.mypkgupdate.com` |
+| Test | `http://localhost:5173` |
 
-Add these environment variables to the frontend (via `.env` or Vite config):
+### Configuration
 
-```bash
-VITE_STYTCH_PROJECT_ID=your-project-id
-VITE_STYTCH_PUBLIC_TOKEN=your-public-token
-```
+**Frontend** (GitHub secret for CI/CD):
+- `VITE_STYTCH_PUBLIC_TOKEN` - Stytch public token
 
-### Stytch Setup
+**Backend** (Azure App Settings):
+- `Stytch__ProjectId` - Stytch project ID
+- `Stytch__Secret` - Stytch API secret
+- `Stytch__WebhookSecret` - Webhook signing secret (Svix)
 
-1. Create a Stytch account at https://stytch.com/
-2. Create a new Consumer project
-3. Configure allowed redirect URLs for your domains
-4. Copy the Project ID and Public Token to your environment
+### Webhook
+
+Stytch webhooks are handled at `/webhooks/stytch` for user sync events.
 
 ## Quick Start
 
