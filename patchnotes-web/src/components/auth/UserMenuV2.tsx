@@ -1,7 +1,14 @@
 import { useState, useRef, useEffect } from 'react'
 import { useStytch, useStytchUser } from '@stytch/react'
 import { Link } from '@tanstack/react-router'
-import { Settings, HelpCircle, LogOut } from 'lucide-react'
+import {
+  Settings,
+  HelpCircle,
+  LogOut,
+  Sparkles,
+  CreditCard,
+} from 'lucide-react'
+import { useSubscriptionStore } from '../../stores/subscriptionStore'
 
 // ============================================================================
 // Utilities
@@ -85,12 +92,18 @@ function DropdownMenu({
   email,
   displayName,
   onLogout,
+  isPro,
+  onUpgrade,
+  onManageSubscription,
 }: {
   isOpen: boolean
   onClose: () => void
   email?: string
   displayName: string
   onLogout: () => void
+  isPro: boolean
+  onUpgrade: () => void
+  onManageSubscription: () => void
 }) {
   const menuRef = useRef<HTMLDivElement>(null)
 
@@ -141,6 +154,32 @@ function DropdownMenu({
         </div>
       </div>
 
+      {/* Subscription section */}
+      <div className="py-1.5 border-b border-border-muted">
+        {isPro ? (
+          <MenuButton
+            icon={<CreditCard className="w-4 h-4" />}
+            onClick={() => {
+              onClose()
+              onManageSubscription()
+            }}
+          >
+            Manage Subscription
+          </MenuButton>
+        ) : (
+          <MenuButton
+            icon={<Sparkles className="w-4 h-4" />}
+            onClick={() => {
+              onClose()
+              onUpgrade()
+            }}
+            variant="highlight"
+          >
+            Upgrade to Pro
+          </MenuButton>
+        )}
+      </div>
+
       {/* Menu items */}
       <div className="py-1.5">
         <MenuButton icon={<Settings className="w-4 h-4" />} onClick={() => {}}>
@@ -177,20 +216,27 @@ function MenuButton({
   children: React.ReactNode
   icon: React.ReactNode
   onClick: () => void
-  variant?: 'default' | 'danger'
+  variant?: 'default' | 'danger' | 'highlight'
 }) {
+  const variantClasses = {
+    default: 'text-text-primary hover:bg-surface-tertiary',
+    danger:
+      'text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30',
+    highlight:
+      'text-brand-600 hover:bg-brand-50 dark:text-brand-400 dark:hover:bg-brand-950/30 font-medium',
+  }
+
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center gap-3 px-4 py-2 text-sm transition-colors
-        ${
-          variant === 'danger'
-            ? 'text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30'
-            : 'text-text-primary hover:bg-surface-tertiary'
-        }`}
+      className={`w-full flex items-center gap-3 px-4 py-2 text-sm transition-colors ${variantClasses[variant]}`}
       role="menuitem"
     >
-      <span className="w-4 h-4 opacity-60">{icon}</span>
+      <span
+        className={`w-4 h-4 ${variant === 'highlight' ? '' : 'opacity-60'}`}
+      >
+        {icon}
+      </span>
       {children}
     </button>
   )
@@ -204,10 +250,27 @@ export function UserMenuV2() {
   const stytch = useStytch()
   const { user, isInitialized } = useStytchUser()
   const [isOpen, setIsOpen] = useState(false)
+  const { isPro, checkSubscription, startCheckout, openPortal } =
+    useSubscriptionStore()
+
+  // Check subscription status when user is available
+  useEffect(() => {
+    if (user) {
+      checkSubscription()
+    }
+  }, [user, checkSubscription])
 
   const handleLogout = async () => {
     setIsOpen(false)
     await stytch.session.revoke()
+  }
+
+  const handleUpgrade = () => {
+    startCheckout()
+  }
+
+  const handleManageSubscription = () => {
+    openPortal()
   }
 
   // Loading state
@@ -256,6 +319,9 @@ export function UserMenuV2() {
         email={email}
         displayName={displayName}
         onLogout={handleLogout}
+        isPro={isPro}
+        onUpgrade={handleUpgrade}
+        onManageSubscription={handleManageSubscription}
       />
     </div>
   )

@@ -1,11 +1,13 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from '@tanstack/react-router'
+import { useStytchUser } from '@stytch/react'
 import {
   FlaskConical,
   FlaskConicalOff,
   ArrowDownAZ,
   CalendarArrowDown,
   Group,
+  Sparkles,
 } from 'lucide-react'
 import {
   Header,
@@ -18,6 +20,7 @@ import {
 import { ThemeToggle } from '../components/theme'
 import { UserMenuV2 } from '../components/auth'
 import { useFilterStore } from '../stores/filterStore'
+import { useSubscriptionStore } from '../stores/subscriptionStore'
 
 // ============================================================================
 // Types
@@ -520,6 +523,24 @@ export function HomePageV2() {
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
   const [isLoading] = useState(false)
 
+  const { user } = useStytchUser()
+  const { isPro, checkSubscription, startCheckout } = useSubscriptionStore()
+
+  // Check subscription status when user is logged in
+  useEffect(() => {
+    if (user) {
+      checkSubscription()
+    }
+  }, [user, checkSubscription])
+
+  const handleUpgrade = () => {
+    if (!user) {
+      window.location.href = '/login'
+      return
+    }
+    startCheckout()
+  }
+
   const toggleExpanded = (groupId: string) => {
     setExpandedGroups((prev) => {
       const next = new Set(prev)
@@ -565,11 +586,22 @@ export function HomePageV2() {
         <div className="flex items-center gap-2">
           <Link to="/">
             <Button variant="ghost" size="sm">
-              ← Back
+              Back
             </Button>
           </Link>
           <Badge variant="prerelease">Preview</Badge>
           <div className="w-px h-6 bg-border-muted mx-1" />
+          {user && !isPro && (
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handleUpgrade}
+              className="flex items-center gap-1.5"
+            >
+              <Sparkles className="w-4 h-4" />
+              Upgrade
+            </Button>
+          )}
           <ThemeToggle />
           <UserMenuV2 />
         </div>
