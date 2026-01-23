@@ -40,3 +40,7 @@ Thumbs.db
 
 # Node (root-level husky)
 node_modules/
+
+# Gas Town (added by gt)
+.claude/
+.logs/

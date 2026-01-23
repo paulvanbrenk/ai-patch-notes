@@ -28,9 +28,12 @@ public class SyncService
     /// <summary>
     /// Syncs all tracked packages, fetching new releases from GitHub.
     /// </summary>
+    /// <param name="includeExistingWithoutSummary">If true, includes existing releases missing summaries in results.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Result indicating success/failure and statistics.</returns>
-    public async Task<SyncResult> SyncAllAsync(CancellationToken cancellationToken = default)
+    public async Task<SyncResult> SyncAllAsync(
+        bool includeExistingWithoutSummary = false,
+        CancellationToken cancellationToken = default)
     {
         var result = new SyncResult();
         var packages = await _db.Packages.ToListAsync(cancellationToken);
@@ -47,16 +50,18 @@ public class SyncService
 
             try
             {
-                var packageResult = await SyncPackageAsync(package, cancellationToken);
+                var packageResult = await SyncPackageAsync(package, includeExistingWithoutSummary, cancellationToken);
                 result.PackagesSynced++;
                 result.ReleasesAdded += packageResult.ReleasesAdded;
+                result.ReleasesNeedingSummary.AddRange(packageResult.ReleasesNeedingSummary);
 
                 if (packageResult.ReleasesAdded > 0)
                 {
                     _logger.LogInformation(
-                        "Synced {Package}: {Count} new releases",
+                        "Synced {Package}: {Count} new releases, {NeedSummary} need summaries",
                         package.Name,
-                        packageResult.ReleasesAdded);
+                        packageResult.ReleasesAdded,
+                        packageResult.ReleasesNeedingSummary.Count);
                 }
                 else
                 {
@@ -71,9 +76,10 @@ public class SyncService
         }
 
         _logger.LogInformation(
-            "Sync complete: {Packages} packages, {Releases} new releases, {Errors} errors",
+            "Sync complete: {Packages} packages, {Releases} new releases, {NeedSummary} need summaries, {Errors} errors",
             result.PackagesSynced,
             result.ReleasesAdded,
+            result.ReleasesNeedingSummary.Count,
             result.Errors.Count);
 
         return result;
@@ -83,10 +89,12 @@ public class SyncService
     /// Syncs a single package, fetching new releases from GitHub.
     /// </summary>
     /// <param name="package">The package to sync.</param>
+    /// <param name="includeExistingWithoutSummary">If true, includes existing releases missing summaries in results.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>Result with count of releases added.</returns>
+    /// <returns>Result with count of releases added and releases needing summaries.</returns>
     public async Task<PackageSyncResult> SyncPackageAsync(
         Package package,
+        bool includeExistingWithoutSummary = false,
         CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(package.GithubOwner) || string.IsNullOrEmpty(package.GithubRepo))
@@ -100,6 +108,7 @@ public class SyncService
         var since = package.LastFetchedAt;
         var fetchedAt = DateTime.UtcNow;
         var releasesAdded = 0;
+        var releasesNeedingSummary = new List<Release>();
 
         // Get existing release tags to avoid duplicates
         var existingTags = await _db.Releases
@@ -142,11 +151,55 @@ public class SyncService
             _db.Releases.Add(release);
             existingTags.Add(ghRelease.TagName);
             releasesAdded++;
+
+            // New releases always need summaries
+            releasesNeedingSummary.Add(release);
         }
 
         package.LastFetchedAt = fetchedAt;
         await _db.SaveChangesAsync(cancellationToken);
 
-        return new PackageSyncResult(releasesAdded);
+        // Optionally include existing releases that are missing summaries
+        if (includeExistingWithoutSummary)
+        {
+            var existingWithoutSummary = await _db.Releases
+                .Where(r => r.PackageId == package.Id && r.Summary == null)
+                .Where(r => !releasesNeedingSummary.Select(x => x.Id).Contains(r.Id))
+                .ToListAsync(cancellationToken);
+
+            releasesNeedingSummary.AddRange(existingWithoutSummary);
+        }
+
+        return new PackageSyncResult(releasesAdded, releasesNeedingSummary);
+    }
+
+    /// <summary>
+    /// Gets all releases that need summary generation across all packages.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>List of releases needing summaries.</returns>
+    public async Task<List<Release>> GetReleasesNeedingSummaryAsync(CancellationToken cancellationToken = default)
+    {
+        return await _db.Releases
+            .Include(r => r.Package)
+            .Where(r => r.Summary == null)
+            .OrderByDescending(r => r.PublishedAt)
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Gets releases needing summary generation for a specific package.
+    /// </summary>
+    /// <param name="packageId">The package ID.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>List of releases needing summaries.</returns>
+    public async Task<List<Release>> GetReleasesNeedingSummaryAsync(
+        int packageId,
+        CancellationToken cancellationToken = default)
+    {
+        return await _db.Releases
+            .Where(r => r.PackageId == packageId && r.Summary == null)
+            .OrderByDescending(r => r.PublishedAt)
+            .ToListAsync(cancellationToken);
     }
 }

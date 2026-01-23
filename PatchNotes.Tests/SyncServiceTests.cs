@@ -123,7 +123,7 @@ public class SyncServiceTests : IDisposable
             });
 
         // Act
-        await _syncService.SyncAllAsync(cts.Token);
+        await _syncService.SyncAllAsync(cancellationToken: cts.Token);
 
         // Assert - verify the cancellation token is properly passed through
         capturedToken.Should().NotBeNull();
@@ -300,6 +300,177 @@ public class SyncServiceTests : IDisposable
         // Assert
         package.LastFetchedAt.Should().NotBeNull();
         package.LastFetchedAt.Should().BeOnOrAfter(beforeSync);
+    }
+
+    [Fact]
+    public async Task SyncPackageAsync_ReturnsNewReleasesAsNeedingSummary()
+    {
+        // Arrange
+        var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", NpmName = "pkg", GithubOwner = "owner", GithubRepo = "repo" };
+        _db.Packages.Add(package);
+        await _db.SaveChangesAsync();
+
+        var publishedAt = DateTime.UtcNow;
+        SetupGitHubReleases("owner", "repo", [
+            CreateRelease("v1.0.0", publishedAt, "Release 1", "Body 1"),
+            CreateRelease("v1.1.0", publishedAt, "Release 2", "Body 2")
+        ]);
+
+        // Act
+        var result = await _syncService.SyncPackageAsync(package);
+
+        // Assert
+        result.ReleasesAdded.Should().Be(2);
+        result.ReleasesNeedingSummary.Should().HaveCount(2);
+        result.ReleasesNeedingSummary.Should().AllSatisfy(r => r.NeedsSummary.Should().BeTrue());
+    }
+
+    [Fact]
+    public async Task SyncPackageAsync_WithIncludeExistingWithoutSummary_ReturnsAllReleasesWithoutSummary()
+    {
+        // Arrange
+        var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", NpmName = "pkg", GithubOwner = "owner", GithubRepo = "repo" };
+        _db.Packages.Add(package);
+        await _db.SaveChangesAsync();
+
+        // Add existing release without summary
+        _db.Releases.Add(new Release
+        {
+            PackageId = package.Id,
+            Tag = "v0.9.0",
+            PublishedAt = DateTime.UtcNow.AddDays(-10),
+            FetchedAt = DateTime.UtcNow.AddDays(-10),
+            Summary = null
+        });
+        // Add existing release with summary
+        _db.Releases.Add(new Release
+        {
+            PackageId = package.Id,
+            Tag = "v0.8.0",
+            PublishedAt = DateTime.UtcNow.AddDays(-20),
+            FetchedAt = DateTime.UtcNow.AddDays(-20),
+            Summary = "This is a summary",
+            SummaryGeneratedAt = DateTime.UtcNow.AddDays(-19)
+        });
+        await _db.SaveChangesAsync();
+
+        var publishedAt = DateTime.UtcNow;
+        SetupGitHubReleases("owner", "repo", [
+            CreateRelease("v1.0.0", publishedAt, "Release 1", "Body 1")
+        ]);
+
+        // Act
+        var result = await _syncService.SyncPackageAsync(package, includeExistingWithoutSummary: true);
+
+        // Assert
+        result.ReleasesAdded.Should().Be(1);
+        // Should include the new release + the existing one without summary (not the one with summary)
+        result.ReleasesNeedingSummary.Should().HaveCount(2);
+        result.ReleasesNeedingSummary.Should().Contain(r => r.Tag == "v1.0.0");
+        result.ReleasesNeedingSummary.Should().Contain(r => r.Tag == "v0.9.0");
+        result.ReleasesNeedingSummary.Should().NotContain(r => r.Tag == "v0.8.0");
+    }
+
+    [Fact]
+    public async Task SyncAllAsync_AggregatesReleasesNeedingSummary()
+    {
+        // Arrange
+        var package1 = new Package { Name = "pkg1", Url = "https://github.com/owner1/repo1", NpmName = "pkg1", GithubOwner = "owner1", GithubRepo = "repo1" };
+        var package2 = new Package { Name = "pkg2", Url = "https://github.com/owner2/repo2", NpmName = "pkg2", GithubOwner = "owner2", GithubRepo = "repo2" };
+        _db.Packages.AddRange(package1, package2);
+        await _db.SaveChangesAsync();
+
+        SetupGitHubReleases("owner1", "repo1", [CreateRelease("v1.0.0", DateTime.UtcNow)]);
+        SetupGitHubReleases("owner2", "repo2", [
+            CreateRelease("v2.0.0", DateTime.UtcNow),
+            CreateRelease("v2.1.0", DateTime.UtcNow)
+        ]);
+
+        // Act
+        var result = await _syncService.SyncAllAsync();
+
+        // Assert
+        result.PackagesSynced.Should().Be(2);
+        result.ReleasesAdded.Should().Be(3);
+        result.ReleasesNeedingSummary.Should().HaveCount(3);
+    }
+
+    #endregion
+
+    #region GetReleasesNeedingSummaryAsync Tests
+
+    [Fact]
+    public async Task GetReleasesNeedingSummaryAsync_ReturnsReleasesWithoutSummary()
+    {
+        // Arrange
+        var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", NpmName = "pkg", GithubOwner = "owner", GithubRepo = "repo" };
+        _db.Packages.Add(package);
+        await _db.SaveChangesAsync();
+
+        _db.Releases.AddRange(
+            new Release { PackageId = package.Id, Tag = "v1.0.0", PublishedAt = DateTime.UtcNow.AddDays(-3), FetchedAt = DateTime.UtcNow.AddDays(-3), Summary = null },
+            new Release { PackageId = package.Id, Tag = "v1.1.0", PublishedAt = DateTime.UtcNow.AddDays(-2), FetchedAt = DateTime.UtcNow.AddDays(-2), Summary = "Has summary", SummaryGeneratedAt = DateTime.UtcNow.AddDays(-1) },
+            new Release { PackageId = package.Id, Tag = "v1.2.0", PublishedAt = DateTime.UtcNow.AddDays(-1), FetchedAt = DateTime.UtcNow.AddDays(-1), Summary = null }
+        );
+        await _db.SaveChangesAsync();
+
+        // Act
+        var result = await _syncService.GetReleasesNeedingSummaryAsync();
+
+        // Assert
+        result.Should().HaveCount(2);
+        result.Should().Contain(r => r.Tag == "v1.0.0");
+        result.Should().Contain(r => r.Tag == "v1.2.0");
+        result.Should().NotContain(r => r.Tag == "v1.1.0");
+    }
+
+    [Fact]
+    public async Task GetReleasesNeedingSummaryAsync_ReturnsOrderedByPublishedAtDescending()
+    {
+        // Arrange
+        var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", NpmName = "pkg", GithubOwner = "owner", GithubRepo = "repo" };
+        _db.Packages.Add(package);
+        await _db.SaveChangesAsync();
+
+        _db.Releases.AddRange(
+            new Release { PackageId = package.Id, Tag = "v1.0.0", PublishedAt = DateTime.UtcNow.AddDays(-3), FetchedAt = DateTime.UtcNow },
+            new Release { PackageId = package.Id, Tag = "v1.1.0", PublishedAt = DateTime.UtcNow.AddDays(-1), FetchedAt = DateTime.UtcNow },
+            new Release { PackageId = package.Id, Tag = "v1.2.0", PublishedAt = DateTime.UtcNow.AddDays(-2), FetchedAt = DateTime.UtcNow }
+        );
+        await _db.SaveChangesAsync();
+
+        // Act
+        var result = await _syncService.GetReleasesNeedingSummaryAsync();
+
+        // Assert
+        result.Should().HaveCount(3);
+        result[0].Tag.Should().Be("v1.1.0"); // Most recent
+        result[1].Tag.Should().Be("v1.2.0");
+        result[2].Tag.Should().Be("v1.0.0"); // Oldest
+    }
+
+    [Fact]
+    public async Task GetReleasesNeedingSummaryAsync_ByPackageId_ReturnsOnlyForThatPackage()
+    {
+        // Arrange
+        var package1 = new Package { Name = "pkg1", Url = "https://github.com/owner1/repo1", NpmName = "pkg1", GithubOwner = "owner1", GithubRepo = "repo1" };
+        var package2 = new Package { Name = "pkg2", Url = "https://github.com/owner2/repo2", NpmName = "pkg2", GithubOwner = "owner2", GithubRepo = "repo2" };
+        _db.Packages.AddRange(package1, package2);
+        await _db.SaveChangesAsync();
+
+        _db.Releases.AddRange(
+            new Release { PackageId = package1.Id, Tag = "v1.0.0", PublishedAt = DateTime.UtcNow, FetchedAt = DateTime.UtcNow },
+            new Release { PackageId = package1.Id, Tag = "v1.1.0", PublishedAt = DateTime.UtcNow, FetchedAt = DateTime.UtcNow },
+            new Release { PackageId = package2.Id, Tag = "v2.0.0", PublishedAt = DateTime.UtcNow, FetchedAt = DateTime.UtcNow }
+        );
+        await _db.SaveChangesAsync();
+
+        // Act
+        var result = await _syncService.GetReleasesNeedingSummaryAsync(package1.Id);
+
+        // Assert
+        result.Should().HaveCount(2);
+        result.Should().AllSatisfy(r => r.PackageId.Should().Be(package1.Id));
     }
 
     #endregion
