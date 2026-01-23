@@ -30,13 +30,23 @@ jobs:
 
       - name: Check for pending model changes
         run: |
-          dotnet ef migrations has-pending-model-changes \
+          if ! dotnet ef migrations has-pending-model-changes \
             --context SqliteContext \
             --project PatchNotes.Data \
             --startup-project PatchNotes.Api \
             --configuration Release \
-            --no-build
-        continue-on-error: false
+            --no-build; then
+            echo ""
+            echo "::error::Model changes detected without a corresponding migration!"
+            echo ""
+            echo "To fix this, run the following command locally:"
+            echo ""
+            echo "  ./scripts/add-migration.sh <MigrationName>"
+            echo ""
+            echo "This will generate migrations for both SQLite and SQL Server."
+            echo "See PatchNotes.Data/README.md for more details."
+            exit 1
+          fi
 
       - name: Test
         run: dotnet test PatchNotes.slnx --no-build --configuration Release --verbosity normal

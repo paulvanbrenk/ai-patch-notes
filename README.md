@@ -95,11 +95,10 @@ VITE_STYTCH_PUBLIC_TOKEN=your-public-token
 dotnet build
 ```
 
-### 2. Apply database migrations
+### 2. Apply database migrations (SQLite for local dev)
 
 ```bash
-cd PatchNotes.Data
-dotnet ef database update
+dotnet ef database update --context SqliteContext --project PatchNotes.Data --startup-project PatchNotes.Api
 ```
 
 ### 3. Seed the database
@@ -203,6 +202,28 @@ PatchNotes/
 - Vite (build tool)
 
 ## Development
+
+### Database Migrations
+
+The project uses separate EF Core migrations for SQLite (development) and SQL Server (production).
+
+**Creating a new migration** (when you change entity models):
+
+```bash
+# Set SQL Server connection string (required)
+export ConnectionStrings__PatchNotes="Server=...;Database=...;User Id=...;Password=..."
+
+# Generate migrations for both providers
+./scripts/add-migration.sh MigrationName
+```
+
+This creates migrations in:
+- `PatchNotes.Data/Migrations/Sqlite/` - Local development
+- `PatchNotes.Data/Migrations/SqlServer/` - Production
+
+**Important:** CI will fail if you change models without creating migrations. The `has-pending-model-changes` check ensures migrations are always committed with model changes.
+
+For more details, see [PatchNotes.Data/README.md](PatchNotes.Data/README.md).
 
 ### Running Tests
 
