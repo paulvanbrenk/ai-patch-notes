@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SubscriptionSuccessRouteImport } from './routes/subscription-success'
 import { Route as SubscriptionCanceledRouteImport } from './routes/subscription-canceled'
 import { Route as PricingRouteImport } from './routes/pricing'
-import { Route as PreviewRouteImport } from './routes/preview'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticateRouteImport } from './routes/authenticate'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -33,11 +32,6 @@ const SubscriptionCanceledRoute = SubscriptionCanceledRouteImport.update({
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PreviewRoute = PreviewRouteImport.update({
-  id: '/preview',
-  path: '/preview',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -76,7 +70,6 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/authenticate': typeof AuthenticateRoute
   '/login': typeof LoginRoute
-  '/preview': typeof PreviewRoute
   '/pricing': typeof PricingRoute
   '/subscription-canceled': typeof SubscriptionCanceledRoute
   '/subscription-success': typeof SubscriptionSuccessRoute
@@ -88,7 +81,6 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/authenticate': typeof AuthenticateRoute
   '/login': typeof LoginRoute
-  '/preview': typeof PreviewRoute
   '/pricing': typeof PricingRoute
   '/subscription-canceled': typeof SubscriptionCanceledRoute
   '/subscription-success': typeof SubscriptionSuccessRoute
@@ -101,7 +93,6 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/authenticate': typeof AuthenticateRoute
   '/login': typeof LoginRoute
-  '/preview': typeof PreviewRoute
   '/pricing': typeof PricingRoute
   '/subscription-canceled': typeof SubscriptionCanceledRoute
   '/subscription-success': typeof SubscriptionSuccessRoute
@@ -115,7 +106,6 @@ export interface FileRouteTypes {
     | '/admin'
     | '/authenticate'
     | '/login'
-    | '/preview'
     | '/pricing'
     | '/subscription-canceled'
     | '/subscription-success'
@@ -127,7 +117,6 @@ export interface FileRouteTypes {
     | '/admin'
     | '/authenticate'
     | '/login'
-    | '/preview'
     | '/pricing'
     | '/subscription-canceled'
     | '/subscription-success'
@@ -139,7 +128,6 @@ export interface FileRouteTypes {
     | '/admin'
     | '/authenticate'
     | '/login'
-    | '/preview'
     | '/pricing'
     | '/subscription-canceled'
     | '/subscription-success'
@@ -152,7 +140,6 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   AuthenticateRoute: typeof AuthenticateRoute
   LoginRoute: typeof LoginRoute
-  PreviewRoute: typeof PreviewRoute
   PricingRoute: typeof PricingRoute
   SubscriptionCanceledRoute: typeof SubscriptionCanceledRoute
   SubscriptionSuccessRoute: typeof SubscriptionSuccessRoute
@@ -181,13 +168,6 @@ declare module '@tanstack/react-router' {
       path: '/pricing'
       fullPath: '/pricing'
       preLoaderRoute: typeof PricingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/preview': {
-      id: '/preview'
-      path: '/preview'
-      fullPath: '/preview'
-      preLoaderRoute: typeof PreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -240,7 +220,6 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   AuthenticateRoute: AuthenticateRoute,
   LoginRoute: LoginRoute,
-  PreviewRoute: PreviewRoute,
   PricingRoute: PricingRoute,
   SubscriptionCanceledRoute: SubscriptionCanceledRoute,
   SubscriptionSuccessRoute: SubscriptionSuccessRoute,

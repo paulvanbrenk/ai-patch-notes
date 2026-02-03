@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 import { CheckCircle } from 'lucide-react'
 import { Header, HeaderTitle, Container, Button, Card } from '../components/ui'
 import { ThemeToggle } from '../components/theme'
-import { UserMenuV2 } from '../components/auth'
+import { UserMenu } from '../components/auth'
 import { useSubscriptionStore } from '../stores/subscriptionStore'
 
 function SubscriptionSuccess() {
@@ -20,7 +20,7 @@ function SubscriptionSuccess() {
         <HeaderTitle>Patch Notes</HeaderTitle>
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          <UserMenuV2 />
+          <UserMenu />
         </div>
       </Header>
 
