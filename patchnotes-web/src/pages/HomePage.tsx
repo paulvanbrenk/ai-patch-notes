@@ -15,6 +15,7 @@ import {
   Button,
   Badge,
   Card,
+  Logo,
 } from '../components/ui'
 import { ThemeToggle } from '../components/theme'
 import { UserMenu } from '../components/auth'
@@ -502,7 +503,15 @@ export function HomePage() {
   return (
     <div className="min-h-screen bg-surface-secondary">
       <Header>
-        <HeaderTitle>Patch Notes</HeaderTitle>
+        <div className="flex items-center gap-3">
+          <Logo />
+          <div>
+            <HeaderTitle>Patch Notes</HeaderTitle>
+            <p className="text-sm font-normal text-text-tertiary">
+              by Tiny Tools
+            </p>
+          </div>
+        </div>
         <div className="flex items-center gap-2">
           {user && !isPro && (
             <Button
