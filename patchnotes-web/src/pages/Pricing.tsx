@@ -3,7 +3,7 @@ import { Link } from '@tanstack/react-router'
 import { Check, Sparkles } from 'lucide-react'
 import { Header, HeaderTitle, Container, Button, Card } from '../components/ui'
 import { ThemeToggle } from '../components/theme'
-import { UserMenuV2 } from '../components/auth'
+import { UserMenu } from '../components/auth'
 import { useSubscriptionStore } from '../stores/subscriptionStore'
 
 const FREE_FEATURES = [
@@ -50,7 +50,7 @@ export function Pricing() {
           </Link>
           <div className="w-px h-6 bg-border-muted mx-1" />
           <ThemeToggle />
-          <UserMenuV2 />
+          <UserMenu />
         </div>
       </Header>
 
