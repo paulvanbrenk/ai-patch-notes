@@ -2,7 +2,7 @@ namespace PatchNotes.Data;
 
 public class User
 {
-    public int Id { get; set; }
+    public string Id { get; set; } = NanoidDotNet.Nanoid.Generate();
 
     /// <summary>
     /// The Stytch user ID (e.g., "user-live-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx")
@@ -33,4 +33,6 @@ public class User
     /// Last time the user logged in
     /// </summary>
     public DateTime? LastLoginAt { get; set; }
+
+    public ICollection<Watchlist> Watchlists { get; set; } = [];
 }

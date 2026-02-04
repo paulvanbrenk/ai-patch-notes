@@ -34,7 +34,7 @@ public class PackageTests
 
         var release = new Release
         {
-            Tag = "v1.0.0",
+            Version = "v1.0.0",
             PublishedAt = DateTime.UtcNow,
             FetchedAt = DateTime.UtcNow,
             Package = package
@@ -43,7 +43,7 @@ public class PackageTests
         package.Releases.Add(release);
 
         Assert.Single(package.Releases);
-        Assert.Equal("v1.0.0", package.Releases.First().Tag);
+        Assert.Equal("v1.0.0", package.Releases.First().Version);
     }
 
     [Fact]

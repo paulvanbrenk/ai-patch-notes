@@ -15,7 +15,7 @@ import { useRelease } from '../api/hooks'
 import { useSummarize } from '../ai/useSummarize'
 
 interface ReleaseDetailProps {
-  releaseId: number
+  releaseId: string
 }
 
 function formatDate(dateString: string): string {
@@ -86,14 +86,14 @@ export function ReleaseDetail({ releaseId }: ReleaseDetailProps) {
   }
 
   const { githubOwner, githubRepo } = release.package
-  const githubReleaseUrl = `https://github.com/${githubOwner}/${githubRepo}/releases/tag/${release.tag}`
-  const displayTitle = release.title || release.tag
+  const githubReleaseUrl = `https://github.com/${githubOwner}/${githubRepo}/releases/tag/${release.version}`
+  const displayTitle = release.title || release.version
 
   return (
     <div className="min-h-screen bg-surface-secondary">
       <Header>
         <div className="flex items-center gap-3">
-          <VersionBadge version={release.tag} />
+          <VersionBadge version={release.version} />
           <HeaderTitle>{displayTitle}</HeaderTitle>
         </div>
         <div className="flex items-center gap-2">
@@ -119,7 +119,7 @@ export function ReleaseDetail({ releaseId }: ReleaseDetailProps) {
           <Card className="mb-8">
             <CardHeader>
               <div className="flex items-center gap-3">
-                <VersionBadge version={release.tag} />
+                <VersionBadge version={release.version} />
                 <div>
                   <CardTitle>{displayTitle}</CardTitle>
                   <p className="text-sm text-text-tertiary mt-0.5">

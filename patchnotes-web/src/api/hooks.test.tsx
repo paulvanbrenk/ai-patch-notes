@@ -3,11 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 import { http, HttpResponse } from 'msw'
 import { server } from '../test/mocks/server'
-import {
-  mockPackages,
-  mockReleases,
-  mockNotifications,
-} from '../test/mocks/handlers'
+import { mockPackages, mockReleases } from '../test/mocks/handlers'
 import {
   usePackages,
   usePackage,
@@ -17,10 +13,6 @@ import {
   useDeletePackage,
   useUpdatePackage,
   useSyncPackage,
-  useNotifications,
-  useNotificationsUnreadCount,
-  useMarkNotificationAsRead,
-  useDeleteNotification,
   queryKeys,
 } from './hooks'
 
@@ -51,7 +43,7 @@ describe('queryKeys', () => {
   })
 
   it('generates correct package key', () => {
-    expect(queryKeys.package(1)).toEqual(['packages', 1])
+    expect(queryKeys.package('abc')).toEqual(['packages', 'abc'])
   })
 
   it('generates correct releases key', () => {
@@ -59,17 +51,10 @@ describe('queryKeys', () => {
   })
 
   it('generates correct packageReleases key', () => {
-    expect(queryKeys.packageReleases(1)).toEqual(['packages', 1, 'releases'])
-  })
-
-  it('generates correct notifications key', () => {
-    expect(queryKeys.notifications).toEqual(['notifications'])
-  })
-
-  it('generates correct notificationsUnreadCount key', () => {
-    expect(queryKeys.notificationsUnreadCount).toEqual([
-      'notifications',
-      'unread-count',
+    expect(queryKeys.packageReleases('abc')).toEqual([
+      'packages',
+      'abc',
+      'releases',
     ])
   })
 })
@@ -102,7 +87,7 @@ describe('usePackages', () => {
 
 describe('usePackage', () => {
   it('fetches a single package successfully', async () => {
-    const { result } = renderHook(() => usePackage(1), {
+    const { result } = renderHook(() => usePackage('pkg_react_001'), {
       wrapper: createWrapper(),
     })
 
@@ -111,8 +96,8 @@ describe('usePackage', () => {
     expect(result.current.data).toEqual(mockPackages[0])
   })
 
-  it('does not fetch when id is 0', async () => {
-    const { result } = renderHook(() => usePackage(0), {
+  it('does not fetch when id is empty', async () => {
+    const { result } = renderHook(() => usePackage(''), {
       wrapper: createWrapper(),
     })
 
@@ -122,12 +107,12 @@ describe('usePackage', () => {
 
   it('handles 404 error', async () => {
     server.use(
-      http.get('/api/packages/999', () => {
+      http.get('/api/packages/nonexistent', () => {
         return new HttpResponse(null, { status: 404 })
       })
     )
 
-    const { result } = renderHook(() => usePackage(999), {
+    const { result } = renderHook(() => usePackage('nonexistent'), {
       wrapper: createWrapper(),
     })
 
@@ -149,7 +134,7 @@ describe('useReleases', () => {
 
 describe('usePackageReleases', () => {
   it('fetches releases for a specific package', async () => {
-    const { result } = renderHook(() => usePackageReleases(1), {
+    const { result } = renderHook(() => usePackageReleases('pkg_react_001'), {
       wrapper: createWrapper(),
     })
 
@@ -158,8 +143,8 @@ describe('usePackageReleases', () => {
     expect(result.current.data).toEqual([mockReleases[0]])
   })
 
-  it('does not fetch when packageId is 0', async () => {
-    const { result } = renderHook(() => usePackageReleases(0), {
+  it('does not fetch when packageId is empty', async () => {
+    const { result } = renderHook(() => usePackageReleases(''), {
       wrapper: createWrapper(),
     })
 
@@ -189,7 +174,7 @@ describe('useDeletePackage', () => {
       wrapper: createWrapper(),
     })
 
-    result.current.mutate(1)
+    result.current.mutate('pkg_react_001')
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
   })
@@ -201,7 +186,7 @@ describe('useUpdatePackage', () => {
       wrapper: createWrapper(),
     })
 
-    result.current.mutate({ id: 1, githubOwner: 'new-owner' })
+    result.current.mutate({ id: 'pkg_react_001', githubOwner: 'new-owner' })
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
@@ -217,110 +202,13 @@ describe('useSyncPackage', () => {
       wrapper: createWrapper(),
     })
 
-    result.current.mutate(1)
+    result.current.mutate('pkg_react_001')
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
     expect(result.current.data).toMatchObject({
-      id: 1,
+      id: 'pkg_react_001',
       releasesAdded: 2,
     })
-  })
-})
-
-describe('useNotifications', () => {
-  it('fetches notifications successfully', async () => {
-    const { result } = renderHook(() => useNotifications(), {
-      wrapper: createWrapper(),
-    })
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true))
-
-    expect(result.current.data).toEqual(mockNotifications)
-  })
-
-  it('fetches with unreadOnly filter', async () => {
-    server.use(
-      http.get('/api/notifications', ({ request }) => {
-        const url = new URL(request.url)
-        if (url.searchParams.get('unreadOnly') === 'true') {
-          return HttpResponse.json(mockNotifications.filter((n) => n.unread))
-        }
-        return HttpResponse.json(mockNotifications)
-      })
-    )
-
-    const { result } = renderHook(
-      () => useNotifications({ unreadOnly: true }),
-      {
-        wrapper: createWrapper(),
-      }
-    )
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true))
-  })
-
-  it('fetches with packageId filter', async () => {
-    server.use(
-      http.get('/api/notifications', ({ request }) => {
-        const url = new URL(request.url)
-        const packageId = url.searchParams.get('packageId')
-        if (packageId) {
-          return HttpResponse.json(
-            mockNotifications.filter(
-              (n) => n.package?.id === parseInt(packageId)
-            )
-          )
-        }
-        return HttpResponse.json(mockNotifications)
-      })
-    )
-
-    const { result } = renderHook(() => useNotifications({ packageId: 1 }), {
-      wrapper: createWrapper(),
-    })
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true))
-  })
-})
-
-describe('useNotificationsUnreadCount', () => {
-  it('fetches unread count successfully', async () => {
-    const { result } = renderHook(() => useNotificationsUnreadCount(), {
-      wrapper: createWrapper(),
-    })
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true))
-
-    expect(result.current.data).toEqual({ count: 1 })
-  })
-})
-
-describe('useMarkNotificationAsRead', () => {
-  it('marks notification as read successfully', async () => {
-    const { result } = renderHook(() => useMarkNotificationAsRead(), {
-      wrapper: createWrapper(),
-    })
-
-    result.current.mutate(1)
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true))
-
-    expect(result.current.data).toMatchObject({
-      id: 1,
-      unread: false,
-    })
-  })
-})
-
-describe('useDeleteNotification', () => {
-  it('deletes notification successfully', async () => {
-    const { result } = renderHook(() => useDeleteNotification(), {
-      wrapper: createWrapper(),
-    })
-
-    result.current.mutate(1)
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true))
   })
 })

@@ -1,5 +1,5 @@
 export interface Package {
-  id: number
+  id: string
   npmName: string
   githubOwner: string
   githubRepo: string
@@ -9,22 +9,33 @@ export interface Package {
 }
 
 export interface Release {
-  id: number
-  tag: string
+  id: string
+  version: string
   title: string | null
   body: string | null
   publishedAt: string
   fetchedAt: string
+  major: number
+  minor: number
+  isPrerelease: boolean
   package: {
-    id: number
+    id: string
     npmName: string
     githubOwner: string
     githubRepo: string
   }
 }
 
-export interface AddPackageRequest {
-  npmName: string
+export type SummaryPeriod = 'Week' | 'Month'
+
+export interface Summary {
+  id: string
+  packageId: string
+  versionGroup: string
+  period: SummaryPeriod
+  periodStart: string
+  content: string
+  generatedAt: string
 }
 
 export interface AddPackageRequest {
@@ -32,7 +43,7 @@ export interface AddPackageRequest {
 }
 
 export interface AddPackageResponse {
-  id: number
+  id: string
   npmName: string
   githubOwner: string
   githubRepo: string
@@ -45,32 +56,8 @@ export interface UpdatePackageRequest {
 }
 
 export interface SyncPackageResponse {
-  id: number
+  id: string
   npmName: string
   lastFetchedAt: string
   releasesAdded: number
-}
-
-export interface Notification {
-  id: number
-  gitHubId: string
-  reason: string
-  subjectTitle: string
-  subjectType: string
-  subjectUrl: string | null
-  repositoryFullName: string
-  unread: boolean
-  updatedAt: string
-  lastReadAt: string | null
-  fetchedAt: string
-  package: {
-    id: number
-    npmName: string
-    githubOwner: string
-    githubRepo: string
-  } | null
-}
-
-export interface UnreadCount {
-  count: number
 }

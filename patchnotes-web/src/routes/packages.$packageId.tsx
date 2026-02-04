@@ -4,6 +4,6 @@ import { PackageDetail } from '../pages/PackageDetail'
 export const Route = createFileRoute('/packages/$packageId')({
   component: function PackageDetailWrapper() {
     const { packageId } = Route.useParams()
-    return <PackageDetail packageId={parseInt(packageId, 10)} />
+    return <PackageDetail packageId={packageId} />
   },
 })

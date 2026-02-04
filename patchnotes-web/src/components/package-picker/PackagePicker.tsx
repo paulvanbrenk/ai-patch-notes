@@ -5,7 +5,7 @@ import { Input } from '../ui/Input'
 import { Checkbox } from '../ui/Checkbox'
 
 interface Package {
-  id: number
+  id: string
   npmName: string
   githubOwner: string
   githubRepo: string
@@ -14,9 +14,11 @@ interface Package {
 interface PackagePickerProps {
   packages: Package[]
   isLoading?: boolean
-  onSelectionChange?: (selectedIds: number[]) => void
+  onSelectionChange?: (selectedIds: string[]) => void
   onAddPackage?: (npmName: string) => void
   storageKey?: string
+  watchlistIds?: string[]
+  onWatchlistChange?: (selectedIds: string[]) => void
 }
 
 const STORAGE_KEY_PREFIX = 'patchnotes:package-selection:'
@@ -39,10 +41,14 @@ export function PackagePicker({
   onSelectionChange,
   onAddPackage,
   storageKey = 'default',
+  watchlistIds,
+  onWatchlistChange,
 }: PackagePickerProps) {
+  const useWatchlist = watchlistIds !== undefined
   const fullStorageKey = `${STORAGE_KEY_PREFIX}${storageKey}`
 
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(() => {
+  const [localSelectedIds, setLocalSelectedIds] = useState<Set<string>>(() => {
+    if (useWatchlist) return new Set(watchlistIds)
     if (typeof window === 'undefined') return new Set()
     try {
       const stored = localStorage.getItem(fullStorageKey)
@@ -56,24 +62,47 @@ export function PackagePicker({
     return new Set()
   })
 
+  // Sync from watchlistIds prop when it changes
+  useEffect(() => {
+    if (useWatchlist) {
+      setLocalSelectedIds(new Set(watchlistIds))
+    }
+  }, [useWatchlist, watchlistIds])
+
+  const selectedIds = useWatchlist ? new Set(watchlistIds) : localSelectedIds
+  const setSelectedIds = (
+    updater: Set<string> | ((prev: Set<string>) => Set<string>)
+  ) => {
+    const next = typeof updater === 'function' ? updater(selectedIds) : updater
+    if (useWatchlist) {
+      onWatchlistChange?.([...next])
+    } else {
+      setLocalSelectedIds(next)
+    }
+  }
+
   const [newPackageName, setNewPackageName] = useState('')
   const [isAdding, setIsAdding] = useState(false)
 
-  // Persist selection to localStorage
+  // Persist selection to localStorage (only when not using watchlist)
   useEffect(() => {
+    if (useWatchlist) return
     try {
-      localStorage.setItem(fullStorageKey, JSON.stringify([...selectedIds]))
+      localStorage.setItem(
+        fullStorageKey,
+        JSON.stringify([...localSelectedIds])
+      )
     } catch {
       // Ignore storage errors
     }
-  }, [selectedIds, fullStorageKey])
+  }, [localSelectedIds, fullStorageKey, useWatchlist])
 
   // Notify parent of selection changes
   useEffect(() => {
     onSelectionChange?.([...selectedIds])
   }, [selectedIds, onSelectionChange])
 
-  const handleToggle = useCallback((id: number) => {
+  const handleToggle = useCallback((id: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev)
       if (next.has(id)) {

@@ -1,8 +1,8 @@
 import { VersionBadge } from './VersionBadge'
 
 interface TimelineRelease {
-  id: number
-  tag: string
+  id: string
+  version: string
   title?: string | null
   body?: string | null
   publishedAt: string
@@ -53,7 +53,7 @@ interface TimelineItemProps {
 }
 
 function TimelineItem({ release, isLast, showPackageName }: TimelineItemProps) {
-  const displayTitle = release.title || release.tag
+  const displayTitle = release.title || release.version
 
   return (
     <div className="relative flex gap-4">
@@ -71,7 +71,7 @@ function TimelineItem({ release, isLast, showPackageName }: TimelineItemProps) {
           {/* Header */}
           <div className="flex items-start justify-between gap-4 mb-2">
             <div className="flex items-center gap-3 flex-wrap">
-              <VersionBadge version={release.tag} />
+              <VersionBadge version={release.version} />
               {showPackageName && release.packageName && (
                 <span className="text-sm font-medium text-text-secondary">
                   {release.packageName}

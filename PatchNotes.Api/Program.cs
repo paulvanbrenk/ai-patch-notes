@@ -62,7 +62,7 @@ builder.Services.AddCors(options =>
                   "http://localhost:5173",
                   "http://localhost:3000")
               .WithHeaders("Content-Type", "X-API-Key", "Accept")
-              .WithMethods("GET", "POST", "PATCH", "DELETE")
+              .WithMethods("GET", "POST", "PUT", "PATCH", "DELETE")
               .AllowCredentials();
     });
 });
@@ -98,8 +98,8 @@ app.UseCors();
 app.MapStatusPageRoutes();
 app.MapPackageRoutes();
 app.MapReleaseRoutes();
-app.MapNotificationRoutes();
 app.MapUserRoutes();
+app.MapWatchlistRoutes();
 app.MapStytchWebhook();
 
 app.Run();
