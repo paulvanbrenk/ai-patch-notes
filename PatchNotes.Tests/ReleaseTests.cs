@@ -9,7 +9,7 @@ public class ReleaseTests
     {
         var release = new Release
         {
-            Tag = "v1.0.0",
+            Version = "v1.0.0",
             PublishedAt = DateTime.UtcNow,
             FetchedAt = DateTime.UtcNow
         };
@@ -23,7 +23,7 @@ public class ReleaseTests
     {
         var release = new Release
         {
-            Tag = "v1.0.0",
+            Version = "v1.0.0",
             Title = "Initial Release",
             Body = "This is the first release",
             PublishedAt = DateTime.UtcNow,
@@ -35,15 +35,15 @@ public class ReleaseTests
     }
 
     [Fact]
-    public void Release_RequiresTag()
+    public void Release_RequiresVersion()
     {
         var release = new Release
         {
-            Tag = "v2.0.0",
+            Version = "v2.0.0",
             PublishedAt = DateTime.UtcNow,
             FetchedAt = DateTime.UtcNow
         };
 
-        Assert.Equal("v2.0.0", release.Tag);
+        Assert.Equal("v2.0.0", release.Version);
     }
 }
