@@ -12,7 +12,7 @@ public static class ReleaseRoutes
         var requireAuth = RouteUtils.CreateAuthFilter();
 
         // GET /api/releases/{id} - Get single release details
-        app.MapGet("/api/releases/{id}", async (string id, PatchNotesDbContext db) =>
+        app.MapGet("/api/releases/{id:int}", async (int id, PatchNotesDbContext db) =>
         {
             var release = await db.Releases
                 .Include(r => r.Package)
@@ -20,14 +20,11 @@ public static class ReleaseRoutes
                 .Select(r => new
                 {
                     r.Id,
-                    r.Version,
+                    r.Tag,
                     r.Title,
                     r.Body,
                     r.PublishedAt,
                     r.FetchedAt,
-                    r.Major,
-                    r.Minor,
-                    r.IsPrerelease,
                     Package = new
                     {
                         r.Package.Id,
@@ -59,8 +56,9 @@ public static class ReleaseRoutes
             if (!string.IsNullOrEmpty(packages))
             {
                 var packageIds = packages.Split(',')
-                    .Select(p => p.Trim())
-                    .Where(p => p.Length > 0)
+                    .Select(p => int.TryParse(p.Trim(), out var id) ? id : (int?)null)
+                    .Where(id => id.HasValue)
+                    .Select(id => id!.Value)
                     .ToList();
 
                 if (packageIds.Count > 0)
@@ -69,31 +67,16 @@ public static class ReleaseRoutes
                 }
             }
 
-            // Filter out prereleases if requested
-            if (excludePrerelease == true)
-            {
-                query = query.Where(r => !r.IsPrerelease);
-            }
-
-            // Filter by major version if specified
-            if (majorVersion.HasValue)
-            {
-                query = query.Where(r => r.Major == majorVersion.Value);
-            }
-
             var releases = await query
                 .OrderByDescending(r => r.PublishedAt)
                 .Select(r => new
                 {
                     r.Id,
-                    r.Version,
+                    r.Tag,
                     r.Title,
                     r.Body,
                     r.PublishedAt,
                     r.FetchedAt,
-                    r.Major,
-                    r.Minor,
-                    r.IsPrerelease,
                     Package = new
                     {
                         r.Package.Id,
@@ -104,11 +87,23 @@ public static class ReleaseRoutes
                 })
                 .ToListAsync();
 
+            // Filter out prereleases if requested
+            if (excludePrerelease == true)
+            {
+                releases = releases.Where(r => !RouteUtils.IsPrerelease(r.Tag)).ToList();
+            }
+
+            // Filter by major version if specified
+            if (majorVersion.HasValue)
+            {
+                releases = releases.Where(r => RouteUtils.GetMajorVersion(r.Tag) == majorVersion.Value).ToList();
+            }
+
             return Results.Ok(releases);
         });
 
         // POST /api/releases/{id}/summarize - Generate AI summary for a release
-        app.MapPost("/api/releases/{id}/summarize", async (string id, HttpContext httpContext, PatchNotesDbContext db, IAiClient aiClient) =>
+        app.MapPost("/api/releases/{id:int}/summarize", async (int id, HttpContext httpContext, PatchNotesDbContext db, IAiClient aiClient) =>
         {
             var release = await db.Releases
                 .Include(r => r.Package)
@@ -144,7 +139,7 @@ public static class ReleaseRoutes
                     result = new
                     {
                         releaseId = release.Id,
-                        release.Version,
+                        release.Tag,
                         release.Title,
                         summary = fullSummary.ToString(),
                         package = new { release.Package.Id, release.Package.NpmName }
@@ -162,7 +157,7 @@ public static class ReleaseRoutes
             return Results.Ok(new
             {
                 release.Id,
-                release.Version,
+                release.Tag,
                 release.Title,
                 summary,
                 Package = new

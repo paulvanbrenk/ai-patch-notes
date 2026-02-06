@@ -3,12 +3,12 @@ import { useState, useCallback } from 'react'
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'
 
 export interface SummarizeResult {
-  releaseId: string
-  version: string
+  releaseId: number
+  tag: string
   title: string | null
   summary: string
   package: {
-    id: string
+    id: number
     npmName: string
   }
 }
@@ -24,7 +24,7 @@ export function useSummarize(options: UseSummarizeOptions = {}) {
   const [summary, setSummary] = useState<string | null>(null)
 
   const summarize = useCallback(
-    async (releaseId: string) => {
+    async (releaseId: number) => {
       setIsLoading(true)
       setError(null)
       setSummary(null)

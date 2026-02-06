@@ -1,13 +1,16 @@
 import { http, HttpResponse } from 'msw'
-import type { Package, Release } from '../../api/types'
+import type {
+  Package,
+  Release,
+  Notification,
+  UnreadCount,
+} from '../../api/types'
 
 const API_BASE = '/api'
 
-export const mockWatchlist: string[] = []
-
 export const mockPackages: Package[] = [
   {
-    id: 'pkg_react_001',
+    id: 1,
     npmName: 'react',
     githubOwner: 'facebook',
     githubRepo: 'react',
@@ -15,7 +18,7 @@ export const mockPackages: Package[] = [
     createdAt: '2026-01-01T00:00:00Z',
   },
   {
-    id: 'pkg_lodash_002',
+    id: 2,
     npmName: 'lodash',
     githubOwner: 'lodash',
     githubRepo: 'lodash',
@@ -26,37 +29,53 @@ export const mockPackages: Package[] = [
 
 export const mockReleases: Release[] = [
   {
-    id: 'rel_react19_001',
-    version: 'v19.0.0',
+    id: 1,
+    tag: 'v19.0.0',
     title: 'React 19',
     body: 'Major release with new features',
     publishedAt: '2026-01-10T00:00:00Z',
     fetchedAt: '2026-01-15T10:00:00Z',
-    major: 19,
-    minor: 0,
-    isPrerelease: false,
     package: {
-      id: 'pkg_react_001',
+      id: 1,
       npmName: 'react',
       githubOwner: 'facebook',
       githubRepo: 'react',
     },
   },
   {
-    id: 'rel_lodash_002',
-    version: 'v4.18.0',
+    id: 2,
+    tag: 'v4.18.0',
     title: 'Lodash 4.18.0',
     body: 'Bug fixes and improvements',
     publishedAt: '2026-01-08T00:00:00Z',
     fetchedAt: '2026-01-14T10:00:00Z',
-    major: 4,
-    minor: 18,
-    isPrerelease: false,
     package: {
-      id: 'pkg_lodash_002',
+      id: 2,
       npmName: 'lodash',
       githubOwner: 'lodash',
       githubRepo: 'lodash',
+    },
+  },
+]
+
+export const mockNotifications: Notification[] = [
+  {
+    id: 1,
+    gitHubId: 'gh-123',
+    reason: 'subscribed',
+    subjectTitle: 'New release available',
+    subjectType: 'Release',
+    subjectUrl: 'https://github.com/facebook/react/releases/v19.0.0',
+    repositoryFullName: 'facebook/react',
+    unread: true,
+    updatedAt: '2026-01-15T10:00:00Z',
+    lastReadAt: null,
+    fetchedAt: '2026-01-15T10:00:00Z',
+    package: {
+      id: 1,
+      npmName: 'react',
+      githubOwner: 'facebook',
+      githubRepo: 'react',
     },
   },
 ]
@@ -69,7 +88,8 @@ export const handlers = [
 
   // GET /packages/:id
   http.get(`${API_BASE}/packages/:id`, ({ params }) => {
-    const pkg = mockPackages.find((p) => p.id === params.id)
+    const id = Number(params.id)
+    const pkg = mockPackages.find((p) => p.id === id)
     if (!pkg) {
       return new HttpResponse(null, { status: 404 })
     }
@@ -80,7 +100,7 @@ export const handlers = [
   http.post(`${API_BASE}/packages`, async ({ request }) => {
     const body = (await request.json()) as { npmName: string }
     const newPackage: Package = {
-      id: 'pkg_new_001',
+      id: mockPackages.length + 1,
       npmName: body.npmName,
       githubOwner: 'owner',
       githubRepo: body.npmName,
@@ -97,8 +117,9 @@ export const handlers = [
 
   // PATCH /packages/:id
   http.patch(`${API_BASE}/packages/:id`, async ({ params, request }) => {
+    const id = Number(params.id)
     const body = (await request.json()) as Partial<Package>
-    const pkg = mockPackages.find((p) => p.id === params.id)
+    const pkg = mockPackages.find((p) => p.id === id)
     if (!pkg) {
       return new HttpResponse(null, { status: 404 })
     }
@@ -107,8 +128,9 @@ export const handlers = [
 
   // POST /packages/:id/sync
   http.post(`${API_BASE}/packages/:id/sync`, ({ params }) => {
+    const id = Number(params.id)
     return HttpResponse.json({
-      id: params.id,
+      id,
       npmName: 'react',
       lastFetchedAt: new Date().toISOString(),
       releasesAdded: 2,
@@ -122,42 +144,34 @@ export const handlers = [
 
   // GET /packages/:id/releases
   http.get(`${API_BASE}/packages/:id/releases`, ({ params }) => {
-    const releases = mockReleases.filter((r) => r.package.id === params.id)
+    const packageId = Number(params.id)
+    const releases = mockReleases.filter((r) => r.package.id === packageId)
     return HttpResponse.json(releases)
   }),
 
-  // GET /watchlist
-  http.get(`${API_BASE}/watchlist`, () => {
-    return HttpResponse.json(mockWatchlist)
+  // GET /notifications
+  http.get(`${API_BASE}/notifications`, () => {
+    return HttpResponse.json(mockNotifications)
   }),
 
-  // PUT /watchlist
-  http.put(`${API_BASE}/watchlist`, async ({ request }) => {
-    const body = (await request.json()) as { packageIds: string[] }
-    mockWatchlist.splice(0, mockWatchlist.length, ...body.packageIds)
-    return HttpResponse.json(mockWatchlist)
+  // GET /notifications/unread-count
+  http.get(`${API_BASE}/notifications/unread-count`, () => {
+    const count = mockNotifications.filter((n) => n.unread).length
+    return HttpResponse.json({ count } satisfies UnreadCount)
   }),
 
-  // POST /watchlist/:packageId
-  http.post(`${API_BASE}/watchlist/:packageId`, ({ params }) => {
-    const packageId = params.packageId as string
-    if (mockWatchlist.includes(packageId)) {
-      return HttpResponse.json(
-        { error: 'Already watching this package' },
-        { status: 409 }
-      )
-    }
-    mockWatchlist.push(packageId)
-    return HttpResponse.json(packageId, { status: 201 })
+  // PATCH /notifications/:id/read
+  http.patch(`${API_BASE}/notifications/:id/read`, ({ params }) => {
+    const id = Number(params.id)
+    return HttpResponse.json({
+      id,
+      unread: false,
+      lastReadAt: new Date().toISOString(),
+    })
   }),
 
-  // DELETE /watchlist/:packageId
-  http.delete(`${API_BASE}/watchlist/:packageId`, ({ params }) => {
-    const packageId = params.packageId as string
-    const index = mockWatchlist.indexOf(packageId)
-    if (index !== -1) {
-      mockWatchlist.splice(index, 1)
-    }
+  // DELETE /notifications/:id
+  http.delete(`${API_BASE}/notifications/:id`, () => {
     return new HttpResponse(null, { status: 204 })
   }),
 ]

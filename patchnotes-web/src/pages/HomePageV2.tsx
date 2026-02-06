@@ -24,8 +24,8 @@ import { useFilterStore } from '../stores/filterStore'
 // ============================================================================
 
 interface Release {
-  id: string
-  version: string
+  id: number
+  tag: string
   title: string
   publishedAt: string
   body: string
@@ -34,7 +34,7 @@ interface Release {
 interface VersionGroup {
   id: string
   packageName: string
-  packageId: string
+  packageId: number
   versionRange: string
   majorVersion: number
   isPrerelease: boolean
@@ -53,7 +53,7 @@ const MOCK_VERSION_GROUPS: VersionGroup[] = [
   {
     id: 'next-16-stable',
     packageName: 'Next.js',
-    packageId: 'pkg_nextjs',
+    packageId: 1,
     versionRange: 'v16.x',
     majorVersion: 16,
     isPrerelease: false,
@@ -63,22 +63,22 @@ const MOCK_VERSION_GROUPS: VersionGroup[] = [
     lastUpdated: '2026-01-20T14:30:00Z',
     releases: [
       {
-        id: 'rel_101',
-        version: 'v16.2.0',
+        id: 101,
+        tag: 'v16.2.0',
         title: 'Next.js 16.2.0',
         publishedAt: '2026-01-20T14:30:00Z',
         body: 'Performance improvements for server components',
       },
       {
-        id: 'rel_102',
-        version: 'v16.1.0',
+        id: 102,
+        tag: 'v16.1.0',
         title: 'Next.js 16.1.0',
         publishedAt: '2026-01-15T10:00:00Z',
         body: 'Bug fixes and stability improvements',
       },
       {
-        id: 'rel_103',
-        version: 'v16.0.0',
+        id: 103,
+        tag: 'v16.0.0',
         title: 'Next.js 16.0.0',
         publishedAt: '2026-01-10T09:00:00Z',
         body: 'Major release with App Router as default',
@@ -88,7 +88,7 @@ const MOCK_VERSION_GROUPS: VersionGroup[] = [
   {
     id: 'next-16-canary',
     packageName: 'Next.js',
-    packageId: 'pkg_nextjs',
+    packageId: 1,
     versionRange: 'v16.x',
     majorVersion: 16,
     isPrerelease: true,
@@ -99,15 +99,15 @@ const MOCK_VERSION_GROUPS: VersionGroup[] = [
     lastUpdated: '2026-01-21T08:15:00Z',
     releases: [
       {
-        id: 'rel_104',
-        version: 'v16.3.0-canary.12',
+        id: 104,
+        tag: 'v16.3.0-canary.12',
         title: 'Next.js 16.3.0-canary.12',
         publishedAt: '2026-01-21T08:15:00Z',
         body: 'Experimental: New partial prerendering API',
       },
       {
-        id: 'rel_105',
-        version: 'v16.3.0-canary.11',
+        id: 105,
+        tag: 'v16.3.0-canary.11',
         title: 'Next.js 16.3.0-canary.11',
         publishedAt: '2026-01-20T16:00:00Z',
         body: 'Fix: Server action serialization',
@@ -117,7 +117,7 @@ const MOCK_VERSION_GROUPS: VersionGroup[] = [
   {
     id: 'react-19-stable',
     packageName: 'React',
-    packageId: 'pkg_react',
+    packageId: 2,
     versionRange: 'v19.x',
     majorVersion: 19,
     isPrerelease: false,
@@ -127,15 +127,15 @@ const MOCK_VERSION_GROUPS: VersionGroup[] = [
     lastUpdated: '2026-01-18T11:00:00Z',
     releases: [
       {
-        id: 'rel_201',
-        version: 'v19.1.0',
+        id: 201,
+        tag: 'v19.1.0',
         title: 'React 19.1.0',
         publishedAt: '2026-01-18T11:00:00Z',
         body: 'Improved Actions error handling',
       },
       {
-        id: 'rel_202',
-        version: 'v19.0.0',
+        id: 202,
+        tag: 'v19.0.0',
         title: 'React 19.0.0',
         publishedAt: '2026-01-05T09:00:00Z',
         body: 'Major release introducing Actions and new hooks',
@@ -145,7 +145,7 @@ const MOCK_VERSION_GROUPS: VersionGroup[] = [
   {
     id: 'typescript-5-stable',
     packageName: 'TypeScript',
-    packageId: 'pkg_typescript',
+    packageId: 3,
     versionRange: 'v5.x',
     majorVersion: 5,
     isPrerelease: false,
@@ -155,15 +155,15 @@ const MOCK_VERSION_GROUPS: VersionGroup[] = [
     lastUpdated: '2026-01-19T15:45:00Z',
     releases: [
       {
-        id: 'rel_301',
-        version: 'v5.7.3',
+        id: 301,
+        tag: 'v5.7.3',
         title: 'TypeScript 5.7.3',
         publishedAt: '2026-01-19T15:45:00Z',
         body: 'Bug fix release',
       },
       {
-        id: 'rel_302',
-        version: 'v5.7.2',
+        id: 302,
+        tag: 'v5.7.2',
         title: 'TypeScript 5.7.2',
         publishedAt: '2026-01-12T10:00:00Z',
         body: 'Performance improvements',
@@ -173,7 +173,7 @@ const MOCK_VERSION_GROUPS: VersionGroup[] = [
   {
     id: 'typescript-5-beta',
     packageName: 'TypeScript',
-    packageId: 'pkg_typescript',
+    packageId: 3,
     versionRange: 'v5.8',
     majorVersion: 5,
     isPrerelease: true,
@@ -184,8 +184,8 @@ const MOCK_VERSION_GROUPS: VersionGroup[] = [
     lastUpdated: '2026-01-17T09:30:00Z',
     releases: [
       {
-        id: 'rel_303',
-        version: 'v5.8.0-beta',
+        id: 303,
+        tag: 'v5.8.0-beta',
         title: 'TypeScript 5.8.0 Beta',
         publishedAt: '2026-01-17T09:30:00Z',
         body: 'Beta release for testing',
@@ -195,7 +195,7 @@ const MOCK_VERSION_GROUPS: VersionGroup[] = [
   {
     id: 'vite-6-stable',
     packageName: 'Vite',
-    packageId: 'pkg_vite',
+    packageId: 4,
     versionRange: 'v6.x',
     majorVersion: 6,
     isPrerelease: false,
@@ -205,15 +205,15 @@ const MOCK_VERSION_GROUPS: VersionGroup[] = [
     lastUpdated: '2026-01-16T13:20:00Z',
     releases: [
       {
-        id: 'rel_401',
-        version: 'v6.1.0',
+        id: 401,
+        tag: 'v6.1.0',
         title: 'Vite 6.1.0',
         publishedAt: '2026-01-16T13:20:00Z',
         body: 'Environment API improvements',
       },
       {
-        id: 'rel_402',
-        version: 'v6.0.0',
+        id: 402,
+        tag: 'v6.0.0',
         title: 'Vite 6.0.0',
         publishedAt: '2026-01-02T09:00:00Z',
         body: 'Major release with Environment API',
@@ -443,7 +443,7 @@ function SummaryCard({
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
                     <code className="text-sm font-mono text-brand-600 bg-brand-50 dark:bg-brand-900/20 px-2 py-0.5 rounded">
-                      {release.version}
+                      {release.tag}
                     </code>
                     <span className="text-sm text-text-primary">
                       {release.title}

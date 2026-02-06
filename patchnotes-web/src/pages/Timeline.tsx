@@ -6,7 +6,7 @@ import type { Release } from '../api/types'
 
 function getReleaseUrl(release: Release): string {
   const { githubOwner, githubRepo } = release.package
-  return `https://github.com/${githubOwner}/${githubRepo}/releases/tag/${release.version}`
+  return `https://github.com/${githubOwner}/${githubRepo}/releases/tag/${release.tag}`
 }
 
 export function Timeline() {
@@ -16,7 +16,7 @@ export function Timeline() {
     if (!releases) return []
     return releases.map((release) => ({
       id: release.id,
-      version: release.version,
+      tag: release.tag,
       title: release.title,
       body: release.body,
       publishedAt: release.publishedAt,

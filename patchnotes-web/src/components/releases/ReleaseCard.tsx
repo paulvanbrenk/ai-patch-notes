@@ -2,7 +2,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '../ui'
 import { VersionBadge } from './VersionBadge'
 
 interface ReleaseCardProps {
-  version: string
+  tag: string
   title?: string | null
   body?: string | null
   publishedAt: string
@@ -48,7 +48,7 @@ function formatRelativeTime(dateString: string): string {
 }
 
 export function ReleaseCard({
-  version,
+  tag,
   title,
   body,
   publishedAt,
@@ -56,7 +56,7 @@ export function ReleaseCard({
   hoverable,
   onClick,
 }: ReleaseCardProps) {
-  const displayTitle = title || version
+  const displayTitle = title || tag
 
   return (
     <Card
@@ -69,7 +69,7 @@ export function ReleaseCard({
     >
       <CardHeader>
         <div className="flex items-center gap-3">
-          <VersionBadge version={version} />
+          <VersionBadge version={tag} />
           <CardTitle>
             {htmlUrl ? (
               <a

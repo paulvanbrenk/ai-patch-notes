@@ -15,7 +15,7 @@ import { usePackage, usePackageReleases } from '../api/hooks'
 import type { Release } from '../api/types'
 
 interface PackageDetailProps {
-  packageId: string
+  packageId: number
 }
 
 function formatDate(dateString: string): string {
@@ -31,7 +31,7 @@ function formatDate(dateString: string): string {
 
 function getReleaseUrl(release: Release): string {
   const { githubOwner, githubRepo } = release.package
-  return `https://github.com/${githubOwner}/${githubRepo}/releases/tag/${release.version}`
+  return `https://github.com/${githubOwner}/${githubRepo}/releases/tag/${release.tag}`
 }
 
 export function PackageDetail({ packageId }: PackageDetailProps) {
@@ -182,7 +182,7 @@ export function PackageDetail({ packageId }: PackageDetailProps) {
                 releases?.map((release) => (
                   <ReleaseCard
                     key={release.id}
-                    version={release.version}
+                    tag={release.tag}
                     title={release.title}
                     body={release.body}
                     publishedAt={release.publishedAt}

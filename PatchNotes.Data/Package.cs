@@ -2,7 +2,7 @@ namespace PatchNotes.Data;
 
 public class Package
 {
-    public string Id { get; set; } = NanoidDotNet.Nanoid.Generate();
+    public int Id { get; set; }
     public required string Name { get; set; }
     public required string Url { get; set; }
     public string? NpmName { get; set; }
@@ -12,5 +12,4 @@ public class Package
     public DateTime CreatedAt { get; set; }
 
     public ICollection<Release> Releases { get; set; } = [];
-    public ICollection<Watchlist> Watchlists { get; set; } = [];
 }

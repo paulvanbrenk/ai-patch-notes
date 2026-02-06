@@ -12,7 +12,7 @@ using PatchNotes.Data;
 namespace PatchNotes.Data.Migrations.SqlServer
 {
     [DbContext(typeof(SqlServerContext))]
-    [Migration("20260204040406_InitialCreate")]
+    [Migration("20260123013736_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -25,11 +25,77 @@ namespace PatchNotes.Data.Migrations.SqlServer
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("PatchNotes.Data.Notification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("FetchedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("GitHubId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTime?>("LastReadAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("PackageId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("RepositoryFullName")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("SubjectTitle")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SubjectType")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("SubjectUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("Unread")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GitHubId")
+                        .IsUnique();
+
+                    b.HasIndex("PackageId");
+
+                    b.HasIndex("Unread");
+
+                    b.HasIndex("UpdatedAt");
+
+                    b.ToTable("Notifications");
+                });
+
             modelBuilder.Entity("PatchNotes.Data.Package", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasMaxLength(21)
-                        .HasColumnType("nvarchar(21)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -70,9 +136,11 @@ namespace PatchNotes.Data.Migrations.SqlServer
 
             modelBuilder.Entity("PatchNotes.Data.Release", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasMaxLength(21)
-                        .HasColumnType("nvarchar(21)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Body")
                         .HasColumnType("nvarchar(max)");
@@ -80,83 +148,43 @@ namespace PatchNotes.Data.Migrations.SqlServer
                     b.Property<DateTime>("FetchedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("IsPrerelease")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("Major")
+                    b.Property<int>("PackageId")
                         .HasColumnType("int");
-
-                    b.Property<int>("Minor")
-                        .HasColumnType("int");
-
-                    b.Property<string>("PackageId")
-                        .IsRequired()
-                        .HasMaxLength(21)
-                        .HasColumnType("nvarchar(21)");
 
                     b.Property<DateTime>("PublishedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Title")
+                    b.Property<string>("Summary")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Version")
+                    b.Property<DateTime?>("SummaryGeneratedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Tag")
                         .IsRequired()
                         .HasMaxLength(128)
                         .HasColumnType("nvarchar(128)");
+
+                    b.Property<string>("Title")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("PublishedAt");
 
-                    b.HasIndex("PackageId", "Version")
+                    b.HasIndex("PackageId", "Tag")
                         .IsUnique();
 
                     b.ToTable("Releases");
                 });
 
-            modelBuilder.Entity("PatchNotes.Data.Summary", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasMaxLength(21)
-                        .HasColumnType("nvarchar(21)");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("GeneratedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("PackageId")
-                        .IsRequired()
-                        .HasMaxLength(21)
-                        .HasColumnType("nvarchar(21)");
-
-                    b.Property<int>("Period")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("PeriodStart")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("VersionGroup")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PackageId", "VersionGroup", "Period", "PeriodStart")
-                        .IsUnique();
-
-                    b.ToTable("Summaries");
-                });
-
             modelBuilder.Entity("PatchNotes.Data.User", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasMaxLength(21)
-                        .HasColumnType("nvarchar(21)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -190,33 +218,13 @@ namespace PatchNotes.Data.Migrations.SqlServer
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("PatchNotes.Data.Watchlist", b =>
+            modelBuilder.Entity("PatchNotes.Data.Notification", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasMaxLength(21)
-                        .HasColumnType("nvarchar(21)");
+                    b.HasOne("PatchNotes.Data.Package", "Package")
+                        .WithMany()
+                        .HasForeignKey("PackageId");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("PackageId")
-                        .IsRequired()
-                        .HasMaxLength(21)
-                        .HasColumnType("nvarchar(21)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasMaxLength(21)
-                        .HasColumnType("nvarchar(21)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PackageId");
-
-                    b.HasIndex("UserId", "PackageId")
-                        .IsUnique();
-
-                    b.ToTable("Watchlists");
+                    b.Navigation("Package");
                 });
 
             modelBuilder.Entity("PatchNotes.Data.Release", b =>
@@ -230,46 +238,9 @@ namespace PatchNotes.Data.Migrations.SqlServer
                     b.Navigation("Package");
                 });
 
-            modelBuilder.Entity("PatchNotes.Data.Summary", b =>
-                {
-                    b.HasOne("PatchNotes.Data.Package", "Package")
-                        .WithMany()
-                        .HasForeignKey("PackageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Package");
-                });
-
-            modelBuilder.Entity("PatchNotes.Data.Watchlist", b =>
-                {
-                    b.HasOne("PatchNotes.Data.Package", "Package")
-                        .WithMany("Watchlists")
-                        .HasForeignKey("PackageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("PatchNotes.Data.User", "User")
-                        .WithMany("Watchlists")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Package");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("PatchNotes.Data.Package", b =>
                 {
                     b.Navigation("Releases");
-
-                    b.Navigation("Watchlists");
-                });
-
-            modelBuilder.Entity("PatchNotes.Data.User", b =>
-                {
-                    b.Navigation("Watchlists");
                 });
 #pragma warning restore 612, 618
         }

@@ -47,20 +47,13 @@ public static class DbSeeder
             GithubRepo = sp.GithubRepo,
             CreatedAt = now,
             LastFetchedAt = now,
-            Releases = sp.Releases.Select(sr =>
+            Releases = sp.Releases.Select(sr => new Release
             {
-                var (major, minor, isPrerelease) = VersionParser.ParseVersion(sr.Tag);
-                return new Release
-                {
-                    Version = sr.Tag,
-                    Title = sr.Title,
-                    Body = sr.Body,
-                    PublishedAt = sr.PublishedAt,
-                    FetchedAt = now,
-                    Major = major,
-                    Minor = minor,
-                    IsPrerelease = isPrerelease
-                };
+                Tag = sr.Tag,
+                Title = sr.Title,
+                Body = sr.Body,
+                PublishedAt = sr.PublishedAt,
+                FetchedAt = now
             }).ToList()
         }).ToList();
     }

@@ -50,7 +50,7 @@ public class ReleasesApiTests : IAsyncLifetime
         db.Releases.Add(new Release
         {
             PackageId = package.Id,
-            Version = "v1.0.0",
+            Tag = "v1.0.0",
             Title = "Release 1",
             PublishedAt = DateTime.UtcNow.AddDays(-3),
             FetchedAt = DateTime.UtcNow
@@ -59,7 +59,7 @@ public class ReleasesApiTests : IAsyncLifetime
         db.Releases.Add(new Release
         {
             PackageId = package.Id,
-            Version = "v0.9.0",
+            Tag = "v0.9.0",
             Title = "Old Release",
             PublishedAt = DateTime.UtcNow.AddDays(-10),
             FetchedAt = DateTime.UtcNow
@@ -73,7 +73,7 @@ public class ReleasesApiTests : IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var releases = await response.Content.ReadFromJsonAsync<JsonElement>();
         releases.GetArrayLength().Should().Be(1);
-        releases[0].GetProperty("version").GetString().Should().Be("v1.0.0");
+        releases[0].GetProperty("tag").GetString().Should().Be("v1.0.0");
     }
 
     [Fact]
@@ -87,9 +87,9 @@ public class ReleasesApiTests : IAsyncLifetime
         await db.SaveChangesAsync();
 
         db.Releases.AddRange(
-            new Release { PackageId = package.Id, Version = "v1.0.0", PublishedAt = DateTime.UtcNow.AddDays(-3), FetchedAt = DateTime.UtcNow },
-            new Release { PackageId = package.Id, Version = "v0.9.0", PublishedAt = DateTime.UtcNow.AddDays(-10), FetchedAt = DateTime.UtcNow },
-            new Release { PackageId = package.Id, Version = "v0.8.0", PublishedAt = DateTime.UtcNow.AddDays(-25), FetchedAt = DateTime.UtcNow }
+            new Release { PackageId = package.Id, Tag = "v1.0.0", PublishedAt = DateTime.UtcNow.AddDays(-3), FetchedAt = DateTime.UtcNow },
+            new Release { PackageId = package.Id, Tag = "v0.9.0", PublishedAt = DateTime.UtcNow.AddDays(-10), FetchedAt = DateTime.UtcNow },
+            new Release { PackageId = package.Id, Tag = "v0.8.0", PublishedAt = DateTime.UtcNow.AddDays(-25), FetchedAt = DateTime.UtcNow }
         );
         await db.SaveChangesAsync();
 
@@ -114,8 +114,8 @@ public class ReleasesApiTests : IAsyncLifetime
         await db.SaveChangesAsync();
 
         db.Releases.AddRange(
-            new Release { PackageId = package1.Id, Version = "v1.0.0", PublishedAt = DateTime.UtcNow.AddDays(-1), FetchedAt = DateTime.UtcNow },
-            new Release { PackageId = package2.Id, Version = "v2.0.0", PublishedAt = DateTime.UtcNow.AddDays(-1), FetchedAt = DateTime.UtcNow }
+            new Release { PackageId = package1.Id, Tag = "v1.0.0", PublishedAt = DateTime.UtcNow.AddDays(-1), FetchedAt = DateTime.UtcNow },
+            new Release { PackageId = package2.Id, Tag = "v2.0.0", PublishedAt = DateTime.UtcNow.AddDays(-1), FetchedAt = DateTime.UtcNow }
         );
         await db.SaveChangesAsync();
 
@@ -126,7 +126,7 @@ public class ReleasesApiTests : IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var releases = await response.Content.ReadFromJsonAsync<JsonElement>();
         releases.GetArrayLength().Should().Be(1);
-        releases[0].GetProperty("version").GetString().Should().Be("v1.0.0");
+        releases[0].GetProperty("tag").GetString().Should().Be("v1.0.0");
     }
 
     [Fact]
@@ -142,9 +142,9 @@ public class ReleasesApiTests : IAsyncLifetime
         await db.SaveChangesAsync();
 
         db.Releases.AddRange(
-            new Release { PackageId = package1.Id, Version = "v1.0.0", PublishedAt = DateTime.UtcNow.AddDays(-1), FetchedAt = DateTime.UtcNow },
-            new Release { PackageId = package2.Id, Version = "v2.0.0", PublishedAt = DateTime.UtcNow.AddDays(-1), FetchedAt = DateTime.UtcNow },
-            new Release { PackageId = package3.Id, Version = "v3.0.0", PublishedAt = DateTime.UtcNow.AddDays(-1), FetchedAt = DateTime.UtcNow }
+            new Release { PackageId = package1.Id, Tag = "v1.0.0", PublishedAt = DateTime.UtcNow.AddDays(-1), FetchedAt = DateTime.UtcNow },
+            new Release { PackageId = package2.Id, Tag = "v2.0.0", PublishedAt = DateTime.UtcNow.AddDays(-1), FetchedAt = DateTime.UtcNow },
+            new Release { PackageId = package3.Id, Tag = "v3.0.0", PublishedAt = DateTime.UtcNow.AddDays(-1), FetchedAt = DateTime.UtcNow }
         );
         await db.SaveChangesAsync();
 
@@ -168,9 +168,9 @@ public class ReleasesApiTests : IAsyncLifetime
         await db.SaveChangesAsync();
 
         db.Releases.AddRange(
-            new Release { PackageId = package.Id, Version = "v1.0.0", PublishedAt = DateTime.UtcNow.AddDays(-5), FetchedAt = DateTime.UtcNow },
-            new Release { PackageId = package.Id, Version = "v2.0.0", PublishedAt = DateTime.UtcNow.AddDays(-1), FetchedAt = DateTime.UtcNow },
-            new Release { PackageId = package.Id, Version = "v1.5.0", PublishedAt = DateTime.UtcNow.AddDays(-3), FetchedAt = DateTime.UtcNow }
+            new Release { PackageId = package.Id, Tag = "v1.0.0", PublishedAt = DateTime.UtcNow.AddDays(-5), FetchedAt = DateTime.UtcNow },
+            new Release { PackageId = package.Id, Tag = "v2.0.0", PublishedAt = DateTime.UtcNow.AddDays(-1), FetchedAt = DateTime.UtcNow },
+            new Release { PackageId = package.Id, Tag = "v1.5.0", PublishedAt = DateTime.UtcNow.AddDays(-3), FetchedAt = DateTime.UtcNow }
         );
         await db.SaveChangesAsync();
 
@@ -181,9 +181,9 @@ public class ReleasesApiTests : IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var releases = await response.Content.ReadFromJsonAsync<JsonElement>();
         releases.GetArrayLength().Should().Be(3);
-        releases[0].GetProperty("version").GetString().Should().Be("v2.0.0");
-        releases[1].GetProperty("version").GetString().Should().Be("v1.5.0");
-        releases[2].GetProperty("version").GetString().Should().Be("v1.0.0");
+        releases[0].GetProperty("tag").GetString().Should().Be("v2.0.0");
+        releases[1].GetProperty("tag").GetString().Should().Be("v1.5.0");
+        releases[2].GetProperty("tag").GetString().Should().Be("v1.0.0");
     }
 
     [Fact]
@@ -199,7 +199,7 @@ public class ReleasesApiTests : IAsyncLifetime
         db.Releases.Add(new Release
         {
             PackageId = package.Id,
-            Version = "v1.0.0",
+            Tag = "v1.0.0",
             Title = "First Release",
             Body = "Release notes here",
             PublishedAt = DateTime.UtcNow.AddDays(-1),
@@ -214,7 +214,7 @@ public class ReleasesApiTests : IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var releases = await response.Content.ReadFromJsonAsync<JsonElement>();
         var release = releases[0];
-        release.GetProperty("version").GetString().Should().Be("v1.0.0");
+        release.GetProperty("tag").GetString().Should().Be("v1.0.0");
         release.GetProperty("title").GetString().Should().Be("First Release");
         release.GetProperty("body").GetString().Should().Be("Release notes here");
 

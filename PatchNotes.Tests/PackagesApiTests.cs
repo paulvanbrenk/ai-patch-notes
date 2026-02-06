@@ -155,7 +155,7 @@ public class PackagesApiTests : IAsyncLifetime
         pkg.GetProperty("githubOwner").GetString().Should().Be("expressjs");
         pkg.GetProperty("githubRepo").GetString().Should().Be("express");
         pkg.TryGetProperty("id", out var id).Should().BeTrue();
-        id.GetString().Should().NotBeNullOrEmpty();
+        id.GetInt32().Should().BeGreaterThan(0);
     }
 
     [Fact]

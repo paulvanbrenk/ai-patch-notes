@@ -149,8 +149,8 @@ export function Admin() {
   const [showAddForm, setShowAddForm] = useState(false)
   const [newPackageName, setNewPackageName] = useState('')
   const [editingPackage, setEditingPackage] = useState<Package | null>(null)
-  const [syncingId, setSyncingId] = useState<string | null>(null)
-  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [syncingId, setSyncingId] = useState<number | null>(null)
+  const [deletingId, setDeletingId] = useState<number | null>(null)
 
   const handleAddPackage = async () => {
     if (!newPackageName.trim()) return

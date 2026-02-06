@@ -7,9 +7,7 @@ interface VersionBadgeProps {
 
 type ReleaseType = 'major' | 'minor' | 'patch' | 'prerelease'
 
-function parseReleaseType(version: string | undefined | null): ReleaseType {
-  if (!version) return 'patch'
-
+function parseReleaseType(version: string): ReleaseType {
   // Handle prerelease versions (alpha, beta, rc, etc.)
   if (/-(alpha|beta|rc|next|canary|dev|preview)/i.test(version)) {
     return 'prerelease'
@@ -44,7 +42,7 @@ export function VersionBadge({ version, className }: VersionBadgeProps) {
 
   return (
     <Badge variant={releaseType} className={`font-mono ${className || ''}`}>
-      {version || 'unknown'}
+      {version}
     </Badge>
   )
 }
