@@ -12,8 +12,8 @@ using PatchNotes.Data;
 namespace PatchNotes.Data.Migrations.SqlServer
 {
     [DbContext(typeof(SqlServerContext))]
-    [Migration("20260206013102_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260206013958_AddSubscriptionAndWebhookTracking")]
+    partial class AddSubscriptionAndWebhookTracking
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
