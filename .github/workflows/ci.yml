@@ -29,21 +29,22 @@ jobs:
         run: dotnet tool install --global dotnet-ef
 
       - name: Check for pending model changes
+        env:
+          ConnectionStrings__PatchNotes: ${{ secrets.DATABASE_CONNECTION_STRING }}
         run: |
           if ! dotnet ef migrations has-pending-model-changes \
-            --context SqliteContext \
+            --context SqlServerContext \
             --project PatchNotes.Data \
             --startup-project PatchNotes.Api \
             --configuration Release \
             --no-build; then
             echo ""
-            echo "::error::Model changes detected without a corresponding migration!"
+            echo "::error::Model changes detected without a corresponding SQL Server migration!"
             echo ""
             echo "To fix this, run the following command locally:"
             echo ""
             echo "  ./scripts/add-migration.sh <MigrationName>"
             echo ""
-            echo "This will generate migrations for both SQLite and SQL Server."
             echo "See PatchNotes.Data/README.md for more details."
             exit 1
           fi
