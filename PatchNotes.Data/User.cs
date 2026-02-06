@@ -55,4 +55,13 @@ public class User
     /// When the current subscription period expires
     /// </summary>
     public DateTime? SubscriptionExpiresAt { get; set; }
+
+    /// <summary>
+    /// Whether the user has an active Pro subscription
+    /// </summary>
+    public bool IsPro =>
+        SubscriptionStatus == "active" ||
+        SubscriptionStatus == "trialing" ||
+        SubscriptionStatus == "past_due" ||
+        (SubscriptionStatus == "canceled" && SubscriptionExpiresAt > DateTime.UtcNow);
 }
