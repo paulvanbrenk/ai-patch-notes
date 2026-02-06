@@ -26,7 +26,7 @@ if (missingStytchKeys.Count > 0)
         "Please configure these values in appsettings.json or environment variables.");
 }
 
-// Stripe configuration
+// Stripe configuration — API version is pinned by Stripe.net SDK v47 (read-only)
 var stripeSecretKey = builder.Configuration["Stripe:SecretKey"];
 if (!string.IsNullOrEmpty(stripeSecretKey))
 {
