@@ -393,7 +393,7 @@ export function DesignSystem() {
                   Release Card
                 </h4>
                 <ReleaseCard
-                  tag="v19.0.0"
+                  version="v19.0.0"
                   title="React 19"
                   body="This major release includes Actions, new hooks like useActionState and useOptimistic, and significant improvements to ref handling."
                   publishedAt="2026-01-10T14:00:00Z"
