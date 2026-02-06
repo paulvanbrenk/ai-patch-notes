@@ -70,16 +70,6 @@ export function PackagePicker({
   }, [useWatchlist, watchlistIds])
 
   const selectedIds = useWatchlist ? new Set(watchlistIds) : localSelectedIds
-  const setSelectedIds = (
-    updater: Set<string> | ((prev: Set<string>) => Set<string>)
-  ) => {
-    const next = typeof updater === 'function' ? updater(selectedIds) : updater
-    if (useWatchlist) {
-      onWatchlistChange?.([...next])
-    } else {
-      setLocalSelectedIds(next)
-    }
-  }
 
   const [newPackageName, setNewPackageName] = useState('')
   const [isAdding, setIsAdding] = useState(false)
@@ -102,25 +92,39 @@ export function PackagePicker({
     onSelectionChange?.([...selectedIds])
   }, [selectedIds, onSelectionChange])
 
-  const handleToggle = useCallback((id: string) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) {
-        next.delete(id)
+  const applyUpdate = useCallback(
+    (updater: (prev: Set<string>) => Set<string>) => {
+      if (useWatchlist) {
+        onWatchlistChange?.([...updater(new Set(watchlistIds))])
       } else {
-        next.add(id)
+        setLocalSelectedIds((prev) => updater(prev))
       }
-      return next
-    })
-  }, [])
+    },
+    [useWatchlist, watchlistIds, onWatchlistChange]
+  )
+
+  const handleToggle = useCallback(
+    (id: string) => {
+      applyUpdate((prev) => {
+        const next = new Set(prev)
+        if (next.has(id)) {
+          next.delete(id)
+        } else {
+          next.add(id)
+        }
+        return next
+      })
+    },
+    [applyUpdate]
+  )
 
   const handleSelectAll = useCallback(() => {
-    setSelectedIds(new Set(packages.map((p) => p.id)))
-  }, [packages])
+    applyUpdate(() => new Set(packages.map((p) => p.id)))
+  }, [packages, applyUpdate])
 
   const handleDeselectAll = useCallback(() => {
-    setSelectedIds(new Set())
-  }, [])
+    applyUpdate(() => new Set())
+  }, [applyUpdate])
 
   const handleAddPackage = useCallback(async () => {
     if (!newPackageName.trim() || !onAddPackage) return

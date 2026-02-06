@@ -5,6 +5,12 @@ namespace PatchNotes.Api.Routes;
 
 public static class WatchlistRoutes
 {
+    private const int MaxWatchlistSize = 1000;
+    private const int MaxIdLength = 21;
+
+    private static bool IsValidId(string id) =>
+        !string.IsNullOrWhiteSpace(id) && id.Length <= MaxIdLength;
+
     public static WebApplication MapWatchlistRoutes(this WebApplication app)
     {
         var requireAuth = RouteUtils.CreateAuthFilter();
@@ -13,6 +19,11 @@ public static class WatchlistRoutes
         app.MapGet("/api/watchlist", async (HttpContext httpContext, PatchNotesDbContext db) =>
         {
             var stytchUserId = httpContext.Items["StytchUserId"] as string;
+            if (stytchUserId == null)
+            {
+                return Results.Unauthorized();
+            }
+
             var user = await db.Users.FirstOrDefaultAsync(u => u.StytchUserId == stytchUserId);
             if (user == null)
             {
@@ -31,10 +42,36 @@ public static class WatchlistRoutes
         app.MapPut("/api/watchlist", async (SetWatchlistRequest request, HttpContext httpContext, PatchNotesDbContext db) =>
         {
             var stytchUserId = httpContext.Items["StytchUserId"] as string;
+            if (stytchUserId == null)
+            {
+                return Results.Unauthorized();
+            }
+
             var user = await db.Users.FirstOrDefaultAsync(u => u.StytchUserId == stytchUserId);
             if (user == null)
             {
                 return Results.NotFound(new { error = "User not found" });
+            }
+
+            var packageIds = request.PackageIds ?? [];
+
+            if (packageIds.Length > MaxWatchlistSize)
+            {
+                return Results.BadRequest(new { error = $"Watchlist cannot exceed {MaxWatchlistSize} packages" });
+            }
+
+            if (packageIds.Any(id => !IsValidId(id)))
+            {
+                return Results.BadRequest(new { error = "Invalid package ID" });
+            }
+
+            var distinctIds = packageIds.Distinct().ToArray();
+            var existingPackageCount = await db.Packages
+                .Where(p => distinctIds.Contains(p.Id))
+                .CountAsync();
+            if (existingPackageCount != distinctIds.Length)
+            {
+                return Results.BadRequest(new { error = "One or more package IDs do not exist" });
             }
 
             var existing = await db.Watchlists
@@ -42,8 +79,7 @@ public static class WatchlistRoutes
                 .ToListAsync();
             db.Watchlists.RemoveRange(existing);
 
-            var packageIds = request.PackageIds ?? [];
-            foreach (var packageId in packageIds)
+            foreach (var packageId in distinctIds)
             {
                 db.Watchlists.Add(new Watchlist
                 {
@@ -66,11 +102,27 @@ public static class WatchlistRoutes
         // POST /api/watchlist/{packageId} — add a single package to watchlist
         app.MapPost("/api/watchlist/{packageId}", async (string packageId, HttpContext httpContext, PatchNotesDbContext db) =>
         {
+            if (!IsValidId(packageId))
+            {
+                return Results.BadRequest(new { error = "Invalid package ID" });
+            }
+
             var stytchUserId = httpContext.Items["StytchUserId"] as string;
+            if (stytchUserId == null)
+            {
+                return Results.Unauthorized();
+            }
+
             var user = await db.Users.FirstOrDefaultAsync(u => u.StytchUserId == stytchUserId);
             if (user == null)
             {
                 return Results.NotFound(new { error = "User not found" });
+            }
+
+            var watchlistSize = await db.Watchlists.CountAsync(w => w.UserId == user.Id);
+            if (watchlistSize >= MaxWatchlistSize)
+            {
+                return Results.BadRequest(new { error = $"Watchlist cannot exceed {MaxWatchlistSize} packages" });
             }
 
             var packageExists = await db.Packages.AnyAsync(p => p.Id == packageId);
@@ -100,7 +152,17 @@ public static class WatchlistRoutes
         // DELETE /api/watchlist/{packageId} — remove a single package from watchlist
         app.MapDelete("/api/watchlist/{packageId}", async (string packageId, HttpContext httpContext, PatchNotesDbContext db) =>
         {
+            if (!IsValidId(packageId))
+            {
+                return Results.BadRequest(new { error = "Invalid package ID" });
+            }
+
             var stytchUserId = httpContext.Items["StytchUserId"] as string;
+            if (stytchUserId == null)
+            {
+                return Results.Unauthorized();
+            }
+
             var user = await db.Users.FirstOrDefaultAsync(u => u.StytchUserId == stytchUserId);
             if (user == null)
             {

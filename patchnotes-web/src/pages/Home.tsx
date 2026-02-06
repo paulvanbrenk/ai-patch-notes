@@ -10,7 +10,7 @@ import { UserMenu } from '../components/auth'
 
 function getReleaseUrl(release: Release): string {
   const { githubOwner, githubRepo } = release.package
-  return `https://github.com/${githubOwner}/${githubRepo}/releases/tag/${release.tag}`
+  return `https://github.com/${githubOwner}/${githubRepo}/releases/tag/${release.version}`
 }
 
 export function Home() {
@@ -183,7 +183,7 @@ export function Home() {
                 releases?.map((release) => (
                   <ReleaseCard
                     key={release.id}
-                    tag={release.tag}
+                    version={release.version}
                     title={release.title}
                     body={release.body}
                     publishedAt={release.publishedAt}
