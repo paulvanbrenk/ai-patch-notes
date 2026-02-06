@@ -118,7 +118,7 @@ public static class PackageRoutes
 
                     if (!isPro)
                     {
-                        var packageCount = await db.Packages.CountAsync();
+                        var packageCount = await db.Watchlists.CountAsync(w => w.UserId == user.Id);
                         if (packageCount >= 5)
                         {
                             return Results.Json(new
