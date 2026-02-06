@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { CheckCircle } from 'lucide-react'

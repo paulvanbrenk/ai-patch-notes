@@ -121,6 +121,20 @@ namespace PatchNotes.Data.Migrations.Sqlite
                     b.ToTable("Packages");
                 });
 
+            modelBuilder.Entity("PatchNotes.Data.ProcessedWebhookEvent", b =>
+                {
+                    b.Property<string>("EventId")
+                        .HasMaxLength(128)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("ProcessedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("EventId");
+
+                    b.ToTable("ProcessedWebhookEvents");
+                });
+
             modelBuilder.Entity("PatchNotes.Data.Release", b =>
                 {
                     b.Property<int>("Id")
@@ -183,9 +197,24 @@ namespace PatchNotes.Data.Migrations.Sqlite
                         .HasMaxLength(256)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("StripeCustomerId")
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("StripeSubscriptionId")
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("StytchUserId")
                         .IsRequired()
                         .HasMaxLength(128)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("SubscriptionExpiresAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SubscriptionStatus")
+                        .HasMaxLength(32)
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -194,6 +223,8 @@ namespace PatchNotes.Data.Migrations.Sqlite
                     b.HasKey("Id");
 
                     b.HasIndex("Email");
+
+                    b.HasIndex("StripeCustomerId");
 
                     b.HasIndex("StytchUserId")
                         .IsUnique();
