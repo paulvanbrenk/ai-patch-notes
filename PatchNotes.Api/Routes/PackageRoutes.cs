@@ -109,6 +109,8 @@ public static class PackageRoutes
                 if (user != null)
                 {
                     var isPro = user.SubscriptionStatus == "active" ||
+                        user.SubscriptionStatus == "trialing" ||
+                        user.SubscriptionStatus == "past_due" ||
                         (user.SubscriptionStatus == "canceled" && user.SubscriptionExpiresAt > DateTime.UtcNow);
 
                     if (!isPro)

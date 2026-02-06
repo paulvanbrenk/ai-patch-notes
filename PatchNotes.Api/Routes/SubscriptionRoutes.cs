@@ -7,6 +7,24 @@ namespace PatchNotes.Api.Routes;
 
 public static class SubscriptionRoutes
 {
+    private static readonly HashSet<string> AllowedOrigins = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "https://app.mypkgupdate.com",
+        "http://localhost:5173",
+        "http://localhost:3000",
+    };
+
+    private static string GetValidatedOrigin(HttpContext httpContext)
+    {
+        var origin = httpContext.Request.Headers.Origin.FirstOrDefault();
+        if (!string.IsNullOrEmpty(origin) && AllowedOrigins.Contains(origin))
+        {
+            return origin;
+        }
+        // Fallback to first allowed origin in production
+        return AllowedOrigins.First();
+    }
+
     public static WebApplication MapSubscriptionRoutes(this WebApplication app)
     {
         var requireAuth = RouteUtils.CreateAuthFilter();
@@ -33,8 +51,7 @@ public static class SubscriptionRoutes
             }
 
             // Determine the base URL for success/cancel redirects
-            var origin = httpContext.Request.Headers.Origin.FirstOrDefault()
-                ?? $"{httpContext.Request.Scheme}://{httpContext.Request.Host}";
+            var origin = GetValidatedOrigin(httpContext);
 
             var sessionOptions = new SessionCreateOptions
             {
@@ -90,8 +107,7 @@ public static class SubscriptionRoutes
                 return Results.BadRequest(new { error = "No subscription found" });
             }
 
-            var origin = httpContext.Request.Headers.Origin.FirstOrDefault()
-                ?? $"{httpContext.Request.Scheme}://{httpContext.Request.Host}";
+            var origin = GetValidatedOrigin(httpContext);
 
             var portalOptions = new Stripe.BillingPortal.SessionCreateOptions
             {
@@ -121,6 +137,8 @@ public static class SubscriptionRoutes
             }
 
             var isPro = user.SubscriptionStatus == "active" ||
+                user.SubscriptionStatus == "trialing" ||
+                user.SubscriptionStatus == "past_due" ||
                 (user.SubscriptionStatus == "canceled" && user.SubscriptionExpiresAt > DateTime.UtcNow);
 
             return Results.Ok(new
