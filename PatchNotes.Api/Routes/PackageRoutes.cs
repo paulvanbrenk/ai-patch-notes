@@ -101,32 +101,7 @@ public static class PackageRoutes
                 return Results.BadRequest(new { error = "npmName is required" });
             }
 
-            // Check package limit for free users
-            var stytchUserId = httpContext.Items["StytchUserId"] as string;
-            if (!string.IsNullOrEmpty(stytchUserId))
-            {
-                var user = await db.Users.FirstOrDefaultAsync(u => u.StytchUserId == stytchUserId);
-                if (user != null)
-                {
-                    var isPro = user.SubscriptionStatus == "active" ||
-                        (user.SubscriptionStatus == "canceled" && user.SubscriptionExpiresAt > DateTime.UtcNow);
-
-                    if (!isPro)
-                    {
-                        var packageCount = await db.Watchlists.CountAsync(w => w.UserId == user.Id);
-                        if (packageCount >= 5)
-                        {
-                            return Results.Json(new
-                            {
-                                error = "Package limit reached",
-                                message = "Free accounts can track up to 5 packages. Upgrade to Pro for unlimited packages.",
-                                limit = 5,
-                                current = packageCount
-                            }, statusCode: 403);
-                        }
-                    }
-                }
-            }
+            // TODO: Package limit check requires Watchlist feature (not yet implemented)
 
             var existing = await db.Packages.FirstOrDefaultAsync(p => p.NpmName == request.NpmName);
             if (existing != null)
