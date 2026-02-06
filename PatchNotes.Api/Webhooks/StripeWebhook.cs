@@ -9,9 +9,21 @@ public static class StripeWebhook
     public static WebApplication MapStripeWebhook(this WebApplication app)
     {
         // POST /webhooks/stripe - Handle Stripe webhook events
-        app.MapPost("/webhooks/stripe", async (HttpContext httpContext, PatchNotesDbContext db, IConfiguration configuration) =>
+        app.MapPost("/webhooks/stripe", async (
+            HttpContext httpContext,
+            PatchNotesDbContext db,
+            IConfiguration configuration,
+            ILoggerFactory loggerFactory) =>
         {
+            var logger = loggerFactory.CreateLogger("PatchNotes.Api.Webhooks.StripeWebhook");
+
+            // CRITICAL: Fail early if webhook secret is not configured
             var webhookSecret = configuration["Stripe:WebhookSecret"];
+            if (string.IsNullOrEmpty(webhookSecret))
+            {
+                logger.LogError("Stripe:WebhookSecret is not configured. Rejecting webhook to prevent unverified payloads");
+                return Results.StatusCode(503);
+            }
 
             // Read the raw body for signature verification
             using var reader = new StreamReader(httpContext.Request.Body);
@@ -28,8 +40,15 @@ public static class StripeWebhook
             }
             catch (StripeException ex)
             {
-                Console.WriteLine($"Stripe webhook signature verification failed: {ex.Message}");
+                logger.LogWarning("Stripe webhook signature verification failed: {Message}", ex.Message);
                 return Results.BadRequest(new { error = "Invalid signature" });
+            }
+
+            // Idempotency: skip already-processed events
+            if (await db.ProcessedWebhookEvents.AnyAsync(e => e.EventId == stripeEvent.Id))
+            {
+                logger.LogInformation("Skipping already-processed Stripe event {EventId}", stripeEvent.Id);
+                return Results.Ok(new { received = true, duplicate = true });
             }
 
             // Filter events to only those for our app
@@ -48,31 +67,48 @@ public static class StripeWebhook
                 switch (stripeEvent.Type)
                 {
                     case "checkout.session.completed":
-                        await HandleCheckoutSessionCompleted(stripeEvent, db);
+                        await HandleCheckoutSessionCompleted(stripeEvent, db, logger);
                         break;
 
                     case "customer.subscription.updated":
-                        await HandleSubscriptionUpdated(stripeEvent, db);
+                        await HandleSubscriptionUpdated(stripeEvent, db, logger);
                         break;
 
                     case "customer.subscription.deleted":
-                        await HandleSubscriptionDeleted(stripeEvent, db);
+                        await HandleSubscriptionDeleted(stripeEvent, db, logger);
                         break;
 
                     case "invoice.payment_failed":
-                        await HandlePaymentFailed(stripeEvent, db);
+                        await HandlePaymentFailed(stripeEvent, db, logger);
+                        break;
+
+                    case "invoice.payment_succeeded":
+                        await HandlePaymentSucceeded(stripeEvent, db, logger);
                         break;
 
                     default:
-                        Console.WriteLine($"Unhandled Stripe event type: {stripeEvent.Type}");
+                        logger.LogInformation("Unhandled Stripe event type: {EventType}", stripeEvent.Type);
                         break;
                 }
 
+                // Record event as processed for idempotency
+                db.ProcessedWebhookEvents.Add(new ProcessedWebhookEvent
+                {
+                    EventId = stripeEvent.Id,
+                    ProcessedAt = DateTime.UtcNow
+                });
+                await db.SaveChangesAsync();
+
                 return Results.Ok(new { received = true });
+            }
+            catch (StripeException ex)
+            {
+                logger.LogError(ex, "Stripe API error while handling webhook event {EventId}: {Message}", stripeEvent.Id, ex.Message);
+                return Results.StatusCode(503);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error handling Stripe webhook: {ex.Message}");
+                logger.LogError(ex, "Error handling Stripe webhook event {EventId}: {Message}", stripeEvent.Id, ex.Message);
                 return Results.Problem("Error processing webhook");
             }
         });
@@ -80,7 +116,7 @@ public static class StripeWebhook
         return app;
     }
 
-    private static async Task HandleCheckoutSessionCompleted(Event stripeEvent, PatchNotesDbContext db)
+    private static async Task HandleCheckoutSessionCompleted(Event stripeEvent, PatchNotesDbContext db, ILogger logger)
     {
         var session = stripeEvent.Data.Object as Stripe.Checkout.Session;
         if (session == null) return;
@@ -88,14 +124,14 @@ public static class StripeWebhook
         // Get the Stytch user ID from session metadata
         if (!session.Metadata.TryGetValue("stytch_user_id", out var stytchUserId))
         {
-            Console.WriteLine("Checkout session completed but no stytch_user_id in metadata");
+            logger.LogWarning("Checkout session completed but no stytch_user_id in metadata");
             return;
         }
 
         var user = await db.Users.FirstOrDefaultAsync(u => u.StytchUserId == stytchUserId);
         if (user == null)
         {
-            Console.WriteLine($"User not found for Stytch ID: {stytchUserId}");
+            logger.LogWarning("User not found for Stytch ID: {StytchUserId}", stytchUserId);
             return;
         }
 
@@ -114,10 +150,10 @@ public static class StripeWebhook
         }
 
         await db.SaveChangesAsync();
-        Console.WriteLine($"Updated subscription for user {stytchUserId}: status={user.SubscriptionStatus}");
+        logger.LogInformation("Updated subscription for user {StytchUserId}: status={Status}", stytchUserId, user.SubscriptionStatus);
     }
 
-    private static async Task HandleSubscriptionUpdated(Event stripeEvent, PatchNotesDbContext db)
+    private static async Task HandleSubscriptionUpdated(Event stripeEvent, PatchNotesDbContext db, ILogger logger)
     {
         var subscription = stripeEvent.Data.Object as Subscription;
         if (subscription == null) return;
@@ -125,7 +161,7 @@ public static class StripeWebhook
         var user = await db.Users.FirstOrDefaultAsync(u => u.StripeCustomerId == subscription.CustomerId);
         if (user == null)
         {
-            Console.WriteLine($"User not found for Stripe customer: {subscription.CustomerId}");
+            logger.LogWarning("User not found for Stripe customer: {CustomerId}", subscription.CustomerId);
             return;
         }
 
@@ -134,10 +170,10 @@ public static class StripeWebhook
         user.SubscriptionExpiresAt = subscription.CurrentPeriodEnd;
 
         await db.SaveChangesAsync();
-        Console.WriteLine($"Updated subscription for customer {subscription.CustomerId}: status={subscription.Status}");
+        logger.LogInformation("Updated subscription for customer {CustomerId}: status={Status}", subscription.CustomerId, subscription.Status);
     }
 
-    private static async Task HandleSubscriptionDeleted(Event stripeEvent, PatchNotesDbContext db)
+    private static async Task HandleSubscriptionDeleted(Event stripeEvent, PatchNotesDbContext db, ILogger logger)
     {
         var subscription = stripeEvent.Data.Object as Subscription;
         if (subscription == null) return;
@@ -145,7 +181,7 @@ public static class StripeWebhook
         var user = await db.Users.FirstOrDefaultAsync(u => u.StripeCustomerId == subscription.CustomerId);
         if (user == null)
         {
-            Console.WriteLine($"User not found for Stripe customer: {subscription.CustomerId}");
+            logger.LogWarning("User not found for Stripe customer: {CustomerId}", subscription.CustomerId);
             return;
         }
 
@@ -154,10 +190,10 @@ public static class StripeWebhook
         user.SubscriptionExpiresAt = subscription.CurrentPeriodEnd;
 
         await db.SaveChangesAsync();
-        Console.WriteLine($"Subscription canceled for customer {subscription.CustomerId}");
+        logger.LogInformation("Subscription canceled for customer {CustomerId}", subscription.CustomerId);
     }
 
-    private static async Task HandlePaymentFailed(Event stripeEvent, PatchNotesDbContext db)
+    private static async Task HandlePaymentFailed(Event stripeEvent, PatchNotesDbContext db, ILogger logger)
     {
         var invoice = stripeEvent.Data.Object as Invoice;
         if (invoice == null) return;
@@ -165,13 +201,39 @@ public static class StripeWebhook
         var user = await db.Users.FirstOrDefaultAsync(u => u.StripeCustomerId == invoice.CustomerId);
         if (user == null)
         {
-            Console.WriteLine($"User not found for Stripe customer: {invoice.CustomerId}");
+            logger.LogWarning("User not found for Stripe customer: {CustomerId}", invoice.CustomerId);
             return;
         }
 
         user.SubscriptionStatus = "past_due";
 
         await db.SaveChangesAsync();
-        Console.WriteLine($"Payment failed for customer {invoice.CustomerId}, marked as past_due");
+        logger.LogWarning("Payment failed for customer {CustomerId}, marked as past_due", invoice.CustomerId);
+    }
+
+    private static async Task HandlePaymentSucceeded(Event stripeEvent, PatchNotesDbContext db, ILogger logger)
+    {
+        var invoice = stripeEvent.Data.Object as Invoice;
+        if (invoice == null) return;
+
+        var user = await db.Users.FirstOrDefaultAsync(u => u.StripeCustomerId == invoice.CustomerId);
+        if (user == null)
+        {
+            logger.LogWarning("User not found for Stripe customer: {CustomerId}", invoice.CustomerId);
+            return;
+        }
+
+        // Update subscription expiry on successful renewal payment
+        if (!string.IsNullOrEmpty(invoice.SubscriptionId))
+        {
+            var subscriptionService = new SubscriptionService();
+            var subscription = await subscriptionService.GetAsync(invoice.SubscriptionId);
+
+            user.SubscriptionStatus = subscription.Status;
+            user.SubscriptionExpiresAt = subscription.CurrentPeriodEnd;
+
+            await db.SaveChangesAsync();
+            logger.LogInformation("Payment succeeded for customer {CustomerId}, updated expiry to {ExpiresAt}", invoice.CustomerId, subscription.CurrentPeriodEnd);
+        }
     }
 }
