@@ -9,9 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SubscriptionSuccessRouteImport } from './routes/subscription-success'
-import { Route as SubscriptionCanceledRouteImport } from './routes/subscription-canceled'
-import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as PreviewRouteImport } from './routes/preview'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticateRouteImport } from './routes/authenticate'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -19,19 +17,9 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ReleasesReleaseIdRouteImport } from './routes/releases.$releaseId'
 import { Route as PackagesPackageIdRouteImport } from './routes/packages.$packageId'
 
-const SubscriptionSuccessRoute = SubscriptionSuccessRouteImport.update({
-  id: '/subscription-success',
-  path: '/subscription-success',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SubscriptionCanceledRoute = SubscriptionCanceledRouteImport.update({
-  id: '/subscription-canceled',
-  path: '/subscription-canceled',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PricingRoute = PricingRouteImport.update({
-  id: '/pricing',
-  path: '/pricing',
+const PreviewRoute = PreviewRouteImport.update({
+  id: '/preview',
+  path: '/preview',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -70,9 +58,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/authenticate': typeof AuthenticateRoute
   '/login': typeof LoginRoute
-  '/pricing': typeof PricingRoute
-  '/subscription-canceled': typeof SubscriptionCanceledRoute
-  '/subscription-success': typeof SubscriptionSuccessRoute
+  '/preview': typeof PreviewRoute
   '/packages/$packageId': typeof PackagesPackageIdRoute
   '/releases/$releaseId': typeof ReleasesReleaseIdRoute
 }
@@ -81,9 +67,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/authenticate': typeof AuthenticateRoute
   '/login': typeof LoginRoute
-  '/pricing': typeof PricingRoute
-  '/subscription-canceled': typeof SubscriptionCanceledRoute
-  '/subscription-success': typeof SubscriptionSuccessRoute
+  '/preview': typeof PreviewRoute
   '/packages/$packageId': typeof PackagesPackageIdRoute
   '/releases/$releaseId': typeof ReleasesReleaseIdRoute
 }
@@ -93,9 +77,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/authenticate': typeof AuthenticateRoute
   '/login': typeof LoginRoute
-  '/pricing': typeof PricingRoute
-  '/subscription-canceled': typeof SubscriptionCanceledRoute
-  '/subscription-success': typeof SubscriptionSuccessRoute
+  '/preview': typeof PreviewRoute
   '/packages/$packageId': typeof PackagesPackageIdRoute
   '/releases/$releaseId': typeof ReleasesReleaseIdRoute
 }
@@ -106,9 +88,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/authenticate'
     | '/login'
-    | '/pricing'
-    | '/subscription-canceled'
-    | '/subscription-success'
+    | '/preview'
     | '/packages/$packageId'
     | '/releases/$releaseId'
   fileRoutesByTo: FileRoutesByTo
@@ -117,9 +97,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/authenticate'
     | '/login'
-    | '/pricing'
-    | '/subscription-canceled'
-    | '/subscription-success'
+    | '/preview'
     | '/packages/$packageId'
     | '/releases/$releaseId'
   id:
@@ -128,9 +106,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/authenticate'
     | '/login'
-    | '/pricing'
-    | '/subscription-canceled'
-    | '/subscription-success'
+    | '/preview'
     | '/packages/$packageId'
     | '/releases/$releaseId'
   fileRoutesById: FileRoutesById
@@ -140,34 +116,18 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   AuthenticateRoute: typeof AuthenticateRoute
   LoginRoute: typeof LoginRoute
-  PricingRoute: typeof PricingRoute
-  SubscriptionCanceledRoute: typeof SubscriptionCanceledRoute
-  SubscriptionSuccessRoute: typeof SubscriptionSuccessRoute
+  PreviewRoute: typeof PreviewRoute
   PackagesPackageIdRoute: typeof PackagesPackageIdRoute
   ReleasesReleaseIdRoute: typeof ReleasesReleaseIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/subscription-success': {
-      id: '/subscription-success'
-      path: '/subscription-success'
-      fullPath: '/subscription-success'
-      preLoaderRoute: typeof SubscriptionSuccessRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/subscription-canceled': {
-      id: '/subscription-canceled'
-      path: '/subscription-canceled'
-      fullPath: '/subscription-canceled'
-      preLoaderRoute: typeof SubscriptionCanceledRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/pricing': {
-      id: '/pricing'
-      path: '/pricing'
-      fullPath: '/pricing'
-      preLoaderRoute: typeof PricingRouteImport
+    '/preview': {
+      id: '/preview'
+      path: '/preview'
+      fullPath: '/preview'
+      preLoaderRoute: typeof PreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -220,9 +180,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   AuthenticateRoute: AuthenticateRoute,
   LoginRoute: LoginRoute,
-  PricingRoute: PricingRoute,
-  SubscriptionCanceledRoute: SubscriptionCanceledRoute,
-  SubscriptionSuccessRoute: SubscriptionSuccessRoute,
+  PreviewRoute: PreviewRoute,
   PackagesPackageIdRoute: PackagesPackageIdRoute,
   ReleasesReleaseIdRoute: ReleasesReleaseIdRoute,
 }

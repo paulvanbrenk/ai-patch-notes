@@ -1,12 +1,11 @@
-import { useState, useEffect, useMemo } from 'react'
-import { useStytchUser } from '@stytch/react'
+import { useState } from 'react'
+import { Link } from '@tanstack/react-router'
 import {
   FlaskConical,
   FlaskConicalOff,
   ArrowDownAZ,
   CalendarArrowDown,
   Group,
-  Sparkles,
 } from 'lucide-react'
 import {
   Header,
@@ -15,20 +14,22 @@ import {
   Button,
   Badge,
   Card,
-  Logo,
 } from '../components/ui'
 import { ThemeToggle } from '../components/theme'
-import { UserMenu } from '../components/auth'
+import { UserMenuV2 } from '../components/auth'
 import { useFilterStore } from '../stores/filterStore'
-import { useSubscriptionStore } from '../stores/subscriptionStore'
-import { usePackages, useReleases } from '../api/hooks'
-import type { Release as ApiRelease } from '../api/types'
 
 // ============================================================================
 // Types
 // ============================================================================
 
-type PrereleaseType = 'canary' | 'beta' | 'alpha' | 'rc' | 'next'
+interface Release {
+  id: number
+  tag: string
+  title: string
+  publishedAt: string
+  body: string
+}
 
 interface VersionGroup {
   id: string
@@ -37,99 +38,193 @@ interface VersionGroup {
   versionRange: string
   majorVersion: number
   isPrerelease: boolean
-  prereleaseType?: PrereleaseType
+  prereleaseType?: 'canary' | 'beta' | 'alpha' | 'rc' | 'next'
   summary: string
   releaseCount: number
   lastUpdated: string
-  releases: ApiRelease[]
+  releases: Release[]
 }
+
+// ============================================================================
+// Mock Data
+// ============================================================================
+
+const MOCK_VERSION_GROUPS: VersionGroup[] = [
+  {
+    id: 'next-16-stable',
+    packageName: 'Next.js',
+    packageId: 1,
+    versionRange: 'v16.x',
+    majorVersion: 16,
+    isPrerelease: false,
+    summary:
+      'Next.js 16 introduces the new App Router as the default, improved server components with streaming SSR, and significant performance improvements. Turbopack is now stable for development builds, offering up to 10x faster refresh times. The new `next/image` component includes automatic format optimization and improved lazy loading.',
+    releaseCount: 8,
+    lastUpdated: '2026-01-20T14:30:00Z',
+    releases: [
+      {
+        id: 101,
+        tag: 'v16.2.0',
+        title: 'Next.js 16.2.0',
+        publishedAt: '2026-01-20T14:30:00Z',
+        body: 'Performance improvements for server components',
+      },
+      {
+        id: 102,
+        tag: 'v16.1.0',
+        title: 'Next.js 16.1.0',
+        publishedAt: '2026-01-15T10:00:00Z',
+        body: 'Bug fixes and stability improvements',
+      },
+      {
+        id: 103,
+        tag: 'v16.0.0',
+        title: 'Next.js 16.0.0',
+        publishedAt: '2026-01-10T09:00:00Z',
+        body: 'Major release with App Router as default',
+      },
+    ],
+  },
+  {
+    id: 'next-16-canary',
+    packageName: 'Next.js',
+    packageId: 1,
+    versionRange: 'v16.x',
+    majorVersion: 16,
+    isPrerelease: true,
+    prereleaseType: 'canary',
+    summary:
+      'Experimental features including React 19 Server Actions improvements, partial prerendering enhancements, and new caching strategies. Testing ground for upcoming stable features.',
+    releaseCount: 24,
+    lastUpdated: '2026-01-21T08:15:00Z',
+    releases: [
+      {
+        id: 104,
+        tag: 'v16.3.0-canary.12',
+        title: 'Next.js 16.3.0-canary.12',
+        publishedAt: '2026-01-21T08:15:00Z',
+        body: 'Experimental: New partial prerendering API',
+      },
+      {
+        id: 105,
+        tag: 'v16.3.0-canary.11',
+        title: 'Next.js 16.3.0-canary.11',
+        publishedAt: '2026-01-20T16:00:00Z',
+        body: 'Fix: Server action serialization',
+      },
+    ],
+  },
+  {
+    id: 'react-19-stable',
+    packageName: 'React',
+    packageId: 2,
+    versionRange: 'v19.x',
+    majorVersion: 19,
+    isPrerelease: false,
+    summary:
+      'React 19 brings Actions for handling async operations in transitions, new hooks including `useOptimistic` and `useFormStatus`, and the new `use` API for reading resources in render. Server Components are now fully supported with improved streaming.',
+    releaseCount: 4,
+    lastUpdated: '2026-01-18T11:00:00Z',
+    releases: [
+      {
+        id: 201,
+        tag: 'v19.1.0',
+        title: 'React 19.1.0',
+        publishedAt: '2026-01-18T11:00:00Z',
+        body: 'Improved Actions error handling',
+      },
+      {
+        id: 202,
+        tag: 'v19.0.0',
+        title: 'React 19.0.0',
+        publishedAt: '2026-01-05T09:00:00Z',
+        body: 'Major release introducing Actions and new hooks',
+      },
+    ],
+  },
+  {
+    id: 'typescript-5-stable',
+    packageName: 'TypeScript',
+    packageId: 3,
+    versionRange: 'v5.x',
+    majorVersion: 5,
+    isPrerelease: false,
+    summary:
+      'TypeScript 5.7 includes improved type inference for computed properties, faster incremental builds with isolated declarations, and new decorators syntax support. The `--verbatimModuleSyntax` flag is now default for new projects.',
+    releaseCount: 12,
+    lastUpdated: '2026-01-19T15:45:00Z',
+    releases: [
+      {
+        id: 301,
+        tag: 'v5.7.3',
+        title: 'TypeScript 5.7.3',
+        publishedAt: '2026-01-19T15:45:00Z',
+        body: 'Bug fix release',
+      },
+      {
+        id: 302,
+        tag: 'v5.7.2',
+        title: 'TypeScript 5.7.2',
+        publishedAt: '2026-01-12T10:00:00Z',
+        body: 'Performance improvements',
+      },
+    ],
+  },
+  {
+    id: 'typescript-5-beta',
+    packageName: 'TypeScript',
+    packageId: 3,
+    versionRange: 'v5.8',
+    majorVersion: 5,
+    isPrerelease: true,
+    prereleaseType: 'beta',
+    summary:
+      'Preview of TypeScript 5.8 featuring improved inference for generic functions, new `using` keyword support for resource management, and experimental isolated modules mode.',
+    releaseCount: 3,
+    lastUpdated: '2026-01-17T09:30:00Z',
+    releases: [
+      {
+        id: 303,
+        tag: 'v5.8.0-beta',
+        title: 'TypeScript 5.8.0 Beta',
+        publishedAt: '2026-01-17T09:30:00Z',
+        body: 'Beta release for testing',
+      },
+    ],
+  },
+  {
+    id: 'vite-6-stable',
+    packageName: 'Vite',
+    packageId: 4,
+    versionRange: 'v6.x',
+    majorVersion: 6,
+    isPrerelease: false,
+    summary:
+      'Vite 6 delivers Environment API for unified dev/build environments, improved Rolldown integration for faster production builds, and enhanced HMR with module graph visualization. CSS processing is now 2x faster with new Lightning CSS backend.',
+    releaseCount: 6,
+    lastUpdated: '2026-01-16T13:20:00Z',
+    releases: [
+      {
+        id: 401,
+        tag: 'v6.1.0',
+        title: 'Vite 6.1.0',
+        publishedAt: '2026-01-16T13:20:00Z',
+        body: 'Environment API improvements',
+      },
+      {
+        id: 402,
+        tag: 'v6.0.0',
+        title: 'Vite 6.0.0',
+        publishedAt: '2026-01-02T09:00:00Z',
+        body: 'Major release with Environment API',
+      },
+    ],
+  },
+]
 
 // ============================================================================
 // Utility Functions
 // ============================================================================
-
-function parseMajorVersion(tag: string): number {
-  const match = tag.match(/^v?(\d+)/)
-  return match ? parseInt(match[1], 10) : 0
-}
-
-function detectPrereleaseType(tag: string): PrereleaseType | undefined {
-  const lower = tag.toLowerCase()
-  if (lower.includes('canary')) return 'canary'
-  if (lower.includes('alpha')) return 'alpha'
-  if (lower.includes('beta')) return 'beta'
-  if (lower.includes('next')) return 'next'
-  if (lower.includes('rc')) return 'rc'
-  return undefined
-}
-
-function isPrerelease(tag: string): boolean {
-  return /-(alpha|beta|rc|next|canary|dev|preview)/i.test(tag)
-}
-
-function buildVersionGroups(
-  releases: ApiRelease[],
-  packageNames: Map<number, string>
-): VersionGroup[] {
-  const groupMap = new Map<string, VersionGroup>()
-
-  for (const release of releases) {
-    const packageId = release.package.id
-    const major = parseMajorVersion(release.tag)
-    const prerelease = isPrerelease(release.tag)
-    const key = `${packageId}-${major}-${prerelease}`
-
-    let group = groupMap.get(key)
-    if (!group) {
-      const packageName = packageNames.get(packageId) ?? release.package.npmName
-      group = {
-        id: key,
-        packageName,
-        packageId,
-        versionRange: `v${major}.x`,
-        majorVersion: major,
-        isPrerelease: prerelease,
-        prereleaseType: prerelease
-          ? detectPrereleaseType(release.tag)
-          : undefined,
-        summary: '',
-        releaseCount: 0,
-        lastUpdated: release.publishedAt,
-        releases: [],
-      }
-      groupMap.set(key, group)
-    }
-
-    group.releases.push(release)
-    group.releaseCount++
-
-    if (
-      new Date(release.publishedAt).getTime() >
-      new Date(group.lastUpdated).getTime()
-    ) {
-      group.lastUpdated = release.publishedAt
-    }
-  }
-
-  // Sort releases within each group by publishedAt descending and build summary
-  for (const group of groupMap.values()) {
-    group.releases.sort(
-      (a, b) =>
-        new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
-    )
-
-    // Build a placeholder summary from release titles
-    const titles = group.releases
-      .slice(0, 3)
-      .map((r) => r.title || r.tag)
-      .join(', ')
-    const extra =
-      group.releaseCount > 3 ? ` and ${group.releaseCount - 3} more` : ''
-    group.summary = `${group.releaseCount} release${group.releaseCount !== 1 ? 's' : ''} in this version: ${titles}${extra}.`
-  }
-
-  return Array.from(groupMap.values())
-}
 
 function formatRelativeTime(dateString: string): string {
   const date = new Date(dateString)
@@ -351,7 +446,7 @@ function SummaryCard({
                       {release.tag}
                     </code>
                     <span className="text-sm text-text-primary">
-                      {release.title ?? release.tag}
+                      {release.title}
                     </span>
                   </div>
                   <time className="text-xs text-text-tertiary whitespace-nowrap">
@@ -413,7 +508,7 @@ function FilterButton({
 // Main Component
 // ============================================================================
 
-export function HomePage() {
+export function HomePageV2() {
   const {
     showPrerelease,
     sortBy,
@@ -423,49 +518,7 @@ export function HomePage() {
     toggleGroupByPackage,
   } = useFilterStore()
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
-
-  const { user } = useStytchUser()
-  const { isPro, checkSubscription, startCheckout } = useSubscriptionStore()
-
-  // Fetch real data
-  const { data: packages, isLoading: packagesLoading } = usePackages()
-  const { data: releases, isLoading: releasesLoading } = useReleases(
-    showPrerelease ? undefined : { excludePrerelease: true }
-  )
-
-  const isLoading = packagesLoading || releasesLoading
-
-  // Build a packageId -> display name map from packages
-  const packageNames = useMemo(() => {
-    const map = new Map<number, string>()
-    if (packages) {
-      for (const pkg of packages) {
-        map.set(pkg.id, pkg.npmName)
-      }
-    }
-    return map
-  }, [packages])
-
-  // Group releases into VersionGroup objects
-  const versionGroups = useMemo(
-    () => buildVersionGroups(releases ?? [], packageNames),
-    [releases, packageNames]
-  )
-
-  // Check subscription status when user is logged in
-  useEffect(() => {
-    if (user) {
-      checkSubscription()
-    }
-  }, [user, checkSubscription])
-
-  const handleUpgrade = () => {
-    if (!user) {
-      window.location.href = '/login'
-      return
-    }
-    startCheckout()
-  }
+  const [isLoading] = useState(false)
 
   const toggleExpanded = (groupId: string) => {
     setExpandedGroups((prev) => {
@@ -479,8 +532,13 @@ export function HomePage() {
     })
   }
 
+  // Filter groups based on prerelease toggle
+  const filteredGroups = showPrerelease
+    ? MOCK_VERSION_GROUPS
+    : MOCK_VERSION_GROUPS.filter((g) => !g.isPrerelease)
+
   // Sort groups
-  const sortedGroups = [...versionGroups].sort((a, b) => {
+  const sortedGroups = [...filteredGroups].sort((a, b) => {
     if (sortBy === 'name') {
       return a.packageName.localeCompare(b.packageName)
     }
@@ -503,29 +561,17 @@ export function HomePage() {
   return (
     <div className="min-h-screen bg-surface-secondary">
       <Header>
-        <div className="flex items-center gap-3">
-          <Logo />
-          <div>
-            <HeaderTitle>Patch Notes</HeaderTitle>
-            <p className="text-sm font-normal text-text-tertiary">
-              by Tiny Tools
-            </p>
-          </div>
-        </div>
+        <HeaderTitle>Patch Notes</HeaderTitle>
         <div className="flex items-center gap-2">
-          {user && !isPro && (
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={handleUpgrade}
-              className="flex items-center gap-1.5"
-            >
-              <Sparkles className="w-4 h-4" />
-              Upgrade
+          <Link to="/">
+            <Button variant="ghost" size="sm">
+              ← Back
             </Button>
-          )}
+          </Link>
+          <Badge variant="prerelease">Preview</Badge>
+          <div className="w-px h-6 bg-border-muted mx-1" />
           <ThemeToggle />
-          <UserMenu />
+          <UserMenuV2 />
         </div>
       </Header>
 
@@ -628,7 +674,7 @@ export function HomePage() {
           )}
 
           {/* Empty State */}
-          {!isLoading && versionGroups.length === 0 && (
+          {!isLoading && filteredGroups.length === 0 && (
             <div className="text-center py-16">
               <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-surface-tertiary flex items-center justify-center">
                 <FlaskConicalOff className="w-8 h-8 text-text-tertiary" />
