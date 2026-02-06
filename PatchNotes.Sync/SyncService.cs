@@ -124,7 +124,7 @@ public class SyncService
             if (existingVersions.Contains(ghRelease.TagName))
                 continue;
 
-            var (major, minor, isPrerelease) = DbSeeder.ParseVersion(ghRelease.TagName);
+            var (major, minor, isPrerelease) = VersionParser.ParseVersion(ghRelease.TagName);
 
             var release = new Release
             {
