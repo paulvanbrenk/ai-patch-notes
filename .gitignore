@@ -7,6 +7,7 @@ x86/
 [Aa][Rr][Mm]64/
 bld/
 [Bb]in/
+# dotnet-ef creates bin\Debug and bin\Release with literal backslashes on Linux
 [Bb]in\\[Dd]ebug/
 [Bb]in\\[Rr]elease/
 [Oo]bj/
