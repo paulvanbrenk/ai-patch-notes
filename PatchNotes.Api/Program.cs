@@ -26,7 +26,16 @@ if (missingStytchKeys.Count > 0)
         "Please configure these values in appsettings.json or environment variables.");
 }
 
-// Stripe configuration — API version is pinned by Stripe.net SDK v47 (read-only)
+// Stripe configuration — pin to known API version to catch unreviewed SDK upgrades
+const string expectedStripeApiVersion = "2025-01-27.acacia"; // Stripe.net v47.3.0
+if (StripeConfiguration.ApiVersion != expectedStripeApiVersion)
+{
+    throw new InvalidOperationException(
+        $"Stripe API version mismatch: expected {expectedStripeApiVersion}, " +
+        $"but SDK reports {StripeConfiguration.ApiVersion}. " +
+        "Review Stripe API changelog before updating the pinned version.");
+}
+
 var stripeSecretKey = builder.Configuration["Stripe:SecretKey"];
 if (!string.IsNullOrEmpty(stripeSecretKey))
 {

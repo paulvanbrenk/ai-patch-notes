@@ -35,7 +35,8 @@ public static class StripeWebhook
                 stripeEvent = EventUtility.ConstructEvent(
                     body,
                     httpContext.Request.Headers["Stripe-Signature"],
-                    webhookSecret
+                    webhookSecret,
+                    throwOnApiVersionMismatch: true
                 );
             }
             catch (StripeException ex)
