@@ -13,6 +13,7 @@ public class PatchNotesDbContext : DbContext
     public DbSet<Release> Releases => Set<Release>();
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<User> Users => Set<User>();
+    public DbSet<ProcessedWebhookEvent> ProcessedWebhookEvents => Set<ProcessedWebhookEvent>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -62,6 +63,12 @@ public class PatchNotesDbContext : DbContext
             entity.HasIndex(e => e.StytchUserId).IsUnique();
             entity.HasIndex(e => e.Email);
             entity.HasIndex(e => e.StripeCustomerId);
+        });
+
+        modelBuilder.Entity<ProcessedWebhookEvent>(entity =>
+        {
+            entity.HasKey(e => e.EventId);
+            entity.Property(e => e.EventId).HasMaxLength(128);
         });
     }
 }
