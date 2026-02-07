@@ -34,24 +34,46 @@ The API runs on `http://localhost:5031` by default.
 |--------|----------|-------------|------|
 | GET | `/api/releases` | Query releases (supports `packages` and `days` params) | No |
 | GET | `/api/releases/{id}` | Get release details | No |
-| POST | `/api/releases/{id}/summarize` | Generate AI summary (supports SSE streaming) | No |
+| POST | `/api/releases/{id}/summarize` | Generate AI summary (supports SSE streaming) | Yes |
 
 ### Notifications
 
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
-| GET | `/api/notifications` | Query notifications | No |
-| GET | `/api/notifications/unread-count` | Get unread count | No |
+| GET | `/api/notifications` | Query notifications | Yes |
+| GET | `/api/notifications/unread-count` | Get unread count | Yes |
 | PATCH | `/api/notifications/{id}/read` | Mark as read | Yes |
 | DELETE | `/api/notifications/{id}` | Delete notification | Yes |
 
 ### Users
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/users/me?stytchUserId=...` | Get current user |
-| POST | `/api/users/login` | Create/update user on login |
-| POST | `/api/webhooks/stytch` | Handle Stytch webhook events |
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/api/users/me` | Get current authenticated user | Yes |
+| POST | `/api/users/login` | Create/update user on login | Yes |
+
+### Webhooks
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| POST | `/webhooks/stytch` | Handle Stytch webhook events (Svix signature verified) | No |
+
+### Watchlist
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/api/watchlist` | Get current user's watched package IDs | Yes |
+| PUT | `/api/watchlist` | Replace entire watchlist (bulk set) | Yes |
+| POST | `/api/watchlist/{packageId}` | Add a package to watchlist | Yes |
+| DELETE | `/api/watchlist/{packageId}` | Remove a package from watchlist | Yes |
+
+### Subscriptions
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| POST | `/api/subscription/checkout` | Create Stripe Checkout session | Yes |
+| POST | `/api/subscription/portal` | Create Stripe Customer Portal session | Yes |
+| GET | `/api/subscription/status` | Get current subscription status | Yes |
 
 ## Configuration
 
