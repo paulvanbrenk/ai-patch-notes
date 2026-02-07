@@ -101,7 +101,8 @@ namespace PatchNotes.Data.Migrations.Sqlite
                     PublishedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
                     FetchedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
                     Summary = table.Column<string>(type: "TEXT", nullable: true),
-                    SummaryGeneratedAt = table.Column<DateTime>(type: "TEXT", nullable: true)
+                    SummaryGeneratedAt = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    SummaryStale = table.Column<bool>(type: "INTEGER", nullable: false, defaultValue: true)
                 },
                 constraints: table =>
                 {

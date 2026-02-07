@@ -11,7 +11,7 @@ using PatchNotes.Data;
 namespace PatchNotes.Data.Migrations.Sqlite
 {
     [DbContext(typeof(SqliteContext))]
-    [Migration("20260207222129_InitialCreate")]
+    [Migration("20260207223309_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -164,6 +164,11 @@ namespace PatchNotes.Data.Migrations.Sqlite
 
                     b.Property<DateTime?>("SummaryGeneratedAt")
                         .HasColumnType("TEXT");
+
+                    b.Property<bool>("SummaryStale")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(true);
 
                     b.Property<string>("Tag")
                         .IsRequired()

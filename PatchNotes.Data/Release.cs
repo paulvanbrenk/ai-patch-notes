@@ -20,10 +20,16 @@ public class Release
     /// </summary>
     public DateTime? SummaryGeneratedAt { get; set; }
 
+    /// <summary>
+    /// Indicates the existing summary is stale and needs regeneration.
+    /// Defaults to true so new releases are picked up for summary generation.
+    /// </summary>
+    public bool SummaryStale { get; set; } = true;
+
     public Package Package { get; set; } = null!;
 
     /// <summary>
     /// Returns true if this release needs a summary generated.
     /// </summary>
-    public bool NeedsSummary => Summary == null;
+    public bool NeedsSummary => Summary == null || SummaryStale;
 }
