@@ -1,8 +1,6 @@
 using PatchNotes.Data;
-using PatchNotes.Data.GitHub;
 using PatchNotes.Data.AI;
 using PatchNotes.Data.Stytch;
-using PatchNotes.Sync;
 using PatchNotes.Api.Routes;
 using PatchNotes.Api.Webhooks;
 using Stripe;
@@ -46,11 +44,6 @@ builder.Services.AddOpenApi();
 builder.Services.AddPatchNotesDbContext(builder.Configuration);
 builder.Services.AddHttpClient();
 
-builder.Services.AddGitHubClient(options =>
-{
-    options.Token = builder.Configuration["GitHub:Token"];
-});
-
 builder.Services.AddAiClient(options =>
 {
     options.ApiKey = builder.Configuration["AI:ApiKey"];
@@ -67,8 +60,6 @@ builder.Services.AddAiClient(options =>
 });
 
 builder.Services.AddSingleton<IStytchClient, StytchClient>();
-
-builder.Services.AddScoped<SyncService>();
 
 builder.Services.AddCors(options =>
 {

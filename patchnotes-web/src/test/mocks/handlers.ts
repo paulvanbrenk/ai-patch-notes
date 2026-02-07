@@ -128,17 +128,6 @@ export const handlers = [
     return HttpResponse.json({ ...pkg, ...body })
   }),
 
-  // POST /packages/:id/sync
-  http.post(`${API_BASE}/packages/:id/sync`, ({ params }) => {
-    const id = params.id as string
-    return HttpResponse.json({
-      id,
-      npmName: 'react',
-      lastFetchedAt: new Date().toISOString(),
-      releasesAdded: 2,
-    })
-  }),
-
   // GET /releases
   http.get(`${API_BASE}/releases`, () => {
     return HttpResponse.json(mockReleases)
