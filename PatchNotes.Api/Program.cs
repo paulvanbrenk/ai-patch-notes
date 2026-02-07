@@ -74,10 +74,13 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins(
-                  "https://app.mypkgupdate.com",
-                  "http://localhost:5173",
-                  "http://localhost:3000")
+        policy.SetIsOriginAllowed(origin =>
+                  {
+                      var uri = new Uri(origin);
+                      return uri.Host.EndsWith(".mypkgupdate.com")
+                          || uri.Host == "localhost"
+                          || uri.Host.EndsWith(".local");
+                  })
               .WithHeaders("Content-Type", "X-API-Key", "Accept")
               .WithMethods("GET", "POST", "PATCH", "DELETE")
               .AllowCredentials();
