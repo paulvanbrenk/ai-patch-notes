@@ -77,7 +77,7 @@ builder.Services.AddCors(options =>
         policy.SetIsOriginAllowed(origin =>
                   {
                       var uri = new Uri(origin);
-                      var isAllowed = uri.Host.EndsWith(".mypkgupdate.com");
+                      var isAllowed = uri.Scheme == "https" && uri.Host.EndsWith(".mypkgupdate.com");
                       if (builder.Environment.IsDevelopment())
                       {
                           isAllowed = isAllowed
