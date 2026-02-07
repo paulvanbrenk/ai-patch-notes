@@ -232,6 +232,31 @@ namespace PatchNotes.Data.Migrations.Sqlite
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("PatchNotes.Data.Watchlist", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("PackageId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PackageId");
+
+                    b.HasIndex("UserId", "PackageId")
+                        .IsUnique();
+
+                    b.ToTable("Watchlists");
+                });
+
             modelBuilder.Entity("PatchNotes.Data.Notification", b =>
                 {
                     b.HasOne("PatchNotes.Data.Package", "Package")
@@ -252,9 +277,35 @@ namespace PatchNotes.Data.Migrations.Sqlite
                     b.Navigation("Package");
                 });
 
+            modelBuilder.Entity("PatchNotes.Data.Watchlist", b =>
+                {
+                    b.HasOne("PatchNotes.Data.Package", "Package")
+                        .WithMany("Watchlists")
+                        .HasForeignKey("PackageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PatchNotes.Data.User", "User")
+                        .WithMany("Watchlists")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Package");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("PatchNotes.Data.Package", b =>
                 {
                     b.Navigation("Releases");
+
+                    b.Navigation("Watchlists");
+                });
+
+            modelBuilder.Entity("PatchNotes.Data.User", b =>
+                {
+                    b.Navigation("Watchlists");
                 });
 #pragma warning restore 612, 618
         }
