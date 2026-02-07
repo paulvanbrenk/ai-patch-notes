@@ -186,6 +186,41 @@ namespace PatchNotes.Data.Migrations.SqlServer
                     b.ToTable("Releases");
                 });
 
+            modelBuilder.Entity("PatchNotes.Data.ReleaseSummary", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(21)
+                        .HasColumnType("nvarchar(21)");
+
+                    b.Property<DateTime>("GeneratedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsPrerelease")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MajorVersion")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PackageId")
+                        .IsRequired()
+                        .HasMaxLength(21)
+                        .HasColumnType("nvarchar(21)");
+
+                    b.Property<string>("Summary")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PackageId", "MajorVersion", "IsPrerelease")
+                        .IsUnique();
+
+                    b.ToTable("ReleaseSummaries");
+                });
+
             modelBuilder.Entity("PatchNotes.Data.User", b =>
                 {
                     b.Property<string>("Id")
@@ -290,6 +325,17 @@ namespace PatchNotes.Data.Migrations.SqlServer
                     b.Navigation("Package");
                 });
 
+            modelBuilder.Entity("PatchNotes.Data.ReleaseSummary", b =>
+                {
+                    b.HasOne("PatchNotes.Data.Package", "Package")
+                        .WithMany("ReleaseSummaries")
+                        .HasForeignKey("PackageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Package");
+                });
+
             modelBuilder.Entity("PatchNotes.Data.Watchlist", b =>
                 {
                     b.HasOne("PatchNotes.Data.Package", "Package")
@@ -311,6 +357,8 @@ namespace PatchNotes.Data.Migrations.SqlServer
 
             modelBuilder.Entity("PatchNotes.Data.Package", b =>
                 {
+                    b.Navigation("ReleaseSummaries");
+
                     b.Navigation("Releases");
 
                     b.Navigation("Watchlists");

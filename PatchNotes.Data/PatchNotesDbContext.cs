@@ -15,6 +15,7 @@ public class PatchNotesDbContext : DbContext
     public DbSet<User> Users => Set<User>();
     public DbSet<Watchlist> Watchlists => Set<Watchlist>();
     public DbSet<ProcessedWebhookEvent> ProcessedWebhookEvents => Set<ProcessedWebhookEvent>();
+    public DbSet<ReleaseSummary> ReleaseSummaries => Set<ReleaseSummary>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -76,6 +77,17 @@ public class PatchNotesDbContext : DbContext
         {
             entity.HasKey(e => e.EventId);
             entity.Property(e => e.EventId).HasMaxLength(128);
+        });
+
+        modelBuilder.Entity<ReleaseSummary>(entity =>
+        {
+            entity.Property(e => e.Id).HasMaxLength(21);
+            entity.Property(e => e.PackageId).HasMaxLength(21);
+            entity.HasIndex(e => new { e.PackageId, e.MajorVersion, e.IsPrerelease }).IsUnique();
+            entity.HasOne(e => e.Package)
+                .WithMany(p => p.ReleaseSummaries)
+                .HasForeignKey(e => e.PackageId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Watchlist>(entity =>
