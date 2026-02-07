@@ -18,7 +18,11 @@
     "test:coverage": "vitest run --coverage"
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx,json,css,md,html}": "prettier --write"
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,css,md,html}": "prettier --write"
   },
   "dependencies": {
     "@stytch/react": "^19.18.1",
