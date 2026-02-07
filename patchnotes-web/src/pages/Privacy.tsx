@@ -29,9 +29,10 @@ export function Privacy() {
             </p>
 
             <p className="text-text-secondary leading-relaxed">
-              MyPkgUpdate (&quot;we&quot;, &quot;us&quot;, or &quot;our&quot;) is
-              operated by Tiny Tools LLC. This policy describes how we collect,
-              use, and protect your information when you use our service at{' '}
+              MyPkgUpdate (&quot;we&quot;, &quot;us&quot;, or &quot;our&quot;)
+              is operated by Tiny Tools LLC. This policy describes how we
+              collect, use, and protect your information when you use our
+              service at{' '}
               <a
                 href="https://app.mypkgupdate.com"
                 className="text-brand-500 hover:underline"
@@ -79,7 +80,10 @@ export function Privacy() {
                 <li>Authenticate you and manage your session</li>
                 <li>Display release notes for packages you track</li>
                 <li>Process Pro subscription payments</li>
-                <li>Generate AI-powered release summaries (using public release text only)</li>
+                <li>
+                  Generate AI-powered release summaries (using public release
+                  text only)
+                </li>
                 <li>Monitor and debug service issues</li>
               </ul>
             </Section>
