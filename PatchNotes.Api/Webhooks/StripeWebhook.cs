@@ -147,7 +147,7 @@ public static class StripeWebhook
 
             user.StripeSubscriptionId = subscription.Id;
             user.SubscriptionStatus = subscription.Status;
-            user.SubscriptionExpiresAt = subscription.CurrentPeriodEnd;
+            user.SubscriptionExpiresAt = subscription.Items.Data.FirstOrDefault()?.CurrentPeriodEnd;
         }
 
         await db.SaveChangesAsync();
@@ -168,7 +168,7 @@ public static class StripeWebhook
 
         user.StripeSubscriptionId = subscription.Id;
         user.SubscriptionStatus = subscription.Status;
-        user.SubscriptionExpiresAt = subscription.CurrentPeriodEnd;
+        user.SubscriptionExpiresAt = subscription.Items.Data.FirstOrDefault()?.CurrentPeriodEnd;
 
         await db.SaveChangesAsync();
         logger.LogInformation("Updated subscription for customer {CustomerId}: status={Status}", subscription.CustomerId, subscription.Status);
@@ -188,7 +188,7 @@ public static class StripeWebhook
 
         user.SubscriptionStatus = "canceled";
         // Keep the expiration date so user has access until end of paid period
-        user.SubscriptionExpiresAt = subscription.CurrentPeriodEnd;
+        user.SubscriptionExpiresAt = subscription.Items.Data.FirstOrDefault()?.CurrentPeriodEnd;
 
         await db.SaveChangesAsync();
         logger.LogInformation("Subscription canceled for customer {CustomerId}", subscription.CustomerId);
@@ -225,16 +225,17 @@ public static class StripeWebhook
         }
 
         // Update subscription expiry on successful renewal payment
-        if (!string.IsNullOrEmpty(invoice.SubscriptionId))
+        var invoiceSubscriptionId = invoice.Parent?.SubscriptionDetails?.SubscriptionId;
+        if (!string.IsNullOrEmpty(invoiceSubscriptionId))
         {
             var subscriptionService = new SubscriptionService();
-            var subscription = await subscriptionService.GetAsync(invoice.SubscriptionId);
+            var subscription = await subscriptionService.GetAsync(invoiceSubscriptionId);
 
             user.SubscriptionStatus = subscription.Status;
-            user.SubscriptionExpiresAt = subscription.CurrentPeriodEnd;
+            user.SubscriptionExpiresAt = subscription.Items.Data.FirstOrDefault()?.CurrentPeriodEnd;
 
             await db.SaveChangesAsync();
-            logger.LogInformation("Payment succeeded for customer {CustomerId}, updated expiry to {ExpiresAt}", invoice.CustomerId, subscription.CurrentPeriodEnd);
+            logger.LogInformation("Payment succeeded for customer {CustomerId}, updated expiry to {ExpiresAt}", invoice.CustomerId, user.SubscriptionExpiresAt);
         }
     }
 }

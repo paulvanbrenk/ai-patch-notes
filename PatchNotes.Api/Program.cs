@@ -27,7 +27,7 @@ if (missingStytchKeys.Count > 0)
 }
 
 // Stripe configuration — pin to known API version to catch unreviewed SDK upgrades
-const string expectedStripeApiVersion = "2025-01-27.acacia"; // Stripe.net v47.3.0
+const string expectedStripeApiVersion = "2026-01-28.clover"; // Stripe.net v50.3.0
 if (StripeConfiguration.ApiVersion != expectedStripeApiVersion)
 {
     throw new InvalidOperationException(
