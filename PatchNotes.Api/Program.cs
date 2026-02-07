@@ -77,9 +77,15 @@ builder.Services.AddCors(options =>
         policy.SetIsOriginAllowed(origin =>
                   {
                       var uri = new Uri(origin);
-                      return uri.Host.EndsWith(".mypkgupdate.com")
-                          || uri.Host == "localhost"
-                          || uri.Host.EndsWith(".local");
+                      var isAllowed = uri.Host.EndsWith(".mypkgupdate.com");
+                      if (builder.Environment.IsDevelopment())
+                      {
+                          isAllowed = isAllowed
+                              || uri.Host == "localhost"
+                              || uri.Host.EndsWith(".local")
+                              || uri.Host.EndsWith(".devbox.home.arpa");
+                      }
+                      return isAllowed;
                   })
               .WithHeaders("Content-Type", "X-API-Key", "Accept")
               .WithMethods("GET", "POST", "PATCH", "DELETE")
