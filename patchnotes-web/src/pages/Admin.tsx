@@ -81,12 +81,7 @@ interface PackageRowProps {
   isDeleting: boolean
 }
 
-function PackageRow({
-  pkg,
-  onEdit,
-  onDelete,
-  isDeleting,
-}: PackageRowProps) {
+function PackageRow({ pkg, onEdit, onDelete, isDeleting }: PackageRowProps) {
   const githubUrl = `https://github.com/${pkg.githubOwner}/${pkg.githubRepo}`
 
   return (

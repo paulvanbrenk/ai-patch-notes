@@ -40,7 +40,6 @@ export interface UpdatePackageRequest {
   githubRepo?: string
 }
 
-
 export interface Notification {
   id: string
   gitHubId: string

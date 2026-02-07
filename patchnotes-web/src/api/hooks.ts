@@ -120,7 +120,6 @@ export function useUpdatePackage() {
   })
 }
 
-
 export function useNotifications(options?: {
   unreadOnly?: boolean
   packageId?: string
