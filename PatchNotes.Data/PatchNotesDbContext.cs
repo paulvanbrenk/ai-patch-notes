@@ -13,6 +13,7 @@ public class PatchNotesDbContext : DbContext
     public DbSet<Release> Releases => Set<Release>();
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<User> Users => Set<User>();
+    public DbSet<Watchlist> Watchlists => Set<Watchlist>();
     public DbSet<ProcessedWebhookEvent> ProcessedWebhookEvents => Set<ProcessedWebhookEvent>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -63,6 +64,17 @@ public class PatchNotesDbContext : DbContext
             entity.HasIndex(e => e.StytchUserId).IsUnique();
             entity.HasIndex(e => e.Email);
             entity.HasIndex(e => e.StripeCustomerId);
+        });
+
+        modelBuilder.Entity<Watchlist>(entity =>
+        {
+            entity.HasIndex(e => new { e.UserId, e.PackageId }).IsUnique();
+            entity.HasOne(e => e.User)
+                .WithMany(u => u.Watchlists)
+                .HasForeignKey(e => e.UserId);
+            entity.HasOne(e => e.Package)
+                .WithMany(p => p.Watchlists)
+                .HasForeignKey(e => e.PackageId);
         });
 
         modelBuilder.Entity<ProcessedWebhookEvent>(entity =>

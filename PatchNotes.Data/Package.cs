@@ -12,4 +12,5 @@ public class Package
     public DateTime CreatedAt { get; set; }
 
     public ICollection<Release> Releases { get; set; } = [];
+    public ICollection<Watchlist> Watchlists { get; set; } = [];
 }

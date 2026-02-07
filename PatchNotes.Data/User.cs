@@ -53,4 +53,6 @@ public class User
     /// When the current subscription period expires
     /// </summary>
     public DateTime? SubscriptionExpiresAt { get; set; }
+
+    public ICollection<Watchlist> Watchlists { get; set; } = [];
 }
