@@ -66,6 +66,12 @@ public class PatchNotesDbContext : DbContext
             entity.HasIndex(e => e.StripeCustomerId);
         });
 
+        modelBuilder.Entity<ProcessedWebhookEvent>(entity =>
+        {
+            entity.HasKey(e => e.EventId);
+            entity.Property(e => e.EventId).HasMaxLength(128);
+        });
+
         modelBuilder.Entity<Watchlist>(entity =>
         {
             entity.HasIndex(e => new { e.UserId, e.PackageId }).IsUnique();
@@ -77,10 +83,5 @@ public class PatchNotesDbContext : DbContext
                 .HasForeignKey(e => e.PackageId);
         });
 
-        modelBuilder.Entity<ProcessedWebhookEvent>(entity =>
-        {
-            entity.HasKey(e => e.EventId);
-            entity.Property(e => e.EventId).HasMaxLength(128);
-        });
     }
 }
