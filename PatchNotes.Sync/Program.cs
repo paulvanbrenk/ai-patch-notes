@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using PatchNotes.Data;
+using PatchNotes.Data.AI;
 using PatchNotes.Data.GitHub;
 using PatchNotes.Sync;
 
@@ -34,15 +35,23 @@ builder.Services.AddGitHubClient(options =>
     }
 });
 
+builder.Services.AddAiClient(options =>
+{
+    builder.Configuration.GetSection(AiClientOptions.SectionName).Bind(options);
+});
+
 builder.Services.AddTransient<ChangelogResolver>();
+builder.Services.AddTransient<VersionGroupingService>();
 builder.Services.AddTransient<SyncService>();
 builder.Services.AddTransient<NotificationSyncService>();
+builder.Services.AddTransient<SummaryGenerationService>();
 
 using var host = builder.Build();
 
 // Get services
 var logger = host.Services.GetRequiredService<ILogger<Program>>();
 var syncService = host.Services.GetRequiredService<SyncService>();
+var summaryService = host.Services.GetRequiredService<SummaryGenerationService>();
 
 try
 {
@@ -61,6 +70,22 @@ try
     logger.LogInformation("PatchNotes Sync starting");
 
     var result = await syncService.SyncAllAsync();
+
+    // Generate summaries for packages with new/stale releases
+    if (result.ReleasesNeedingSummary.Count > 0)
+    {
+        logger.LogInformation(
+            "Generating summaries for {Count} releases needing summaries",
+            result.ReleasesNeedingSummary.Count);
+
+        var summaryResult = await summaryService.GenerateAllSummariesAsync();
+
+        logger.LogInformation(
+            "Summary generation complete: {Generated} generated, {Skipped} skipped, {Errors} errors",
+            summaryResult.SummariesGenerated,
+            summaryResult.GroupsSkipped,
+            summaryResult.Errors.Count);
+    }
 
     if (result.Success)
     {

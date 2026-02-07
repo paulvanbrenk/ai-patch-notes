@@ -1,0 +1,190 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using PatchNotes.Data;
+using PatchNotes.Data.AI;
+
+namespace PatchNotes.Sync;
+
+/// <summary>
+/// Generates AI summaries per version group, aggregating release notes
+/// within each group and upserting ReleaseSummary records.
+/// </summary>
+public class SummaryGenerationService
+{
+    private readonly PatchNotesDbContext _db;
+    private readonly IAiClient _aiClient;
+    private readonly VersionGroupingService _groupingService;
+    private readonly ILogger<SummaryGenerationService> _logger;
+
+    public SummaryGenerationService(
+        PatchNotesDbContext db,
+        IAiClient aiClient,
+        VersionGroupingService groupingService,
+        ILogger<SummaryGenerationService> logger)
+    {
+        _db = db;
+        _aiClient = aiClient;
+        _groupingService = groupingService;
+        _logger = logger;
+    }
+
+    /// <summary>
+    /// Generates summaries for all version groups of a package that have new or stale releases.
+    /// </summary>
+    public async Task<SummaryGenerationResult> GenerateGroupSummariesAsync(
+        string packageId,
+        CancellationToken cancellationToken = default)
+    {
+        var result = new SummaryGenerationResult();
+
+        var releases = await _db.Releases
+            .Where(r => r.PackageId == packageId)
+            .ToListAsync(cancellationToken);
+
+        if (releases.Count == 0)
+        {
+            _logger.LogDebug("No releases found for package {PackageId}", packageId);
+            return result;
+        }
+
+        var groups = _groupingService.GroupReleases(releases).ToList();
+
+        // Load existing summaries for this package
+        var existingSummaries = await _db.ReleaseSummaries
+            .Where(s => s.PackageId == packageId)
+            .ToDictionaryAsync(
+                s => (s.MajorVersion, s.IsPrerelease),
+                cancellationToken);
+
+        foreach (var group in groups)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            // Only regenerate if the group has releases that need summaries
+            var hasStaleReleases = group.Releases.Any(r => r.NeedsSummary);
+            if (!hasStaleReleases)
+            {
+                result.GroupsSkipped++;
+                continue;
+            }
+
+            try
+            {
+                var summary = await GenerateGroupSummaryAsync(group, cancellationToken);
+
+                if (string.IsNullOrWhiteSpace(summary))
+                {
+                    result.GroupsSkipped++;
+                    continue;
+                }
+
+                // Upsert ReleaseSummary
+                var key = (group.MajorVersion, group.IsPrerelease);
+                if (existingSummaries.TryGetValue(key, out var existing))
+                {
+                    existing.Summary = summary;
+                    existing.UpdatedAt = DateTime.UtcNow;
+                }
+                else
+                {
+                    var releaseSummary = new ReleaseSummary
+                    {
+                        PackageId = packageId,
+                        MajorVersion = group.MajorVersion,
+                        IsPrerelease = group.IsPrerelease,
+                        Summary = summary,
+                        GeneratedAt = DateTime.UtcNow
+                    };
+                    _db.ReleaseSummaries.Add(releaseSummary);
+                    existingSummaries[key] = releaseSummary;
+                }
+
+                // Mark releases in this group as no longer stale
+                foreach (var release in group.Releases.Where(r => r.NeedsSummary))
+                {
+                    release.SummaryStale = false;
+                }
+
+                result.SummariesGenerated++;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "Failed to generate summary for package {PackageId} v{MajorVersion} (prerelease={IsPrerelease})",
+                    packageId, group.MajorVersion, group.IsPrerelease);
+                result.Errors.Add(new SummaryGenerationError(
+                    packageId, group.MajorVersion, group.IsPrerelease, ex.Message));
+            }
+        }
+
+        await _db.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation(
+            "Summary generation for package {PackageId}: {Generated} generated, {Skipped} skipped, {Errors} errors",
+            packageId, result.SummariesGenerated, result.GroupsSkipped, result.Errors.Count);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Generates summaries for all packages that have releases needing summaries.
+    /// </summary>
+    public async Task<SummaryGenerationResult> GenerateAllSummariesAsync(
+        CancellationToken cancellationToken = default)
+    {
+        var aggregateResult = new SummaryGenerationResult();
+
+        // Find all packages that have at least one stale release
+        var packageIds = await _db.Releases
+            .Where(r => r.Summary == null || r.SummaryStale)
+            .Select(r => r.PackageId)
+            .Distinct()
+            .ToListAsync(cancellationToken);
+
+        _logger.LogInformation(
+            "Generating summaries for {Count} packages with stale releases", packageIds.Count);
+
+        foreach (var packageId in packageIds)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var result = await GenerateGroupSummariesAsync(packageId, cancellationToken);
+            aggregateResult.SummariesGenerated += result.SummariesGenerated;
+            aggregateResult.GroupsSkipped += result.GroupsSkipped;
+            aggregateResult.Errors.AddRange(result.Errors);
+        }
+
+        return aggregateResult;
+    }
+
+    private async Task<string> GenerateGroupSummaryAsync(
+        VersionGroup group,
+        CancellationToken cancellationToken)
+    {
+        var sortedReleases = group.Releases
+            .OrderByDescending(r => r.PublishedAt)
+            .ToList();
+
+        var versionLabel = group.MajorVersion >= 0
+            ? $"v{group.MajorVersion}.x"
+            : "unversioned";
+
+        if (group.IsPrerelease)
+            versionLabel += " (pre-release)";
+
+        var title = $"{versionLabel} releases";
+
+        var bodyParts = new List<string>();
+        foreach (var release in sortedReleases)
+        {
+            var releasePart = !string.IsNullOrWhiteSpace(release.Title)
+                ? $"## {release.Tag} — {release.Title}\n{release.Body ?? ""}"
+                : $"## {release.Tag}\n{release.Body ?? ""}";
+            bodyParts.Add(releasePart.Trim());
+        }
+
+        var body = string.Join("\n\n", bodyParts);
+
+        return await _aiClient.SummarizeReleaseNotesAsync(title, body, cancellationToken);
+    }
+}
