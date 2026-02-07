@@ -113,6 +113,23 @@ public static class ReleaseRoutes
                 return Results.NotFound(new { error = "Release not found" });
             }
 
+            // Return cached summary if it exists and isn't stale
+            if (!release.NeedsSummary)
+            {
+                return Results.Ok(new
+                {
+                    release.Id,
+                    release.Tag,
+                    release.Title,
+                    summary = release.Summary,
+                    Package = new
+                    {
+                        release.Package.Id,
+                        release.Package.NpmName
+                    }
+                });
+            }
+
             var acceptHeader = httpContext.Request.Headers.Accept.ToString();
 
             // Support Server-Sent Events for streaming
@@ -132,6 +149,12 @@ public static class ReleaseRoutes
                     await httpContext.Response.Body.FlushAsync(httpContext.RequestAborted);
                 }
 
+                // Persist the generated summary
+                release.Summary = fullSummary.ToString();
+                release.SummaryGeneratedAt = DateTime.UtcNow;
+                release.SummaryStale = false;
+                await db.SaveChangesAsync();
+
                 var completeData = JsonSerializer.Serialize(new
                 {
                     type = "complete",
@@ -140,7 +163,7 @@ public static class ReleaseRoutes
                         releaseId = release.Id,
                         release.Tag,
                         release.Title,
-                        summary = fullSummary.ToString(),
+                        summary = release.Summary,
                         package = new { release.Package.Id, release.Package.NpmName }
                     }
                 });
@@ -152,6 +175,12 @@ public static class ReleaseRoutes
 
             // Non-streaming JSON response
             var summary = await aiClient.SummarizeReleaseNotesAsync(release.Title, release.Body);
+
+            // Persist the generated summary
+            release.Summary = summary;
+            release.SummaryGeneratedAt = DateTime.UtcNow;
+            release.SummaryStale = false;
+            await db.SaveChangesAsync();
 
             return Results.Ok(new
             {
