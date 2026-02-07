@@ -10,22 +10,33 @@ namespace PatchNotes.Data.Migrations.SqlServer
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            // SQL Server cannot ALTER COLUMN to remove IDENTITY, so we must use raw SQL
-            // to drop and recreate the columns. Early-stage app — data loss is acceptable.
+            // SQL Server cannot ALTER COLUMN to remove IDENTITY, so we use raw SQL.
+            // Dynamically drop all FKs, indexes, and PKs to avoid hardcoded name mismatches.
+            // Early-stage app — data loss is acceptable.
             migrationBuilder.Sql(@"
-                -- Drop all FK constraints
-                ALTER TABLE [Watchlists] DROP CONSTRAINT [FK_Watchlists_Users_UserId];
-                ALTER TABLE [Watchlists] DROP CONSTRAINT [FK_Watchlists_Packages_PackageId];
-                ALTER TABLE [Releases] DROP CONSTRAINT [FK_Releases_Packages_PackageId];
-                ALTER TABLE [Notifications] DROP CONSTRAINT [FK_Notifications_Packages_PackageId];
+                -- Dynamically drop ALL foreign keys referencing these tables
+                DECLARE @sql NVARCHAR(MAX) = N'';
+                SELECT @sql += 'ALTER TABLE ' + QUOTENAME(OBJECT_SCHEMA_NAME(parent_object_id)) + '.' + QUOTENAME(OBJECT_NAME(parent_object_id))
+                    + ' DROP CONSTRAINT ' + QUOTENAME(name) + ';' + CHAR(13)
+                FROM sys.foreign_keys
+                WHERE referenced_object_id IN (OBJECT_ID('Packages'), OBJECT_ID('Users'))
+                   OR parent_object_id IN (OBJECT_ID('Watchlists'), OBJECT_ID('Releases'), OBJECT_ID('Notifications'));
+                EXEC sp_executesql @sql;
+            ");
 
-                -- Drop FK indexes
-                DROP INDEX [IX_Watchlists_PackageId] ON [Watchlists];
-                DROP INDEX [IX_Watchlists_UserId] ON [Watchlists];
-                DROP INDEX [IX_Releases_PackageId] ON [Releases];
-                DROP INDEX [IX_Notifications_PackageId] ON [Notifications];
+            migrationBuilder.Sql(@"
+                -- Dynamically drop ALL non-PK indexes on affected tables
+                DECLARE @sql NVARCHAR(MAX) = N'';
+                SELECT @sql += 'DROP INDEX ' + QUOTENAME(i.name) + ' ON ' + QUOTENAME(OBJECT_SCHEMA_NAME(i.object_id)) + '.' + QUOTENAME(OBJECT_NAME(i.object_id)) + ';' + CHAR(13)
+                FROM sys.indexes i
+                WHERE i.object_id IN (OBJECT_ID('Packages'), OBJECT_ID('Users'), OBJECT_ID('Releases'), OBJECT_ID('Notifications'), OBJECT_ID('Watchlists'))
+                  AND i.is_primary_key = 0
+                  AND i.type > 0;
+                EXEC sp_executesql @sql;
+            ");
 
-                -- Clear all data (order matters for FKs, but we already dropped them)
+            migrationBuilder.Sql(@"
+                -- Clear all data
                 DELETE FROM [Watchlists];
                 DELETE FROM [Notifications];
                 DELETE FROM [Releases];
@@ -34,31 +45,26 @@ namespace PatchNotes.Data.Migrations.SqlServer
                 DELETE FROM [ProcessedWebhookEvents];
 
                 -- Recreate PK columns: drop PK, drop old int IDENTITY col, add new nvarchar col, add PK
-                -- Packages
                 ALTER TABLE [Packages] DROP CONSTRAINT [PK_Packages];
                 ALTER TABLE [Packages] DROP COLUMN [Id];
                 ALTER TABLE [Packages] ADD [Id] nvarchar(21) NOT NULL DEFAULT '';
                 ALTER TABLE [Packages] ADD CONSTRAINT [PK_Packages] PRIMARY KEY ([Id]);
 
-                -- Users
                 ALTER TABLE [Users] DROP CONSTRAINT [PK_Users];
                 ALTER TABLE [Users] DROP COLUMN [Id];
                 ALTER TABLE [Users] ADD [Id] nvarchar(21) NOT NULL DEFAULT '';
                 ALTER TABLE [Users] ADD CONSTRAINT [PK_Users] PRIMARY KEY ([Id]);
 
-                -- Releases
                 ALTER TABLE [Releases] DROP CONSTRAINT [PK_Releases];
                 ALTER TABLE [Releases] DROP COLUMN [Id];
                 ALTER TABLE [Releases] ADD [Id] nvarchar(21) NOT NULL DEFAULT '';
                 ALTER TABLE [Releases] ADD CONSTRAINT [PK_Releases] PRIMARY KEY ([Id]);
 
-                -- Notifications
                 ALTER TABLE [Notifications] DROP CONSTRAINT [PK_Notifications];
                 ALTER TABLE [Notifications] DROP COLUMN [Id];
                 ALTER TABLE [Notifications] ADD [Id] nvarchar(21) NOT NULL DEFAULT '';
                 ALTER TABLE [Notifications] ADD CONSTRAINT [PK_Notifications] PRIMARY KEY ([Id]);
 
-                -- Watchlists
                 ALTER TABLE [Watchlists] DROP CONSTRAINT [PK_Watchlists];
                 ALTER TABLE [Watchlists] DROP COLUMN [Id];
                 ALTER TABLE [Watchlists] ADD [Id] nvarchar(21) NOT NULL DEFAULT '';
@@ -70,7 +76,7 @@ namespace PatchNotes.Data.Migrations.SqlServer
                 ALTER TABLE [Watchlists] ALTER COLUMN [UserId] nvarchar(21) NOT NULL;
                 ALTER TABLE [Watchlists] ALTER COLUMN [PackageId] nvarchar(21) NOT NULL;
 
-                -- Recreate FK indexes
+                -- Recreate indexes
                 CREATE INDEX [IX_Releases_PackageId] ON [Releases] ([PackageId]);
                 CREATE INDEX [IX_Notifications_PackageId] ON [Notifications] ([PackageId]);
                 CREATE INDEX [IX_Watchlists_PackageId] ON [Watchlists] ([PackageId]);
