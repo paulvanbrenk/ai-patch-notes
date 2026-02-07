@@ -40,13 +40,6 @@ export interface UpdatePackageRequest {
   githubRepo?: string
 }
 
-export interface SyncPackageResponse {
-  id: string
-  npmName: string
-  lastFetchedAt: string
-  releasesAdded: number
-}
-
 export interface Notification {
   id: string
   gitHubId: string

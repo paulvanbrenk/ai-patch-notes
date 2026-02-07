@@ -14,7 +14,6 @@ import {
   useAddPackage,
   useDeletePackage,
   useUpdatePackage,
-  useSyncPackage,
 } from '../api/hooks'
 import type { Package } from '../api/types'
 
@@ -79,19 +78,10 @@ interface PackageRowProps {
   pkg: Package
   onEdit: (pkg: Package) => void
   onDelete: (pkg: Package) => void
-  onSync: (pkg: Package) => void
-  isSyncing: boolean
   isDeleting: boolean
 }
 
-function PackageRow({
-  pkg,
-  onEdit,
-  onDelete,
-  onSync,
-  isSyncing,
-  isDeleting,
-}: PackageRowProps) {
+function PackageRow({ pkg, onEdit, onDelete, isDeleting }: PackageRowProps) {
   const githubUrl = `https://github.com/${pkg.githubOwner}/${pkg.githubRepo}`
 
   return (
@@ -114,14 +104,6 @@ function PackageRow({
       </td>
       <td className="py-3 px-4">
         <div className="flex gap-2 justify-end">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => onSync(pkg)}
-            disabled={isSyncing}
-          >
-            {isSyncing ? 'Syncing...' : 'Sync'}
-          </Button>
           <Button variant="secondary" size="sm" onClick={() => onEdit(pkg)}>
             Edit
           </Button>
@@ -144,12 +126,10 @@ export function Admin() {
   const { data: packages, isLoading } = usePackages()
   const addPackage = useAddPackage()
   const deletePackage = useDeletePackage()
-  const syncPackage = useSyncPackage()
 
   const [showAddForm, setShowAddForm] = useState(false)
   const [newPackageName, setNewPackageName] = useState('')
   const [editingPackage, setEditingPackage] = useState<Package | null>(null)
-  const [syncingId, setSyncingId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const handleAddPackage = async () => {
@@ -172,15 +152,6 @@ export function Admin() {
       await deletePackage.mutateAsync(pkg.id)
     } finally {
       setDeletingId(null)
-    }
-  }
-
-  const handleSyncPackage = async (pkg: Package) => {
-    setSyncingId(pkg.id)
-    try {
-      await syncPackage.mutateAsync(pkg.id)
-    } finally {
-      setSyncingId(null)
     }
   }
 
@@ -297,8 +268,6 @@ export function Admin() {
                         pkg={pkg}
                         onEdit={setEditingPackage}
                         onDelete={handleDeletePackage}
-                        onSync={handleSyncPackage}
-                        isSyncing={syncingId === pkg.id}
                         isDeleting={deletingId === pkg.id}
                       />
                     ))}

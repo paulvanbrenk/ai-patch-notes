@@ -16,7 +16,6 @@ import {
   useAddPackage,
   useDeletePackage,
   useUpdatePackage,
-  useSyncPackage,
   useNotifications,
   useNotificationsUnreadCount,
   useMarkNotificationAsRead,
@@ -220,23 +219,6 @@ describe('useUpdatePackage', () => {
 
     expect(result.current.data).toMatchObject({
       githubOwner: 'new-owner',
-    })
-  })
-})
-
-describe('useSyncPackage', () => {
-  it('syncs a package successfully', async () => {
-    const { result } = renderHook(() => useSyncPackage(), {
-      wrapper: createWrapper(),
-    })
-
-    result.current.mutate('pkg-react-test-id')
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true))
-
-    expect(result.current.data).toMatchObject({
-      id: 'pkg-react-test-id',
-      releasesAdded: 2,
     })
   })
 })

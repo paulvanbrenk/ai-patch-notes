@@ -25,7 +25,6 @@ The API runs on `http://localhost:5031` by default.
 | POST | `/api/packages` | Add a new package | Yes |
 | PATCH | `/api/packages/{id}` | Update package GitHub mapping | Yes |
 | DELETE | `/api/packages/{id}` | Remove a package | Yes |
-| POST | `/api/packages/{id}/sync` | Trigger sync for a package | Yes |
 | GET | `/api/packages/{id}/releases` | Get releases for a package | No |
 
 ### Releases
@@ -79,7 +78,6 @@ The API runs on `http://localhost:5031` by default.
 
 Configuration is loaded from `appsettings.json` and environment variables:
 
-- `GitHub:Token` - GitHub API token for increased rate limits
 - `AI:ApiKey` - API key for AI summarization (Groq)
 - `AI:BaseUrl` - Optional custom AI API base URL
 - `AI:Model` - Optional model override
@@ -90,4 +88,3 @@ Configuration is loaded from `appsettings.json` and environment variables:
 ## Dependencies
 
 - **PatchNotes.Data** - Data layer and external clients
-- **PatchNotes.Sync** - Sync service for fetching releases

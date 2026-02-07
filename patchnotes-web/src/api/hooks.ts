@@ -6,7 +6,6 @@ import type {
   AddPackageRequest,
   AddPackageResponse,
   UpdatePackageRequest,
-  SyncPackageResponse,
   Notification,
   UnreadCount,
 } from './types'
@@ -117,19 +116,6 @@ export function useUpdatePackage() {
       api.patch<Package>(`/packages/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.packages })
-    },
-  })
-}
-
-export function useSyncPackage() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: (id: string) =>
-      api.post<SyncPackageResponse>(`/packages/${id}/sync`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.packages })
-      queryClient.invalidateQueries({ queryKey: queryKeys.releases })
     },
   })
 }

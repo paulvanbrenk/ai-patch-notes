@@ -1,7 +1,6 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using PatchNotes.Data;
-using PatchNotes.Sync;
 
 namespace PatchNotes.Api.Routes;
 
@@ -252,28 +251,6 @@ public static class PackageRoutes
             await db.SaveChangesAsync();
 
             return Results.NoContent();
-        }).AddEndpointFilterFactory(requireAuth)
-          .AddEndpointFilterFactory(requireAdmin);
-
-        // POST /api/packages/{id}/sync - Trigger sync for a specific package
-        app.MapPost("/api/packages/{id}/sync", async (string id, PatchNotesDbContext db, SyncService syncService) =>
-        {
-            var package = await db.Packages.FindAsync(id);
-            if (package == null)
-            {
-                return Results.NotFound(new { error = "Package not found" });
-            }
-
-            var result = await syncService.SyncPackageAsync(package);
-
-            return Results.Ok(new
-            {
-                package.Id,
-                package.Name,
-                package.NpmName,
-                package.LastFetchedAt,
-                releasesAdded = result.ReleasesAdded
-            });
         }).AddEndpointFilterFactory(requireAuth)
           .AddEndpointFilterFactory(requireAdmin);
 
