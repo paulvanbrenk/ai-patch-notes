@@ -20,6 +20,7 @@ export const queryKeys = {
     ['packages', packageId, 'releases'] as const,
   notifications: ['notifications'] as const,
   notificationsUnreadCount: ['notifications', 'unread-count'] as const,
+  watchlist: ['watchlist'] as const,
 }
 
 export function usePackages() {
@@ -189,6 +190,48 @@ export function useDeleteNotification() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.notificationsUnreadCount,
       })
+    },
+  })
+}
+
+export function useWatchlist() {
+  return useQuery({
+    queryKey: queryKeys.watchlist,
+    queryFn: () => api.get<number[]>('/watchlist'),
+  })
+}
+
+export function useSetWatchlist() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (packageIds: number[]) =>
+      api.put<number[]>('/watchlist', { packageIds }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.watchlist })
+    },
+  })
+}
+
+export function useAddToWatchlist() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (packageId: number) =>
+      api.post<number>(`/watchlist/${packageId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.watchlist })
+    },
+  })
+}
+
+export function useRemoveFromWatchlist() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (packageId: number) => api.delete(`/watchlist/${packageId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.watchlist })
     },
   })
 }

@@ -21,6 +21,8 @@ interface PackagePickerProps {
   storageKey?: string
   isPro?: boolean
   packageLimit?: number
+  watchlistIds?: number[]
+  onWatchlistChange?: (selectedIds: number[]) => void
 }
 
 const STORAGE_KEY_PREFIX = 'patchnotes:package-selection:'
@@ -45,10 +47,14 @@ export function PackagePicker({
   storageKey = 'default',
   isPro = false,
   packageLimit = 5,
+  watchlistIds,
+  onWatchlistChange,
 }: PackagePickerProps) {
   const fullStorageKey = `${STORAGE_KEY_PREFIX}${storageKey}`
+  const useWatchlist = watchlistIds !== undefined
 
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(() => {
+  const [localSelectedIds, setLocalSelectedIds] = useState<Set<number>>(() => {
+    if (useWatchlist) return new Set(watchlistIds)
     if (typeof window === 'undefined') return new Set()
     try {
       const stored = localStorage.getItem(fullStorageKey)
@@ -65,39 +71,66 @@ export function PackagePicker({
   const [newPackageName, setNewPackageName] = useState('')
   const [isAdding, setIsAdding] = useState(false)
 
-  // Persist selection to localStorage
+  // Sync from watchlistIds prop when it changes
   useEffect(() => {
+    if (useWatchlist) {
+      setLocalSelectedIds(new Set(watchlistIds))
+    }
+  }, [useWatchlist, watchlistIds])
+
+  const selectedIds = useWatchlist ? new Set(watchlistIds) : localSelectedIds
+
+  // Persist selection to localStorage (only when not using watchlist)
+  useEffect(() => {
+    if (useWatchlist) return
     try {
-      localStorage.setItem(fullStorageKey, JSON.stringify([...selectedIds]))
+      localStorage.setItem(
+        fullStorageKey,
+        JSON.stringify([...localSelectedIds])
+      )
     } catch {
       // Ignore storage errors
     }
-  }, [selectedIds, fullStorageKey])
+  }, [localSelectedIds, fullStorageKey, useWatchlist])
 
   // Notify parent of selection changes
   useEffect(() => {
     onSelectionChange?.([...selectedIds])
   }, [selectedIds, onSelectionChange])
 
-  const handleToggle = useCallback((id: number) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) {
-        next.delete(id)
+  const applyUpdate = useCallback(
+    (updater: (prev: Set<number>) => Set<number>) => {
+      if (useWatchlist) {
+        onWatchlistChange?.([...updater(new Set(watchlistIds))])
       } else {
-        next.add(id)
+        setLocalSelectedIds((prev) => updater(prev))
       }
-      return next
-    })
-  }, [])
+    },
+    [useWatchlist, watchlistIds, onWatchlistChange]
+  )
+
+  const handleToggle = useCallback(
+    (id: number) => {
+      applyUpdate((prev) => {
+        const next = new Set(prev)
+        if (next.has(id)) {
+          next.delete(id)
+        } else {
+          next.add(id)
+        }
+        return next
+      })
+    },
+    [applyUpdate]
+  )
 
   const handleSelectAll = useCallback(() => {
-    setSelectedIds(new Set(packages.map((p) => p.id)))
-  }, [packages])
+    applyUpdate(() => new Set(packages.map((p) => p.id)))
+  }, [packages, applyUpdate])
 
   const handleDeselectAll = useCallback(() => {
-    setSelectedIds(new Set())
-  }, [])
+    applyUpdate(() => new Set())
+  }, [applyUpdate])
 
   const handleAddPackage = useCallback(async () => {
     if (!newPackageName.trim() || !onAddPackage) return

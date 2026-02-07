@@ -8,6 +8,8 @@ import type {
 
 const API_BASE = '/api'
 
+export const mockWatchlist: number[] = []
+
 export const mockPackages: Package[] = [
   {
     id: 1,
@@ -147,6 +149,41 @@ export const handlers = [
     const packageId = Number(params.id)
     const releases = mockReleases.filter((r) => r.package.id === packageId)
     return HttpResponse.json(releases)
+  }),
+
+  // GET /watchlist
+  http.get(`${API_BASE}/watchlist`, () => {
+    return HttpResponse.json(mockWatchlist)
+  }),
+
+  // PUT /watchlist
+  http.put(`${API_BASE}/watchlist`, async ({ request }) => {
+    const body = (await request.json()) as { packageIds: number[] }
+    mockWatchlist.splice(0, mockWatchlist.length, ...body.packageIds)
+    return HttpResponse.json(mockWatchlist)
+  }),
+
+  // POST /watchlist/:packageId
+  http.post(`${API_BASE}/watchlist/:packageId`, ({ params }) => {
+    const packageId = Number(params.packageId)
+    if (mockWatchlist.includes(packageId)) {
+      return HttpResponse.json(
+        { error: 'Already watching this package' },
+        { status: 409 }
+      )
+    }
+    mockWatchlist.push(packageId)
+    return HttpResponse.json(packageId, { status: 201 })
+  }),
+
+  // DELETE /watchlist/:packageId
+  http.delete(`${API_BASE}/watchlist/:packageId`, ({ params }) => {
+    const packageId = Number(params.packageId)
+    const index = mockWatchlist.indexOf(packageId)
+    if (index !== -1) {
+      mockWatchlist.splice(index, 1)
+    }
+    return new HttpResponse(null, { status: 204 })
   }),
 
   // GET /notifications
