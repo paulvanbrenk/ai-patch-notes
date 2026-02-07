@@ -218,4 +218,40 @@ public class GitHubClient : IGitHubClient
         var rateLimitInfo = RateLimitHelper.ParseHeaders(response.Headers);
         RateLimitHelper.LogStatus(_logger, rateLimitInfo, "notifications");
     }
+
+    public async Task<string?> GetFileContentAsync(
+        string owner,
+        string repo,
+        string path,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(owner);
+        ArgumentException.ThrowIfNullOrWhiteSpace(repo);
+        ArgumentException.ThrowIfNullOrWhiteSpace(path);
+
+        var url = $"repos/{Uri.EscapeDataString(owner)}/{Uri.EscapeDataString(repo)}/contents/{path}";
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, url);
+        request.Headers.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/vnd.github.raw"));
+
+        using var response = await _httpClient.SendAsync(request, cancellationToken);
+
+        if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            return null;
+
+        // Skip files that are too large (>1MB)
+        if (response.Content.Headers.ContentLength > 1_048_576)
+        {
+            _logger.LogWarning("File too large to fetch: {Owner}/{Repo}/{Path} ({Size} bytes)",
+                owner, repo, path, response.Content.Headers.ContentLength);
+            return null;
+        }
+
+        response.EnsureSuccessStatusCode();
+
+        var rateLimitInfo = RateLimitHelper.ParseHeaders(response.Headers);
+        RateLimitHelper.LogStatus(_logger, rateLimitInfo, $"{owner}/{repo}");
+
+        return await response.Content.ReadAsStringAsync(cancellationToken);
+    }
 }
