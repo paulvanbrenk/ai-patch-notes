@@ -10,194 +10,89 @@ namespace PatchNotes.Data.Migrations.SqlServer
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            // Drop all foreign key constraints
-            migrationBuilder.DropForeignKey(name: "FK_Watchlists_Users_UserId", table: "Watchlists");
-            migrationBuilder.DropForeignKey(name: "FK_Watchlists_Packages_PackageId", table: "Watchlists");
-            migrationBuilder.DropForeignKey(name: "FK_Releases_Packages_PackageId", table: "Releases");
-            migrationBuilder.DropForeignKey(name: "FK_Notifications_Packages_PackageId", table: "Notifications");
+            // SQL Server cannot ALTER COLUMN to remove IDENTITY, so we must use raw SQL
+            // to drop and recreate the columns. Early-stage app — data loss is acceptable.
+            migrationBuilder.Sql(@"
+                -- Drop all FK constraints
+                ALTER TABLE [Watchlists] DROP CONSTRAINT [FK_Watchlists_Users_UserId];
+                ALTER TABLE [Watchlists] DROP CONSTRAINT [FK_Watchlists_Packages_PackageId];
+                ALTER TABLE [Releases] DROP CONSTRAINT [FK_Releases_Packages_PackageId];
+                ALTER TABLE [Notifications] DROP CONSTRAINT [FK_Notifications_Packages_PackageId];
 
-            // Drop indexes on FK columns
-            migrationBuilder.DropIndex(name: "IX_Watchlists_PackageId", table: "Watchlists");
-            migrationBuilder.DropIndex(name: "IX_Watchlists_UserId", table: "Watchlists");
-            migrationBuilder.DropIndex(name: "IX_Releases_PackageId", table: "Releases");
-            migrationBuilder.DropIndex(name: "IX_Notifications_PackageId", table: "Notifications");
+                -- Drop FK indexes
+                DROP INDEX [IX_Watchlists_PackageId] ON [Watchlists];
+                DROP INDEX [IX_Watchlists_UserId] ON [Watchlists];
+                DROP INDEX [IX_Releases_PackageId] ON [Releases];
+                DROP INDEX [IX_Notifications_PackageId] ON [Notifications];
 
-            // Truncate all tables (early-stage app, no production data to preserve)
-            migrationBuilder.Sql("DELETE FROM [Watchlists];");
-            migrationBuilder.Sql("DELETE FROM [Notifications];");
-            migrationBuilder.Sql("DELETE FROM [Releases];");
-            migrationBuilder.Sql("DELETE FROM [Users];");
-            migrationBuilder.Sql("DELETE FROM [Packages];");
-            migrationBuilder.Sql("DELETE FROM [ProcessedWebhookEvents];");
+                -- Clear all data (order matters for FKs, but we already dropped them)
+                DELETE FROM [Watchlists];
+                DELETE FROM [Notifications];
+                DELETE FROM [Releases];
+                DELETE FROM [Users];
+                DELETE FROM [Packages];
+                DELETE FROM [ProcessedWebhookEvents];
 
-            // Alter PK columns from int identity to nvarchar(21)
-            migrationBuilder.AlterColumn<string>(
-                name: "Id", table: "Packages",
-                type: "nvarchar(21)", maxLength: 21, nullable: false,
-                oldClrType: typeof(int), oldType: "int")
-                .OldAnnotation("SqlServer:Identity", "1, 1");
+                -- Recreate PK columns: drop PK, drop old int IDENTITY col, add new nvarchar col, add PK
+                -- Packages
+                ALTER TABLE [Packages] DROP CONSTRAINT [PK_Packages];
+                ALTER TABLE [Packages] DROP COLUMN [Id];
+                ALTER TABLE [Packages] ADD [Id] nvarchar(21) NOT NULL DEFAULT '';
+                ALTER TABLE [Packages] ADD CONSTRAINT [PK_Packages] PRIMARY KEY ([Id]);
 
-            migrationBuilder.AlterColumn<string>(
-                name: "Id", table: "Users",
-                type: "nvarchar(21)", maxLength: 21, nullable: false,
-                oldClrType: typeof(int), oldType: "int")
-                .OldAnnotation("SqlServer:Identity", "1, 1");
+                -- Users
+                ALTER TABLE [Users] DROP CONSTRAINT [PK_Users];
+                ALTER TABLE [Users] DROP COLUMN [Id];
+                ALTER TABLE [Users] ADD [Id] nvarchar(21) NOT NULL DEFAULT '';
+                ALTER TABLE [Users] ADD CONSTRAINT [PK_Users] PRIMARY KEY ([Id]);
 
-            migrationBuilder.AlterColumn<string>(
-                name: "Id", table: "Releases",
-                type: "nvarchar(21)", maxLength: 21, nullable: false,
-                oldClrType: typeof(int), oldType: "int")
-                .OldAnnotation("SqlServer:Identity", "1, 1");
+                -- Releases
+                ALTER TABLE [Releases] DROP CONSTRAINT [PK_Releases];
+                ALTER TABLE [Releases] DROP COLUMN [Id];
+                ALTER TABLE [Releases] ADD [Id] nvarchar(21) NOT NULL DEFAULT '';
+                ALTER TABLE [Releases] ADD CONSTRAINT [PK_Releases] PRIMARY KEY ([Id]);
 
-            migrationBuilder.AlterColumn<string>(
-                name: "Id", table: "Notifications",
-                type: "nvarchar(21)", maxLength: 21, nullable: false,
-                oldClrType: typeof(int), oldType: "int")
-                .OldAnnotation("SqlServer:Identity", "1, 1");
+                -- Notifications
+                ALTER TABLE [Notifications] DROP CONSTRAINT [PK_Notifications];
+                ALTER TABLE [Notifications] DROP COLUMN [Id];
+                ALTER TABLE [Notifications] ADD [Id] nvarchar(21) NOT NULL DEFAULT '';
+                ALTER TABLE [Notifications] ADD CONSTRAINT [PK_Notifications] PRIMARY KEY ([Id]);
 
-            migrationBuilder.AlterColumn<string>(
-                name: "Id", table: "Watchlists",
-                type: "nvarchar(21)", maxLength: 21, nullable: false,
-                oldClrType: typeof(int), oldType: "int")
-                .OldAnnotation("SqlServer:Identity", "1, 1");
+                -- Watchlists
+                ALTER TABLE [Watchlists] DROP CONSTRAINT [PK_Watchlists];
+                ALTER TABLE [Watchlists] DROP COLUMN [Id];
+                ALTER TABLE [Watchlists] ADD [Id] nvarchar(21) NOT NULL DEFAULT '';
+                ALTER TABLE [Watchlists] ADD CONSTRAINT [PK_Watchlists] PRIMARY KEY ([Id]);
 
-            // Alter FK columns from int to nvarchar(21)
-            migrationBuilder.AlterColumn<string>(
-                name: "PackageId", table: "Releases",
-                type: "nvarchar(21)", maxLength: 21, nullable: false,
-                oldClrType: typeof(int), oldType: "int");
+                -- Alter FK columns from int to nvarchar(21)
+                ALTER TABLE [Releases] ALTER COLUMN [PackageId] nvarchar(21) NOT NULL;
+                ALTER TABLE [Notifications] ALTER COLUMN [PackageId] nvarchar(21) NULL;
+                ALTER TABLE [Watchlists] ALTER COLUMN [UserId] nvarchar(21) NOT NULL;
+                ALTER TABLE [Watchlists] ALTER COLUMN [PackageId] nvarchar(21) NOT NULL;
 
-            migrationBuilder.AlterColumn<string>(
-                name: "PackageId", table: "Notifications",
-                type: "nvarchar(21)", maxLength: 21, nullable: true,
-                oldClrType: typeof(int), oldType: "int", oldNullable: true);
+                -- Recreate FK indexes
+                CREATE INDEX [IX_Releases_PackageId] ON [Releases] ([PackageId]);
+                CREATE INDEX [IX_Notifications_PackageId] ON [Notifications] ([PackageId]);
+                CREATE INDEX [IX_Watchlists_PackageId] ON [Watchlists] ([PackageId]);
+                CREATE INDEX [IX_Watchlists_UserId] ON [Watchlists] ([UserId]);
 
-            migrationBuilder.AlterColumn<string>(
-                name: "UserId", table: "Watchlists",
-                type: "nvarchar(21)", maxLength: 21, nullable: false,
-                oldClrType: typeof(int), oldType: "int");
-
-            migrationBuilder.AlterColumn<string>(
-                name: "PackageId", table: "Watchlists",
-                type: "nvarchar(21)", maxLength: 21, nullable: false,
-                oldClrType: typeof(int), oldType: "int");
-
-            // Recreate indexes on FK columns
-            migrationBuilder.CreateIndex(name: "IX_Releases_PackageId", table: "Releases", column: "PackageId");
-            migrationBuilder.CreateIndex(name: "IX_Notifications_PackageId", table: "Notifications", column: "PackageId");
-            migrationBuilder.CreateIndex(name: "IX_Watchlists_PackageId", table: "Watchlists", column: "PackageId");
-            migrationBuilder.CreateIndex(name: "IX_Watchlists_UserId", table: "Watchlists", column: "UserId");
-
-            // Recreate foreign key constraints
-            migrationBuilder.AddForeignKey(
-                name: "FK_Releases_Packages_PackageId", table: "Releases",
-                column: "PackageId", principalTable: "Packages", principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Notifications_Packages_PackageId", table: "Notifications",
-                column: "PackageId", principalTable: "Packages", principalColumn: "Id");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Watchlists_Packages_PackageId", table: "Watchlists",
-                column: "PackageId", principalTable: "Packages", principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Watchlists_Users_UserId", table: "Watchlists",
-                column: "UserId", principalTable: "Users", principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
+                -- Recreate FK constraints
+                ALTER TABLE [Releases] ADD CONSTRAINT [FK_Releases_Packages_PackageId]
+                    FOREIGN KEY ([PackageId]) REFERENCES [Packages] ([Id]) ON DELETE CASCADE;
+                ALTER TABLE [Notifications] ADD CONSTRAINT [FK_Notifications_Packages_PackageId]
+                    FOREIGN KEY ([PackageId]) REFERENCES [Packages] ([Id]);
+                ALTER TABLE [Watchlists] ADD CONSTRAINT [FK_Watchlists_Packages_PackageId]
+                    FOREIGN KEY ([PackageId]) REFERENCES [Packages] ([Id]) ON DELETE CASCADE;
+                ALTER TABLE [Watchlists] ADD CONSTRAINT [FK_Watchlists_Users_UserId]
+                    FOREIGN KEY ([UserId]) REFERENCES [Users] ([Id]) ON DELETE CASCADE;
+            ");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<int>(
-                name: "UserId",
-                table: "Watchlists",
-                type: "int",
-                nullable: false,
-                oldClrType: typeof(string),
-                oldType: "nvarchar(21)",
-                oldMaxLength: 21);
-
-            migrationBuilder.AlterColumn<int>(
-                name: "PackageId",
-                table: "Watchlists",
-                type: "int",
-                nullable: false,
-                oldClrType: typeof(string),
-                oldType: "nvarchar(21)",
-                oldMaxLength: 21);
-
-            migrationBuilder.AlterColumn<int>(
-                name: "Id",
-                table: "Watchlists",
-                type: "int",
-                nullable: false,
-                oldClrType: typeof(string),
-                oldType: "nvarchar(21)",
-                oldMaxLength: 21)
-                .Annotation("SqlServer:Identity", "1, 1");
-
-            migrationBuilder.AlterColumn<int>(
-                name: "Id",
-                table: "Users",
-                type: "int",
-                nullable: false,
-                oldClrType: typeof(string),
-                oldType: "nvarchar(21)",
-                oldMaxLength: 21)
-                .Annotation("SqlServer:Identity", "1, 1");
-
-            migrationBuilder.AlterColumn<int>(
-                name: "PackageId",
-                table: "Releases",
-                type: "int",
-                nullable: false,
-                oldClrType: typeof(string),
-                oldType: "nvarchar(21)",
-                oldMaxLength: 21);
-
-            migrationBuilder.AlterColumn<int>(
-                name: "Id",
-                table: "Releases",
-                type: "int",
-                nullable: false,
-                oldClrType: typeof(string),
-                oldType: "nvarchar(21)",
-                oldMaxLength: 21)
-                .Annotation("SqlServer:Identity", "1, 1");
-
-            migrationBuilder.AlterColumn<int>(
-                name: "Id",
-                table: "Packages",
-                type: "int",
-                nullable: false,
-                oldClrType: typeof(string),
-                oldType: "nvarchar(21)",
-                oldMaxLength: 21)
-                .Annotation("SqlServer:Identity", "1, 1");
-
-            migrationBuilder.AlterColumn<int>(
-                name: "PackageId",
-                table: "Notifications",
-                type: "int",
-                nullable: true,
-                oldClrType: typeof(string),
-                oldType: "nvarchar(21)",
-                oldMaxLength: 21,
-                oldNullable: true);
-
-            migrationBuilder.AlterColumn<int>(
-                name: "Id",
-                table: "Notifications",
-                type: "int",
-                nullable: false,
-                oldClrType: typeof(string),
-                oldType: "nvarchar(21)",
-                oldMaxLength: 21)
-                .Annotation("SqlServer:Identity", "1, 1");
+            // Not implementing reverse migration — this is a one-way destructive change
+            throw new NotSupportedException("Reverting nanoid migration is not supported.");
         }
     }
 }
