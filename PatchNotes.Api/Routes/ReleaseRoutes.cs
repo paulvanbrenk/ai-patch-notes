@@ -153,7 +153,7 @@ public static class ReleaseRoutes
                 release.Summary = fullSummary.ToString();
                 release.SummaryGeneratedAt = DateTime.UtcNow;
                 release.SummaryStale = false;
-                await db.SaveChangesAsync();
+                await db.SaveChangesAsync(httpContext.RequestAborted);
 
                 var completeData = JsonSerializer.Serialize(new
                 {
@@ -180,7 +180,7 @@ public static class ReleaseRoutes
             release.Summary = summary;
             release.SummaryGeneratedAt = DateTime.UtcNow;
             release.SummaryStale = false;
-            await db.SaveChangesAsync();
+            await db.SaveChangesAsync(httpContext.RequestAborted);
 
             return Results.Ok(new
             {
