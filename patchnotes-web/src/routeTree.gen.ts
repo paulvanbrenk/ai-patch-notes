@@ -11,7 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SubscriptionSuccessRouteImport } from './routes/subscription-success'
 import { Route as SubscriptionCanceledRouteImport } from './routes/subscription-canceled'
-import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticateRouteImport } from './routes/authenticate'
@@ -28,11 +27,6 @@ const SubscriptionSuccessRoute = SubscriptionSuccessRouteImport.update({
 const SubscriptionCanceledRoute = SubscriptionCanceledRouteImport.update({
   id: '/subscription-canceled',
   path: '/subscription-canceled',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PrivacyRoute = PrivacyRouteImport.update({
-  id: '/privacy',
-  path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PricingRoute = PricingRouteImport.update({
@@ -77,7 +71,6 @@ export interface FileRoutesByFullPath {
   '/authenticate': typeof AuthenticateRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
-  '/privacy': typeof PrivacyRoute
   '/subscription-canceled': typeof SubscriptionCanceledRoute
   '/subscription-success': typeof SubscriptionSuccessRoute
   '/packages/$packageId': typeof PackagesPackageIdRoute
@@ -89,7 +82,6 @@ export interface FileRoutesByTo {
   '/authenticate': typeof AuthenticateRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
-  '/privacy': typeof PrivacyRoute
   '/subscription-canceled': typeof SubscriptionCanceledRoute
   '/subscription-success': typeof SubscriptionSuccessRoute
   '/packages/$packageId': typeof PackagesPackageIdRoute
@@ -102,7 +94,6 @@ export interface FileRoutesById {
   '/authenticate': typeof AuthenticateRoute
   '/login': typeof LoginRoute
   '/pricing': typeof PricingRoute
-  '/privacy': typeof PrivacyRoute
   '/subscription-canceled': typeof SubscriptionCanceledRoute
   '/subscription-success': typeof SubscriptionSuccessRoute
   '/packages/$packageId': typeof PackagesPackageIdRoute
@@ -116,7 +107,6 @@ export interface FileRouteTypes {
     | '/authenticate'
     | '/login'
     | '/pricing'
-    | '/privacy'
     | '/subscription-canceled'
     | '/subscription-success'
     | '/packages/$packageId'
@@ -128,7 +118,6 @@ export interface FileRouteTypes {
     | '/authenticate'
     | '/login'
     | '/pricing'
-    | '/privacy'
     | '/subscription-canceled'
     | '/subscription-success'
     | '/packages/$packageId'
@@ -140,7 +129,6 @@ export interface FileRouteTypes {
     | '/authenticate'
     | '/login'
     | '/pricing'
-    | '/privacy'
     | '/subscription-canceled'
     | '/subscription-success'
     | '/packages/$packageId'
@@ -153,7 +141,6 @@ export interface RootRouteChildren {
   AuthenticateRoute: typeof AuthenticateRoute
   LoginRoute: typeof LoginRoute
   PricingRoute: typeof PricingRoute
-  PrivacyRoute: typeof PrivacyRoute
   SubscriptionCanceledRoute: typeof SubscriptionCanceledRoute
   SubscriptionSuccessRoute: typeof SubscriptionSuccessRoute
   PackagesPackageIdRoute: typeof PackagesPackageIdRoute
@@ -174,13 +161,6 @@ declare module '@tanstack/react-router' {
       path: '/subscription-canceled'
       fullPath: '/subscription-canceled'
       preLoaderRoute: typeof SubscriptionCanceledRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/privacy': {
-      id: '/privacy'
-      path: '/privacy'
-      fullPath: '/privacy'
-      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pricing': {
@@ -241,7 +221,6 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticateRoute: AuthenticateRoute,
   LoginRoute: LoginRoute,
   PricingRoute: PricingRoute,
-  PrivacyRoute: PrivacyRoute,
   SubscriptionCanceledRoute: SubscriptionCanceledRoute,
   SubscriptionSuccessRoute: SubscriptionSuccessRoute,
   PackagesPackageIdRoute: PackagesPackageIdRoute,
