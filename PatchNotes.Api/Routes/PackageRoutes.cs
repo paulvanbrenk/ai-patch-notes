@@ -108,14 +108,9 @@ public static class PackageRoutes
                 var user = await db.Users.FirstOrDefaultAsync(u => u.StytchUserId == stytchUserId);
                 if (user != null)
                 {
-                    var isPro = user.SubscriptionStatus == "active" ||
-                        user.SubscriptionStatus == "trialing" ||
-                        user.SubscriptionStatus == "past_due" ||
-                        (user.SubscriptionStatus == "canceled" && user.SubscriptionExpiresAt > DateTime.UtcNow);
-
-                    if (!isPro)
+                    if (!user.IsPro)
                     {
-                        var packageCount = await db.Packages.CountAsync();
+                        var packageCount = await db.Watchlists.CountAsync(w => w.UserId == user.Id);
                         if (packageCount >= 5)
                         {
                             return Results.Json(new

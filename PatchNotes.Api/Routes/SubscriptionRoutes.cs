@@ -136,14 +136,9 @@ public static class SubscriptionRoutes
                 return Results.NotFound(new { error = "User not found" });
             }
 
-            var isPro = user.SubscriptionStatus == "active" ||
-                user.SubscriptionStatus == "trialing" ||
-                user.SubscriptionStatus == "past_due" ||
-                (user.SubscriptionStatus == "canceled" && user.SubscriptionExpiresAt > DateTime.UtcNow);
-
             return Results.Ok(new
             {
-                isPro,
+                isPro = user.IsPro,
                 status = user.SubscriptionStatus,
                 expiresAt = user.SubscriptionExpiresAt?.ToString("o"),
             });
