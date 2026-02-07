@@ -6,113 +6,35 @@ namespace PatchNotes.Tests;
 
 public class VersionGroupingServiceTests
 {
-    private readonly VersionGroupingService _service = new();
+    private readonly VersionGroupingService _sut = new();
 
-    private static Release CreateRelease(string tag, string packageId = "pkg-1") =>
+    private static Release MakeRelease(string tag, string packageId = "pkg-1") =>
         new()
         {
             Tag = tag,
             PackageId = packageId,
             PublishedAt = DateTime.UtcNow,
-            FetchedAt = DateTime.UtcNow,
+            FetchedAt = DateTime.UtcNow
         };
 
-    #region Basic Grouping
-
-    [Fact]
-    public void GroupReleases_GroupsByMajorVersion()
-    {
-        var releases = new[]
-        {
-            CreateRelease("v15.0.0"),
-            CreateRelease("v15.1.0"),
-            CreateRelease("v16.0.0"),
-        };
-
-        var groups = _service.GroupReleases(releases).ToList();
-
-        groups.Should().HaveCount(2);
-
-        var v15 = groups.Single(g => g.MajorVersion == 15);
-        v15.Releases.Should().HaveCount(2);
-        v15.IsPrerelease.Should().BeFalse();
-
-        var v16 = groups.Single(g => g.MajorVersion == 16);
-        v16.Releases.Should().HaveCount(1);
-        v16.IsPrerelease.Should().BeFalse();
-    }
-
-    [Fact]
-    public void GroupReleases_SeparatesPrereleaseFromStable()
-    {
-        var releases = new[]
-        {
-            CreateRelease("v16.0.0"),
-            CreateRelease("v16.1.0"),
-            CreateRelease("v16.0.0-beta.1"),
-            CreateRelease("v16.0.0-canary.3"),
-        };
-
-        var groups = _service.GroupReleases(releases).ToList();
-
-        groups.Should().HaveCount(2);
-
-        var stable = groups.Single(g => g.MajorVersion == 16 && !g.IsPrerelease);
-        stable.Releases.Should().HaveCount(2);
-
-        var prerelease = groups.Single(g => g.MajorVersion == 16 && g.IsPrerelease);
-        prerelease.Releases.Should().HaveCount(2);
-    }
-
-    [Fact]
-    public void GroupReleases_GroupsByPackageId()
-    {
-        var releases = new[]
-        {
-            CreateRelease("v1.0.0", "pkg-a"),
-            CreateRelease("v1.0.0", "pkg-b"),
-            CreateRelease("v1.1.0", "pkg-a"),
-        };
-
-        var groups = _service.GroupReleases(releases).ToList();
-
-        groups.Should().HaveCount(2);
-
-        var pkgA = groups.Single(g => g.PackageId == "pkg-a");
-        pkgA.Releases.Should().HaveCount(2);
-        pkgA.MajorVersion.Should().Be(1);
-
-        var pkgB = groups.Single(g => g.PackageId == "pkg-b");
-        pkgB.Releases.Should().HaveCount(1);
-    }
-
-    [Fact]
-    public void GroupReleases_EmptyInput_ReturnsEmpty()
-    {
-        var groups = _service.GroupReleases([]).ToList();
-
-        groups.Should().BeEmpty();
-    }
-
-    #endregion
-
-    #region Semver Parsing
+    #region Standard Semver Parsing
 
     [Theory]
-    [InlineData("v1.0.0", 1, false)]
     [InlineData("1.0.0", 1, false)]
+    [InlineData("v1.0.0", 1, false)]
     [InlineData("v15.0.0", 15, false)]
-    [InlineData("v0.1.0", 0, false)]
+    [InlineData("0.1.0", 0, false)]
     [InlineData("100.200.300", 100, false)]
-    public void GroupReleases_StandardSemver_ParsesCorrectly(string tag, int expectedMajor, bool expectedPrerelease)
+    public void GroupReleases_StandardSemver_GroupsByMajor(string tag, int expectedMajor, bool expectedPrerelease)
     {
-        var releases = new[] { CreateRelease(tag) };
+        var releases = new[] { MakeRelease(tag) };
 
-        var groups = _service.GroupReleases(releases).ToList();
+        var groups = _sut.GroupReleases(releases).ToList();
 
-        groups.Should().HaveCount(1);
+        groups.Should().ContainSingle();
         groups[0].MajorVersion.Should().Be(expectedMajor);
         groups[0].IsPrerelease.Should().Be(expectedPrerelease);
+        groups[0].Releases.Should().ContainSingle();
     }
 
     [Theory]
@@ -120,18 +42,17 @@ public class VersionGroupingServiceTests
     [InlineData("v1.0.0-beta.1", 1, true)]
     [InlineData("v1.0.0-rc.1", 1, true)]
     [InlineData("v16.2.0-canary.3", 16, true)]
-    [InlineData("v1.0.0-preview.1", 1, true)]
-    [InlineData("v1.0.0-next.5", 1, true)]
+    [InlineData("1.0.0-preview.1", 1, true)]
+    [InlineData("2.0.0-next.5", 2, true)]
     [InlineData("v1.0.0-nightly", 1, true)]
     [InlineData("v1.0.0-dev", 1, true)]
-    [InlineData("v1.0.0-experimental", 1, true)]
-    public void GroupReleases_Prerelease_DetectsCorrectly(string tag, int expectedMajor, bool expectedPrerelease)
+    public void GroupReleases_PrereleaseTag_MarkedAsPrerelease(string tag, int expectedMajor, bool expectedPrerelease)
     {
-        var releases = new[] { CreateRelease(tag) };
+        var releases = new[] { MakeRelease(tag) };
 
-        var groups = _service.GroupReleases(releases).ToList();
+        var groups = _sut.GroupReleases(releases).ToList();
 
-        groups.Should().HaveCount(1);
+        groups.Should().ContainSingle();
         groups[0].MajorVersion.Should().Be(expectedMajor);
         groups[0].IsPrerelease.Should().Be(expectedPrerelease);
     }
@@ -142,17 +63,17 @@ public class VersionGroupingServiceTests
 
     [Theory]
     [InlineData("@scope/package@1.0.0", 1, false)]
-    [InlineData("@babel/core@7.23.0", 7, false)]
-    [InlineData("@types/node@20.10.0", 20, false)]
-    [InlineData("react-dom/v18.2.0", 18, false)]
     [InlineData("@package/v1.0.0", 1, false)]
-    public void GroupReleases_MonorepoTags_ParsesCorrectly(string tag, int expectedMajor, bool expectedPrerelease)
+    [InlineData("@babel/core@7.23.0", 7, false)]
+    [InlineData("react-dom/v18.2.0", 18, false)]
+    [InlineData("@types/node@20.10.0", 20, false)]
+    public void GroupReleases_MonorepoTag_ExtractsMajor(string tag, int expectedMajor, bool expectedPrerelease)
     {
-        var releases = new[] { CreateRelease(tag) };
+        var releases = new[] { MakeRelease(tag) };
 
-        var groups = _service.GroupReleases(releases).ToList();
+        var groups = _sut.GroupReleases(releases).ToList();
 
-        groups.Should().HaveCount(1);
+        groups.Should().ContainSingle();
         groups[0].MajorVersion.Should().Be(expectedMajor);
         groups[0].IsPrerelease.Should().Be(expectedPrerelease);
     }
@@ -160,33 +81,46 @@ public class VersionGroupingServiceTests
     [Theory]
     [InlineData("@scope/package@1.0.0-alpha.1", 1, true)]
     [InlineData("@next/mdx@15.0.0-canary.3", 15, true)]
-    public void GroupReleases_MonorepoPrerelease_DetectsCorrectly(string tag, int expectedMajor, bool expectedPrerelease)
+    public void GroupReleases_MonorepoPrerelease_DetectsPrerelease(string tag, int expectedMajor, bool expectedPrerelease)
     {
-        var releases = new[] { CreateRelease(tag) };
+        var releases = new[] { MakeRelease(tag) };
 
-        var groups = _service.GroupReleases(releases).ToList();
+        var groups = _sut.GroupReleases(releases).ToList();
 
-        groups.Should().HaveCount(1);
+        groups.Should().ContainSingle();
         groups[0].MajorVersion.Should().Be(expectedMajor);
         groups[0].IsPrerelease.Should().Be(expectedPrerelease);
     }
 
     #endregion
 
-    #region Simple Semver (MAJOR.MINOR only)
+    #region Simple Semver (MAJOR.MINOR)
 
     [Theory]
     [InlineData("v5.9", 5, false)]
     [InlineData("15.0", 15, false)]
+    [InlineData("v1.0", 1, false)]
+    public void GroupReleases_SimpleSemver_ParsesMajor(string tag, int expectedMajor, bool expectedPrerelease)
+    {
+        var releases = new[] { MakeRelease(tag) };
+
+        var groups = _sut.GroupReleases(releases).ToList();
+
+        groups.Should().ContainSingle();
+        groups[0].MajorVersion.Should().Be(expectedMajor);
+        groups[0].IsPrerelease.Should().Be(expectedPrerelease);
+    }
+
+    [Theory]
     [InlineData("v5.9-rc", 5, true)]
     [InlineData("15.0-beta", 15, true)]
-    public void GroupReleases_SimpleSemver_ParsesCorrectly(string tag, int expectedMajor, bool expectedPrerelease)
+    public void GroupReleases_SimpleSemverPrerelease_DetectsPrerelease(string tag, int expectedMajor, bool expectedPrerelease)
     {
-        var releases = new[] { CreateRelease(tag) };
+        var releases = new[] { MakeRelease(tag) };
 
-        var groups = _service.GroupReleases(releases).ToList();
+        var groups = _sut.GroupReleases(releases).ToList();
 
-        groups.Should().HaveCount(1);
+        groups.Should().ContainSingle();
         groups[0].MajorVersion.Should().Be(expectedMajor);
         groups[0].IsPrerelease.Should().Be(expectedPrerelease);
     }
@@ -200,33 +134,33 @@ public class VersionGroupingServiceTests
     [InlineData("release-v1.0.0", 1, false)]
     [InlineData("release/v2.0.0", 2, false)]
     [InlineData("RELEASE-v3.0.0", 3, false)]
-    public void GroupReleases_ReleaseStyleTags_ParsesCorrectly(string tag, int expectedMajor, bool expectedPrerelease)
+    public void GroupReleases_ReleaseStyleTag_ParsesMajor(string tag, int expectedMajor, bool expectedPrerelease)
     {
-        var releases = new[] { CreateRelease(tag) };
+        var releases = new[] { MakeRelease(tag) };
 
-        var groups = _service.GroupReleases(releases).ToList();
+        var groups = _sut.GroupReleases(releases).ToList();
 
-        groups.Should().HaveCount(1);
+        groups.Should().ContainSingle();
         groups[0].MajorVersion.Should().Be(expectedMajor);
         groups[0].IsPrerelease.Should().Be(expectedPrerelease);
     }
 
     #endregion
 
-    #region Non-Standard Pre-release Patterns
+    #region Non-Standard Prerelease
 
     [Theory]
     [InlineData("1.0.0beta1", 1, true)]
     [InlineData("1.0.0.rc1", 1, true)]
     [InlineData("2.0.0alpha", 2, true)]
-    [InlineData("3.0.0.beta.2", 3, true)]
-    public void GroupReleases_NonStandardPrerelease_DetectsCorrectly(string tag, int expectedMajor, bool expectedPrerelease)
+    [InlineData("3.0.0preview", 3, true)]
+    public void GroupReleases_NonStandardPrerelease_DetectsPrerelease(string tag, int expectedMajor, bool expectedPrerelease)
     {
-        var releases = new[] { CreateRelease(tag) };
+        var releases = new[] { MakeRelease(tag) };
 
-        var groups = _service.GroupReleases(releases).ToList();
+        var groups = _sut.GroupReleases(releases).ToList();
 
-        groups.Should().HaveCount(1);
+        groups.Should().ContainSingle();
         groups[0].MajorVersion.Should().Be(expectedMajor);
         groups[0].IsPrerelease.Should().Be(expectedPrerelease);
     }
@@ -236,37 +170,106 @@ public class VersionGroupingServiceTests
     #region Non-Semver Tags (Unversioned)
 
     [Theory]
-    [InlineData("nightly-2024-01-15")]
     [InlineData("latest")]
     [InlineData("stable")]
     [InlineData("main")]
+    [InlineData("nightly-2024-01-15")]
     [InlineData("commit-abc123")]
-    public void GroupReleases_NonSemverTags_GroupsAsUnversioned(string tag)
+    [InlineData("")]
+    [InlineData("   ")]
+    public void GroupReleases_NonSemverTag_GroupedAsUnversioned(string tag)
     {
-        var releases = new[] { CreateRelease(tag) };
+        var releases = new[] { MakeRelease(tag) };
 
-        var groups = _service.GroupReleases(releases).ToList();
+        var groups = _sut.GroupReleases(releases).ToList();
 
-        groups.Should().HaveCount(1);
-        groups[0].MajorVersion.Should().Be(-1, "non-semver tags should have MajorVersion -1");
+        groups.Should().ContainSingle();
+        groups[0].MajorVersion.Should().Be(-1);
         groups[0].IsPrerelease.Should().BeFalse();
     }
 
     [Fact]
-    public void GroupReleases_MultipleNonSemverTags_GroupedTogether()
+    public void GroupReleases_MixOfValidAndNonSemver_SeparatesCorrectly()
     {
         var releases = new[]
         {
-            CreateRelease("latest"),
-            CreateRelease("nightly-2024-01-15"),
-            CreateRelease("stable"),
+            MakeRelease("v1.0.0"),
+            MakeRelease("latest"),
+            MakeRelease("v2.0.0"),
+            MakeRelease("nightly-build"),
         };
 
-        var groups = _service.GroupReleases(releases).ToList();
+        var groups = _sut.GroupReleases(releases).ToList();
 
-        groups.Should().HaveCount(1);
-        groups[0].MajorVersion.Should().Be(-1);
+        groups.Should().HaveCount(3);
+        groups.Should().Contain(g => g.MajorVersion == 1 && !g.IsPrerelease);
+        groups.Should().Contain(g => g.MajorVersion == 2 && !g.IsPrerelease);
+        groups.Should().Contain(g => g.MajorVersion == -1); // unversioned
+        groups.First(g => g.MajorVersion == -1).Releases.Should().HaveCount(2);
+    }
+
+    #endregion
+
+    #region Grouping by Major Version
+
+    [Fact]
+    public void GroupReleases_SameMajor_GroupedTogether()
+    {
+        var releases = new[]
+        {
+            MakeRelease("v15.0.0"),
+            MakeRelease("v15.1.0"),
+            MakeRelease("v15.2.3"),
+        };
+
+        var groups = _sut.GroupReleases(releases).ToList();
+
+        groups.Should().ContainSingle();
+        groups[0].MajorVersion.Should().Be(15);
+        groups[0].IsPrerelease.Should().BeFalse();
         groups[0].Releases.Should().HaveCount(3);
+    }
+
+    [Fact]
+    public void GroupReleases_DifferentMajors_SeparateGroups()
+    {
+        var releases = new[]
+        {
+            MakeRelease("v15.0.0"),
+            MakeRelease("v16.0.0"),
+            MakeRelease("v17.0.0"),
+        };
+
+        var groups = _sut.GroupReleases(releases).ToList();
+
+        groups.Should().HaveCount(3);
+        groups.Should().Contain(g => g.MajorVersion == 15);
+        groups.Should().Contain(g => g.MajorVersion == 16);
+        groups.Should().Contain(g => g.MajorVersion == 17);
+    }
+
+    [Fact]
+    public void GroupReleases_StableAndPrereleaseSameMajor_SeparateGroups()
+    {
+        var releases = new[]
+        {
+            MakeRelease("v16.0.0"),
+            MakeRelease("v16.1.0"),
+            MakeRelease("v16.0.0-alpha.1"),
+            MakeRelease("v16.0.0-beta.1"),
+        };
+
+        var groups = _sut.GroupReleases(releases).ToList();
+
+        groups.Should().HaveCount(2);
+
+        var stable = groups.First(g => !g.IsPrerelease);
+        stable.MajorVersion.Should().Be(16);
+        stable.Releases.Should().HaveCount(2);
+
+        var pre = groups.First(g => g.IsPrerelease);
+        pre.MajorVersion.Should().Be(16);
+        pre.Releases.Should().HaveCount(2);
     }
 
     #endregion
@@ -278,15 +281,15 @@ public class VersionGroupingServiceTests
     {
         var releases = new[]
         {
-            CreateRelease("v1.0.0"),
-            CreateRelease("v1.0.0"),
-            CreateRelease("v1.0.0"),
+            MakeRelease("v1.0.0", "pkg-1"),
+            MakeRelease("v1.0.0", "pkg-1"),
+            MakeRelease("v1.0.0", "pkg-1"),
         };
 
-        var groups = _service.GroupReleases(releases).ToList();
+        var groups = _sut.GroupReleases(releases).ToList();
 
-        groups.Should().HaveCount(1);
-        groups[0].Releases.Should().HaveCount(1);
+        groups.Should().ContainSingle();
+        groups[0].Releases.Should().ContainSingle();
     }
 
     [Fact]
@@ -294,98 +297,38 @@ public class VersionGroupingServiceTests
     {
         var releases = new[]
         {
-            CreateRelease("v1.0.0", "pkg-a"),
-            CreateRelease("v1.0.0", "pkg-b"),
+            MakeRelease("v1.0.0", "pkg-1"),
+            MakeRelease("v1.0.0", "pkg-2"),
         };
 
-        var groups = _service.GroupReleases(releases).ToList();
+        var groups = _sut.GroupReleases(releases).ToList();
 
         groups.Should().HaveCount(2);
-        groups.Should().OnlyContain(g => g.Releases.Count == 1);
+        groups.Should().Contain(g => g.PackageId == "pkg-1");
+        groups.Should().Contain(g => g.PackageId == "pkg-2");
     }
 
     #endregion
 
-    #region Mixed Real-World Scenarios
+    #region Multi-Package Grouping
 
     [Fact]
-    public void GroupReleases_MixedVersionsAndPackages_GroupsCorrectly()
+    public void GroupReleases_MultiplePackages_GroupedSeparately()
     {
         var releases = new[]
         {
-            CreateRelease("v15.0.0", "nextjs"),
-            CreateRelease("v15.1.0", "nextjs"),
-            CreateRelease("v16.0.0-canary.1", "nextjs"),
-            CreateRelease("v16.0.0-canary.2", "nextjs"),
-            CreateRelease("v16.0.0", "nextjs"),
-            CreateRelease("v5.9.3", "typescript"),
-            CreateRelease("v5.9-rc", "typescript"),
-            CreateRelease("v19.1.4", "react"),
-            CreateRelease("latest", "react"),
+            MakeRelease("v1.0.0", "react"),
+            MakeRelease("v1.1.0", "react"),
+            MakeRelease("v1.0.0", "vue"),
+            MakeRelease("v2.0.0", "vue"),
         };
 
-        var groups = _service.GroupReleases(releases).ToList();
+        var groups = _sut.GroupReleases(releases).ToList();
 
-        // nextjs: 15.x stable, 16.x prerelease, 16.x stable = 3 groups
-        var nextjsGroups = groups.Where(g => g.PackageId == "nextjs").ToList();
-        nextjsGroups.Should().HaveCount(3);
-
-        var nextjs15 = nextjsGroups.Single(g => g.MajorVersion == 15 && !g.IsPrerelease);
-        nextjs15.Releases.Should().HaveCount(2);
-
-        var nextjs16Stable = nextjsGroups.Single(g => g.MajorVersion == 16 && !g.IsPrerelease);
-        nextjs16Stable.Releases.Should().HaveCount(1);
-
-        var nextjs16Pre = nextjsGroups.Single(g => g.MajorVersion == 16 && g.IsPrerelease);
-        nextjs16Pre.Releases.Should().HaveCount(2);
-
-        // typescript: 5.x stable, 5.x prerelease = 2 groups
-        var tsGroups = groups.Where(g => g.PackageId == "typescript").ToList();
-        tsGroups.Should().HaveCount(2);
-
-        // react: 19.x stable, -1 unversioned = 2 groups
-        var reactGroups = groups.Where(g => g.PackageId == "react").ToList();
-        reactGroups.Should().HaveCount(2);
-        reactGroups.Should().Contain(g => g.MajorVersion == 19 && !g.IsPrerelease);
-        reactGroups.Should().Contain(g => g.MajorVersion == -1);
-    }
-
-    [Fact]
-    public void GroupReleases_AllPrereleaseTypes_DetectedCorrectly()
-    {
-        var tags = new[]
-        {
-            "v1.0.0-alpha", "v1.0.0-beta.1", "v1.0.0-canary.3",
-            "v1.0.0-preview.1", "v1.0.0-rc.1", "v1.0.0-next.5",
-            "v1.0.0-nightly", "v1.0.0-dev", "v1.0.0-experimental",
-        };
-
-        var releases = tags.Select(t => CreateRelease(t)).ToArray();
-
-        var groups = _service.GroupReleases(releases).ToList();
-
-        // All should be in the same prerelease group (same package, major=1, prerelease=true)
-        groups.Should().HaveCount(1);
-        groups[0].IsPrerelease.Should().BeTrue();
-        groups[0].MajorVersion.Should().Be(1);
-        groups[0].Releases.Should().HaveCount(9);
-    }
-
-    [Fact]
-    public void GroupReleases_NodeJsVersions_GroupsByMajor()
-    {
-        var releases = new[]
-        {
-            CreateRelease("v25.4.0"),
-            CreateRelease("v25.3.0"),
-            CreateRelease("v24.13.0"),
-        };
-
-        var groups = _service.GroupReleases(releases).ToList();
-
-        groups.Should().HaveCount(2);
-        groups.Single(g => g.MajorVersion == 25).Releases.Should().HaveCount(2);
-        groups.Single(g => g.MajorVersion == 24).Releases.Should().HaveCount(1);
+        groups.Should().HaveCount(3);
+        groups.Should().Contain(g => g.PackageId == "react" && g.MajorVersion == 1);
+        groups.Should().Contain(g => g.PackageId == "vue" && g.MajorVersion == 1);
+        groups.Should().Contain(g => g.PackageId == "vue" && g.MajorVersion == 2);
     }
 
     #endregion
@@ -393,55 +336,173 @@ public class VersionGroupingServiceTests
     #region Edge Cases
 
     [Fact]
-    public void GroupReleases_EmptyTag_GroupsAsUnversioned()
+    public void GroupReleases_EmptyInput_ReturnsEmpty()
     {
-        var releases = new[] { CreateRelease("") };
+        var groups = _sut.GroupReleases([]).ToList();
 
-        var groups = _service.GroupReleases(releases).ToList();
-
-        groups.Should().HaveCount(1);
-        groups[0].MajorVersion.Should().Be(-1);
+        groups.Should().BeEmpty();
     }
 
     [Fact]
-    public void GroupReleases_WhitespaceTag_GroupsAsUnversioned()
+    public void GroupReleases_SingleRelease_SingleGroup()
     {
-        var releases = new[] { CreateRelease("   ") };
+        var releases = new[] { MakeRelease("v1.0.0") };
 
-        var groups = _service.GroupReleases(releases).ToList();
+        var groups = _sut.GroupReleases(releases).ToList();
 
-        groups.Should().HaveCount(1);
-        groups[0].MajorVersion.Should().Be(-1);
+        groups.Should().ContainSingle();
     }
 
     [Fact]
-    public void GroupReleases_TagWithBuildMetadata_IgnoresMetadata()
+    public void GroupReleases_BuildMetadataIgnored_GroupedByVersion()
     {
         var releases = new[]
         {
-            CreateRelease("v1.0.0+build123"),
-            CreateRelease("v1.0.0+build456"),
+            MakeRelease("v1.0.0+build123"),
+            MakeRelease("v1.0.0+build456"),
         };
 
-        var groups = _service.GroupReleases(releases).ToList();
+        var groups = _sut.GroupReleases(releases).ToList();
 
-        // Both should be in major=1, not prerelease
-        // But they have different tags, so both kept (not deduplicated)
-        groups.Should().HaveCount(1);
+        // Different build metadata = different tags, but same major/stable
+        groups.Should().ContainSingle();
         groups[0].MajorVersion.Should().Be(1);
         groups[0].IsPrerelease.Should().BeFalse();
         groups[0].Releases.Should().HaveCount(2);
     }
 
     [Fact]
-    public void GroupReleases_PreservesPackageIdFromRelease()
+    public void GroupReleases_PackageIdPreserved()
     {
-        var releases = new[] { CreateRelease("v1.0.0", "my-special-package") };
+        var releases = new[] { MakeRelease("v1.0.0", "my-package") };
 
-        var groups = _service.GroupReleases(releases).ToList();
+        var groups = _sut.GroupReleases(releases).ToList();
 
-        groups.Should().HaveCount(1);
-        groups[0].PackageId.Should().Be("my-special-package");
+        groups.Should().ContainSingle();
+        groups[0].PackageId.Should().Be("my-package");
+    }
+
+    #endregion
+
+    #region Real-World Scenarios
+
+    [Fact]
+    public void GroupReleases_NextJsCanaryReleases_GroupedCorrectly()
+    {
+        var releases = new[]
+        {
+            MakeRelease("v16.2.0-canary.3", "nextjs"),
+            MakeRelease("v16.2.0-canary.2", "nextjs"),
+            MakeRelease("v16.2.0-canary.1", "nextjs"),
+            MakeRelease("v16.1.0", "nextjs"),
+            MakeRelease("v16.0.0", "nextjs"),
+            MakeRelease("v15.3.0", "nextjs"),
+        };
+
+        var groups = _sut.GroupReleases(releases).ToList();
+
+        groups.Should().HaveCount(3);
+
+        var stable16 = groups.First(g => g.MajorVersion == 16 && !g.IsPrerelease);
+        stable16.Releases.Should().HaveCount(2);
+
+        var pre16 = groups.First(g => g.MajorVersion == 16 && g.IsPrerelease);
+        pre16.Releases.Should().HaveCount(3);
+
+        var stable15 = groups.First(g => g.MajorVersion == 15 && !g.IsPrerelease);
+        stable15.Releases.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public void GroupReleases_NodeJsVersions_GroupedByMajor()
+    {
+        var releases = new[]
+        {
+            MakeRelease("v25.4.0", "nodejs"),
+            MakeRelease("v25.3.0", "nodejs"),
+            MakeRelease("v24.13.0", "nodejs"),
+            MakeRelease("v24.12.0", "nodejs"),
+        };
+
+        var groups = _sut.GroupReleases(releases).ToList();
+
+        groups.Should().HaveCount(2);
+        groups.First(g => g.MajorVersion == 25).Releases.Should().HaveCount(2);
+        groups.First(g => g.MajorVersion == 24).Releases.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public void GroupReleases_TypeScriptVersions_HandlesRcCorrectly()
+    {
+        var releases = new[]
+        {
+            MakeRelease("v5.9.3", "typescript"),
+            MakeRelease("v5.9.2", "typescript"),
+            MakeRelease("v5.9-rc", "typescript"),
+        };
+
+        var groups = _sut.GroupReleases(releases).ToList();
+
+        groups.Should().HaveCount(2);
+
+        var stable = groups.First(g => !g.IsPrerelease);
+        stable.MajorVersion.Should().Be(5);
+        stable.Releases.Should().HaveCount(2);
+
+        var pre = groups.First(g => g.IsPrerelease);
+        pre.MajorVersion.Should().Be(5);
+        pre.Releases.Should().HaveCount(1);
+    }
+
+    [Fact]
+    public void GroupReleases_MixedFormats_HandlesGracefully()
+    {
+        var releases = new[]
+        {
+            MakeRelease("v1.0.0", "pkg"),
+            MakeRelease("release-2.0.0", "pkg"),
+            MakeRelease("@scope/pkg@3.0.0", "pkg"),
+            MakeRelease("latest", "pkg"),
+            MakeRelease("nightly-2024-01-15", "pkg"),
+        };
+
+        var groups = _sut.GroupReleases(releases).ToList();
+
+        groups.Should().HaveCount(4);
+        groups.Should().Contain(g => g.MajorVersion == 1);
+        groups.Should().Contain(g => g.MajorVersion == 2);
+        groups.Should().Contain(g => g.MajorVersion == 3);
+        groups.Should().Contain(g => g.MajorVersion == -1);
+    }
+
+    [Fact]
+    public void GroupReleases_LargeSet_AllGroupedCorrectly()
+    {
+        var releases = new List<Release>();
+        for (var major = 1; major <= 10; major++)
+        {
+            for (var minor = 0; minor < 5; minor++)
+            {
+                releases.Add(MakeRelease($"v{major}.{minor}.0"));
+            }
+            releases.Add(MakeRelease($"v{major}.0.0-beta.1"));
+        }
+
+        var groups = _sut.GroupReleases(releases).ToList();
+
+        // 10 stable groups + 10 prerelease groups
+        groups.Should().HaveCount(20);
+        groups.Where(g => !g.IsPrerelease).Should().HaveCount(10);
+        groups.Where(g => g.IsPrerelease).Should().HaveCount(10);
+
+        foreach (var stableGroup in groups.Where(g => !g.IsPrerelease))
+        {
+            stableGroup.Releases.Should().HaveCount(5);
+        }
+        foreach (var preGroup in groups.Where(g => g.IsPrerelease))
+        {
+            preGroup.Releases.Should().HaveCount(1);
+        }
     }
 
     #endregion

@@ -4,7 +4,8 @@ using PatchNotes.Data;
 namespace PatchNotes.Sync;
 
 /// <summary>
-/// Represents a group of releases sharing the same package, major version, and pre-release status.
+/// A group of releases sharing the same package, major version, and pre-release status.
+/// MajorVersion is -1 for releases with non-semver tags (grouped as "unversioned").
 /// </summary>
 public record VersionGroup(
     string PackageId,
@@ -13,67 +14,51 @@ public record VersionGroup(
     List<Release> Releases);
 
 /// <summary>
-/// Groups releases by major version, separating pre-release from stable.
-/// Parses semantic versions from release tags with support for standard semver,
-/// monorepo tags, simple versions, and release-style tags.
+/// Parses semantic versions from release tags and groups releases
+/// by major version, separating pre-release from stable.
 /// </summary>
 public class VersionGroupingService
 {
-    private static readonly string[] PrereleaseKeywords =
-    [
-        "alpha", "beta", "canary", "preview", "rc", "next",
-        "nightly", "dev", "experimental", "snapshot", "pre", "insiders"
-    ];
-
-    // Standard semver: v?MAJOR.MINOR.PATCH[-PRERELEASE][+BUILD]
     private static readonly Regex SemverRegex = new(
-        @"^v?(\d+)\.(\d+)\.(\d+)(?:-([a-zA-Z0-9]+(?:\.[a-zA-Z0-9]+)*))?(?:\+([a-zA-Z0-9]+(?:\.[a-zA-Z0-9]+)*))?$",
+        @"^v?(\d+)\.(\d+)(?:\.(\d+))?(?:-([a-zA-Z0-9]+(?:\.[a-zA-Z0-9]+)*))?(?:\+[a-zA-Z0-9]+(?:\.[a-zA-Z0-9]+)*)?$",
         RegexOptions.Compiled);
 
-    // Monorepo tags: @scope/package@v?MAJOR.MINOR.PATCH
     private static readonly Regex MonorepoRegex = new(
-        @"^(@?[\w-]+(?:/[\w-]+)*)[@/]v?(\d+)\.(\d+)\.(\d+)(?:-([a-zA-Z0-9]+(?:\.[a-zA-Z0-9]+)*))?(?:\+([a-zA-Z0-9]+(?:\.[a-zA-Z0-9]+)*))?$",
+        @"^@?[\w-]+(?:/[\w-]+)*[@/]v?(\d+)\.(\d+)(?:\.(\d+))?(?:-([a-zA-Z0-9]+(?:\.[a-zA-Z0-9]+)*))?(?:\+[a-zA-Z0-9]+(?:\.[a-zA-Z0-9]+)*)?$",
         RegexOptions.Compiled);
 
-    // Simple semver: v?MAJOR.MINOR[-PRERELEASE]
-    private static readonly Regex SimpleSemverRegex = new(
-        @"^v?(\d+)\.(\d+)(?:-([a-zA-Z0-9]+(?:\.[a-zA-Z0-9]+)*))?$",
-        RegexOptions.Compiled);
-
-    // Release-style tags: release-v?MAJOR.MINOR.PATCH
     private static readonly Regex ReleaseTagRegex = new(
-        @"^release[-/]v?(\d+)\.(\d+)\.(\d+)(?:-([a-zA-Z0-9]+(?:\.[a-zA-Z0-9]+)*))?$",
+        @"^release[-/]v?(\d+)\.(\d+)(?:\.(\d+))?(?:-([a-zA-Z0-9]+(?:\.[a-zA-Z0-9]+)*))?$",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-    // Non-standard pre-release patterns: 1.0.0beta1, 1.0.0.rc1
+    // Non-standard prerelease patterns like "1.0.0beta1" or "1.0.0.rc1"
     private static readonly Regex NonStandardPrereleaseRegex = new(
-        @"^v?(\d+)\.(\d+)\.(\d+)[\.]?(alpha|beta|canary|preview|rc|next|nightly|dev|pre)\.?(\d*)$",
+        @"^v?(\d+)\.(\d+)\.(\d+)[.\s]?(alpha|beta|canary|rc|next|nightly|dev|preview)\d*$",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     /// <summary>
     /// Groups releases by (PackageId, MajorVersion, IsPrerelease).
-    /// Non-semver tags are grouped with MajorVersion = -1 as "unversioned".
-    /// Duplicate tags within a package are deduplicated.
+    /// Deduplicates releases sharing the same (PackageId, Tag).
+    /// Non-semver tags are grouped with MajorVersion = -1.
     /// </summary>
     public IEnumerable<VersionGroup> GroupReleases(IEnumerable<Release> releases)
     {
-        var seen = new HashSet<(string PackageId, string Tag)>();
+        // Deduplicate by (PackageId, Tag)
+        var deduped = releases
+            .GroupBy(r => (r.PackageId, r.Tag))
+            .Select(g => g.First());
+
         var groups = new Dictionary<(string PackageId, int MajorVersion, bool IsPrerelease), List<Release>>();
 
-        foreach (var release in releases)
+        foreach (var release in deduped)
         {
-            // Deduplicate by (PackageId, Tag)
-            var key = (release.PackageId, release.Tag);
-            if (!seen.Add(key))
-                continue;
-
             var parsed = ParseTag(release.Tag);
+            var key = (release.PackageId, parsed.MajorVersion, parsed.IsPrerelease);
 
-            var groupKey = (release.PackageId, parsed.MajorVersion, parsed.IsPrerelease);
-            if (!groups.TryGetValue(groupKey, out var list))
+            if (!groups.TryGetValue(key, out var list))
             {
                 list = [];
-                groups[groupKey] = list;
+                groups[key] = list;
             }
 
             list.Add(release);
@@ -95,53 +80,27 @@ public class VersionGroupingService
 
         tag = tag.Trim();
 
-        // Try non-standard pre-release first (1.0.0beta1, 1.0.0.rc1)
-        var nonStdMatch = NonStandardPrereleaseRegex.Match(tag);
-        if (nonStdMatch.Success && int.TryParse(nonStdMatch.Groups[1].Value, out var nsMajor))
+        // Try non-standard prerelease first (e.g., "1.0.0beta1", "1.0.0.rc1")
+        var nonStd = NonStandardPrereleaseRegex.Match(tag);
+        if (nonStd.Success && int.TryParse(nonStd.Groups[1].Value, out var nsMajor))
             return new ParsedTag(nsMajor, true);
 
         // Try monorepo format
-        var monorepoMatch = MonorepoRegex.Match(tag);
-        if (monorepoMatch.Success && int.TryParse(monorepoMatch.Groups[2].Value, out var monoMajor))
-        {
-            var prerelease = monorepoMatch.Groups[5].Success ? monorepoMatch.Groups[5].Value : null;
-            return new ParsedTag(monoMajor, !string.IsNullOrEmpty(prerelease));
-        }
+        var mono = MonorepoRegex.Match(tag);
+        if (mono.Success && int.TryParse(mono.Groups[1].Value, out var monoMajor))
+            return new ParsedTag(monoMajor, mono.Groups[4].Success);
 
         // Try release-style tags
-        var releaseMatch = ReleaseTagRegex.Match(tag);
-        if (releaseMatch.Success && int.TryParse(releaseMatch.Groups[1].Value, out var relMajor))
-        {
-            var prerelease = releaseMatch.Groups[4].Success ? releaseMatch.Groups[4].Value : null;
-            return new ParsedTag(relMajor, !string.IsNullOrEmpty(prerelease));
-        }
+        var rel = ReleaseTagRegex.Match(tag);
+        if (rel.Success && int.TryParse(rel.Groups[1].Value, out var relMajor))
+            return new ParsedTag(relMajor, rel.Groups[4].Success);
 
-        // Try standard semver
-        var semverMatch = SemverRegex.Match(tag);
-        if (semverMatch.Success && int.TryParse(semverMatch.Groups[1].Value, out var svMajor))
-        {
-            var prerelease = semverMatch.Groups[4].Success ? semverMatch.Groups[4].Value : null;
-            var isPrerelease = !string.IsNullOrEmpty(prerelease);
+        // Try standard semver (including MAJOR.MINOR only)
+        var sv = SemverRegex.Match(tag);
+        if (sv.Success && int.TryParse(sv.Groups[1].Value, out var svMajor))
+            return new ParsedTag(svMajor, sv.Groups[4].Success);
 
-            // Also check keyword heuristic for edge cases
-            if (!isPrerelease)
-            {
-                var lowerTag = tag.ToLowerInvariant();
-                isPrerelease = PrereleaseKeywords.Any(kw => lowerTag.Contains(kw));
-            }
-
-            return new ParsedTag(svMajor, isPrerelease);
-        }
-
-        // Try simple semver (MAJOR.MINOR only)
-        var simpleMatch = SimpleSemverRegex.Match(tag);
-        if (simpleMatch.Success && int.TryParse(simpleMatch.Groups[1].Value, out var simpleMajor))
-        {
-            var prerelease = simpleMatch.Groups[3].Success ? simpleMatch.Groups[3].Value : null;
-            return new ParsedTag(simpleMajor, !string.IsNullOrEmpty(prerelease));
-        }
-
-        // Non-semver tag → unversioned (MajorVersion = -1)
+        // Non-semver → unversioned
         return new ParsedTag(-1, false);
     }
 }
