@@ -97,4 +97,18 @@ public interface IGitHubClient
     Task MarkNotificationAsReadAsync(
         string notificationId,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets the raw content of a file from a GitHub repository.
+    /// </summary>
+    /// <param name="owner">The repository owner.</param>
+    /// <param name="repo">The repository name.</param>
+    /// <param name="path">The file path within the repository.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The file content as a string, or null if the file doesn't exist or is too large.</returns>
+    Task<string?> GetFileContentAsync(
+        string owner,
+        string repo,
+        string path,
+        CancellationToken cancellationToken = default);
 }

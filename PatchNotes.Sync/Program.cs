@@ -34,6 +34,7 @@ builder.Services.AddGitHubClient(options =>
     }
 });
 
+builder.Services.AddTransient<ChangelogResolver>();
 builder.Services.AddTransient<SyncService>();
 builder.Services.AddTransient<NotificationSyncService>();
 

@@ -14,15 +14,18 @@ public class SyncService
     private readonly PatchNotesDbContext _db;
     private readonly IGitHubClient _github;
     private readonly ILogger<SyncService> _logger;
+    private readonly ChangelogResolver? _changelogResolver;
 
     public SyncService(
         PatchNotesDbContext db,
         IGitHubClient github,
-        ILogger<SyncService> logger)
+        ILogger<SyncService> logger,
+        ChangelogResolver? changelogResolver = null)
     {
         _db = db;
         _github = github;
         _logger = logger;
+        _changelogResolver = changelogResolver;
     }
 
     /// <summary>
@@ -138,12 +141,39 @@ public class SyncService
             if (existingTags.Contains(ghRelease.TagName))
                 continue;
 
+            var body = ghRelease.Body;
+
+            // Resolve external changelog references
+            if (_changelogResolver != null && ChangelogResolver.IsChangelogReference(body))
+            {
+                try
+                {
+                    var resolved = await _changelogResolver.ResolveAsync(
+                        package.GithubOwner, package.GithubRepo,
+                        ghRelease.TagName, cancellationToken);
+
+                    if (resolved != null)
+                    {
+                        _logger.LogInformation(
+                            "Resolved changelog reference for {Package} {Tag}",
+                            package.Name, ghRelease.TagName);
+                        body = resolved;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex,
+                        "Failed to resolve changelog for {Package} {Tag}, keeping original body",
+                        package.Name, ghRelease.TagName);
+                }
+            }
+
             var release = new Release
             {
                 PackageId = package.Id,
                 Tag = ghRelease.TagName,
                 Title = ghRelease.Name,
-                Body = ghRelease.Body,
+                Body = body,
                 PublishedAt = ghRelease.PublishedAt.Value,
                 FetchedAt = fetchedAt
             };
