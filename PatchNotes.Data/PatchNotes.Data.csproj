@@ -15,6 +15,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.2" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.2" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.2" />
+    <PackageReference Include="Nanoid" Version="3.1.0" />
     <PackageReference Include="Stytch.net" Version="3.1.0" />
   </ItemGroup>
 

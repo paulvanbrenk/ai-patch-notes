@@ -15,8 +15,7 @@ namespace PatchNotes.Data.Migrations.SqlServer
                 name: "Packages",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Id = table.Column<string>(type: "nvarchar(21)", maxLength: 21, nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Url = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     NpmName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -31,17 +30,32 @@ namespace PatchNotes.Data.Migrations.SqlServer
                 });
 
             migrationBuilder.CreateTable(
+                name: "ProcessedWebhookEvents",
+                columns: table => new
+                {
+                    EventId = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
+                    ProcessedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProcessedWebhookEvents", x => x.EventId);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Id = table.Column<string>(type: "nvarchar(21)", maxLength: 21, nullable: false),
                     StytchUserId = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    LastLoginAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    LastLoginAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    StripeCustomerId = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
+                    StripeSubscriptionId = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: true),
+                    SubscriptionStatus = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: true),
+                    SubscriptionExpiresAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -52,10 +66,9 @@ namespace PatchNotes.Data.Migrations.SqlServer
                 name: "Notifications",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Id = table.Column<string>(type: "nvarchar(21)", maxLength: 21, nullable: false),
                     GitHubId = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
-                    PackageId = table.Column<int>(type: "int", nullable: true),
+                    PackageId = table.Column<string>(type: "nvarchar(21)", maxLength: 21, nullable: true),
                     Reason = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
                     SubjectTitle = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     SubjectType = table.Column<string>(type: "nvarchar(64)", maxLength: 64, nullable: false),
@@ -80,9 +93,8 @@ namespace PatchNotes.Data.Migrations.SqlServer
                 name: "Releases",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    PackageId = table.Column<int>(type: "int", nullable: false),
+                    Id = table.Column<string>(type: "nvarchar(21)", maxLength: 21, nullable: false),
+                    PackageId = table.Column<string>(type: "nvarchar(21)", maxLength: 21, nullable: false),
                     Tag = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Body = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -98,6 +110,32 @@ namespace PatchNotes.Data.Migrations.SqlServer
                         name: "FK_Releases_Packages_PackageId",
                         column: x => x.PackageId,
                         principalTable: "Packages",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Watchlists",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(21)", maxLength: 21, nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(21)", maxLength: 21, nullable: false),
+                    PackageId = table.Column<string>(type: "nvarchar(21)", maxLength: 21, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Watchlists", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Watchlists_Packages_PackageId",
+                        column: x => x.PackageId,
+                        principalTable: "Packages",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Watchlists_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -147,9 +185,25 @@ namespace PatchNotes.Data.Migrations.SqlServer
                 column: "Email");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Users_StripeCustomerId",
+                table: "Users",
+                column: "StripeCustomerId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Users_StytchUserId",
                 table: "Users",
                 column: "StytchUserId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Watchlists_PackageId",
+                table: "Watchlists",
+                column: "PackageId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Watchlists_UserId_PackageId",
+                table: "Watchlists",
+                columns: new[] { "UserId", "PackageId" },
                 unique: true);
         }
 
@@ -160,13 +214,19 @@ namespace PatchNotes.Data.Migrations.SqlServer
                 name: "Notifications");
 
             migrationBuilder.DropTable(
+                name: "ProcessedWebhookEvents");
+
+            migrationBuilder.DropTable(
                 name: "Releases");
 
             migrationBuilder.DropTable(
-                name: "Users");
+                name: "Watchlists");
 
             migrationBuilder.DropTable(
                 name: "Packages");
+
+            migrationBuilder.DropTable(
+                name: "Users");
         }
     }
 }

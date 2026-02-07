@@ -12,7 +12,7 @@ public static class ReleaseRoutes
         var requireAuth = RouteUtils.CreateAuthFilter();
 
         // GET /api/releases/{id} - Get single release details
-        app.MapGet("/api/releases/{id:int}", async (int id, PatchNotesDbContext db) =>
+        app.MapGet("/api/releases/{id}", async (string id, PatchNotesDbContext db) =>
         {
             var release = await db.Releases
                 .Include(r => r.Package)
@@ -56,9 +56,8 @@ public static class ReleaseRoutes
             if (!string.IsNullOrEmpty(packages))
             {
                 var packageIds = packages.Split(',')
-                    .Select(p => int.TryParse(p.Trim(), out var id) ? id : (int?)null)
-                    .Where(id => id.HasValue)
-                    .Select(id => id!.Value)
+                    .Select(p => p.Trim())
+                    .Where(p => !string.IsNullOrEmpty(p))
                     .ToList();
 
                 if (packageIds.Count > 0)
@@ -103,7 +102,7 @@ public static class ReleaseRoutes
         });
 
         // POST /api/releases/{id}/summarize - Generate AI summary for a release
-        app.MapPost("/api/releases/{id:int}/summarize", async (int id, HttpContext httpContext, PatchNotesDbContext db, IAiClient aiClient) =>
+        app.MapPost("/api/releases/{id}/summarize", async (string id, HttpContext httpContext, PatchNotesDbContext db, IAiClient aiClient) =>
         {
             var release = await db.Releases
                 .Include(r => r.Package)

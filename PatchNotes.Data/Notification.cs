@@ -2,9 +2,9 @@ namespace PatchNotes.Data;
 
 public class Notification
 {
-    public int Id { get; set; }
+    public string Id { get; set; } = IdGenerator.NewId();
     public required string GitHubId { get; set; }
-    public int? PackageId { get; set; }
+    public string? PackageId { get; set; }
     public required string Reason { get; set; }
     public required string SubjectTitle { get; set; }
     public required string SubjectType { get; set; }

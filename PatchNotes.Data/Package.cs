@@ -2,7 +2,7 @@ namespace PatchNotes.Data;
 
 public class Package
 {
-    public int Id { get; set; }
+    public string Id { get; set; } = IdGenerator.NewId();
     public required string Name { get; set; }
     public required string Url { get; set; }
     public string? NpmName { get; set; }

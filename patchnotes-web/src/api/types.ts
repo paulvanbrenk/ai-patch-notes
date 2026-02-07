@@ -1,5 +1,5 @@
 export interface Package {
-  id: number
+  id: string
   npmName: string
   githubOwner: string
   githubRepo: string
@@ -9,14 +9,14 @@ export interface Package {
 }
 
 export interface Release {
-  id: number
+  id: string
   tag: string
   title: string | null
   body: string | null
   publishedAt: string
   fetchedAt: string
   package: {
-    id: number
+    id: string
     npmName: string
     githubOwner: string
     githubRepo: string
@@ -27,12 +27,8 @@ export interface AddPackageRequest {
   npmName: string
 }
 
-export interface AddPackageRequest {
-  npmName: string
-}
-
 export interface AddPackageResponse {
-  id: number
+  id: string
   npmName: string
   githubOwner: string
   githubRepo: string
@@ -45,14 +41,14 @@ export interface UpdatePackageRequest {
 }
 
 export interface SyncPackageResponse {
-  id: number
+  id: string
   npmName: string
   lastFetchedAt: string
   releasesAdded: number
 }
 
 export interface Notification {
-  id: number
+  id: string
   gitHubId: string
   reason: string
   subjectTitle: string
@@ -64,7 +60,7 @@ export interface Notification {
   lastReadAt: string | null
   fetchedAt: string
   package: {
-    id: number
+    id: string
     npmName: string
     githubOwner: string
     githubRepo: string

@@ -19,9 +19,9 @@ namespace PatchNotes.Data.Migrations.Sqlite
 
             modelBuilder.Entity("PatchNotes.Data.Notification", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("Id")
+                        .HasMaxLength(21)
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("FetchedAt")
                         .HasColumnType("TEXT");
@@ -34,8 +34,9 @@ namespace PatchNotes.Data.Migrations.Sqlite
                     b.Property<DateTime?>("LastReadAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("PackageId")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("PackageId")
+                        .HasMaxLength(21)
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Reason")
                         .IsRequired()
@@ -81,9 +82,9 @@ namespace PatchNotes.Data.Migrations.Sqlite
 
             modelBuilder.Entity("PatchNotes.Data.Package", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("Id")
+                        .HasMaxLength(21)
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
@@ -137,9 +138,9 @@ namespace PatchNotes.Data.Migrations.Sqlite
 
             modelBuilder.Entity("PatchNotes.Data.Release", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("Id")
+                        .HasMaxLength(21)
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Body")
                         .HasColumnType("TEXT");
@@ -147,8 +148,10 @@ namespace PatchNotes.Data.Migrations.Sqlite
                     b.Property<DateTime>("FetchedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("PackageId")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("PackageId")
+                        .IsRequired()
+                        .HasMaxLength(21)
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("PublishedAt")
                         .HasColumnType("TEXT");
@@ -179,9 +182,9 @@ namespace PatchNotes.Data.Migrations.Sqlite
 
             modelBuilder.Entity("PatchNotes.Data.User", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("Id")
+                        .HasMaxLength(21)
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
@@ -234,18 +237,22 @@ namespace PatchNotes.Data.Migrations.Sqlite
 
             modelBuilder.Entity("PatchNotes.Data.Watchlist", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("Id")
+                        .HasMaxLength(21)
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("PackageId")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("PackageId")
+                        .IsRequired()
+                        .HasMaxLength(21)
+                        .HasColumnType("TEXT");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(21)
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 

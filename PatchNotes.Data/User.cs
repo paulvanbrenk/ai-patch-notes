@@ -2,7 +2,7 @@ namespace PatchNotes.Data;
 
 public class User
 {
-    public int Id { get; set; }
+    public string Id { get; set; } = IdGenerator.NewId();
 
     /// <summary>
     /// The Stytch user ID (e.g., "user-live-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx")

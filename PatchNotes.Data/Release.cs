@@ -2,8 +2,8 @@ namespace PatchNotes.Data;
 
 public class Release
 {
-    public int Id { get; set; }
-    public int PackageId { get; set; }
+    public string Id { get; set; } = IdGenerator.NewId();
+    public string PackageId { get; set; } = null!;
     public required string Tag { get; set; }
     public string? Title { get; set; }
     public string? Body { get; set; }

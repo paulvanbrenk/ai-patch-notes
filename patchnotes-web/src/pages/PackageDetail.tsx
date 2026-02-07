@@ -15,7 +15,7 @@ import { usePackage, usePackageReleases } from '../api/hooks'
 import type { Release } from '../api/types'
 
 interface PackageDetailProps {
-  packageId: number
+  packageId: string
 }
 
 function formatDate(dateString: string): string {

@@ -223,7 +223,7 @@ public class NotificationsApiTests : IAsyncLifetime
     private static Notification CreateNotification(
         string gitHubId,
         bool unread = true,
-        int? packageId = null,
+        string? packageId = null,
         DateTime? updatedAt = null)
     {
         return new Notification

@@ -155,7 +155,7 @@ public class PackagesApiTests : IAsyncLifetime
         pkg.GetProperty("githubOwner").GetString().Should().Be("expressjs");
         pkg.GetProperty("githubRepo").GetString().Should().Be("express");
         pkg.TryGetProperty("id", out var id).Should().BeTrue();
-        id.GetInt32().Should().BeGreaterThan(0);
+        id.GetString().Should().NotBeNullOrEmpty();
     }
 
     [Fact]
@@ -192,7 +192,7 @@ public class PackagesApiTests : IAsyncLifetime
     [Fact]
     public async Task DeletePackage_RequiresAuthentication()
     {
-        var response = await _client.DeleteAsync("/api/packages/1");
+        var response = await _client.DeleteAsync("/api/packages/nonexistent-id");
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -200,7 +200,7 @@ public class PackagesApiTests : IAsyncLifetime
     [Fact]
     public async Task DeletePackage_ReturnsNotFound_WhenPackageDoesNotExist()
     {
-        var response = await _authClient.DeleteAsync("/api/packages/999");
+        var response = await _authClient.DeleteAsync("/api/packages/nonexistent-id");
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }

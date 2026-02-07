@@ -4,19 +4,19 @@ import { PackagePicker } from './PackagePicker'
 
 const mockPackages = [
   {
-    id: 1,
+    id: 'pkg-1',
     npmName: 'react',
     githubOwner: 'facebook',
     githubRepo: 'react',
   },
   {
-    id: 2,
+    id: 'pkg-2',
     npmName: 'lodash',
     githubOwner: 'lodash',
     githubRepo: 'lodash',
   },
   {
-    id: 3,
+    id: 'pkg-3',
     npmName: 'typescript',
     githubOwner: 'microsoft',
     githubRepo: 'TypeScript',
@@ -78,7 +78,7 @@ describe('PackagePicker', () => {
       await user.click(screen.getByRole('checkbox', { name: /react/i }))
 
       await waitFor(() => {
-        expect(onSelectionChange).toHaveBeenCalledWith([1])
+        expect(onSelectionChange).toHaveBeenCalledWith(['pkg-1'])
       })
     })
 
@@ -114,7 +114,11 @@ describe('PackagePicker', () => {
       await user.click(screen.getByText('Select all'))
 
       await waitFor(() => {
-        expect(onSelectionChange).toHaveBeenCalledWith([1, 2, 3])
+        expect(onSelectionChange).toHaveBeenCalledWith([
+          'pkg-1',
+          'pkg-2',
+          'pkg-3',
+        ])
       })
     })
 
@@ -166,12 +170,15 @@ describe('PackagePicker', () => {
 
       await waitFor(() => {
         const stored = localStorage.getItem('patchnotes:package-selection:test')
-        expect(stored).toBe('[1]')
+        expect(stored).toBe('["pkg-1"]')
       })
     })
 
     it('restores selection from localStorage', () => {
-      localStorage.setItem('patchnotes:package-selection:test', '[1, 2]')
+      localStorage.setItem(
+        'patchnotes:package-selection:test',
+        '["pkg-1", "pkg-2"]'
+      )
 
       render(<PackagePicker packages={mockPackages} storageKey="test" />)
 

@@ -35,15 +35,15 @@ describe('api client', () => {
       server.use(
         http.post('/api/test', async ({ request }) => {
           capturedBody = await request.json()
-          return HttpResponse.json({ id: 1 })
+          return HttpResponse.json({ id: 'test-id' })
         })
       )
 
-      const result = await api.post<{ id: number }>('/test', {
+      const result = await api.post<{ id: string }>('/test', {
         name: 'test',
       })
 
-      expect(result).toEqual({ id: 1 })
+      expect(result).toEqual({ id: 'test-id' })
       expect(capturedBody).toEqual({ name: 'test' })
     })
   })
@@ -54,18 +54,18 @@ describe('api client', () => {
       server.use(
         http.put('/api/test/1', async ({ request }) => {
           capturedBody = await request.json()
-          return HttpResponse.json({ id: 1, updated: true })
+          return HttpResponse.json({ id: 'test-id', updated: true })
         })
       )
 
-      const result = await api.put<{ id: number; updated: boolean }>(
+      const result = await api.put<{ id: string; updated: boolean }>(
         '/test/1',
         {
           name: 'updated',
         }
       )
 
-      expect(result).toEqual({ id: 1, updated: true })
+      expect(result).toEqual({ id: 'test-id', updated: true })
       expect(capturedBody).toEqual({ name: 'updated' })
     })
   })
@@ -74,15 +74,15 @@ describe('api client', () => {
     it('performs PATCH request with body', async () => {
       server.use(
         http.patch('/api/test/1', () => {
-          return HttpResponse.json({ id: 1, patched: true })
+          return HttpResponse.json({ id: 'test-id', patched: true })
         })
       )
 
-      const result = await api.patch<{ id: number; patched: boolean }>(
+      const result = await api.patch<{ id: string; patched: boolean }>(
         '/test/1',
         { field: 'value' }
       )
-      expect(result).toEqual({ id: 1, patched: true })
+      expect(result).toEqual({ id: 'test-id', patched: true })
     })
   })
 

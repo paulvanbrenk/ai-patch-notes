@@ -10,7 +10,7 @@ public static class NotificationRoutes
         var requireAuth = RouteUtils.CreateAuthFilter();
 
         // GET /api/notifications - Query notifications
-        app.MapGet("/api/notifications", async (bool? unreadOnly, int? packageId, PatchNotesDbContext db) =>
+        app.MapGet("/api/notifications", async (bool? unreadOnly, string? packageId, PatchNotesDbContext db) =>
         {
             IQueryable<Notification> query = db.Notifications
                 .Include(n => n.Package);
@@ -20,9 +20,9 @@ public static class NotificationRoutes
                 query = query.Where(n => n.Unread);
             }
 
-            if (packageId.HasValue)
+            if (!string.IsNullOrEmpty(packageId))
             {
-                query = query.Where(n => n.PackageId == packageId.Value);
+                query = query.Where(n => n.PackageId == packageId);
             }
 
             var notifications = await query
@@ -61,7 +61,7 @@ public static class NotificationRoutes
         }).AddEndpointFilterFactory(requireAuth);
 
         // PATCH /api/notifications/{id}/read - Mark notification as read
-        app.MapPatch("/api/notifications/{id:int}/read", async (int id, PatchNotesDbContext db) =>
+        app.MapPatch("/api/notifications/{id}/read", async (string id, PatchNotesDbContext db) =>
         {
             var notification = await db.Notifications.FindAsync(id);
             if (notification == null)
@@ -77,7 +77,7 @@ public static class NotificationRoutes
         }).AddEndpointFilterFactory(requireAuth);
 
         // DELETE /api/notifications/{id} - Delete a notification
-        app.MapDelete("/api/notifications/{id:int}", async (int id, PatchNotesDbContext db) =>
+        app.MapDelete("/api/notifications/{id}", async (string id, PatchNotesDbContext db) =>
         {
             var notification = await db.Notifications.FindAsync(id);
             if (notification == null)

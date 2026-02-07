@@ -194,7 +194,7 @@ public class SyncService
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>List of releases needing summaries.</returns>
     public async Task<List<Release>> GetReleasesNeedingSummaryAsync(
-        int packageId,
+        string packageId,
         CancellationToken cancellationToken = default)
     {
         return await _db.Releases

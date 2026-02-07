@@ -32,7 +32,7 @@ type PrereleaseType = 'canary' | 'beta' | 'alpha' | 'rc' | 'next'
 interface VersionGroup {
   id: string
   packageName: string
-  packageId: number
+  packageId: string
   versionRange: string
   majorVersion: number
   isPrerelease: boolean
@@ -68,7 +68,7 @@ function isPrerelease(tag: string): boolean {
 
 function buildVersionGroups(
   releases: ApiRelease[],
-  packageNames: Map<number, string>
+  packageNames: Map<string, string>
 ): VersionGroup[] {
   const groupMap = new Map<string, VersionGroup>()
 
@@ -436,7 +436,7 @@ export function HomePage() {
 
   // Build a packageId -> display name map from packages
   const packageNames = useMemo(() => {
-    const map = new Map<number, string>()
+    const map = new Map<string, string>()
     if (packages) {
       for (const pkg of packages) {
         map.set(pkg.id, pkg.npmName)

@@ -24,11 +24,9 @@ namespace PatchNotes.Data.Migrations.SqlServer
 
             modelBuilder.Entity("PatchNotes.Data.Notification", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<string>("Id")
+                        .HasMaxLength(21)
+                        .HasColumnType("nvarchar(21)");
 
                     b.Property<DateTime>("FetchedAt")
                         .HasColumnType("datetime2");
@@ -41,8 +39,9 @@ namespace PatchNotes.Data.Migrations.SqlServer
                     b.Property<DateTime?>("LastReadAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("PackageId")
-                        .HasColumnType("int");
+                    b.Property<string>("PackageId")
+                        .HasMaxLength(21)
+                        .HasColumnType("nvarchar(21)");
 
                     b.Property<string>("Reason")
                         .IsRequired()
@@ -88,11 +87,9 @@ namespace PatchNotes.Data.Migrations.SqlServer
 
             modelBuilder.Entity("PatchNotes.Data.Package", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<string>("Id")
+                        .HasMaxLength(21)
+                        .HasColumnType("nvarchar(21)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -147,11 +144,9 @@ namespace PatchNotes.Data.Migrations.SqlServer
 
             modelBuilder.Entity("PatchNotes.Data.Release", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<string>("Id")
+                        .HasMaxLength(21)
+                        .HasColumnType("nvarchar(21)");
 
                     b.Property<string>("Body")
                         .HasColumnType("nvarchar(max)");
@@ -159,8 +154,10 @@ namespace PatchNotes.Data.Migrations.SqlServer
                     b.Property<DateTime>("FetchedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("PackageId")
-                        .HasColumnType("int");
+                    b.Property<string>("PackageId")
+                        .IsRequired()
+                        .HasMaxLength(21)
+                        .HasColumnType("nvarchar(21)");
 
                     b.Property<DateTime>("PublishedAt")
                         .HasColumnType("datetime2");
@@ -191,11 +188,9 @@ namespace PatchNotes.Data.Migrations.SqlServer
 
             modelBuilder.Entity("PatchNotes.Data.User", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<string>("Id")
+                        .HasMaxLength(21)
+                        .HasColumnType("nvarchar(21)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -248,20 +243,22 @@ namespace PatchNotes.Data.Migrations.SqlServer
 
             modelBuilder.Entity("PatchNotes.Data.Watchlist", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    b.Property<string>("Id")
+                        .HasMaxLength(21)
+                        .HasColumnType("nvarchar(21)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("PackageId")
-                        .HasColumnType("int");
+                    b.Property<string>("PackageId")
+                        .IsRequired()
+                        .HasMaxLength(21)
+                        .HasColumnType("nvarchar(21)");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(21)
+                        .HasColumnType("nvarchar(21)");
 
                     b.HasKey("Id");
 

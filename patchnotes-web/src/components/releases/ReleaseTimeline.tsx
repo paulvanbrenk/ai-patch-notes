@@ -1,7 +1,7 @@
 import { VersionBadge } from './VersionBadge'
 
 interface TimelineRelease {
-  id: number
+  id: string
   tag: string
   title?: string | null
   body?: string | null

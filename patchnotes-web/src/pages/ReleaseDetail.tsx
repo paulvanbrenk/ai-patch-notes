@@ -15,7 +15,7 @@ import { useRelease } from '../api/hooks'
 import { useSummarize } from '../ai/useSummarize'
 
 interface ReleaseDetailProps {
-  releaseId: number
+  releaseId: string
 }
 
 function formatDate(dateString: string): string {

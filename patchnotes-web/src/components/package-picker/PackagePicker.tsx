@@ -7,7 +7,7 @@ import { Input } from '../ui/Input'
 import { Checkbox } from '../ui/Checkbox'
 
 interface Package {
-  id: number
+  id: string
   npmName: string
   githubOwner: string
   githubRepo: string
@@ -16,13 +16,13 @@ interface Package {
 interface PackagePickerProps {
   packages: Package[]
   isLoading?: boolean
-  onSelectionChange?: (selectedIds: number[]) => void
+  onSelectionChange?: (selectedIds: string[]) => void
   onAddPackage?: (npmName: string) => void
   storageKey?: string
   isPro?: boolean
   packageLimit?: number
-  watchlistIds?: number[]
-  onWatchlistChange?: (selectedIds: number[]) => void
+  watchlistIds?: string[]
+  onWatchlistChange?: (selectedIds: string[]) => void
 }
 
 const STORAGE_KEY_PREFIX = 'patchnotes:package-selection:'
@@ -53,7 +53,7 @@ export function PackagePicker({
   const fullStorageKey = `${STORAGE_KEY_PREFIX}${storageKey}`
   const useWatchlist = watchlistIds !== undefined
 
-  const [localSelectedIds, setLocalSelectedIds] = useState<Set<number>>(() => {
+  const [localSelectedIds, setLocalSelectedIds] = useState<Set<string>>(() => {
     if (useWatchlist) return new Set(watchlistIds)
     if (typeof window === 'undefined') return new Set()
     try {
@@ -99,7 +99,7 @@ export function PackagePicker({
   }, [selectedIds, onSelectionChange])
 
   const applyUpdate = useCallback(
-    (updater: (prev: Set<number>) => Set<number>) => {
+    (updater: (prev: Set<string>) => Set<string>) => {
       if (useWatchlist) {
         onWatchlistChange?.([...updater(new Set(watchlistIds))])
       } else {
@@ -110,7 +110,7 @@ export function PackagePicker({
   )
 
   const handleToggle = useCallback(
-    (id: number) => {
+    (id: string) => {
       applyUpdate((prev) => {
         const next = new Set(prev)
         if (next.has(id)) {

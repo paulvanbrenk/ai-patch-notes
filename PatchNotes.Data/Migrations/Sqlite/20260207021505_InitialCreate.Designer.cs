@@ -11,8 +11,8 @@ using PatchNotes.Data;
 namespace PatchNotes.Data.Migrations.Sqlite
 {
     [DbContext(typeof(SqliteContext))]
-    [Migration("20260123172108_AddSubscription")]
-    partial class AddSubscription
+    [Migration("20260207021505_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -22,9 +22,9 @@ namespace PatchNotes.Data.Migrations.Sqlite
 
             modelBuilder.Entity("PatchNotes.Data.Notification", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("Id")
+                        .HasMaxLength(21)
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("FetchedAt")
                         .HasColumnType("TEXT");
@@ -37,8 +37,9 @@ namespace PatchNotes.Data.Migrations.Sqlite
                     b.Property<DateTime?>("LastReadAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("PackageId")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("PackageId")
+                        .HasMaxLength(21)
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Reason")
                         .IsRequired()
@@ -84,9 +85,9 @@ namespace PatchNotes.Data.Migrations.Sqlite
 
             modelBuilder.Entity("PatchNotes.Data.Package", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("Id")
+                        .HasMaxLength(21)
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
@@ -124,11 +125,25 @@ namespace PatchNotes.Data.Migrations.Sqlite
                     b.ToTable("Packages");
                 });
 
+            modelBuilder.Entity("PatchNotes.Data.ProcessedWebhookEvent", b =>
+                {
+                    b.Property<string>("EventId")
+                        .HasMaxLength(128)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("ProcessedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("EventId");
+
+                    b.ToTable("ProcessedWebhookEvents");
+                });
+
             modelBuilder.Entity("PatchNotes.Data.Release", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("Id")
+                        .HasMaxLength(21)
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Body")
                         .HasColumnType("TEXT");
@@ -136,8 +151,10 @@ namespace PatchNotes.Data.Migrations.Sqlite
                     b.Property<DateTime>("FetchedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("PackageId")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("PackageId")
+                        .IsRequired()
+                        .HasMaxLength(21)
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("PublishedAt")
                         .HasColumnType("TEXT");
@@ -168,9 +185,9 @@ namespace PatchNotes.Data.Migrations.Sqlite
 
             modelBuilder.Entity("PatchNotes.Data.User", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("Id")
+                        .HasMaxLength(21)
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
@@ -221,6 +238,35 @@ namespace PatchNotes.Data.Migrations.Sqlite
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("PatchNotes.Data.Watchlist", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(21)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PackageId")
+                        .IsRequired()
+                        .HasMaxLength(21)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(21)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PackageId");
+
+                    b.HasIndex("UserId", "PackageId")
+                        .IsUnique();
+
+                    b.ToTable("Watchlists");
+                });
+
             modelBuilder.Entity("PatchNotes.Data.Notification", b =>
                 {
                     b.HasOne("PatchNotes.Data.Package", "Package")
@@ -241,9 +287,35 @@ namespace PatchNotes.Data.Migrations.Sqlite
                     b.Navigation("Package");
                 });
 
+            modelBuilder.Entity("PatchNotes.Data.Watchlist", b =>
+                {
+                    b.HasOne("PatchNotes.Data.Package", "Package")
+                        .WithMany("Watchlists")
+                        .HasForeignKey("PackageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("PatchNotes.Data.User", "User")
+                        .WithMany("Watchlists")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Package");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("PatchNotes.Data.Package", b =>
                 {
                     b.Navigation("Releases");
+
+                    b.Navigation("Watchlists");
+                });
+
+            modelBuilder.Entity("PatchNotes.Data.User", b =>
+                {
+                    b.Navigation("Watchlists");
                 });
 #pragma warning restore 612, 618
         }

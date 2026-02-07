@@ -32,7 +32,7 @@ public static class PackageRoutes
         });
 
         // GET /api/packages/{id} - Get single package details
-        app.MapGet("/api/packages/{id:int}", async (int id, PatchNotesDbContext db) =>
+        app.MapGet("/api/packages/{id}", async (string id, PatchNotesDbContext db) =>
         {
             var package = await db.Packages
                 .Where(p => p.Id == id)
@@ -59,7 +59,7 @@ public static class PackageRoutes
         });
 
         // GET /api/packages/{id}/releases - Get all releases for a package
-        app.MapGet("/api/packages/{id:int}/releases", async (int id, PatchNotesDbContext db) =>
+        app.MapGet("/api/packages/{id}/releases", async (string id, PatchNotesDbContext db) =>
         {
             var packageExists = await db.Packages.AnyAsync(p => p.Id == id);
             if (!packageExists)
@@ -205,7 +205,7 @@ public static class PackageRoutes
           .AddEndpointFilterFactory(requireAdmin);
 
         // PATCH /api/packages/{id} - Update package GitHub mapping
-        app.MapPatch("/api/packages/{id:int}", async (int id, UpdatePackageRequest request, PatchNotesDbContext db) =>
+        app.MapPatch("/api/packages/{id}", async (string id, UpdatePackageRequest request, PatchNotesDbContext db) =>
         {
             var package = await db.Packages.FindAsync(id);
             if (package == null)
@@ -240,7 +240,7 @@ public static class PackageRoutes
           .AddEndpointFilterFactory(requireAdmin);
 
         // DELETE /api/packages/{id} - Remove package from tracking
-        app.MapDelete("/api/packages/{id:int}", async (int id, PatchNotesDbContext db) =>
+        app.MapDelete("/api/packages/{id}", async (string id, PatchNotesDbContext db) =>
         {
             var package = await db.Packages.FindAsync(id);
             if (package == null)
@@ -256,7 +256,7 @@ public static class PackageRoutes
           .AddEndpointFilterFactory(requireAdmin);
 
         // POST /api/packages/{id}/sync - Trigger sync for a specific package
-        app.MapPost("/api/packages/{id:int}/sync", async (int id, PatchNotesDbContext db, SyncService syncService) =>
+        app.MapPost("/api/packages/{id}/sync", async (string id, PatchNotesDbContext db, SyncService syncService) =>
         {
             var package = await db.Packages.FindAsync(id);
             if (package == null)

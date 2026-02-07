@@ -51,7 +51,10 @@ describe('queryKeys', () => {
   })
 
   it('generates correct package key', () => {
-    expect(queryKeys.package(1)).toEqual(['packages', 1])
+    expect(queryKeys.package('pkg-react-test-id')).toEqual([
+      'packages',
+      'pkg-react-test-id',
+    ])
   })
 
   it('generates correct releases key', () => {
@@ -59,7 +62,11 @@ describe('queryKeys', () => {
   })
 
   it('generates correct packageReleases key', () => {
-    expect(queryKeys.packageReleases(1)).toEqual(['packages', 1, 'releases'])
+    expect(queryKeys.packageReleases('pkg-react-test-id')).toEqual([
+      'packages',
+      'pkg-react-test-id',
+      'releases',
+    ])
   })
 
   it('generates correct notifications key', () => {
@@ -102,7 +109,7 @@ describe('usePackages', () => {
 
 describe('usePackage', () => {
   it('fetches a single package successfully', async () => {
-    const { result } = renderHook(() => usePackage(1), {
+    const { result } = renderHook(() => usePackage('pkg-react-test-id'), {
       wrapper: createWrapper(),
     })
 
@@ -111,8 +118,8 @@ describe('usePackage', () => {
     expect(result.current.data).toEqual(mockPackages[0])
   })
 
-  it('does not fetch when id is 0', async () => {
-    const { result } = renderHook(() => usePackage(0), {
+  it('does not fetch when id is empty', async () => {
+    const { result } = renderHook(() => usePackage(''), {
       wrapper: createWrapper(),
     })
 
@@ -122,12 +129,12 @@ describe('usePackage', () => {
 
   it('handles 404 error', async () => {
     server.use(
-      http.get('/api/packages/999', () => {
+      http.get('/api/packages/nonexistent', () => {
         return new HttpResponse(null, { status: 404 })
       })
     )
 
-    const { result } = renderHook(() => usePackage(999), {
+    const { result } = renderHook(() => usePackage('nonexistent'), {
       wrapper: createWrapper(),
     })
 
@@ -149,17 +156,20 @@ describe('useReleases', () => {
 
 describe('usePackageReleases', () => {
   it('fetches releases for a specific package', async () => {
-    const { result } = renderHook(() => usePackageReleases(1), {
-      wrapper: createWrapper(),
-    })
+    const { result } = renderHook(
+      () => usePackageReleases('pkg-react-test-id'),
+      {
+        wrapper: createWrapper(),
+      }
+    )
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
     expect(result.current.data).toEqual([mockReleases[0]])
   })
 
-  it('does not fetch when packageId is 0', async () => {
-    const { result } = renderHook(() => usePackageReleases(0), {
+  it('does not fetch when packageId is empty', async () => {
+    const { result } = renderHook(() => usePackageReleases(''), {
       wrapper: createWrapper(),
     })
 
@@ -189,7 +199,7 @@ describe('useDeletePackage', () => {
       wrapper: createWrapper(),
     })
 
-    result.current.mutate(1)
+    result.current.mutate('pkg-react-test-id')
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
   })
@@ -201,7 +211,10 @@ describe('useUpdatePackage', () => {
       wrapper: createWrapper(),
     })
 
-    result.current.mutate({ id: 1, githubOwner: 'new-owner' })
+    result.current.mutate({
+      id: 'pkg-react-test-id',
+      githubOwner: 'new-owner',
+    })
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
@@ -217,12 +230,12 @@ describe('useSyncPackage', () => {
       wrapper: createWrapper(),
     })
 
-    result.current.mutate(1)
+    result.current.mutate('pkg-react-test-id')
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
     expect(result.current.data).toMatchObject({
-      id: 1,
+      id: 'pkg-react-test-id',
       releasesAdded: 2,
     })
   })
@@ -267,18 +280,19 @@ describe('useNotifications', () => {
         const packageId = url.searchParams.get('packageId')
         if (packageId) {
           return HttpResponse.json(
-            mockNotifications.filter(
-              (n) => n.package?.id === parseInt(packageId)
-            )
+            mockNotifications.filter((n) => n.package?.id === packageId)
           )
         }
         return HttpResponse.json(mockNotifications)
       })
     )
 
-    const { result } = renderHook(() => useNotifications({ packageId: 1 }), {
-      wrapper: createWrapper(),
-    })
+    const { result } = renderHook(
+      () => useNotifications({ packageId: 'pkg-react-test-id' }),
+      {
+        wrapper: createWrapper(),
+      }
+    )
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
   })
@@ -302,12 +316,12 @@ describe('useMarkNotificationAsRead', () => {
       wrapper: createWrapper(),
     })
 
-    result.current.mutate(1)
+    result.current.mutate('notif-test-id-1')
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
     expect(result.current.data).toMatchObject({
-      id: 1,
+      id: 'notif-test-id-1',
       unread: false,
     })
   })
@@ -319,7 +333,7 @@ describe('useDeleteNotification', () => {
       wrapper: createWrapper(),
     })
 
-    result.current.mutate(1)
+    result.current.mutate('notif-test-id-1')
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
   })
