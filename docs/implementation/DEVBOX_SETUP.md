@@ -1,19 +1,21 @@
-# Lightweight local dev URLs (Windows + Android + Ubuntu dev box + UniFi UDR7) — IPv4 + IPv6 (SLAAC)
+# Lightweight local dev URLs (Windows + Android + Ubuntu dev box + UniFi UDR)
 
 ## Goal
 Access multiple local dev apps from **both laptop + Android** using friendly hostnames like:
 
-- `app1.devbox.home.arpa`
-- `app2.devbox.home.arpa`
+- `notes.devbox.home.arpa`
+- `notes-api.devbox.home.arpa`
+- `stats.devbox.home.arpa`
 
 …instead of `http://IP:port`.
 
 ## High-level design
-1. **Local DNS** answers `*.devbox.home.arpa` → the dev box IPs (A + AAAA).
-2. **Reverse proxy** on the dev box listens on **80/443** and routes by hostname to the right dev server ports (Vite / .NET).
-3. Dev servers bind to the LAN (not localhost).
+1. **Local DNS** (dnsmasq) answers `*.devbox.home.arpa` → the dev box IPv4.
+2. **Reverse proxy** (Caddy) on the dev box listens on **port 80** and routes by hostname to the right dev server ports.
+3. **Separate VLAN** (IPv4-only) ensures only dev devices use the devbox DNS.
+4. Dev servers bind to localhost; Caddy proxies to them.
 
-Once set up, you don’t touch the router per project; you just start/stop dev servers.
+Once set up, you don't touch the router per project; you just start/stop dev servers.
 
 ---
 
@@ -29,34 +31,46 @@ Install dnsmasq on Ubuntu and configure it to:
 - Answer **wildcard** `*.devbox.home.arpa` locally
 - **Forward everything else** upstream (UDR/ISP/Google/etc.)
 
-Example config:
+```bash
+sudo apt install dnsmasq
+```
+
+Config:
 
 ```conf
 # /etc/dnsmasq.d/devbox.conf
 
-# Answer your dev hostnames locally (wildcard)
-# Replace with your dev box LAN IPv4 + stable LAN IPv6
-address=/.devbox.home.arpa/192.168.1.10
-address=/.devbox.home.arpa/2001:db8:abcd:1234::10
+# Wildcard DNS for *.devbox.home.arpa → this dev box
+address=/.devbox.home.arpa/192.168.1.76
 
-# Forward all other DNS queries upstream
+# Only listen on the LAN interface (avoids conflict with systemd-resolved on 127.0.0.53)
+listen-address=192.168.1.76
+bind-interfaces
+
+# Forward everything else to the UDR
 no-resolv
-server=192.168.1.1                 # UDR (often simplest)
-# Optional public fallbacks:
-server=1.1.1.1
-server=8.8.8.8
-server=2606:4700:4700::1111
-server=2001:4860:4860::8888
+server=192.168.1.1
 
-# Optional
 cache-size=10000
-strict-order
 ```
 
-Restart dnsmasq:
+### Disable the resolvconf helper
+
+The default systemd unit runs a resolvconf `ExecStartPost` that fails harmlessly (tries to register with systemd-resolved via D-Bus). To suppress the error:
 
 ```bash
-sudo systemctl restart dnsmasq
+sudo mkdir -p /etc/systemd/system/dnsmasq.service.d
+sudo tee /etc/systemd/system/dnsmasq.service.d/override.conf << 'EOF'
+[Service]
+ExecStartPost=
+EOF
+sudo systemctl daemon-reload
+```
+
+Start/restart dnsmasq:
+
+```bash
+sudo systemctl enable --now dnsmasq
 ```
 
 ### Firewall
@@ -69,79 +83,78 @@ Keep the dev box’s **own** resolver pointing at the UDR/public DNS (not itself
 
 ---
 
-## Step 2 — Tell the UDR to hand out the dev box as DNS
+## Step 2 — Separate VLAN for dev clients (UniFi)
 
-### IPv4 (DHCP Option 6)
-In your UniFi Network LAN DHCP settings:
-- Set **DHCP Name Server** to the dev box **IPv4**
-- Prefer **no secondary DNS** (some clients will bypass the primary intermittently)
+A dedicated VLAN keeps the devbox DNS scoped to just the **laptop and Android** — other devices on the main LAN are unaffected. IPv4-only avoids IPv6 DNS leaking around the setup.
 
-Also make the dev box IPv4 stable:
-- DHCP reservation **or** static IP.
+### Network (UniFi)
+- **Name**: `Dev` (or similar)
+- **VLAN ID**: `10`
+- **Gateway/Subnet**: `10.10.10.1/29` (6 usable IPs — plenty for laptop + phone)
+- **DHCP DNS**: `192.168.1.76` (devbox on main LAN, reached via inter-VLAN routing)
+- **IPv6**: Disabled
 
-### IPv6 (SLAAC-only)
-With SLAAC-only, DNS comes from **Router Advertisements (RDNSS)**, not DHCPv6.
+### WiFi (UniFi)
+- **SSID**: `Dev` (or whatever you like)
+- **Network**: the `Dev` network above
+- **PMF**: Optional
 
-In UniFi Network → your LAN → IPv6:
-- Keep **SLAAC / RA enabled**
-- Set **DHCPv6/RDNSS DNS Control = Manual**
-- Add the dev box **stable IPv6** as DNS
-
-> Key requirement: the dev box needs a **stable IPv6** address. Don’t use temporary/privacy addresses for the DNS server target.
+### How it works
+- Dev VLAN clients get `192.168.1.76` as their DNS via DHCP
+- The UDR routes between VLANs by default, so `10.10.10.x` clients can reach `192.168.1.76:53` (dnsmasq) and `:80` (Caddy)
+- The devbox stays on the main LAN only — no dual-homing needed
+- No IPv6 on the dev VLAN means no RDNSS/SLAAC DNS leaking
 
 ---
 
 ## Step 3 — Reverse proxy on the dev box (Caddy)
-Run a lightweight reverse proxy that listens on **80/443** and routes by hostname:
+Caddy is installed. It listens on **port 80** (HTTP only, which is fine for local dev) and routes by hostname.
 
-- `app1.devbox.home.arpa` → Vite port (e.g., 5173)
-- `app2.devbox.home.arpa` → Vite port (e.g., 5174)
-- `api.devbox.home.arpa` → .NET API port (e.g., 5000)
+### Caddyfile (`/etc/caddy/Caddyfile`)
 
-### Why this matters
-Browsers hit `http(s)://hostname` with default ports 80/443. The proxy removes the need to expose `:5173` etc.
+```caddyfile
+http://stats.devbox.home.arpa {
+	reverse_proxy localhost:19999
+}
 
----
+http://notes.devbox.home.arpa {
+	reverse_proxy localhost:1100
+}
 
-## Step 4 — Make dev servers reachable on the LAN
-
-### Vite (React + Vite)
-Ensure Vite binds beyond localhost and permits your hostname:
-
-- Bind: `--host 0.0.0.0` (or `server.host: true`)
-- Allow hosts: include `.devbox.home.arpa`
-
-Example `vite.config.*`:
-
-```js
-export default {
-  server: {
-    host: true,
-    allowedHosts: ['.devbox.home.arpa'],
-  },
+http://notes-api.devbox.home.arpa {
+	reverse_proxy localhost:2101
 }
 ```
 
-### ASP.NET Core (Kestrel)
-Bind Kestrel to LAN interfaces (IPv4 + IPv6), e.g. via `ASPNETCORE_URLS` / `--urls`, so your proxy can reach it.
+Reload after changes:
+
+```bash
+sudo systemctl reload caddy
+```
+
+### Why this matters
+Browsers hit `http://hostname` on port 80 by default. The proxy removes the need to expose `:5173` etc.
 
 ---
 
-## “No reconfig when I change projects” strategies
+## Step 4 — Dev server ports
 
-### Option A (simplest): fixed port convention
-Pick a stable mapping once:
-- app1 → 5173
-- app2 → 5174
-- api → 5000
+Caddy proxies to localhost, so dev servers don't need to bind to the LAN. Just pin each to a unique port:
 
-Then Caddy config stays stable forever.
+| Subdomain | Port | App |
+|---|---|---|
+| `stats.devbox.home.arpa` | 19999 | Netdata |
+| `notes.devbox.home.arpa` | 1100 | Vite (patchnotes-web) |
+| `notes-api.devbox.home.arpa` | 2101 | .NET API |
 
-### Option B (more automatic): include/reload snippets
-Have Caddy `import` per-app snippets from a directory and use a small script to:
-- pick an available port
-- write the snippet
-- reload Caddy
+### Vite
+Port is set in `vite.config.ts` → `server.port`. `allowedHosts: true` is already configured.
+
+### ASP.NET Core
+Port is set in `Properties/launchSettings.json` → `applicationUrl`. Binds to `0.0.0.0` so Caddy can reach it.
+
+### Frontend → API
+`VITE_API_URL` in `.env.local` points to `http://notes-api.devbox.home.arpa`. CORS in `Program.cs` allows `.devbox.home.arpa` origins in Development mode only.
 
 ---
 
@@ -153,9 +166,10 @@ Have Caddy `import` per-app snippets from a directory and use a small script to:
 ---
 
 ## Checklist
-- [ ] dnsmasq answers `*.devbox.home.arpa` (A + AAAA) and forwards other queries
-- [ ] UDR DHCPv4 hands out dev box IPv4 as DNS
-- [ ] UDR RA/RDNSS hands out dev box stable IPv6 as DNS (SLAAC-only)
-- [ ] Caddy (or other proxy) routes hostnames to Vite/.NET ports
-- [ ] Vite binds to LAN + allowedHosts includes `.devbox.home.arpa`
-- [ ] .NET binds to LAN interfaces
+- [x] dnsmasq answers `*.devbox.home.arpa` (IPv4 only for now) and forwards other queries
+- [x] Dev VLAN (`10.10.10.0/29`, VLAN 10) with DHCP DNS → devbox, IPv6 disabled
+- [x] Laptop + Android on Dev WiFi SSID
+- [x] Caddy routes `stats` → `:19999`, `notes` → `:1100`, `notes-api` → `:2101`
+- [x] Vite pinned to port `1100`, `allowedHosts: true`
+- [x] .NET API pinned to port `2101`, binds `0.0.0.0`
+- [x] CORS allows `.devbox.home.arpa` in dev only
