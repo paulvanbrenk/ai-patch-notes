@@ -162,6 +162,11 @@ namespace PatchNotes.Data.Migrations.Sqlite
                     b.Property<DateTime?>("SummaryGeneratedAt")
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("SummaryStale")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(true);
+
                     b.Property<string>("Tag")
                         .IsRequired()
                         .HasMaxLength(128)
