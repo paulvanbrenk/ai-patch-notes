@@ -22,69 +22,6 @@ namespace PatchNotes.Data.Migrations.SqlServer
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("PatchNotes.Data.Notification", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasMaxLength(21)
-                        .HasColumnType("nvarchar(21)");
-
-                    b.Property<DateTime>("FetchedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("GitHubId")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
-
-                    b.Property<DateTime?>("LastReadAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("PackageId")
-                        .HasMaxLength(21)
-                        .HasColumnType("nvarchar(21)");
-
-                    b.Property<string>("Reason")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
-
-                    b.Property<string>("RepositoryFullName")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("SubjectTitle")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SubjectType")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
-
-                    b.Property<string>("SubjectUrl")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("Unread")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GitHubId")
-                        .IsUnique();
-
-                    b.HasIndex("PackageId");
-
-                    b.HasIndex("Unread");
-
-                    b.HasIndex("UpdatedAt");
-
-                    b.ToTable("Notifications");
-                });
-
             modelBuilder.Entity("PatchNotes.Data.Package", b =>
                 {
                     b.Property<string>("Id")
@@ -331,15 +268,6 @@ namespace PatchNotes.Data.Migrations.SqlServer
                         .IsUnique();
 
                     b.ToTable("Watchlists");
-                });
-
-            modelBuilder.Entity("PatchNotes.Data.Notification", b =>
-                {
-                    b.HasOne("PatchNotes.Data.Package", "Package")
-                        .WithMany()
-                        .HasForeignKey("PackageId");
-
-                    b.Navigation("Package");
                 });
 
             modelBuilder.Entity("PatchNotes.Data.Release", b =>

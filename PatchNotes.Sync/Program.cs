@@ -54,7 +54,6 @@ builder.Services.AddAiClient(options =>
 builder.Services.AddTransient<ChangelogResolver>();
 builder.Services.AddTransient<VersionGroupingService>();
 builder.Services.AddTransient<SyncService>();
-builder.Services.AddTransient<NotificationSyncService>();
 builder.Services.AddTransient<SummaryGenerationService>();
 
 using var host = builder.Build();

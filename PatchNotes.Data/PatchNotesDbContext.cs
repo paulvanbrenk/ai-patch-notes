@@ -16,8 +16,7 @@ public class PatchNotesDbContext : DbContext
 
     public DbSet<Package> Packages => Set<Package>();
     public DbSet<Release> Releases => Set<Release>();
-    public DbSet<Notification> Notifications => Set<Notification>();
-    public DbSet<User> Users => Set<User>();
+public DbSet<User> Users => Set<User>();
     public DbSet<Watchlist> Watchlists => Set<Watchlist>();
     public DbSet<ProcessedWebhookEvent> ProcessedWebhookEvents => Set<ProcessedWebhookEvent>();
     public DbSet<ReleaseSummary> ReleaseSummaries => Set<ReleaseSummary>();
@@ -49,23 +48,6 @@ public class PatchNotesDbContext : DbContext
             entity.HasOne(e => e.Package)
                 .WithMany(p => p.Releases)
                 .HasForeignKey(e => e.PackageId);
-        });
-
-        modelBuilder.Entity<Notification>(entity =>
-        {
-            entity.Property(e => e.Id).HasMaxLength(21);
-            entity.Property(e => e.PackageId).HasMaxLength(21);
-            entity.Property(e => e.GitHubId).HasMaxLength(64);
-            entity.Property(e => e.Reason).HasMaxLength(64);
-            entity.Property(e => e.SubjectType).HasMaxLength(64);
-            entity.Property(e => e.RepositoryFullName).HasMaxLength(256);
-            entity.HasIndex(e => e.GitHubId).IsUnique();
-            entity.HasIndex(e => e.UpdatedAt);
-            entity.HasIndex(e => e.Unread);
-            entity.HasOne(e => e.Package)
-                .WithMany()
-                .HasForeignKey(e => e.PackageId)
-                .IsRequired(false);
         });
 
         modelBuilder.Entity<User>(entity =>

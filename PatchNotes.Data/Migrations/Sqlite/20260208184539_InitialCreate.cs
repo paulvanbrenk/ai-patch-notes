@@ -63,33 +63,6 @@ namespace PatchNotes.Data.Migrations.Sqlite
                 });
 
             migrationBuilder.CreateTable(
-                name: "Notifications",
-                columns: table => new
-                {
-                    Id = table.Column<string>(type: "TEXT", maxLength: 21, nullable: false),
-                    GitHubId = table.Column<string>(type: "TEXT", maxLength: 64, nullable: false),
-                    PackageId = table.Column<string>(type: "TEXT", maxLength: 21, nullable: true),
-                    Reason = table.Column<string>(type: "TEXT", maxLength: 64, nullable: false),
-                    SubjectTitle = table.Column<string>(type: "TEXT", nullable: false),
-                    SubjectType = table.Column<string>(type: "TEXT", maxLength: 64, nullable: false),
-                    SubjectUrl = table.Column<string>(type: "TEXT", nullable: true),
-                    RepositoryFullName = table.Column<string>(type: "TEXT", maxLength: 256, nullable: false),
-                    Unread = table.Column<bool>(type: "INTEGER", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    LastReadAt = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    FetchedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Notifications", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Notifications_Packages_PackageId",
-                        column: x => x.PackageId,
-                        principalTable: "Packages",
-                        principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Releases",
                 columns: table => new
                 {
@@ -100,9 +73,14 @@ namespace PatchNotes.Data.Migrations.Sqlite
                     Body = table.Column<string>(type: "TEXT", nullable: true),
                     PublishedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
                     FetchedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    MajorVersion = table.Column<int>(type: "INTEGER", nullable: false),
+                    MinorVersion = table.Column<int>(type: "INTEGER", nullable: false),
+                    PatchVersion = table.Column<int>(type: "INTEGER", nullable: false),
+                    IsPrerelease = table.Column<bool>(type: "INTEGER", nullable: false),
                     Summary = table.Column<string>(type: "TEXT", nullable: true),
                     SummaryGeneratedAt = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    SummaryStale = table.Column<bool>(type: "INTEGER", nullable: false, defaultValue: true)
+                    SummaryStale = table.Column<bool>(type: "INTEGER", nullable: false, defaultValue: true),
+                    SummaryVersion = table.Column<string>(type: "TEXT", maxLength: 21, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -165,31 +143,15 @@ namespace PatchNotes.Data.Migrations.Sqlite
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Notifications_GitHubId",
-                table: "Notifications",
-                column: "GitHubId",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Notifications_PackageId",
-                table: "Notifications",
-                column: "PackageId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Notifications_Unread",
-                table: "Notifications",
-                column: "Unread");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Notifications_UpdatedAt",
-                table: "Notifications",
-                column: "UpdatedAt");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Packages_NpmName",
                 table: "Packages",
                 column: "NpmName",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Releases_PackageId_MajorVersion_IsPrerelease",
+                table: "Releases",
+                columns: new[] { "PackageId", "MajorVersion", "IsPrerelease" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Releases_PackageId_Tag",
@@ -239,9 +201,6 @@ namespace PatchNotes.Data.Migrations.Sqlite
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "Notifications");
-
             migrationBuilder.DropTable(
                 name: "ProcessedWebhookEvents");
 

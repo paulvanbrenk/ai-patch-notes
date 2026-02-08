@@ -46,11 +46,6 @@ public record PackageSyncResult
 public record SyncError(string PackageName, string Message);
 
 /// <summary>
-/// Result of syncing notifications.
-/// </summary>
-public record NotificationSyncResult(int Added, int Updated);
-
-/// <summary>
 /// Result of generating version group summaries.
 /// </summary>
 public record SummaryGenerationResult
