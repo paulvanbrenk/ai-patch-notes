@@ -151,7 +151,7 @@ public class SyncService
                 {
                     var resolved = await _changelogResolver.ResolveAsync(
                         package.GithubOwner, package.GithubRepo,
-                        ghRelease.TagName, cancellationToken);
+                        ghRelease.TagName, body, cancellationToken);
 
                     if (resolved != null)
                     {
