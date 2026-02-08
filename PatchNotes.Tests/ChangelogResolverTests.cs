@@ -22,21 +22,21 @@ public class ChangelogResolverTests
     #region IsChangelogReference Tests
 
     [Fact]
-    public void IsChangelogReference_NullBody_ReturnsTrue()
+    public void IsChangelogReference_NullBody_ReturnsFalse()
     {
-        ChangelogResolver.IsChangelogReference(null).Should().BeTrue();
+        ChangelogResolver.IsChangelogReference(null).Should().BeFalse();
     }
 
     [Fact]
-    public void IsChangelogReference_EmptyBody_ReturnsTrue()
+    public void IsChangelogReference_EmptyBody_ReturnsFalse()
     {
-        ChangelogResolver.IsChangelogReference("").Should().BeTrue();
+        ChangelogResolver.IsChangelogReference("").Should().BeFalse();
     }
 
     [Fact]
-    public void IsChangelogReference_WhitespaceBody_ReturnsTrue()
+    public void IsChangelogReference_WhitespaceBody_ReturnsFalse()
     {
-        ChangelogResolver.IsChangelogReference("   ").Should().BeTrue();
+        ChangelogResolver.IsChangelogReference("   ").Should().BeFalse();
     }
 
     [Theory]

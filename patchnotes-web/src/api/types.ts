@@ -13,6 +13,8 @@ export interface Release {
   tag: string
   title: string | null
   body: string | null
+  summary: string | null
+  summaryGeneratedAt: string | null
   publishedAt: string
   fetchedAt: string
   package: {

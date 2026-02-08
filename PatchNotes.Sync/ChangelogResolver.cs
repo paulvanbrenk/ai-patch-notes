@@ -18,6 +18,8 @@ public class ChangelogResolver
         "CHANGES.md",
         "HISTORY.md",
         "changelog.md",
+        "changes.md",
+        "history.md",
         "Changelog.md"
     ];
 
@@ -42,7 +44,7 @@ public class ChangelogResolver
     public static bool IsChangelogReference(string? body)
     {
         if (string.IsNullOrWhiteSpace(body))
-            return true;
+            return false;
 
         if (body.Length >= 100)
             return false;

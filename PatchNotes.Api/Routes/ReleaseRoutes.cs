@@ -188,7 +188,19 @@ public static class ReleaseRoutes
             }
 
             // Non-streaming JSON response
-            var summary = await aiClient.SummarizeReleaseNotesAsync(release.Title, release.Body);
+            string summary;
+            try
+            {
+                summary = await aiClient.SummarizeReleaseNotesAsync(release.Title, release.Body);
+            }
+            catch (Exception ex)
+            {
+                loggerFactory.CreateLogger("PatchNotes.Api.Routes.ReleaseRoutes")
+                    .LogError(ex, "AI summarization failed for release {ReleaseId}", id);
+                return Results.Problem(
+                    detail: "AI summarization service is currently unavailable. Please try again later.",
+                    statusCode: 503);
+            }
 
             // Persist the generated summary with optimistic concurrency
             release.Summary = summary;
