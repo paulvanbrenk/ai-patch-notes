@@ -148,44 +148,60 @@ public static class ReleaseRoutes
 
                 var fullSummary = new System.Text.StringBuilder();
 
-                await foreach (var chunk in aiClient.SummarizeReleaseNotesStreamAsync(packageName, releaseInputs, httpContext.RequestAborted))
-                {
-                    fullSummary.Append(chunk);
-                    var chunkData = JsonSerializer.Serialize(new { type = "chunk", content = chunk });
-                    await httpContext.Response.WriteAsync($"data: {chunkData}\n\n", httpContext.RequestAborted);
-                    await httpContext.Response.Body.FlushAsync(httpContext.RequestAborted);
-                }
-
-                // Persist the generated summary with optimistic concurrency
-                release.Summary = fullSummary.ToString();
-                release.SummaryGeneratedAt = DateTime.UtcNow;
-                release.SummaryStale = false;
-                release.SummaryVersion = IdGenerator.NewId();
                 try
                 {
-                    await db.SaveChangesAsync(httpContext.RequestAborted);
+                    await foreach (var chunk in aiClient.SummarizeReleaseNotesStreamAsync(packageName, releaseInputs, httpContext.RequestAborted))
+                    {
+                        fullSummary.Append(chunk);
+                        var chunkData = JsonSerializer.Serialize(new { type = "chunk", content = chunk });
+                        await httpContext.Response.WriteAsync($"data: {chunkData}\n\n", httpContext.RequestAborted);
+                        await httpContext.Response.Body.FlushAsync(httpContext.RequestAborted);
+                    }
+
+                    // Persist the generated summary with optimistic concurrency
+                    release.Summary = fullSummary.ToString();
+                    release.SummaryGeneratedAt = DateTime.UtcNow;
+                    release.SummaryStale = false;
+                    release.SummaryVersion = IdGenerator.NewId();
+                    try
+                    {
+                        await db.SaveChangesAsync(httpContext.RequestAborted);
+                    }
+                    catch (DbUpdateConcurrencyException)
+                    {
+                        // Another request already persisted a summary - that's fine,
+                        // the streamed chunks were already sent to the client
+                        loggerFactory.CreateLogger("PatchNotes.Api.Routes.ReleaseRoutes").LogInformation("Concurrent summary persistence for release {ReleaseId} - another request won the race", id);
+                    }
+
+                    var completeData = JsonSerializer.Serialize(new
+                    {
+                        type = "complete",
+                        result = new
+                        {
+                            releaseId = release.Id,
+                            release.Tag,
+                            release.Title,
+                            summary = release.Summary,
+                            package = new { release.Package.Id, release.Package.NpmName }
+                        }
+                    });
+                    await httpContext.Response.WriteAsync($"data: {completeData}\n\n", httpContext.RequestAborted);
                 }
-                catch (DbUpdateConcurrencyException)
+                catch (OperationCanceledException)
                 {
-                    // Another request already persisted a summary - that's fine,
-                    // the streamed chunks were already sent to the client
-                    loggerFactory.CreateLogger("PatchNotes.Api.Routes.ReleaseRoutes").LogInformation("Concurrent summary persistence for release {ReleaseId} - another request won the race", id);
+                    // Client disconnected - nothing to send
+                    return Results.Empty;
+                }
+                catch (Exception ex)
+                {
+                    loggerFactory.CreateLogger("PatchNotes.Api.Routes.ReleaseRoutes")
+                        .LogError(ex, "AI summarization failed for release {ReleaseId} during streaming", id);
+                    var errorData = JsonSerializer.Serialize(new { type = "error", message = "AI summarization service is currently unavailable. Please try again later." });
+                    await httpContext.Response.WriteAsync($"data: {errorData}\n\n");
                 }
 
-                var completeData = JsonSerializer.Serialize(new
-                {
-                    type = "complete",
-                    result = new
-                    {
-                        releaseId = release.Id,
-                        release.Tag,
-                        release.Title,
-                        summary = release.Summary,
-                        package = new { release.Package.Id, release.Package.NpmName }
-                    }
-                });
-                await httpContext.Response.WriteAsync($"data: {completeData}\n\n", httpContext.RequestAborted);
-                await httpContext.Response.WriteAsync("data: [DONE]\n\n", httpContext.RequestAborted);
+                await httpContext.Response.WriteAsync("data: [DONE]\n\n");
 
                 return Results.Empty;
             }

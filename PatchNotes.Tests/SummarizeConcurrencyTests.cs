@@ -115,6 +115,40 @@ public class SummarizeConcurrencyTests
     }
 
     /// <summary>
+    /// Verifies that when the AI client throws during SSE streaming, the client
+    /// receives an error event followed by [DONE] instead of a broken stream.
+    /// </summary>
+    [Fact]
+    public async Task StreamingSummarize_AiClientThrows_SendsErrorEvent()
+    {
+        await using var fixture = new SummarizeTestFixture(throwingAiClient: true);
+        await fixture.InitializeAsync();
+
+        var releaseId = await fixture.SeedReleaseNeedingSummary();
+
+        using var client = fixture.CreateAuthenticatedClient();
+        var request = new HttpRequestMessage(HttpMethod.Post, $"/api/releases/{releaseId}/summarize");
+        request.Headers.Add("Accept", "text/event-stream");
+
+        var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Content.Headers.ContentType!.MediaType.Should().Be("text/event-stream");
+
+        var body = await response.Content.ReadAsStringAsync();
+
+        // Should contain an error event
+        body.Should().Contain("\"type\":\"error\"");
+        body.Should().Contain("AI summarization service is currently unavailable");
+
+        // Should NOT contain a complete event
+        body.Should().NotContain("\"type\":\"complete\"");
+
+        // Should end with [DONE]
+        body.Should().Contain("[DONE]");
+    }
+
+    /// <summary>
     /// Verifies that after concurrent requests, only one summary is persisted
     /// (no corruption or duplicate writes).
     /// </summary>
@@ -151,10 +185,12 @@ public class SummarizeConcurrencyTests
 internal class SummarizeTestFixture : PatchNotesApiFixture
 {
     private readonly TimeSpan _aiDelay;
+    private readonly bool _throwingAiClient;
 
-    public SummarizeTestFixture(TimeSpan aiDelay)
+    public SummarizeTestFixture(TimeSpan aiDelay = default, bool throwingAiClient = false)
     {
         _aiDelay = aiDelay;
+        _throwingAiClient = throwingAiClient;
     }
 
     protected override void ConfigureWebHost(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder)
@@ -163,9 +199,11 @@ internal class SummarizeTestFixture : PatchNotesApiFixture
 
         builder.ConfigureServices(services =>
         {
-            // Replace IAiClient with a slow mock
             services.RemoveAll<IAiClient>();
-            services.AddSingleton<IAiClient>(new DelayedMockAiClient(_aiDelay));
+            if (_throwingAiClient)
+                services.AddSingleton<IAiClient>(new ThrowingMockAiClient());
+            else
+                services.AddSingleton<IAiClient>(new DelayedMockAiClient(_aiDelay));
         });
     }
 
@@ -226,5 +264,25 @@ internal class DelayedMockAiClient : IAiClient
         yield return "Mock ";
         yield return "streamed ";
         yield return "summary";
+    }
+}
+
+/// <summary>
+/// Mock AI client that throws an exception to simulate provider outages.
+/// </summary>
+internal class ThrowingMockAiClient : IAiClient
+{
+    public Task<string> SummarizeReleaseNotesAsync(string packageName, IReadOnlyList<ReleaseInput> releases, CancellationToken cancellationToken = default)
+    {
+        throw new HttpRequestException("Simulated AI provider outage");
+    }
+
+    public async IAsyncEnumerable<string> SummarizeReleaseNotesStreamAsync(string packageName, IReadOnlyList<ReleaseInput> releases, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        await Task.CompletedTask;
+        throw new HttpRequestException("Simulated AI provider outage");
+#pragma warning disable CS0162 // unreachable but required for IAsyncEnumerable
+        yield break;
+#pragma warning restore CS0162
     }
 }
