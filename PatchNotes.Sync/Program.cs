@@ -59,10 +59,8 @@ builder.Services.AddTransient<SummaryGenerationService>();
 
 using var host = builder.Build();
 
-// Get services
+// Get singleton services from root provider (scoped services resolved per code path below)
 var logger = host.Services.GetRequiredService<ILogger<Program>>();
-var syncService = host.Services.GetRequiredService<SyncService>();
-var summaryService = host.Services.GetRequiredService<SummaryGenerationService>();
 
 try
 {
@@ -93,7 +91,9 @@ try
 
         logger.LogInformation("Generating summaries for {Owner}/{Repo}", owner, repo);
 
-        var db = host.Services.GetRequiredService<PatchNotesDbContext>();
+        using var scope = host.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
+        var summaryService = scope.ServiceProvider.GetRequiredService<SummaryGenerationService>();
 
         var package = await db.Packages
             .FirstOrDefaultAsync(p => p.GithubOwner == owner && p.GithubRepo == repo);
@@ -126,6 +126,7 @@ try
 
         using var scope = host.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
+        var syncService = scope.ServiceProvider.GetRequiredService<SyncService>();
         await db.Database.MigrateAsync();
 
         var scopedSyncService = scope.ServiceProvider.GetRequiredService<SyncService>();
@@ -138,49 +139,55 @@ try
 
     logger.LogInformation("PatchNotes Sync starting");
 
-    // Backfill denormalized version fields for any existing releases
-    var backfilled = await syncService.BackfillVersionFieldsAsync();
-    if (backfilled > 0)
     {
-        logger.LogInformation("Backfilled version fields for {Count} existing releases", backfilled);
-    }
+        using var scope = host.Services.CreateScope();
+        var syncService = scope.ServiceProvider.GetRequiredService<SyncService>();
+        var summaryService = scope.ServiceProvider.GetRequiredService<SummaryGenerationService>();
 
-    var result = await syncService.SyncAllAsync();
-
-    // Generate summaries for packages with new/stale releases
-    if (result.ReleasesNeedingSummary.Count > 0)
-    {
-        logger.LogInformation(
-            "Generating summaries for {Count} releases needing summaries",
-            result.ReleasesNeedingSummary.Count);
-
-        var summaryResult = await summaryService.GenerateAllSummariesAsync();
-
-        logger.LogInformation(
-            "Summary generation complete: {Generated} generated, {Skipped} skipped, {Errors} errors",
-            summaryResult.SummariesGenerated,
-            summaryResult.GroupsSkipped,
-            summaryResult.Errors.Count);
-    }
-
-    if (result.Success)
-    {
-        logger.LogInformation(
-            "Sync completed successfully: {Packages} packages, {Releases} releases",
-            result.PackagesSynced,
-            result.ReleasesAdded);
-        return ExitSuccess;
-    }
-    else
-    {
-        logger.LogWarning(
-            "Sync completed with {ErrorCount} errors",
-            result.Errors.Count);
-        foreach (var error in result.Errors)
+        // Backfill denormalized version fields for any existing releases
+        var backfilled = await syncService.BackfillVersionFieldsAsync();
+        if (backfilled > 0)
         {
-            logger.LogWarning("  {Package}: {Message}", error.PackageName, error.Message);
+            logger.LogInformation("Backfilled version fields for {Count} existing releases", backfilled);
         }
-        return ExitPartialFailure;
+
+        var result = await syncService.SyncAllAsync();
+
+        // Generate summaries for packages with new/stale releases
+        if (result.ReleasesNeedingSummary.Count > 0)
+        {
+            logger.LogInformation(
+                "Generating summaries for {Count} releases needing summaries",
+                result.ReleasesNeedingSummary.Count);
+
+            var summaryResult = await summaryService.GenerateAllSummariesAsync();
+
+            logger.LogInformation(
+                "Summary generation complete: {Generated} generated, {Skipped} skipped, {Errors} errors",
+                summaryResult.SummariesGenerated,
+                summaryResult.GroupsSkipped,
+                summaryResult.Errors.Count);
+        }
+
+        if (result.Success)
+        {
+            logger.LogInformation(
+                "Sync completed successfully: {Packages} packages, {Releases} releases",
+                result.PackagesSynced,
+                result.ReleasesAdded);
+            return ExitSuccess;
+        }
+        else
+        {
+            logger.LogWarning(
+                "Sync completed with {ErrorCount} errors",
+                result.Errors.Count);
+            foreach (var error in result.Errors)
+            {
+                logger.LogWarning("  {Package}: {Message}", error.PackageName, error.Message);
+            }
+            return ExitPartialFailure;
+        }
     }
 }
 catch (Exception ex)
