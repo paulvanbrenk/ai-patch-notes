@@ -14,7 +14,7 @@ public class AiClientOptions
     /// The AI provider API base URL.
     /// Supports OpenAI-compatible APIs (OpenAI, Groq, OpenRouter, etc.).
     /// </summary>
-    public string BaseUrl { get; set; } = "https://api.openai.com/v1";
+    public string BaseUrl { get; set; } = "https://ollama.com/v1/";
 
     /// <summary>
     /// The API key for authentication.
@@ -24,5 +24,5 @@ public class AiClientOptions
     /// <summary>
     /// The model to use for summarization.
     /// </summary>
-    public string Model { get; set; } = "gpt-4o-mini";
+    public string Model { get; set; } = "gemma3:27b";
 }

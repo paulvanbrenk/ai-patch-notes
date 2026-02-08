@@ -33,7 +33,7 @@ public static class AiServiceCollectionExtensions
         {
             var options = serviceProvider.GetRequiredService<IOptions<AiClientOptions>>().Value;
 
-            client.BaseAddress = new Uri(options.BaseUrl);
+            client.BaseAddress = new Uri(options.BaseUrl.TrimEnd('/') + "/");
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
             if (!string.IsNullOrWhiteSpace(options.ApiKey))
