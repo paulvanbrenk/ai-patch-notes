@@ -49,3 +49,21 @@ public record SyncError(string PackageName, string Message);
 /// Result of syncing notifications.
 /// </summary>
 public record NotificationSyncResult(int Added, int Updated);
+
+/// <summary>
+/// Result of generating version group summaries.
+/// </summary>
+public record SummaryGenerationResult
+{
+    public int SummariesGenerated { get; set; }
+    public int GroupsSkipped { get; set; }
+    public List<SummaryGenerationError> Errors { get; } = [];
+
+    public bool Success => Errors.Count == 0;
+}
+
+/// <summary>
+/// Error that occurred during summary generation.
+/// </summary>
+public record SummaryGenerationError(
+    string PackageId, int MajorVersion, bool IsPrerelease, string Message);
