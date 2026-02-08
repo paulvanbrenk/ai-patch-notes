@@ -128,7 +128,8 @@ try
         var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
         await db.Database.MigrateAsync();
 
-        var repoResult = await syncService.SyncRepoAsync(owner, repo);
+        var scopedSyncService = scope.ServiceProvider.GetRequiredService<SyncService>();
+        var repoResult = await scopedSyncService.SyncRepoAsync(owner, repo);
         logger.LogInformation(
             "Sync complete: {Releases} releases fetched",
             repoResult.ReleasesAdded);
