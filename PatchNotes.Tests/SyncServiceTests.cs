@@ -14,9 +14,7 @@ public class SyncServiceTests : IDisposable
     private readonly PatchNotesDbContext _db;
     private readonly Mock<IGitHubClient> _mockGitHub;
     private readonly Mock<ILogger<SyncService>> _mockLogger;
-    private readonly Mock<ILogger<NotificationSyncService>> _mockNotificationLogger;
     private readonly SyncService _syncService;
-    private readonly NotificationSyncService _notificationSyncService;
 
     public SyncServiceTests()
     {
@@ -27,9 +25,7 @@ public class SyncServiceTests : IDisposable
         _db = new PatchNotesDbContext(options);
         _mockGitHub = new Mock<IGitHubClient>();
         _mockLogger = new Mock<ILogger<SyncService>>();
-        _mockNotificationLogger = new Mock<ILogger<NotificationSyncService>>();
         _syncService = new SyncService(_db, _mockGitHub.Object, _mockLogger.Object);
-        _notificationSyncService = new NotificationSyncService(_db, _mockGitHub.Object, _mockNotificationLogger.Object);
     }
 
     public void Dispose()
@@ -652,112 +648,6 @@ public class SyncServiceTests : IDisposable
 
     #endregion
 
-    #region SyncNotificationsAsync Tests
-
-    [Fact]
-    public async Task SyncNotificationsAsync_WithNewNotifications_AddsToDatabase()
-    {
-        // Arrange
-        var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", NpmName = "pkg", GithubOwner = "owner", GithubRepo = "repo" };
-        _db.Packages.Add(package);
-        await _db.SaveChangesAsync();
-
-        SetupGitHubNotifications([
-            CreateNotification("1", "owner/repo", "mention", "Issue Title", "Issue")
-        ]);
-
-        // Act
-        var result = await _notificationSyncService.SyncNotificationsAsync();
-
-        // Assert
-        result.Added.Should().Be(1);
-        result.Updated.Should().Be(0);
-
-        var notifications = await _db.Notifications.ToListAsync();
-        notifications.Should().ContainSingle();
-        notifications[0].GitHubId.Should().Be("1");
-        notifications[0].PackageId.Should().Be(package.Id);
-    }
-
-    [Fact]
-    public async Task SyncNotificationsAsync_WithExistingNotifications_UpdatesThem()
-    {
-        // Arrange
-        var existingNotification = new Notification
-        {
-            GitHubId = "1",
-            Reason = "mention",
-            SubjectTitle = "Old Title",
-            SubjectType = "Issue",
-            RepositoryFullName = "owner/repo",
-            Unread = true,
-            UpdatedAt = DateTime.UtcNow.AddDays(-1),
-            FetchedAt = DateTime.UtcNow.AddDays(-1)
-        };
-        _db.Notifications.Add(existingNotification);
-        await _db.SaveChangesAsync();
-
-        SetupGitHubNotifications([
-            CreateNotification("1", "owner/repo", "mention", "New Title", "Issue", unread: false)
-        ]);
-
-        // Act
-        var result = await _notificationSyncService.SyncNotificationsAsync();
-
-        // Assert
-        result.Added.Should().Be(0);
-        result.Updated.Should().Be(1);
-
-        var notification = await _db.Notifications.SingleAsync();
-        notification.SubjectTitle.Should().Be("New Title");
-        notification.Unread.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task SyncNotificationsAsync_LinksToMatchingPackage()
-    {
-        // Arrange
-        var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", NpmName = "pkg", GithubOwner = "owner", GithubRepo = "repo" };
-        _db.Packages.Add(package);
-        await _db.SaveChangesAsync();
-
-        SetupGitHubNotifications([
-            CreateNotification("1", "owner/repo", "mention", "Title", "Issue"),
-            CreateNotification("2", "other/repo", "mention", "Title 2", "Issue")
-        ]);
-
-        // Act
-        var result = await _notificationSyncService.SyncNotificationsAsync();
-
-        // Assert
-        result.Added.Should().Be(2);
-
-        var notifications = await _db.Notifications.ToListAsync();
-        notifications.Should().HaveCount(2);
-        notifications.First(n => n.GitHubId == "1").PackageId.Should().Be(package.Id);
-        notifications.First(n => n.GitHubId == "2").PackageId.Should().BeNull();
-    }
-
-    [Fact]
-    public async Task SyncNotificationsAsync_PassesParametersToClient()
-    {
-        // Arrange
-        var since = DateTime.UtcNow.AddDays(-7);
-        SetupGitHubNotifications([]);
-
-        // Act
-        await _notificationSyncService.SyncNotificationsAsync(all: true, since: since);
-
-        // Assert
-        _mockGitHub.Verify(x => x.GetAllNotificationsAsync(
-            true,
-            false,
-            since,
-            It.IsAny<CancellationToken>()), Times.Once);
-    }
-
-    #endregion
-
     #region SyncRepoAsync Tests
 
     [Fact]
@@ -842,17 +732,6 @@ public class SyncServiceTests : IDisposable
             .Returns(ToAsyncEnumerable(releases));
     }
 
-    private void SetupGitHubNotifications(List<GitHubNotification> notifications)
-    {
-        _mockGitHub
-            .Setup(x => x.GetAllNotificationsAsync(
-                It.IsAny<bool>(),
-                It.IsAny<bool>(),
-                It.IsAny<DateTime?>(),
-                It.IsAny<CancellationToken>()))
-            .Returns(ToAsyncEnumerable(notifications));
-    }
-
     private static GitHubRelease CreateRelease(
         string tag,
         DateTime publishedAt,
@@ -868,40 +747,6 @@ public class SyncServiceTests : IDisposable
             Body = body,
             Draft = draft,
             PublishedAt = publishedAt
-        };
-    }
-
-    private static GitHubNotification CreateNotification(
-        string id,
-        string repoFullName,
-        string reason,
-        string subjectTitle,
-        string subjectType,
-        bool unread = true)
-    {
-        var parts = repoFullName.Split('/');
-        return new GitHubNotification
-        {
-            Id = id,
-            Reason = reason,
-            Unread = unread,
-            UpdatedAt = DateTime.UtcNow,
-            Subject = new GitHubNotificationSubject
-            {
-                Title = subjectTitle,
-                Type = subjectType
-            },
-            Repository = new GitHubNotificationRepository
-            {
-                Id = Random.Shared.NextInt64(),
-                Name = parts[1],
-                FullName = repoFullName,
-                Owner = new GitHubNotificationOwner
-                {
-                    Login = parts[0],
-                    Id = Random.Shared.NextInt64()
-                }
-            }
         };
     }
 

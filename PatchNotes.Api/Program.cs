@@ -115,7 +115,6 @@ app.UseCors();
 app.MapStatusPageRoutes();
 app.MapPackageRoutes();
 app.MapReleaseRoutes();
-app.MapNotificationRoutes();
 app.MapUserRoutes();
 app.MapWatchlistRoutes();
 app.MapSubscriptionRoutes();
