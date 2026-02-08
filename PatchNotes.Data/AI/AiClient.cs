@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
@@ -25,15 +26,7 @@ public class AiClient : IAiClient
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
-    private const string SystemPrompt = """
-        You are a technical writer that summarizes software release notes.
-        Provide a concise summary (2-4 sentences) that highlights:
-        - The most important new features or improvements
-        - Critical bug fixes
-        - Breaking changes (if any)
-        Keep the summary brief and focused on what matters most to developers.
-        Do not use markdown formatting in your response.
-        """;
+    private static readonly string SystemPrompt = LoadEmbeddedPrompt();
 
     public AiClient(
         HttpClient httpClient,
@@ -178,5 +171,20 @@ public class AiClient : IAiClient
             : string.IsNullOrWhiteSpace(releaseBody)
                 ? releaseTitle
                 : $"# {releaseTitle}\n\n{releaseBody}";
+    }
+
+    private static string LoadEmbeddedPrompt()
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+        var resourceName = "PatchNotes.Data.AI.Prompts.changelog-summary.txt";
+
+        using var stream = assembly.GetManifestResourceStream(resourceName);
+        if (stream == null)
+        {
+            throw new InvalidOperationException($"Could not find embedded prompt resource: {resourceName}");
+        }
+
+        using var reader = new StreamReader(stream);
+        return reader.ReadToEnd();
     }
 }
