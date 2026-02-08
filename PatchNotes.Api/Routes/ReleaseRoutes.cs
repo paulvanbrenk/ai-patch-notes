@@ -156,7 +156,7 @@ public static class ReleaseRoutes
                 release.Summary = fullSummary.ToString();
                 release.SummaryGeneratedAt = DateTime.UtcNow;
                 release.SummaryStale = false;
-                release.SummaryVersion = Guid.NewGuid();
+                release.SummaryVersion = IdGenerator.NewId();
                 try
                 {
                     await db.SaveChangesAsync(httpContext.RequestAborted);
@@ -205,7 +205,7 @@ public static class ReleaseRoutes
             release.Summary = summary;
             release.SummaryGeneratedAt = DateTime.UtcNow;
             release.SummaryStale = false;
-            release.SummaryVersion = Guid.NewGuid();
+            release.SummaryVersion = IdGenerator.NewId();
             try
             {
                 await db.SaveChangesAsync(httpContext.RequestAborted);

@@ -185,9 +185,10 @@ namespace PatchNotes.Data.Migrations.SqlServer
                         .HasColumnType("bit")
                         .HasDefaultValue(true);
 
-                    b.Property<Guid>("SummaryVersion")
+                    b.Property<string>("SummaryVersion")
                         .IsConcurrencyToken()
-                        .HasColumnType("uniqueidentifier");
+                        .HasMaxLength(21)
+                        .HasColumnType("nvarchar(21)");
 
                     b.Property<string>("Tag")
                         .IsRequired()

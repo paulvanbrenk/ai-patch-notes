@@ -64,14 +64,14 @@ public class SummarizeConcurrencyTests
         release1.Summary = "Summary from request 1";
         release1.SummaryGeneratedAt = DateTime.UtcNow;
         release1.SummaryStale = false;
-        release1.SummaryVersion = Guid.NewGuid();
+        release1.SummaryVersion = IdGenerator.NewId();
         await ctx1.SaveChangesAsync();
 
         // Second "request" tries to save with stale SummaryVersion - should fail
         release2.Summary = "Summary from request 2";
         release2.SummaryGeneratedAt = DateTime.UtcNow;
         release2.SummaryStale = false;
-        release2.SummaryVersion = Guid.NewGuid();
+        release2.SummaryVersion = IdGenerator.NewId();
 
         var act = () => ctx2.SaveChangesAsync();
         await act.Should().ThrowAsync<DbUpdateConcurrencyException>();
@@ -140,7 +140,7 @@ public class SummarizeConcurrencyTests
         release.Summary.Should().NotBeNullOrEmpty();
         release.SummaryGeneratedAt.Should().NotBeNull();
         release.SummaryStale.Should().BeFalse();
-        release.SummaryVersion.Should().NotBe(Guid.Empty);
+        release.SummaryVersion.Should().NotBeNullOrEmpty();
     }
 }
 
