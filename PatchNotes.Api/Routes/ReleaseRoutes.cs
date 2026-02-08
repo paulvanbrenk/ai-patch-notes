@@ -23,6 +23,8 @@ public static class ReleaseRoutes
                     r.Tag,
                     r.Title,
                     r.Body,
+                    r.Summary,
+                    r.SummaryGeneratedAt,
                     r.PublishedAt,
                     r.FetchedAt,
                     Package = new
@@ -74,6 +76,8 @@ public static class ReleaseRoutes
                     r.Tag,
                     r.Title,
                     r.Body,
+                    r.Summary,
+                    r.SummaryGeneratedAt,
                     r.PublishedAt,
                     r.FetchedAt,
                     Package = new
