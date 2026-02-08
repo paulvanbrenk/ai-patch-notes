@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PatchNotes.Data;
 
@@ -10,9 +11,11 @@ using PatchNotes.Data;
 namespace PatchNotes.Data.Migrations.Sqlite
 {
     [DbContext(typeof(SqliteContext))]
-    partial class SqliteContextModelSnapshot : ModelSnapshot
+    [Migration("20260208182839_ChangeSummaryVersionToNanoid")]
+    partial class ChangeSummaryVersionToNanoid
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.2");
@@ -148,22 +151,10 @@ namespace PatchNotes.Data.Migrations.Sqlite
                     b.Property<DateTime>("FetchedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("IsPrerelease")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("MajorVersion")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("MinorVersion")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("PackageId")
                         .IsRequired()
                         .HasMaxLength(21)
                         .HasColumnType("TEXT");
-
-                    b.Property<int>("PatchVersion")
-                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("PublishedAt")
                         .HasColumnType("TEXT");
@@ -198,8 +189,6 @@ namespace PatchNotes.Data.Migrations.Sqlite
 
                     b.HasIndex("PackageId", "Tag")
                         .IsUnique();
-
-                    b.HasIndex("PackageId", "MajorVersion", "IsPrerelease");
 
                     b.ToTable("Releases");
                 });

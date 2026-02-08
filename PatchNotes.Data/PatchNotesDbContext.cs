@@ -41,7 +41,7 @@ public class PatchNotesDbContext : DbContext
             entity.Property(e => e.PackageId).HasMaxLength(21);
             entity.Property(e => e.Tag).HasMaxLength(128);
             entity.Property(e => e.SummaryStale).HasDefaultValue(true);
-            entity.Property(e => e.SummaryVersion).IsConcurrencyToken();
+            entity.Property(e => e.SummaryVersion).HasMaxLength(21).IsConcurrencyToken();
             entity.HasIndex(e => e.PublishedAt);
             entity.HasIndex(e => new { e.PackageId, e.Tag }).IsUnique();
             entity.HasIndex(e => new { e.PackageId, e.MajorVersion, e.IsPrerelease });
