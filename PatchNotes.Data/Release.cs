@@ -26,6 +26,12 @@ public class Release
     /// </summary>
     public bool SummaryStale { get; set; } = true;
 
+    /// <summary>
+    /// Concurrency token for summary persistence. Updated each time the summary
+    /// is saved, preventing race conditions from concurrent summarize requests.
+    /// </summary>
+    public Guid SummaryVersion { get; set; }
+
     public Package Package { get; set; } = null!;
 
     /// <summary>

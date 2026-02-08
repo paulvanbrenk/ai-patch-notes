@@ -102,7 +102,7 @@ public static class ReleaseRoutes
         });
 
         // POST /api/releases/{id}/summarize - Generate AI summary for a release
-        app.MapPost("/api/releases/{id}/summarize", async (string id, HttpContext httpContext, PatchNotesDbContext db, IAiClient aiClient) =>
+        app.MapPost("/api/releases/{id}/summarize", async (string id, HttpContext httpContext, PatchNotesDbContext db, IAiClient aiClient, ILoggerFactory loggerFactory) =>
         {
             var release = await db.Releases
                 .Include(r => r.Package)
@@ -149,11 +149,21 @@ public static class ReleaseRoutes
                     await httpContext.Response.Body.FlushAsync(httpContext.RequestAborted);
                 }
 
-                // Persist the generated summary
+                // Persist the generated summary with optimistic concurrency
                 release.Summary = fullSummary.ToString();
                 release.SummaryGeneratedAt = DateTime.UtcNow;
                 release.SummaryStale = false;
-                await db.SaveChangesAsync(httpContext.RequestAborted);
+                release.SummaryVersion = Guid.NewGuid();
+                try
+                {
+                    await db.SaveChangesAsync(httpContext.RequestAborted);
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    // Another request already persisted a summary - that's fine,
+                    // the streamed chunks were already sent to the client
+                    loggerFactory.CreateLogger("PatchNotes.Api.Routes.ReleaseRoutes").LogInformation("Concurrent summary persistence for release {ReleaseId} - another request won the race", id);
+                }
 
                 var completeData = JsonSerializer.Serialize(new
                 {
@@ -176,18 +186,28 @@ public static class ReleaseRoutes
             // Non-streaming JSON response
             var summary = await aiClient.SummarizeReleaseNotesAsync(release.Title, release.Body);
 
-            // Persist the generated summary
+            // Persist the generated summary with optimistic concurrency
             release.Summary = summary;
             release.SummaryGeneratedAt = DateTime.UtcNow;
             release.SummaryStale = false;
-            await db.SaveChangesAsync(httpContext.RequestAborted);
+            release.SummaryVersion = Guid.NewGuid();
+            try
+            {
+                await db.SaveChangesAsync(httpContext.RequestAborted);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                // Another request already persisted a summary - return it instead
+                loggerFactory.CreateLogger("PatchNotes.Api.Routes.ReleaseRoutes").LogInformation("Concurrent summary persistence for release {ReleaseId} - returning winner's summary", id);
+                await db.Entry(release).ReloadAsync();
+            }
 
             return Results.Ok(new
             {
                 release.Id,
                 release.Tag,
                 release.Title,
-                summary,
+                summary = release.Summary,
                 Package = new
                 {
                     release.Package.Id,
