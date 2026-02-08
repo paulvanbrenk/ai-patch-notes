@@ -5,6 +5,7 @@ using Moq;
 using PatchNotes.Data;
 using PatchNotes.Data.AI;
 using PatchNotes.Sync;
+using ReleaseInput = PatchNotes.Data.AI.ReleaseInput;
 
 namespace PatchNotes.Tests;
 
@@ -31,7 +32,7 @@ public class SummaryGenerationServiceTests : IDisposable
         // Default: AI client returns a summary
         _mockAiClient
             .Setup(x => x.SummarizeReleaseNotesAsync(
-                It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+                It.IsAny<string>(), It.IsAny<IReadOnlyList<ReleaseInput>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync("Generated summary for the version group.");
     }
 
@@ -167,7 +168,7 @@ public class SummaryGenerationServiceTests : IDisposable
 
         _mockAiClient.Verify(
             x => x.SummarizeReleaseNotesAsync(
-                It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()),
+                It.IsAny<string>(), It.IsAny<IReadOnlyList<ReleaseInput>>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
 
@@ -197,7 +198,7 @@ public class SummaryGenerationServiceTests : IDisposable
         var callCount = 0;
         _mockAiClient
             .Setup(x => x.SummarizeReleaseNotesAsync(
-                It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+                It.IsAny<string>(), It.IsAny<IReadOnlyList<ReleaseInput>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(() =>
             {
                 callCount++;
@@ -221,25 +222,27 @@ public class SummaryGenerationServiceTests : IDisposable
         await AddRelease(package.Id, "v1.0.0", "Initial Release", "First features");
         await AddRelease(package.Id, "v1.1.0", "Patch Release", "Bug fixes and improvements");
 
-        string? capturedTitle = null;
-        string? capturedBody = null;
+        string? capturedPackageName = null;
+        IReadOnlyList<ReleaseInput>? capturedReleases = null;
         _mockAiClient
             .Setup(x => x.SummarizeReleaseNotesAsync(
-                It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
-            .Callback<string?, string?, CancellationToken>((title, body, _) =>
+                It.IsAny<string>(), It.IsAny<IReadOnlyList<ReleaseInput>>(), It.IsAny<CancellationToken>()))
+            .Callback<string, IReadOnlyList<ReleaseInput>, CancellationToken>((name, releases, _) =>
             {
-                capturedTitle = title;
-                capturedBody = body;
+                capturedPackageName = name;
+                capturedReleases = releases;
             })
             .ReturnsAsync("Summary");
 
         await _service.GenerateGroupSummariesAsync(package.Id);
 
-        capturedTitle.Should().Be("v1.x releases");
-        capturedBody.Should().Contain("v1.1.0");
-        capturedBody.Should().Contain("v1.0.0");
-        capturedBody.Should().Contain("Bug fixes and improvements");
-        capturedBody.Should().Contain("First features");
+        capturedPackageName.Should().Be("test-pkg");
+        capturedReleases.Should().NotBeNull();
+        capturedReleases.Should().HaveCount(2);
+        capturedReleases!.Select(r => r.Tag).Should().Contain("v1.0.0");
+        capturedReleases.Select(r => r.Tag).Should().Contain("v1.1.0");
+        capturedReleases.SelectMany(r => new[] { r.Body }).Should().Contain("Bug fixes and improvements");
+        capturedReleases.SelectMany(r => new[] { r.Body }).Should().Contain("First features");
     }
 
     [Fact]

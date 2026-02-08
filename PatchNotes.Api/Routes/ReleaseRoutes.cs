@@ -133,6 +133,10 @@ public static class ReleaseRoutes
                 });
             }
 
+            // Gather same-week siblings for richer context
+            var releaseInputs = await BuildReleaseInputs(db, release);
+            var packageName = release.Package.NpmName ?? release.Package.Name;
+
             var acceptHeader = httpContext.Request.Headers.Accept.ToString();
 
             // Support Server-Sent Events for streaming
@@ -144,7 +148,7 @@ public static class ReleaseRoutes
 
                 var fullSummary = new System.Text.StringBuilder();
 
-                await foreach (var chunk in aiClient.SummarizeReleaseNotesStreamAsync(release.Title, release.Body, httpContext.RequestAborted))
+                await foreach (var chunk in aiClient.SummarizeReleaseNotesStreamAsync(packageName, releaseInputs, httpContext.RequestAborted))
                 {
                     fullSummary.Append(chunk);
                     var chunkData = JsonSerializer.Serialize(new { type = "chunk", content = chunk });
@@ -190,7 +194,7 @@ public static class ReleaseRoutes
             string summary;
             try
             {
-                summary = await aiClient.SummarizeReleaseNotesAsync(release.Title, release.Body);
+                summary = await aiClient.SummarizeReleaseNotesAsync(packageName, releaseInputs);
             }
             catch (Exception ex)
             {
@@ -232,5 +236,31 @@ public static class ReleaseRoutes
         }).AddEndpointFilterFactory(requireAuth);
 
         return app;
+    }
+
+    /// <summary>
+    /// Builds a list of ReleaseInputs for the target release plus any same-week siblings
+    /// from the same package, ordered by PublishedAt descending.
+    /// </summary>
+    private static async Task<List<ReleaseInput>> BuildReleaseInputs(PatchNotesDbContext db, Release release)
+    {
+        var weekStart = release.PublishedAt.Date.AddDays(-(int)release.PublishedAt.DayOfWeek);
+        var weekEnd = weekStart.AddDays(7);
+
+        var siblings = await db.Releases
+            .Where(r => r.PackageId == release.PackageId
+                        && r.Id != release.Id
+                        && r.PublishedAt >= weekStart
+                        && r.PublishedAt < weekEnd)
+            .OrderByDescending(r => r.PublishedAt)
+            .ToListAsync();
+
+        var allReleases = new List<Release> { release };
+        allReleases.AddRange(siblings);
+
+        return allReleases
+            .OrderByDescending(r => r.PublishedAt)
+            .Select(r => new ReleaseInput(r.Tag, r.Title, r.Body, r.PublishedAt))
+            .ToList();
     }
 }

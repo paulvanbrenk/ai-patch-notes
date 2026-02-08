@@ -39,16 +39,17 @@ public class AiClient : IAiClient
     }
 
     public async Task<string> SummarizeReleaseNotesAsync(
-        string? releaseTitle,
-        string? releaseBody,
+        string packageName,
+        IReadOnlyList<ReleaseInput> releases,
         CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(releaseBody) && string.IsNullOrWhiteSpace(releaseTitle))
+        if (releases.Count == 0 || releases.All(r =>
+                string.IsNullOrWhiteSpace(r.Body) && string.IsNullOrWhiteSpace(r.Title)))
         {
             return "No release notes content available to summarize.";
         }
 
-        var content = FormatContent(releaseTitle, releaseBody);
+        var userMessage = FormatUserMessage(packageName, releases);
 
         var request = new ChatCompletionRequest
         {
@@ -56,14 +57,15 @@ public class AiClient : IAiClient
             Messages =
             [
                 new ChatMessage { Role = "system", Content = SystemPrompt },
-                new ChatMessage { Role = "user", Content = $"Summarize these release notes:\n\n{content}" }
+                new ChatMessage { Role = "user", Content = userMessage }
             ],
             MaxTokens = 256,
             Temperature = 0.3,
             Stream = false
         };
 
-        _logger.LogDebug("Sending summarization request to AI API using model {Model}", _options.Model);
+        _logger.LogDebug("Sending summarization request to AI API using model {Model} for {ReleaseCount} release(s)",
+            _options.Model, releases.Count);
 
         var response = await _httpClient.PostAsJsonAsync("chat/completions", request, JsonOptions, cancellationToken);
         response.EnsureSuccessStatusCode();
@@ -87,17 +89,18 @@ public class AiClient : IAiClient
     }
 
     public async IAsyncEnumerable<string> SummarizeReleaseNotesStreamAsync(
-        string? releaseTitle,
-        string? releaseBody,
+        string packageName,
+        IReadOnlyList<ReleaseInput> releases,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(releaseBody) && string.IsNullOrWhiteSpace(releaseTitle))
+        if (releases.Count == 0 || releases.All(r =>
+                string.IsNullOrWhiteSpace(r.Body) && string.IsNullOrWhiteSpace(r.Title)))
         {
             yield return "No release notes content available to summarize.";
             yield break;
         }
 
-        var content = FormatContent(releaseTitle, releaseBody);
+        var userMessage = FormatUserMessage(packageName, releases);
 
         var request = new ChatCompletionRequest
         {
@@ -105,7 +108,7 @@ public class AiClient : IAiClient
             Messages =
             [
                 new ChatMessage { Role = "system", Content = SystemPrompt },
-                new ChatMessage { Role = "user", Content = $"Summarize these release notes:\n\n{content}" }
+                new ChatMessage { Role = "user", Content = userMessage }
             ],
             MaxTokens = 256,
             Temperature = 0.3,
@@ -164,13 +167,36 @@ public class AiClient : IAiClient
         }
     }
 
-    private static string FormatContent(string? releaseTitle, string? releaseBody)
+    internal static string FormatUserMessage(string packageName, IReadOnlyList<ReleaseInput> releases)
     {
-        return string.IsNullOrWhiteSpace(releaseTitle)
-            ? releaseBody!
-            : string.IsNullOrWhiteSpace(releaseBody)
-                ? releaseTitle
-                : $"# {releaseTitle}\n\n{releaseBody}";
+        var sb = new StringBuilder();
+        sb.AppendLine($"Package: {packageName}");
+
+        if (releases.Count == 1)
+        {
+            sb.AppendLine("Release:");
+        }
+        else
+        {
+            sb.AppendLine("Releases:");
+        }
+
+        foreach (var release in releases)
+        {
+            sb.AppendLine();
+            var dateStr = release.PublishedAt.HasValue
+                ? $" ({release.PublishedAt.Value:yyyy-MM-dd})"
+                : "";
+            sb.AppendLine($"--- {release.Tag}{dateStr} ---");
+
+            if (!string.IsNullOrWhiteSpace(release.Title))
+                sb.AppendLine(release.Title);
+
+            if (!string.IsNullOrWhiteSpace(release.Body))
+                sb.AppendLine(release.Body);
+        }
+
+        return sb.ToString().TrimEnd();
     }
 
     private static string LoadEmbeddedPrompt()
