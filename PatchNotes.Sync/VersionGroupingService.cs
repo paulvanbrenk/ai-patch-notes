@@ -52,8 +52,8 @@ public class VersionGroupingService
 
         foreach (var release in deduped)
         {
-            var parsed = ParseTag(release.Tag);
-            var key = (release.PackageId, parsed.MajorVersion, parsed.IsPrerelease);
+            // Use stored version fields from denormalized columns
+            var key = (release.PackageId, release.MajorVersion, release.IsPrerelease);
 
             if (!groups.TryGetValue(key, out var list))
             {
@@ -71,36 +71,53 @@ public class VersionGroupingService
             kvp.Value));
     }
 
-    internal record ParsedTag(int MajorVersion, bool IsPrerelease);
+    public record ParsedTag(int MajorVersion, int MinorVersion, int PatchVersion, bool IsPrerelease);
 
-    internal ParsedTag ParseTag(string tag)
+    public ParsedTag ParseTag(string tag)
     {
         if (string.IsNullOrWhiteSpace(tag))
-            return new ParsedTag(-1, false);
+            return new ParsedTag(-1, 0, 0, false);
 
         tag = tag.Trim();
 
         // Try non-standard prerelease first (e.g., "1.0.0beta1", "1.0.0.rc1")
         var nonStd = NonStandardPrereleaseRegex.Match(tag);
-        if (nonStd.Success && int.TryParse(nonStd.Groups[1].Value, out var nsMajor))
-            return new ParsedTag(nsMajor, true);
+        if (nonStd.Success
+            && int.TryParse(nonStd.Groups[1].Value, out var nsMajor)
+            && int.TryParse(nonStd.Groups[2].Value, out var nsMinor)
+            && int.TryParse(nonStd.Groups[3].Value, out var nsPatch))
+            return new ParsedTag(nsMajor, nsMinor, nsPatch, true);
 
         // Try monorepo format
         var mono = MonorepoRegex.Match(tag);
         if (mono.Success && int.TryParse(mono.Groups[1].Value, out var monoMajor))
-            return new ParsedTag(monoMajor, mono.Groups[4].Success);
+        {
+            int.TryParse(mono.Groups[2].Value, out var monoMinor);
+            int.TryParse(mono.Groups[3].Value, out var monoPatch);
+            return new ParsedTag(monoMajor, monoMinor, monoPatch, mono.Groups[4].Success);
+        }
 
         // Try release-style tags
         var rel = ReleaseTagRegex.Match(tag);
         if (rel.Success && int.TryParse(rel.Groups[1].Value, out var relMajor))
-            return new ParsedTag(relMajor, rel.Groups[4].Success);
+        {
+            int.TryParse(rel.Groups[2].Value, out var relMinor);
+            int.TryParse(rel.Groups[3].Value, out var relPatch);
+            return new ParsedTag(relMajor, relMinor, relPatch, rel.Groups[4].Success);
+        }
 
         // Try standard semver (including MAJOR.MINOR only)
         var sv = SemverRegex.Match(tag);
         if (sv.Success && int.TryParse(sv.Groups[1].Value, out var svMajor))
-            return new ParsedTag(svMajor, sv.Groups[4].Success);
+        {
+            int.TryParse(sv.Groups[2].Value, out var svMinor);
+            var svPatch = 0;
+            if (sv.Groups[3].Success)
+                int.TryParse(sv.Groups[3].Value, out svPatch);
+            return new ParsedTag(svMajor, svMinor, svPatch, sv.Groups[4].Success);
+        }
 
         // Non-semver → unversioned
-        return new ParsedTag(-1, false);
+        return new ParsedTag(-1, 0, 0, false);
     }
 }
