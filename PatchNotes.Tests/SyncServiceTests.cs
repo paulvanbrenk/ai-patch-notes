@@ -350,7 +350,8 @@ public class SyncServiceTests : IDisposable
             PublishedAt = DateTime.UtcNow.AddDays(-20),
             FetchedAt = DateTime.UtcNow.AddDays(-20),
             Summary = "This is a summary",
-            SummaryGeneratedAt = DateTime.UtcNow.AddDays(-19)
+            SummaryGeneratedAt = DateTime.UtcNow.AddDays(-19),
+            SummaryStale = false
         });
         await _db.SaveChangesAsync();
 
@@ -409,7 +410,7 @@ public class SyncServiceTests : IDisposable
 
         _db.Releases.AddRange(
             new Release { PackageId = package.Id, Tag = "v1.0.0", PublishedAt = DateTime.UtcNow.AddDays(-3), FetchedAt = DateTime.UtcNow.AddDays(-3), Summary = null },
-            new Release { PackageId = package.Id, Tag = "v1.1.0", PublishedAt = DateTime.UtcNow.AddDays(-2), FetchedAt = DateTime.UtcNow.AddDays(-2), Summary = "Has summary", SummaryGeneratedAt = DateTime.UtcNow.AddDays(-1) },
+            new Release { PackageId = package.Id, Tag = "v1.1.0", PublishedAt = DateTime.UtcNow.AddDays(-2), FetchedAt = DateTime.UtcNow.AddDays(-2), Summary = "Has summary", SummaryGeneratedAt = DateTime.UtcNow.AddDays(-1), SummaryStale = false },
             new Release { PackageId = package.Id, Tag = "v1.2.0", PublishedAt = DateTime.UtcNow.AddDays(-1), FetchedAt = DateTime.UtcNow.AddDays(-1), Summary = null }
         );
         await _db.SaveChangesAsync();
@@ -447,6 +448,53 @@ public class SyncServiceTests : IDisposable
         result[0].Tag.Should().Be("v1.1.0"); // Most recent
         result[1].Tag.Should().Be("v1.2.0");
         result[2].Tag.Should().Be("v1.0.0"); // Oldest
+    }
+
+    [Fact]
+    public async Task GetReleasesNeedingSummaryAsync_ReturnsStaleSummaryReleases()
+    {
+        // Arrange
+        var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", NpmName = "pkg", GithubOwner = "owner", GithubRepo = "repo" };
+        _db.Packages.Add(package);
+        await _db.SaveChangesAsync();
+
+        _db.Releases.AddRange(
+            new Release { PackageId = package.Id, Tag = "v1.0.0", PublishedAt = DateTime.UtcNow.AddDays(-3), FetchedAt = DateTime.UtcNow.AddDays(-3), Summary = null },
+            new Release { PackageId = package.Id, Tag = "v1.1.0", PublishedAt = DateTime.UtcNow.AddDays(-2), FetchedAt = DateTime.UtcNow.AddDays(-2), Summary = "Has summary", SummaryGeneratedAt = DateTime.UtcNow.AddDays(-1), SummaryStale = false },
+            new Release { PackageId = package.Id, Tag = "v1.2.0", PublishedAt = DateTime.UtcNow.AddDays(-1), FetchedAt = DateTime.UtcNow.AddDays(-1), Summary = "Stale summary", SummaryGeneratedAt = DateTime.UtcNow.AddDays(-1), SummaryStale = true }
+        );
+        await _db.SaveChangesAsync();
+
+        // Act
+        var result = await _syncService.GetReleasesNeedingSummaryAsync();
+
+        // Assert
+        result.Should().HaveCount(2);
+        result.Should().Contain(r => r.Tag == "v1.0.0");  // No summary
+        result.Should().Contain(r => r.Tag == "v1.2.0");  // Stale summary
+        result.Should().NotContain(r => r.Tag == "v1.1.0"); // Fresh summary
+    }
+
+    [Fact]
+    public async Task GetReleasesNeedingSummaryAsync_ByPackageId_ReturnsStaleSummaryReleases()
+    {
+        // Arrange
+        var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", NpmName = "pkg", GithubOwner = "owner", GithubRepo = "repo" };
+        _db.Packages.Add(package);
+        await _db.SaveChangesAsync();
+
+        _db.Releases.AddRange(
+            new Release { PackageId = package.Id, Tag = "v1.0.0", PublishedAt = DateTime.UtcNow.AddDays(-2), FetchedAt = DateTime.UtcNow.AddDays(-2), Summary = "Stale summary", SummaryGeneratedAt = DateTime.UtcNow.AddDays(-1), SummaryStale = true },
+            new Release { PackageId = package.Id, Tag = "v1.1.0", PublishedAt = DateTime.UtcNow.AddDays(-1), FetchedAt = DateTime.UtcNow.AddDays(-1), Summary = "Fresh summary", SummaryGeneratedAt = DateTime.UtcNow.AddDays(-1), SummaryStale = false }
+        );
+        await _db.SaveChangesAsync();
+
+        // Act
+        var result = await _syncService.GetReleasesNeedingSummaryAsync(package.Id);
+
+        // Assert
+        result.Should().ContainSingle();
+        result[0].Tag.Should().Be("v1.0.0");
     }
 
     [Fact]
