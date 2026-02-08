@@ -75,6 +75,8 @@ public static class PackageRoutes
                     r.Tag,
                     r.Title,
                     r.Body,
+                    r.Summary,
+                    r.SummaryGeneratedAt,
                     r.PublishedAt,
                     r.FetchedAt,
                     Package = new
