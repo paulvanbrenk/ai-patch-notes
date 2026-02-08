@@ -114,5 +114,5 @@ public static class RouteUtils
     }
 }
 
-public record AddPackageRequest(string NpmName);
-public record UpdatePackageRequest(string? GithubOwner, string? GithubRepo);
+public record AddPackageRequest(string NpmName, string? TagPrefix = null);
+public record UpdatePackageRequest(string? GithubOwner, string? GithubRepo, string? TagPrefix = null);

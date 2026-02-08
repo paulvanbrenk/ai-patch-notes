@@ -23,6 +23,7 @@ public static class PackageRoutes
                     p.NpmName,
                     p.GithubOwner,
                     p.GithubRepo,
+                    p.TagPrefix,
                     p.LastFetchedAt,
                     p.CreatedAt
                 })
@@ -43,6 +44,7 @@ public static class PackageRoutes
                     p.NpmName,
                     p.GithubOwner,
                     p.GithubRepo,
+                    p.TagPrefix,
                     p.LastFetchedAt,
                     p.CreatedAt,
                     ReleaseCount = p.Releases.Count
@@ -186,6 +188,7 @@ public static class PackageRoutes
                 NpmName = request.NpmName,
                 GithubOwner = owner,
                 GithubRepo = repoName,
+                TagPrefix = request.TagPrefix,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -200,6 +203,7 @@ public static class PackageRoutes
                 package.NpmName,
                 package.GithubOwner,
                 package.GithubRepo,
+                package.TagPrefix,
                 package.CreatedAt
             });
         }).AddEndpointFilterFactory(requireAuth)
@@ -224,6 +228,11 @@ public static class PackageRoutes
                 package.GithubRepo = request.GithubRepo;
             }
 
+            if (request.TagPrefix != null)
+            {
+                package.TagPrefix = request.TagPrefix == "" ? null : request.TagPrefix;
+            }
+
             await db.SaveChangesAsync();
 
             return Results.Ok(new
@@ -234,6 +243,7 @@ public static class PackageRoutes
                 package.NpmName,
                 package.GithubOwner,
                 package.GithubRepo,
+                package.TagPrefix,
                 package.LastFetchedAt,
                 package.CreatedAt
             });

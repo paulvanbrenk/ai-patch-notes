@@ -133,6 +133,11 @@ public class SyncService
             if (!ghRelease.PublishedAt.HasValue)
                 continue;
 
+            // Skip releases that don't match the tag prefix filter
+            if (!string.IsNullOrEmpty(package.TagPrefix) &&
+                !ghRelease.TagName.StartsWith(package.TagPrefix, StringComparison.Ordinal))
+                continue;
+
             // If we have a last fetched date, skip older releases
             // GitHub returns releases newest-first, so once we hit an old one, we can stop
             if (since.HasValue && ghRelease.PublishedAt.Value <= since.Value)

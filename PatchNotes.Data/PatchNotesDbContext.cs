@@ -32,6 +32,7 @@ public class PatchNotesDbContext : DbContext
             entity.Property(e => e.NpmName).HasMaxLength(256);
             entity.Property(e => e.GithubOwner).HasMaxLength(128);
             entity.Property(e => e.GithubRepo).HasMaxLength(128);
+            entity.Property(e => e.TagPrefix).HasMaxLength(64);
             entity.HasIndex(e => e.NpmName).IsUnique();
         });
 

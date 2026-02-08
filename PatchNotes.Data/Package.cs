@@ -8,6 +8,7 @@ public class Package
     public string? NpmName { get; set; }
     public required string GithubOwner { get; set; }
     public required string GithubRepo { get; set; }
+    public string? TagPrefix { get; set; }
     public DateTime? LastFetchedAt { get; set; }
     public DateTime CreatedAt { get; set; }
 
