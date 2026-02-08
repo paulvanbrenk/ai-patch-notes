@@ -27,13 +27,10 @@ public class PatchNotesApiFixture : WebApplicationFactory<Program>, IAsyncLifeti
 
         builder.ConfigureServices(services =>
         {
-            // Remove existing DbContext registration
-            var dbContextDescriptor = services.SingleOrDefault(
-                d => d.ServiceType == typeof(DbContextOptions<PatchNotesDbContext>));
-            if (dbContextDescriptor != null)
-            {
-                services.Remove(dbContextDescriptor);
-            }
+            // Remove existing DbContext registrations
+            services.RemoveAll<DbContextOptions<PatchNotesDbContext>>();
+            services.RemoveAll<DbContextOptions<SqliteContext>>();
+            services.RemoveAll<PatchNotesDbContext>();
 
             // Create a shared connection for in-memory SQLite
             _connection = new SqliteConnection("Data Source=:memory:");

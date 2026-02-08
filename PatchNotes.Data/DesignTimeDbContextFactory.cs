@@ -9,7 +9,7 @@ namespace PatchNotes.Data;
 /// </summary>
 public class SqliteContext : PatchNotesDbContext
 {
-    public SqliteContext(DbContextOptions<PatchNotesDbContext> options) : base(options) { }
+    public SqliteContext(DbContextOptions<SqliteContext> options) : base(options) { }
 }
 
 /// <summary>
@@ -18,7 +18,7 @@ public class SqliteContext : PatchNotesDbContext
 /// </summary>
 public class SqlServerContext : PatchNotesDbContext
 {
-    public SqlServerContext(DbContextOptions<PatchNotesDbContext> options) : base(options) { }
+    public SqlServerContext(DbContextOptions<SqlServerContext> options) : base(options) { }
 }
 
 /// <summary>
@@ -28,7 +28,7 @@ public class SqliteContextFactory : IDesignTimeDbContextFactory<SqliteContext>
 {
     public SqliteContext CreateDbContext(string[] args)
     {
-        var optionsBuilder = new DbContextOptionsBuilder<PatchNotesDbContext>();
+        var optionsBuilder = new DbContextOptionsBuilder<SqliteContext>();
         optionsBuilder.UseSqlite("Data Source=patchnotes.db");
         return new SqliteContext(optionsBuilder.Options);
     }
@@ -47,7 +47,7 @@ public class SqlServerContextFactory : IDesignTimeDbContextFactory<SqlServerCont
                 "Connection string not found. " +
                 "Set ConnectionStrings__PatchNotes environment variable.");
 
-        var optionsBuilder = new DbContextOptionsBuilder<PatchNotesDbContext>();
+        var optionsBuilder = new DbContextOptionsBuilder<SqlServerContext>();
         optionsBuilder.UseSqlServer(connectionString, options =>
             options.EnableRetryOnFailure(
                 maxRetryCount: 5,
@@ -58,17 +58,3 @@ public class SqlServerContextFactory : IDesignTimeDbContextFactory<SqlServerCont
     }
 }
 
-// Keep backward compatibility for existing migrations
-public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<PatchNotesDbContext>
-{
-    public PatchNotesDbContext CreateDbContext(string[] args)
-    {
-        var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__PatchNotes")
-            ?? "Data Source=patchnotes.db";
-
-        var optionsBuilder = new DbContextOptionsBuilder<PatchNotesDbContext>();
-        DatabaseProviderFactory.ConfigureDbContext(optionsBuilder, connectionString);
-
-        return new PatchNotesDbContext(optionsBuilder.Options);
-    }
-}

@@ -16,8 +16,16 @@ public static class DatabaseProviderFactory
         var connectionString = configuration.GetConnectionString(ConnectionStringName)
             ?? DefaultSqliteConnection;
 
-        services.AddDbContext<PatchNotesDbContext>(options =>
-            ConfigureDbContext(options, connectionString));
+        if (IsSqlServer(connectionString))
+        {
+            services.AddDbContext<PatchNotesDbContext, SqlServerContext>(options =>
+                ConfigureDbContext(options, connectionString));
+        }
+        else
+        {
+            services.AddDbContext<PatchNotesDbContext, SqliteContext>(options =>
+                ConfigureDbContext(options, connectionString));
+        }
 
         return services;
     }
