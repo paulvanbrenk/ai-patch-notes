@@ -15,6 +15,15 @@ const int ExitFatalError = 2;
 
 // Parse command-line arguments
 var seedOnly = args.Contains("--seed");
+var summarizeRepo = GetArgValue(args, "-s");
+
+static string? GetArgValue(string[] args, string flag)
+{
+    var index = Array.IndexOf(args, flag);
+    if (index >= 0 && index + 1 < args.Length)
+        return args[index + 1];
+    return null;
+}
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -65,6 +74,46 @@ try
         await DbSeeder.SeedAsync(db);
         logger.LogInformation("Database seeded successfully");
         return ExitSuccess;
+    }
+
+    // Handle -s <owner/repo> flag: generate summaries for a specific package
+    if (summarizeRepo != null)
+    {
+        var parts = summarizeRepo.Split('/');
+        if (parts.Length != 2 || string.IsNullOrWhiteSpace(parts[0]) || string.IsNullOrWhiteSpace(parts[1]))
+        {
+            logger.LogError("Invalid repository format. Expected: owner/repo (e.g., prettier/prettier)");
+            return ExitFatalError;
+        }
+
+        var owner = parts[0];
+        var repo = parts[1];
+
+        logger.LogInformation("Generating summaries for {Owner}/{Repo}", owner, repo);
+
+        var db = host.Services.GetRequiredService<PatchNotesDbContext>();
+
+        var package = await db.Packages
+            .FirstOrDefaultAsync(p => p.GithubOwner == owner && p.GithubRepo == repo);
+
+        if (package == null)
+        {
+            logger.LogError(
+                "Package {Owner}/{Repo} not found. Run 'sync -r' first to fetch the package and its releases.",
+                owner, repo);
+            return ExitFatalError;
+        }
+
+        var summaryResult = await summaryService.GenerateGroupSummariesAsync(package.Id);
+
+        logger.LogInformation(
+            "Summary generation for {Owner}/{Repo} complete: {Generated} generated, {Skipped} skipped, {Errors} errors",
+            owner, repo,
+            summaryResult.SummariesGenerated,
+            summaryResult.GroupsSkipped,
+            summaryResult.Errors.Count);
+
+        return summaryResult.Success ? ExitSuccess : ExitPartialFailure;
     }
 
     logger.LogInformation("PatchNotes Sync starting");
