@@ -629,6 +629,81 @@ public class SyncServiceTests : IDisposable
 
     #endregion
 
+    #region SyncRepoAsync Tests
+
+    [Fact]
+    public async Task SyncRepoAsync_CreatesPackageAndSyncsReleases()
+    {
+        // Arrange
+        SetupGitHubReleases("prettier", "prettier", [
+            CreateRelease("v3.0.0", DateTime.UtcNow, body: "Release notes"),
+            CreateRelease("v2.9.0", DateTime.UtcNow.AddDays(-1))
+        ]);
+
+        // Act
+        var result = await _syncService.SyncRepoAsync("prettier", "prettier");
+
+        // Assert
+        result.ReleasesAdded.Should().Be(2);
+
+        var package = await _db.Packages.SingleAsync();
+        package.Name.Should().Be("prettier");
+        package.GithubOwner.Should().Be("prettier");
+        package.GithubRepo.Should().Be("prettier");
+        package.Url.Should().Be("https://github.com/prettier/prettier");
+
+        var releases = await _db.Releases.ToListAsync();
+        releases.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task SyncRepoAsync_UsesExistingPackage()
+    {
+        // Arrange
+        var existing = new Package
+        {
+            Name = "prettier",
+            Url = "https://github.com/prettier/prettier",
+            GithubOwner = "prettier",
+            GithubRepo = "prettier"
+        };
+        _db.Packages.Add(existing);
+        await _db.SaveChangesAsync();
+
+        SetupGitHubReleases("prettier", "prettier", [
+            CreateRelease("v3.0.0", DateTime.UtcNow)
+        ]);
+
+        // Act
+        var result = await _syncService.SyncRepoAsync("prettier", "prettier");
+
+        // Assert
+        result.ReleasesAdded.Should().Be(1);
+
+        var packages = await _db.Packages.ToListAsync();
+        packages.Should().HaveCount(1);
+        packages[0].Id.Should().Be(existing.Id);
+    }
+
+    [Fact]
+    public async Task SyncRepoAsync_WithNoReleases_ReturnsZero()
+    {
+        // Arrange
+        SetupGitHubReleases("owner", "empty-repo", []);
+
+        // Act
+        var result = await _syncService.SyncRepoAsync("owner", "empty-repo");
+
+        // Assert
+        result.ReleasesAdded.Should().Be(0);
+
+        var package = await _db.Packages.SingleAsync();
+        package.GithubOwner.Should().Be("owner");
+        package.GithubRepo.Should().Be("empty-repo");
+    }
+
+    #endregion
+
     #region Helper Methods
 
     private void SetupGitHubReleases(string owner, string repo, List<GitHubRelease> releases)

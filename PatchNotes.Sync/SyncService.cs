@@ -204,6 +204,41 @@ public class SyncService
     }
 
     /// <summary>
+    /// Syncs a single repository by owner/repo, creating the package if it doesn't exist.
+    /// </summary>
+    /// <param name="owner">GitHub repository owner.</param>
+    /// <param name="repo">GitHub repository name.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Result with count of releases added and releases needing summaries.</returns>
+    public async Task<PackageSyncResult> SyncRepoAsync(
+        string owner,
+        string repo,
+        CancellationToken cancellationToken = default)
+    {
+        var package = await _db.Packages
+            .FirstOrDefaultAsync(
+                p => p.GithubOwner == owner && p.GithubRepo == repo,
+                cancellationToken);
+
+        if (package == null)
+        {
+            package = new Package
+            {
+                Name = repo,
+                Url = $"https://github.com/{owner}/{repo}",
+                GithubOwner = owner,
+                GithubRepo = repo,
+                CreatedAt = DateTime.UtcNow
+            };
+            _db.Packages.Add(package);
+            await _db.SaveChangesAsync(cancellationToken);
+            _logger.LogInformation("Created package {Owner}/{Repo}", owner, repo);
+        }
+
+        return await SyncPackageAsync(package, cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
     /// Gets all releases that need summary generation across all packages.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
