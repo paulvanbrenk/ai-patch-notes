@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using PatchNotes.Data;
 using PatchNotes.Data.AI;
+using ReleaseInput = PatchNotes.Data.AI.ReleaseInput;
 
 namespace PatchNotes.Tests;
 
@@ -213,13 +214,13 @@ internal class DelayedMockAiClient : IAiClient
         _delay = delay;
     }
 
-    public async Task<string> SummarizeReleaseNotesAsync(string? releaseTitle, string? releaseBody, CancellationToken cancellationToken = default)
+    public async Task<string> SummarizeReleaseNotesAsync(string packageName, IReadOnlyList<ReleaseInput> releases, CancellationToken cancellationToken = default)
     {
         await Task.Delay(_delay, cancellationToken);
-        return $"Mock summary of {releaseTitle}";
+        return $"Mock summary of {packageName} ({releases.Count} releases)";
     }
 
-    public async IAsyncEnumerable<string> SummarizeReleaseNotesStreamAsync(string? releaseTitle, string? releaseBody, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<string> SummarizeReleaseNotesStreamAsync(string packageName, IReadOnlyList<ReleaseInput> releases, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         await Task.Delay(_delay, cancellationToken);
         yield return "Mock ";

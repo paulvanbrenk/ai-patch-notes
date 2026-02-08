@@ -37,6 +37,13 @@ public class SummaryGenerationService
     {
         var result = new SummaryGenerationResult();
 
+        var package = await _db.Packages.FindAsync([packageId], cancellationToken);
+        if (package == null)
+        {
+            _logger.LogWarning("Package {PackageId} not found", packageId);
+            return result;
+        }
+
         var releases = await _db.Releases
             .Where(r => r.PackageId == packageId)
             .ToListAsync(cancellationToken);
@@ -70,7 +77,7 @@ public class SummaryGenerationService
 
             try
             {
-                var summary = await GenerateGroupSummaryAsync(group, cancellationToken);
+                var summary = await GenerateGroupSummaryAsync(package.Name, group, cancellationToken);
 
                 if (string.IsNullOrWhiteSpace(summary))
                 {
@@ -158,33 +165,15 @@ public class SummaryGenerationService
     }
 
     private async Task<string> GenerateGroupSummaryAsync(
+        string packageName,
         VersionGroup group,
         CancellationToken cancellationToken)
     {
-        var sortedReleases = group.Releases
+        var releaseInputs = group.Releases
             .OrderByDescending(r => r.PublishedAt)
+            .Select(r => new ReleaseInput(r.Tag, r.Title, r.Body, r.PublishedAt))
             .ToList();
 
-        var versionLabel = group.MajorVersion >= 0
-            ? $"v{group.MajorVersion}.x"
-            : "unversioned";
-
-        if (group.IsPrerelease)
-            versionLabel += " (pre-release)";
-
-        var title = $"{versionLabel} releases";
-
-        var bodyParts = new List<string>();
-        foreach (var release in sortedReleases)
-        {
-            var releasePart = !string.IsNullOrWhiteSpace(release.Title)
-                ? $"## {release.Tag} — {release.Title}\n{release.Body ?? ""}"
-                : $"## {release.Tag}\n{release.Body ?? ""}";
-            bodyParts.Add(releasePart.Trim());
-        }
-
-        var body = string.Join("\n\n", bodyParts);
-
-        return await _aiClient.SummarizeReleaseNotesAsync(title, body, cancellationToken);
+        return await _aiClient.SummarizeReleaseNotesAsync(packageName, releaseInputs, cancellationToken);
     }
 }
