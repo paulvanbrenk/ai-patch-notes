@@ -396,6 +396,135 @@ public class SyncServiceTests : IDisposable
         result.ReleasesNeedingSummary.Should().HaveCount(3);
     }
 
+    [Fact]
+    public async Task SyncPackageAsync_WithTagPrefix_OnlyIncludesMatchingTags()
+    {
+        // Arrange - simulates vitejs/vite monorepo
+        var package = new Package
+        {
+            Name = "vite",
+            Url = "https://github.com/vitejs/vite",
+            NpmName = "vite",
+            GithubOwner = "vitejs",
+            GithubRepo = "vite",
+            TagPrefix = "v"
+        };
+        _db.Packages.Add(package);
+        await _db.SaveChangesAsync();
+
+        SetupGitHubReleases("vitejs", "vite", [
+            CreateRelease("v7.3.1", DateTime.UtcNow, "Vite 7.3.1"),
+            CreateRelease("v8.0.0-beta.13", DateTime.UtcNow, "Vite 8.0.0-beta.13"),
+            CreateRelease("create-vite@8.0.0", DateTime.UtcNow, "create-vite 8.0.0"),
+            CreateRelease("plugin-react@2.0.0", DateTime.UtcNow, "plugin-react 2.0.0"),
+            CreateRelease("plugin-legacy@8.0.0-beta.3", DateTime.UtcNow, "plugin-legacy 8.0.0-beta.3")
+        ]);
+
+        // Act
+        var result = await _syncService.SyncPackageAsync(package);
+
+        // Assert - only v-prefixed tags should be included
+        result.ReleasesAdded.Should().Be(2);
+
+        var releases = await _db.Releases.Where(r => r.PackageId == package.Id).ToListAsync();
+        releases.Should().HaveCount(2);
+        releases.Should().Contain(r => r.Tag == "v7.3.1");
+        releases.Should().Contain(r => r.Tag == "v8.0.0-beta.13");
+        releases.Should().NotContain(r => r.Tag == "create-vite@8.0.0");
+        releases.Should().NotContain(r => r.Tag == "plugin-react@2.0.0");
+    }
+
+    [Fact]
+    public async Task SyncPackageAsync_WithTagPrefix_CreateVite()
+    {
+        // Arrange - track create-vite from the same monorepo
+        var package = new Package
+        {
+            Name = "create-vite",
+            Url = "https://github.com/vitejs/vite",
+            GithubOwner = "vitejs",
+            GithubRepo = "vite",
+            TagPrefix = "create-vite@"
+        };
+        _db.Packages.Add(package);
+        await _db.SaveChangesAsync();
+
+        SetupGitHubReleases("vitejs", "vite", [
+            CreateRelease("v7.3.1", DateTime.UtcNow, "Vite 7.3.1"),
+            CreateRelease("create-vite@8.0.0", DateTime.UtcNow, "create-vite 8.0.0"),
+            CreateRelease("create-vite@7.0.0", DateTime.UtcNow, "create-vite 7.0.0"),
+            CreateRelease("plugin-react@2.0.0", DateTime.UtcNow, "plugin-react 2.0.0")
+        ]);
+
+        // Act
+        var result = await _syncService.SyncPackageAsync(package);
+
+        // Assert - only create-vite@ tags
+        result.ReleasesAdded.Should().Be(2);
+
+        var releases = await _db.Releases.Where(r => r.PackageId == package.Id).ToListAsync();
+        releases.Should().HaveCount(2);
+        releases.Should().Contain(r => r.Tag == "create-vite@8.0.0");
+        releases.Should().Contain(r => r.Tag == "create-vite@7.0.0");
+    }
+
+    [Fact]
+    public async Task SyncPackageAsync_WithNullTagPrefix_IncludesAllReleases()
+    {
+        // Arrange - null TagPrefix means include everything (backward compatible)
+        var package = new Package
+        {
+            Name = "pkg",
+            Url = "https://github.com/owner/repo",
+            NpmName = "pkg",
+            GithubOwner = "owner",
+            GithubRepo = "repo",
+            TagPrefix = null
+        };
+        _db.Packages.Add(package);
+        await _db.SaveChangesAsync();
+
+        SetupGitHubReleases("owner", "repo", [
+            CreateRelease("v1.0.0", DateTime.UtcNow),
+            CreateRelease("some-other-tag", DateTime.UtcNow),
+            CreateRelease("anything@1.0.0", DateTime.UtcNow)
+        ]);
+
+        // Act
+        var result = await _syncService.SyncPackageAsync(package);
+
+        // Assert - all tags included
+        result.ReleasesAdded.Should().Be(3);
+    }
+
+    [Fact]
+    public async Task SyncPackageAsync_WithEmptyTagPrefix_IncludesAllReleases()
+    {
+        // Arrange - empty string TagPrefix also means include everything
+        var package = new Package
+        {
+            Name = "pkg",
+            Url = "https://github.com/owner/repo",
+            NpmName = "pkg",
+            GithubOwner = "owner",
+            GithubRepo = "repo",
+            TagPrefix = ""
+        };
+        _db.Packages.Add(package);
+        await _db.SaveChangesAsync();
+
+        SetupGitHubReleases("owner", "repo", [
+            CreateRelease("v1.0.0", DateTime.UtcNow),
+            CreateRelease("other@1.0.0", DateTime.UtcNow)
+        ]);
+
+        // Act
+        var result = await _syncService.SyncPackageAsync(package);
+
+        // Assert - all tags included
+        result.ReleasesAdded.Should().Be(2);
+    }
+
     #endregion
 
     #region GetReleasesNeedingSummaryAsync Tests

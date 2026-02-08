@@ -110,6 +110,10 @@ namespace PatchNotes.Data.Migrations.Sqlite
                         .HasMaxLength(256)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("TagPrefix")
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Url")
                         .IsRequired()
                         .HasColumnType("TEXT");
