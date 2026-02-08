@@ -68,6 +68,17 @@ public static class ReleaseRoutes
                 }
             }
 
+            // Filter using denormalized version fields at DB level
+            if (excludePrerelease == true)
+            {
+                query = query.Where(r => !r.IsPrerelease);
+            }
+
+            if (majorVersion.HasValue)
+            {
+                query = query.Where(r => r.MajorVersion == majorVersion.Value);
+            }
+
             var releases = await query
                 .OrderByDescending(r => r.PublishedAt)
                 .Select(r => new
@@ -89,18 +100,6 @@ public static class ReleaseRoutes
                     }
                 })
                 .ToListAsync();
-
-            // Filter out prereleases if requested
-            if (excludePrerelease == true)
-            {
-                releases = releases.Where(r => !RouteUtils.IsPrerelease(r.Tag)).ToList();
-            }
-
-            // Filter by major version if specified
-            if (majorVersion.HasValue)
-            {
-                releases = releases.Where(r => RouteUtils.GetMajorVersion(r.Tag) == majorVersion.Value).ToList();
-            }
 
             return Results.Ok(releases);
         });

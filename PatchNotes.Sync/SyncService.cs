@@ -15,6 +15,7 @@ public class SyncService
     private readonly IGitHubClient _github;
     private readonly ILogger<SyncService> _logger;
     private readonly ChangelogResolver? _changelogResolver;
+    private readonly VersionGroupingService _versionGrouping = new();
 
     public SyncService(
         PatchNotesDbContext db,
@@ -168,6 +169,7 @@ public class SyncService
                 }
             }
 
+            var parsed = _versionGrouping.ParseTag(ghRelease.TagName);
             var release = new Release
             {
                 PackageId = package.Id,
@@ -175,7 +177,11 @@ public class SyncService
                 Title = ghRelease.Name,
                 Body = body,
                 PublishedAt = ghRelease.PublishedAt.Value,
-                FetchedAt = fetchedAt
+                FetchedAt = fetchedAt,
+                MajorVersion = parsed.MajorVersion,
+                MinorVersion = parsed.MinorVersion,
+                PatchVersion = parsed.PatchVersion,
+                IsPrerelease = parsed.IsPrerelease
             };
 
             _db.Releases.Add(release);
@@ -266,5 +272,41 @@ public class SyncService
             .Where(r => r.PackageId == packageId && (r.Summary == null || r.SummaryStale))
             .OrderByDescending(r => r.PublishedAt)
             .ToListAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Backfills denormalized version fields for all existing releases.
+    /// Parses the Tag and updates MajorVersion, MinorVersion, PatchVersion, and IsPrerelease.
+    /// Safe to call multiple times (idempotent).
+    /// </summary>
+    /// <returns>Number of releases updated.</returns>
+    public async Task<int> BackfillVersionFieldsAsync(CancellationToken cancellationToken = default)
+    {
+        var releases = await _db.Releases.ToListAsync(cancellationToken);
+        var updated = 0;
+
+        foreach (var release in releases)
+        {
+            var parsed = _versionGrouping.ParseTag(release.Tag);
+            if (release.MajorVersion != parsed.MajorVersion
+                || release.MinorVersion != parsed.MinorVersion
+                || release.PatchVersion != parsed.PatchVersion
+                || release.IsPrerelease != parsed.IsPrerelease)
+            {
+                release.MajorVersion = parsed.MajorVersion;
+                release.MinorVersion = parsed.MinorVersion;
+                release.PatchVersion = parsed.PatchVersion;
+                release.IsPrerelease = parsed.IsPrerelease;
+                updated++;
+            }
+        }
+
+        if (updated > 0)
+        {
+            await _db.SaveChangesAsync(cancellationToken);
+            _logger.LogInformation("Backfilled version fields for {Count} releases", updated);
+        }
+
+        return updated;
     }
 }

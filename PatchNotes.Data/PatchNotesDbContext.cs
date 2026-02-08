@@ -44,6 +44,7 @@ public class PatchNotesDbContext : DbContext
             entity.Property(e => e.SummaryVersion).IsConcurrencyToken();
             entity.HasIndex(e => e.PublishedAt);
             entity.HasIndex(e => new { e.PackageId, e.Tag }).IsUnique();
+            entity.HasIndex(e => new { e.PackageId, e.MajorVersion, e.IsPrerelease });
             entity.HasOne(e => e.Package)
                 .WithMany(p => p.Releases)
                 .HasForeignKey(e => e.PackageId);

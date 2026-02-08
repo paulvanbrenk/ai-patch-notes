@@ -154,10 +154,22 @@ namespace PatchNotes.Data.Migrations.SqlServer
                     b.Property<DateTime>("FetchedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<bool>("IsPrerelease")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MajorVersion")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MinorVersion")
+                        .HasColumnType("int");
+
                     b.Property<string>("PackageId")
                         .IsRequired()
                         .HasMaxLength(21)
                         .HasColumnType("nvarchar(21)");
+
+                    b.Property<int>("PatchVersion")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("PublishedAt")
                         .HasColumnType("datetime2");
@@ -191,6 +203,8 @@ namespace PatchNotes.Data.Migrations.SqlServer
 
                     b.HasIndex("PackageId", "Tag")
                         .IsUnique();
+
+                    b.HasIndex("PackageId", "MajorVersion", "IsPrerelease");
 
                     b.ToTable("Releases");
                 });

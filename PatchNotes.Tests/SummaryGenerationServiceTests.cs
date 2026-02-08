@@ -153,7 +153,10 @@ public class SummaryGenerationServiceTests : IDisposable
             FetchedAt = DateTime.UtcNow.AddDays(-5),
             Summary = "Existing summary",
             SummaryGeneratedAt = DateTime.UtcNow.AddDays(-4),
-            SummaryStale = false
+            SummaryStale = false,
+            MajorVersion = 1,
+            MinorVersion = 0,
+            PatchVersion = 0
         });
         await _db.SaveChangesAsync();
 
@@ -294,7 +297,10 @@ public class SummaryGenerationServiceTests : IDisposable
             FetchedAt = DateTime.UtcNow,
             Summary = "Has summary",
             SummaryGeneratedAt = DateTime.UtcNow,
-            SummaryStale = false
+            SummaryStale = false,
+            MajorVersion = 2,
+            MinorVersion = 0,
+            PatchVersion = 0
         });
         await _db.SaveChangesAsync();
 
@@ -339,6 +345,7 @@ public class SummaryGenerationServiceTests : IDisposable
     private async Task<Release> AddRelease(
         string packageId, string tag, string? title = null, string? body = null)
     {
+        var parsed = _groupingService.ParseTag(tag);
         var release = new Release
         {
             PackageId = packageId,
@@ -347,7 +354,11 @@ public class SummaryGenerationServiceTests : IDisposable
             Body = body,
             PublishedAt = DateTime.UtcNow,
             FetchedAt = DateTime.UtcNow,
-            SummaryStale = true
+            SummaryStale = true,
+            MajorVersion = parsed.MajorVersion,
+            MinorVersion = parsed.MinorVersion,
+            PatchVersion = parsed.PatchVersion,
+            IsPrerelease = parsed.IsPrerelease
         };
         _db.Releases.Add(release);
         await _db.SaveChangesAsync();

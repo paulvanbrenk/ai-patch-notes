@@ -8,14 +8,21 @@ public class VersionGroupingServiceTests
 {
     private readonly VersionGroupingService _sut = new();
 
-    private static Release MakeRelease(string tag, string packageId = "pkg-1") =>
-        new()
+    private Release MakeRelease(string tag, string packageId = "pkg-1")
+    {
+        var parsed = _sut.ParseTag(tag);
+        return new Release
         {
             Tag = tag,
             PackageId = packageId,
             PublishedAt = DateTime.UtcNow,
-            FetchedAt = DateTime.UtcNow
+            FetchedAt = DateTime.UtcNow,
+            MajorVersion = parsed.MajorVersion,
+            MinorVersion = parsed.MinorVersion,
+            PatchVersion = parsed.PatchVersion,
+            IsPrerelease = parsed.IsPrerelease
         };
+    }
 
     #region Standard Semver Parsing
 

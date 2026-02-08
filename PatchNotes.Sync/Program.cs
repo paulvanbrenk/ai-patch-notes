@@ -137,6 +137,13 @@ try
 
     logger.LogInformation("PatchNotes Sync starting");
 
+    // Backfill denormalized version fields for any existing releases
+    var backfilled = await syncService.BackfillVersionFieldsAsync();
+    if (backfilled > 0)
+    {
+        logger.LogInformation("Backfilled version fields for {Count} existing releases", backfilled);
+    }
+
     var result = await syncService.SyncAllAsync();
 
     // Generate summaries for packages with new/stale releases

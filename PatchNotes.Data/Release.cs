@@ -11,6 +11,26 @@ public class Release
     public DateTime FetchedAt { get; set; }
 
     /// <summary>
+    /// Parsed major version from Tag. -1 for non-semver tags (unversioned).
+    /// </summary>
+    public int MajorVersion { get; set; }
+
+    /// <summary>
+    /// Parsed minor version from Tag. 0 for non-semver tags.
+    /// </summary>
+    public int MinorVersion { get; set; }
+
+    /// <summary>
+    /// Parsed patch version from Tag. 0 for non-semver tags.
+    /// </summary>
+    public int PatchVersion { get; set; }
+
+    /// <summary>
+    /// Whether the Tag represents a pre-release version.
+    /// </summary>
+    public bool IsPrerelease { get; set; }
+
+    /// <summary>
     /// AI-generated summary of this release. Null if not yet generated.
     /// </summary>
     public string? Summary { get; set; }
