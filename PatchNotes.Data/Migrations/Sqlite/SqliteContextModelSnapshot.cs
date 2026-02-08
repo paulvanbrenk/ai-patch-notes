@@ -167,6 +167,10 @@ namespace PatchNotes.Data.Migrations.Sqlite
                         .HasColumnType("INTEGER")
                         .HasDefaultValue(true);
 
+                    b.Property<Guid>("SummaryVersion")
+                        .IsConcurrencyToken()
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Tag")
                         .IsRequired()
                         .HasMaxLength(128)
