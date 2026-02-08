@@ -9,6 +9,11 @@ public class PatchNotesDbContext : DbContext
     {
     }
 
+    protected PatchNotesDbContext(DbContextOptions options)
+        : base(options)
+    {
+    }
+
     public DbSet<Package> Packages => Set<Package>();
     public DbSet<Release> Releases => Set<Release>();
     public DbSet<Notification> Notifications => Set<Notification>();
