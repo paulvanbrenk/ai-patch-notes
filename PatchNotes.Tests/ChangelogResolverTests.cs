@@ -53,7 +53,7 @@ public class ChangelogResolverTests
     [Fact]
     public void IsChangelogReference_LongBody_ReturnsFalse()
     {
-        var body = new string('x', 100);
+        var body = new string('x', 300);
         ChangelogResolver.IsChangelogReference(body).Should().BeFalse();
     }
 
@@ -64,11 +64,62 @@ public class ChangelogResolverTests
     }
 
     [Fact]
-    public void IsChangelogReference_LongBodyWithChangelogMention_ReturnsFalse()
+    public void IsChangelogReference_VeryLongBodyWithChangelogMention_ReturnsFalse()
     {
-        // Body is over 100 chars, even though it mentions CHANGELOG.md
-        var body = "This release includes many improvements. " + new string('x', 60) + " See CHANGELOG.md";
+        // Body is over 300 chars, even though it mentions CHANGELOG.md
+        var body = "This release includes many improvements. " + new string('x', 260) + " See CHANGELOG.md";
         ChangelogResolver.IsChangelogReference(body).Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData("Please refer to [CHANGELOG.md](https://github.com/vitejs/vite/blob/v7.3.1/packages/vite/CHANGELOG.md) for details.")]
+    [InlineData("Please refer to [CHANGELOG.md](https://github.com/vitejs/vite/blob/v6.0.0-beta.1/packages/vite/CHANGELOG.md) for details.")]
+    [InlineData("\ud83d\udd17 [Changelog](https://github.com/prettier/prettier/blob/main/CHANGELOG.md#380)")]
+    public void IsChangelogReference_MonorepoAndLongUrlReferences_ReturnsTrue(string body)
+    {
+        ChangelogResolver.IsChangelogReference(body).Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsChangelogReference_MarkdownLinkWithChangelogTitle_ReturnsTrue()
+    {
+        var body = "See [Release Notes](https://example.com/notes) for details.";
+        ChangelogResolver.IsChangelogReference(body).Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsChangelogReference_BareUrlWithChangelogPath_ReturnsTrue()
+    {
+        var body = "Details: https://example.com/changelog";
+        ChangelogResolver.IsChangelogReference(body).Should().BeTrue();
+    }
+
+    #endregion
+
+    #region ExtractPathFromBody Tests
+
+    [Theory]
+    [InlineData(
+        "Please refer to [CHANGELOG.md](https://github.com/vitejs/vite/blob/v7.3.1/packages/vite/CHANGELOG.md) for details.",
+        "packages/vite/CHANGELOG.md")]
+    [InlineData(
+        "\ud83d\udd17 [Changelog](https://github.com/prettier/prettier/blob/main/CHANGELOG.md#380)",
+        "CHANGELOG.md")]
+    public void ExtractPathFromBody_ExtractsCorrectPath(string body, string expectedPath)
+    {
+        ChangelogResolver.ExtractPathFromBody(body).Should().Be(expectedPath);
+    }
+
+    [Fact]
+    public void ExtractPathFromBody_ReturnsNull_WhenNoGitHubUrl()
+    {
+        ChangelogResolver.ExtractPathFromBody("See CHANGELOG.md for details").Should().BeNull();
+    }
+
+    [Fact]
+    public void ExtractPathFromBody_ReturnsNull_WhenNullBody()
+    {
+        ChangelogResolver.ExtractPathFromBody(null).Should().BeNull();
     }
 
     #endregion
@@ -258,6 +309,53 @@ public class ChangelogResolverTests
         var result = await _resolver.ResolveAsync("owner", "repo", "v1.0.0");
 
         result.Should().Be("Initial release.");
+    }
+
+    [Fact]
+    public async Task ResolveAsync_UsesUrlPathFromBody_ForMonorepoChangelogs()
+    {
+        var body = "Please refer to [CHANGELOG.md](https://github.com/vitejs/vite/blob/v7.3.1/packages/vite/CHANGELOG.md) for details.";
+        var changelog = """
+            ## 7.3.1
+
+            Monorepo changelog content.
+
+            ## 7.3.0
+
+            Previous version.
+            """;
+
+        _mockGitHub
+            .Setup(x => x.GetFileContentAsync("vitejs", "vite", "packages/vite/CHANGELOG.md", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(changelog);
+
+        var result = await _resolver.ResolveAsync("vitejs", "vite", "v7.3.1", body);
+
+        result.Should().Be("Monorepo changelog content.");
+    }
+
+    [Fact]
+    public async Task ResolveAsync_FallsBackToStandardPaths_WhenUrlPathFails()
+    {
+        var body = "Please refer to [CHANGELOG.md](https://github.com/owner/repo/blob/v1.0.0/packages/sub/CHANGELOG.md) for details.";
+        var changelog = """
+            ## 1.0.0
+
+            Found via fallback.
+            """;
+
+        // URL path returns null
+        _mockGitHub
+            .Setup(x => x.GetFileContentAsync("owner", "repo", "packages/sub/CHANGELOG.md", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((string?)null);
+        // Fallback to root CHANGELOG.md works
+        _mockGitHub
+            .Setup(x => x.GetFileContentAsync("owner", "repo", "CHANGELOG.md", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(changelog);
+
+        var result = await _resolver.ResolveAsync("owner", "repo", "v1.0.0", body);
+
+        result.Should().Be("Found via fallback.");
     }
 
     [Fact]
