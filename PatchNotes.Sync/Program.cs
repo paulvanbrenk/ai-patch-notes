@@ -16,6 +16,8 @@ const int ExitFatalError = 2;
 // Parse command-line arguments
 var seedOnly = args.Contains("--seed");
 var summarizeRepo = GetArgValue(args, "-s");
+var repoIndex = Array.IndexOf(args, "-r");
+string? repoUrl = repoIndex >= 0 && repoIndex + 1 < args.Length ? args[repoIndex + 1] : null;
 
 static string? GetArgValue(string[] args, string flag)
 {
@@ -114,6 +116,23 @@ try
             summaryResult.Errors.Count);
 
         return summaryResult.Success ? ExitSuccess : ExitPartialFailure;
+    }
+
+    // Handle -r <github-url> flag
+    if (repoUrl != null)
+    {
+        var (owner, repo) = GitHubUrlParser.Parse(repoUrl);
+        logger.LogInformation("Syncing repository {Owner}/{Repo}", owner, repo);
+
+        using var scope = host.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
+        await db.Database.MigrateAsync();
+
+        var repoResult = await syncService.SyncRepoAsync(owner, repo);
+        logger.LogInformation(
+            "Sync complete: {Releases} releases fetched",
+            repoResult.ReleasesAdded);
+        return ExitSuccess;
     }
 
     logger.LogInformation("PatchNotes Sync starting");
