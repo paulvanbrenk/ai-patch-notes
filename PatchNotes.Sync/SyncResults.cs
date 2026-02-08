@@ -7,8 +7,8 @@ namespace PatchNotes.Sync;
 /// </summary>
 public record SyncResult
 {
-    public int PackagesSynced { get; set; }
-    public int ReleasesAdded { get; set; }
+    public int PackagesSynced { get; internal set; }
+    public int ReleasesAdded { get; internal set; }
     public List<SyncError> Errors { get; } = [];
 
     /// <summary>
@@ -55,8 +55,8 @@ public record NotificationSyncResult(int Added, int Updated);
 /// </summary>
 public record SummaryGenerationResult
 {
-    public int SummariesGenerated { get; set; }
-    public int GroupsSkipped { get; set; }
+    public int SummariesGenerated { get; internal set; }
+    public int GroupsSkipped { get; internal set; }
     public List<SummaryGenerationError> Errors { get; } = [];
 
     public bool Success => Errors.Count == 0;

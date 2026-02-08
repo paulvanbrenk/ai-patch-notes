@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'
 
@@ -22,6 +22,8 @@ export function useSummarize(options: UseSummarizeOptions = {}) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
   const [summary, setSummary] = useState<string | null>(null)
+  const optionsRef = useRef(options)
+  optionsRef.current = options
 
   const summarize = useCallback(
     async (releaseId: string) => {
@@ -37,6 +39,7 @@ export function useSummarize(options: UseSummarizeOptions = {}) {
             headers: {
               Accept: 'text/event-stream',
             },
+            credentials: 'include',
           }
         )
 
@@ -85,23 +88,23 @@ export function useSummarize(options: UseSummarizeOptions = {}) {
           }
 
           if (result) {
-            options.onSuccess?.(result)
+            optionsRef.current.onSuccess?.(result)
           }
         } else {
           // Handle JSON response (non-streaming fallback)
           const data = (await response.json()) as SummarizeResult
           setSummary(data.summary)
-          options.onSuccess?.(data)
+          optionsRef.current.onSuccess?.(data)
         }
       } catch (err) {
         const error = err instanceof Error ? err : new Error('Unknown error')
         setError(error)
-        options.onError?.(error)
+        optionsRef.current.onError?.(error)
       } finally {
         setIsLoading(false)
       }
     },
-    [options]
+    []
   )
 
   const reset = useCallback(() => {
