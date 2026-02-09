@@ -59,12 +59,24 @@ After login is working, add an optional "Import from GitHub" feature that pulls 
 - Repo import requires additional GitHub permissions (Metadata read-only at minimum)
 - Users opt in to the expanded scope only when they want the convenience
 
-### How It Works
+### How It Works (Incremental Authorization via Stytch)
 
-1. User clicks an "Import from GitHub" button in their watchlist
-2. App triggers a new OAuth consent flow requesting repo metadata access
-3. Fetch watched repos via `GET /user/subscriptions` (repos they get notifications for — typically a curated, smaller list)
-4. Present the list and let the user select which repos to add to their watchlist
+Stytch's GitHub OAuth start endpoint supports a `custom_scopes` parameter, which lets you request additional GitHub API scopes beyond what was granted at initial login. This means you don't need a separate OAuth integration — just trigger a new OAuth round with expanded scopes.
+
+**Flow:**
+
+1. User clicks "Import from GitHub" in their watchlist
+2. App initiates a new Stytch OAuth flow via `/oauth/github/start` with `custom_scopes` set to the repo metadata scope (URL-encoded, spaces as `%20`)
+3. GitHub shows a consent screen for the additional permission only
+4. GitHub redirects back through Stytch as normal
+5. Stytch merges the new OAuth factor into the user's existing session via `session_jwt` — no new login required
+6. App receives an access token with the expanded scopes
+7. App calls `GET /user/subscriptions` to fetch watched repos
+8. User selects which repos to add to their watchlist
+
+**References:**
+- [Stytch GitHub OAuth Start](https://stytch.com/docs/api/oauth-github-start) — documents `custom_scopes` parameter
+- [Stytch OAuth Authenticate](https://stytch.com/docs/api/oauth-authenticate) — session merging via `session_jwt`
 
 ### Why Watched Over Starred
 
