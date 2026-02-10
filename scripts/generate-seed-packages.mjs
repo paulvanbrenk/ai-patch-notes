@@ -40,11 +40,7 @@ for (const pkg of existingSeed) {
 
 // Merge js + react sets, deduplicate by github_full_name
 const seen = new Set();
-const allLibraries = [
-  ...(libraries.js || []),
-  ...(libraries.react || []),
-  ...(libraries.curated || []),
-];
+const allLibraries = Object.values(libraries).flat();
 const dedupedLibraries = [];
 
 for (const lib of allLibraries) {

@@ -67,6 +67,14 @@
     "releases": []
   },
   {
+    "name": "Anthropic SDK",
+    "url": "https://github.com/anthropics/anthropic-sdk-typescript",
+    "npmName": "@anthropic-ai/sdk",
+    "githubOwner": "anthropics",
+    "githubRepo": "anthropic-sdk-typescript",
+    "releases": []
+  },
+  {
     "name": "Apollo Client",
     "url": "https://github.com/apollographql/apollo-client",
     "npmName": "@apollo/client",
@@ -110,6 +118,14 @@
     "releases": []
   },
   {
+    "name": "Auth.js",
+    "url": "https://github.com/nextauthjs/next-auth",
+    "npmName": "next-auth",
+    "githubOwner": "nextauthjs",
+    "githubRepo": "next-auth",
+    "releases": []
+  },
+  {
     "name": "Axios",
     "url": "https://github.com/axios/axios",
     "npmName": "axios",
@@ -145,7 +161,7 @@
     ]
   },
   {
-    "name": "bun test",
+    "name": "Bun",
     "url": "https://github.com/oven-sh/bun",
     "npmName": null,
     "githubOwner": "oven-sh",
@@ -161,6 +177,14 @@
     "releases": []
   },
   {
+    "name": "Chart.js",
+    "url": "https://github.com/chartjs/Chart.js",
+    "npmName": "chart.js",
+    "githubOwner": "chartjs",
+    "githubRepo": "Chart.js",
+    "releases": []
+  },
+  {
     "name": "Create React App",
     "url": "https://github.com/facebook/create-react-app",
     "npmName": "create-react-app",
@@ -169,11 +193,64 @@
     "releases": []
   },
   {
+    "name": "create-vite",
+    "url": "https://github.com/vitejs/vite",
+    "npmName": "create-vite",
+    "githubOwner": "vitejs",
+    "githubRepo": "vite",
+    "releases": [
+      {
+        "tag": "v8.0.0-beta.9",
+        "title": "v8.0.0-beta.9",
+        "body": "Please refer to [CHANGELOG.md](https://github.com/vitejs/vite/blob/v8.0.0-beta.9/packages/vite/CHANGELOG.md) for details.",
+        "publishedAt": "2026-01-22T12:49:56Z"
+      },
+      {
+        "tag": "v8.0.0-beta.8",
+        "title": "v8.0.0-beta.8",
+        "body": "Please refer to [CHANGELOG.md](https://github.com/vitejs/vite/blob/v8.0.0-beta.8/packages/vite/CHANGELOG.md) for details.",
+        "publishedAt": "2026-01-15T01:33:26Z"
+      }
+    ]
+  },
+  {
     "name": "Cypress",
     "url": "https://github.com/cypress-io/cypress",
     "npmName": "cypress",
     "githubOwner": "cypress-io",
     "githubRepo": "cypress",
+    "releases": []
+  },
+  {
+    "name": "D3.js",
+    "url": "https://github.com/d3/d3",
+    "npmName": "d3",
+    "githubOwner": "d3",
+    "githubRepo": "d3",
+    "releases": []
+  },
+  {
+    "name": "date-fns",
+    "url": "https://github.com/date-fns/date-fns",
+    "npmName": "date-fns",
+    "githubOwner": "date-fns",
+    "githubRepo": "date-fns",
+    "releases": []
+  },
+  {
+    "name": "Day.js",
+    "url": "https://github.com/iamkun/dayjs",
+    "npmName": "dayjs",
+    "githubOwner": "iamkun",
+    "githubRepo": "dayjs",
+    "releases": []
+  },
+  {
+    "name": "Deno",
+    "url": "https://github.com/denoland/deno",
+    "npmName": null,
+    "githubOwner": "denoland",
+    "githubRepo": "deno",
     "releases": []
   },
   {
@@ -271,11 +348,35 @@
     "releases": []
   },
   {
+    "name": "Entity Framework Core",
+    "url": "https://github.com/dotnet/efcore",
+    "npmName": null,
+    "githubOwner": "dotnet",
+    "githubRepo": "efcore",
+    "releases": []
+  },
+  {
     "name": "esbuild",
     "url": "https://github.com/evanw/esbuild",
     "npmName": "esbuild",
     "githubOwner": "evanw",
     "githubRepo": "esbuild",
+    "releases": []
+  },
+  {
+    "name": "ESLint",
+    "url": "https://github.com/eslint/eslint",
+    "npmName": "eslint",
+    "githubOwner": "eslint",
+    "githubRepo": "eslint",
+    "releases": []
+  },
+  {
+    "name": "Expo",
+    "url": "https://github.com/expo/expo",
+    "npmName": "expo",
+    "githubOwner": "expo",
+    "githubRepo": "expo",
     "releases": []
   },
   {
@@ -319,6 +420,22 @@
     "npmName": "fastify",
     "githubOwner": "fastify",
     "githubRepo": "fastify",
+    "releases": []
+  },
+  {
+    "name": "Formik",
+    "url": "https://github.com/jaredpalmer/formik",
+    "npmName": "formik",
+    "githubOwner": "jaredpalmer",
+    "githubRepo": "formik",
+    "releases": []
+  },
+  {
+    "name": "Framer Motion",
+    "url": "https://github.com/motiondivision/motion",
+    "npmName": "framer-motion",
+    "githubOwner": "motiondivision",
+    "githubRepo": "motion",
     "releases": []
   },
   {
@@ -399,6 +516,14 @@
     ]
   },
   {
+    "name": "GSAP",
+    "url": "https://github.com/greensock/GSAP",
+    "npmName": "gsap",
+    "githubOwner": "greensock",
+    "githubRepo": "GSAP",
+    "releases": []
+  },
+  {
     "name": "Hapi",
     "url": "https://github.com/hapijs/hapi",
     "npmName": "@hapi/hapi",
@@ -455,6 +580,14 @@
     "releases": []
   },
   {
+    "name": "Knex",
+    "url": "https://github.com/knex/knex",
+    "npmName": "knex",
+    "githubOwner": "knex",
+    "githubRepo": "knex",
+    "releases": []
+  },
+  {
     "name": "Koa",
     "url": "https://github.com/koajs/koa",
     "npmName": "koa",
@@ -490,11 +623,35 @@
     ]
   },
   {
+    "name": "LangChain.js",
+    "url": "https://github.com/langchain-ai/langchainjs",
+    "npmName": "langchain",
+    "githubOwner": "langchain-ai",
+    "githubRepo": "langchainjs",
+    "releases": []
+  },
+  {
+    "name": "Lerna",
+    "url": "https://github.com/lerna/lerna",
+    "npmName": "lerna",
+    "githubOwner": "lerna",
+    "githubRepo": "lerna",
+    "releases": []
+  },
+  {
     "name": "Lit",
     "url": "https://github.com/lit/lit",
     "npmName": "lit",
     "githubOwner": "lit",
     "githubRepo": "lit",
+    "releases": []
+  },
+  {
+    "name": "Lodash",
+    "url": "https://github.com/lodash/lodash",
+    "npmName": "lodash",
+    "githubOwner": "lodash",
+    "githubRepo": "lodash",
     "releases": []
   },
   {
@@ -535,6 +692,14 @@
     "npmName": "msw",
     "githubOwner": "mswjs",
     "githubRepo": "msw",
+    "releases": []
+  },
+  {
+    "name": "Mongoose",
+    "url": "https://github.com/Automattic/mongoose",
+    "npmName": "mongoose",
+    "githubOwner": "Automattic",
+    "githubRepo": "mongoose",
     "releases": []
   },
   {
@@ -624,6 +789,22 @@
     "releases": []
   },
   {
+    "name": "Nx",
+    "url": "https://github.com/nrwl/nx",
+    "npmName": "nx",
+    "githubOwner": "nrwl",
+    "githubRepo": "nx",
+    "releases": []
+  },
+  {
+    "name": "OpenAI Node SDK",
+    "url": "https://github.com/openai/openai-node",
+    "npmName": "openai",
+    "githubOwner": "openai",
+    "githubRepo": "openai-node",
+    "releases": []
+  },
+  {
     "name": "OpenTelemetry Specification",
     "url": "https://github.com/open-telemetry/opentelemetry-specification",
     "npmName": null,
@@ -686,11 +867,35 @@
     ]
   },
   {
+    "name": "pnpm",
+    "url": "https://github.com/pnpm/pnpm",
+    "npmName": null,
+    "githubOwner": "pnpm",
+    "githubRepo": "pnpm",
+    "releases": []
+  },
+  {
+    "name": "PostCSS",
+    "url": "https://github.com/postcss/postcss",
+    "npmName": "postcss",
+    "githubOwner": "postcss",
+    "githubRepo": "postcss",
+    "releases": []
+  },
+  {
     "name": "Preact",
     "url": "https://github.com/preactjs/preact",
     "npmName": "preact",
     "githubOwner": "preactjs",
     "githubRepo": "preact",
+    "releases": []
+  },
+  {
+    "name": "Prettier",
+    "url": "https://github.com/prettier/prettier",
+    "npmName": "prettier",
+    "githubOwner": "prettier",
+    "githubRepo": "prettier",
     "releases": []
   },
   {
@@ -823,6 +1028,22 @@
     "releases": []
   },
   {
+    "name": "React Hook Form",
+    "url": "https://github.com/react-hook-form/react-hook-form",
+    "npmName": "react-hook-form",
+    "githubOwner": "react-hook-form",
+    "githubRepo": "react-hook-form",
+    "releases": []
+  },
+  {
+    "name": "React Native",
+    "url": "https://github.com/facebook/react-native",
+    "npmName": "react-native",
+    "githubOwner": "facebook",
+    "githubRepo": "react-native",
+    "releases": []
+  },
+  {
     "name": "React Router",
     "url": "https://github.com/remix-run/react-router",
     "npmName": "react-router",
@@ -922,6 +1143,14 @@
     "releases": []
   },
   {
+    "name": "Sass",
+    "url": "https://github.com/sass/dart-sass",
+    "npmName": "sass",
+    "githubOwner": "sass",
+    "githubRepo": "dart-sass",
+    "releases": []
+  },
+  {
     "name": "Selenium",
     "url": "https://github.com/SeleniumHQ/selenium",
     "npmName": null,
@@ -930,11 +1159,27 @@
     "releases": []
   },
   {
+    "name": "Sequelize",
+    "url": "https://github.com/sequelize/sequelize",
+    "npmName": "sequelize",
+    "githubOwner": "sequelize",
+    "githubRepo": "sequelize",
+    "releases": []
+  },
+  {
     "name": "shadcn/ui",
     "url": "https://github.com/shadcn-ui/ui",
     "npmName": null,
     "githubOwner": "shadcn-ui",
     "githubRepo": "ui",
+    "releases": []
+  },
+  {
+    "name": "Socket.io",
+    "url": "https://github.com/socketio/socket.io",
+    "npmName": "socket.io",
+    "githubOwner": "socketio",
+    "githubRepo": "socket.io",
     "releases": []
   },
   {
@@ -1010,6 +1255,14 @@
     "releases": []
   },
   {
+    "name": "Tailwind CSS",
+    "url": "https://github.com/tailwindlabs/tailwindcss",
+    "npmName": "tailwindcss",
+    "githubOwner": "tailwindlabs",
+    "githubRepo": "tailwindcss",
+    "releases": []
+  },
+  {
     "name": "TanStack Query",
     "url": "https://github.com/TanStack/query",
     "npmName": "@tanstack/react-query",
@@ -1069,6 +1322,22 @@
     "releases": []
   },
   {
+    "name": "Three.js",
+    "url": "https://github.com/mrdoob/three.js",
+    "npmName": "three",
+    "githubOwner": "mrdoob",
+    "githubRepo": "three.js",
+    "releases": []
+  },
+  {
+    "name": "Transformers.js",
+    "url": "https://github.com/huggingface/transformers.js",
+    "npmName": "@huggingface/transformers",
+    "githubOwner": "huggingface",
+    "githubRepo": "transformers.js",
+    "releases": []
+  },
+  {
     "name": "tRPC",
     "url": "https://github.com/trpc/trpc",
     "npmName": null,
@@ -1120,25 +1389,28 @@
     "releases": []
   },
   {
-    "name": "Vite",
-    "url": "https://github.com/vitejs/vite",
-    "npmName": "vite",
-    "githubOwner": "vitejs",
-    "githubRepo": "vite",
-    "releases": [
-      {
-        "tag": "v8.0.0-beta.9",
-        "title": "v8.0.0-beta.9",
-        "body": "Please refer to [CHANGELOG.md](https://github.com/vitejs/vite/blob/v8.0.0-beta.9/packages/vite/CHANGELOG.md) for details.",
-        "publishedAt": "2026-01-22T12:49:56Z"
-      },
-      {
-        "tag": "v8.0.0-beta.8",
-        "title": "v8.0.0-beta.8",
-        "body": "Please refer to [CHANGELOG.md](https://github.com/vitejs/vite/blob/v8.0.0-beta.8/packages/vite/CHANGELOG.md) for details.",
-        "publishedAt": "2026-01-15T01:33:26Z"
-      }
-    ]
+    "name": "TypeORM",
+    "url": "https://github.com/typeorm/typeorm",
+    "npmName": "typeorm",
+    "githubOwner": "typeorm",
+    "githubRepo": "typeorm",
+    "releases": []
+  },
+  {
+    "name": "Valibot",
+    "url": "https://github.com/fabian-hiller/valibot",
+    "npmName": "valibot",
+    "githubOwner": "fabian-hiller",
+    "githubRepo": "valibot",
+    "releases": []
+  },
+  {
+    "name": "Vercel AI SDK",
+    "url": "https://github.com/vercel/ai",
+    "npmName": "ai",
+    "githubOwner": "vercel",
+    "githubRepo": "ai",
+    "releases": []
   },
   {
     "name": "Vitest",
@@ -1186,6 +1458,22 @@
     "npmName": "xstate",
     "githubOwner": "statelyai",
     "githubRepo": "xstate",
+    "releases": []
+  },
+  {
+    "name": "Yup",
+    "url": "https://github.com/jquense/yup",
+    "npmName": "yup",
+    "githubOwner": "jquense",
+    "githubRepo": "yup",
+    "releases": []
+  },
+  {
+    "name": "Zod",
+    "url": "https://github.com/colinhacks/zod",
+    "npmName": "zod",
+    "githubOwner": "colinhacks",
+    "githubRepo": "zod",
     "releases": []
   },
   {
