@@ -53,7 +53,7 @@ Location: `patchnotes-web/.env.local` (or `.env.development`)
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `VITE_STYTCH_PUBLIC_TOKEN` | Yes | - | Stytch public token for client-side authentication |
-| `VITE_API_URL` | Yes | `/api` | Base URL for the PatchNotes API. Production: `https://api-mypkgupdate-com.azurewebsites.net`. Local devbox: `http://notes-api.devbox.home.arpa` (set in `.env.local`) |
+| `VITE_API_URL` | Yes | `/api` | Base URL for the PatchNotes API. Production: `https://api-mypkgupdate-com.azurewebsites.net/api`. Local devbox: `http://notes-api.devbox.home.arpa/api` (set in `.env.local`) |
 
 ## Local Development (.envrc)
 
