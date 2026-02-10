@@ -1,242 +1,5 @@
 [
   {
-    "name": "TypeScript",
-    "url": "https://github.com/microsoft/TypeScript",
-    "npmName": "typescript",
-    "githubOwner": "microsoft",
-    "githubRepo": "TypeScript",
-    "releases": [
-      {
-        "tag": "v5.9.3",
-        "title": "TypeScript 5.9.3",
-        "body": "For release notes, check out the [release announcement](https://devblogs.microsoft.com/typescript/announcing-typescript-5-9/)\n\n* [fixed issues query for Typescript 5.9.0 (Beta)](https://github.com/Microsoft/TypeScript/issues?utf8=%E2%9C%93&q=milestone%3A%22TypeScript+5.9.0%22+is%3Aclosed+).\n* [fixed issues query for Typescript 5.9.1 (RC)](https://github.com/Microsoft/TypeScript/issues?utf8=%E2%9C%93&q=milestone%3A%22TypeScript+5.9.1%22+is%3Aclosed+).\n* [fixed issues query for Typescript 5.9.3 (Stable)](https://github.com/Microsoft/TypeScript/issues?utf8=%E2%9C%93&q=milestone%3A%22TypeScript+5.9.3%22+is%3Aclosed+).\n\nDownloads are available on:\n* [npm](https://www.npmjs.com/package/typescript)",
-        "publishedAt": "2025-10-01T19:06:07Z"
-      },
-      {
-        "tag": "v5.9.2",
-        "title": "TypeScript 5.9",
-        "body": "For release notes, check out the [release announcement](https://devblogs.microsoft.com/typescript/announcing-typescript-5-9/)\n\n* [fixed issues query for Typescript 5.9.0 (Beta)](https://github.com/Microsoft/TypeScript/issues?utf8=%E2%9C%93&q=milestone%3A%22TypeScript+5.9.0%22+is%3Aclosed+).\n* [fixed issues query for Typescript 5.9.1 (RC)](https://github.com/Microsoft/TypeScript/issues?utf8=%E2%9C%93&q=milestone%3A%22TypeScript+5.9.1%22+is%3Aclosed+).\n\nDownloads are available on:\n* [npm](https://www.npmjs.com/package/typescript)",
-        "publishedAt": "2025-10-01T20:37:10Z"
-      },
-      {
-        "tag": "v5.9-rc",
-        "title": "TypeScript 5.9 RC",
-        "body": "For release notes, check out the [release announcement](https://devblogs.microsoft.com/typescript/announcing-typescript-5-9-rc/)\n\n* [fixed issues query for Typescript 5.9.0 (Beta)](https://github.com/Microsoft/TypeScript/issues?utf8=%E2%9C%93&q=milestone%3A%22TypeScript+5.9.0%22+is%3Aclosed+).\n* [fixed issues query for Typescript 5.9.1 (RC)](https://github.com/Microsoft/TypeScript/issues?utf8=%E2%9C%93&q=milestone%3A%22TypeScript+5.9.1%22+is%3Aclosed+).\n\nDownloads are available on:\n* [npm](https://www.npmjs.com/package/typescript)",
-        "publishedAt": "2025-10-01T20:35:11Z"
-      }
-    ]
-  },
-  {
-    "name": "Node.js",
-    "url": "https://github.com/nodejs/node",
-    "npmName": null,
-    "githubOwner": "nodejs",
-    "githubRepo": "node",
-    "releases": [
-      {
-        "tag": "v25.4.0",
-        "title": "2026-01-19, Version 25.4.0 (Current), @RafaelGSS",
-        "body": "### Notable Changes\n\n* cli: add --require-module/--no-require-module\n* cli: mark --heapsnapshot-near-heap-limit as stable\n* crypto: update root certificates to NSS 3.117\n* events: repurpose `events.listenerCount()` to accept EventTargets\n* http: add http.setGlobalProxyFromEnv()\n* module: mark require(esm) as stable\n* module: mark module compile cache as stable\n* module: allow subpath imports that start with `#/`\n* process: preserve AsyncLocalStorage in queueMicrotask only when needed\n* stream: do not pass `readable.compose()` output via `Readable.from()`\n* util: add convertProcessSignalToExitCode utility\n* v8: mark v8.queryObjects() as stable",
-        "publishedAt": "2026-01-19T17:05:28Z"
-      },
-      {
-        "tag": "v25.3.0",
-        "title": "2026-01-13, Version 25.3.0 (Current), @RafaelGSS",
-        "body": "This is a security release.\n\n### Notable Changes\n\n* (CVE-2025-59465) add TLSSocket default error handler\n* (CVE-2026-21636) add network check on pipe_wrap connect\n* (CVE-2025-55130) require full read and write to symlink APIs\n* (CVE-2025-55132) disable futimes when permission model is enabled\n* (CVE-2025-59466) rethrow stack overflow exceptions in async_hooks\n* (CVE-2025-55131) refactor unsafe buffer creation to remove zero-fill toggle\n* (CVE-2026-21637) route callback exceptions through error handlers",
-        "publishedAt": "2026-01-13T13:58:05Z"
-      },
-      {
-        "tag": "v24.13.0",
-        "title": "2026-01-13, Version 24.13.0 'Krypton' (LTS), @marco-ippolito",
-        "body": "This is a security release.\n\n### Notable Changes\n\n* (CVE-2025-59465) add TLSSocket default error handler\n* (CVE-2025-55132) disable futimes when permission model is enabled\n* (CVE-2025-55130) require full read and write to symlink APIs\n* (CVE-2025-59466) rethrow stack overflow exceptions in async_hooks\n* (CVE-2025-55131) refactor unsafe buffer creation to remove zero-fill toggle\n* (CVE-2026-21637) route callback exceptions through error handlers",
-        "publishedAt": "2026-01-13T13:57:24Z"
-      }
-    ]
-  },
-  {
-    "name": "Next.js",
-    "url": "https://github.com/vercel/next.js",
-    "npmName": "next",
-    "githubOwner": "vercel",
-    "githubRepo": "next.js",
-    "releases": [
-      {
-        "tag": "v16.2.0-canary.3",
-        "title": "v16.2.0-canary.3",
-        "body": "### Core Changes\n\n- Remove `deploymentId` from App Router `RenderOptsPartial`\n- feat: implement LRU cache with invocation ID scoping for minimal mode response cache",
-        "publishedAt": "2026-01-22T19:02:23Z"
-      },
-      {
-        "tag": "v16.2.0-canary.2",
-        "title": "v16.2.0-canary.2",
-        "body": "### Core Changes\n\n- stabilize browser log forward options\n- [devtools] Wrap long file names of stack frames in the error overlay\n- [devtools] Fix notch coloring of error overlay in forced colors mode",
-        "publishedAt": "2026-01-22T15:14:36Z"
-      },
-      {
-        "tag": "v16.2.0-canary.1",
-        "title": "v16.2.0-canary.1",
-        "body": "### Core Changes\n\n- fix: preserve cache behavior for PPR fallback shells with root params\n- Upgrade React from `d2908752-20260119` to `b546603b-20260121`",
-        "publishedAt": "2026-01-21T23:40:53Z"
-      }
-    ]
-  },
-  {
-    "name": "React",
-    "url": "https://github.com/facebook/react",
-    "npmName": "react",
-    "githubOwner": "facebook",
-    "githubRepo": "react",
-    "releases": [
-      {
-        "tag": "v19.1.4",
-        "title": "19.1.4 (December 11th, 2025)",
-        "body": "## React Server Components\n\n- Add extra loop protection to React Server Functions (@sebmarkbage #35351)",
-        "publishedAt": "2025-12-12T00:11:45Z"
-      },
-      {
-        "tag": "v19.0.3",
-        "title": "19.0.3 (December 11th, 2025)",
-        "body": "## React Server Components\n\n- Add extra loop protection to React Server Functions (@sebmarkbage #35351)",
-        "publishedAt": "2025-12-12T00:12:32Z"
-      },
-      {
-        "tag": "v19.2.3",
-        "title": "19.2.3 (December 11th, 2025)",
-        "body": "## React Server Components\n\n- Add extra loop protection to React Server Functions (@sebmarkbage #35351)",
-        "publishedAt": "2025-12-11T23:57:59Z"
-      }
-    ]
-  },
-  {
-    "name": "Vite",
-    "url": "https://github.com/vitejs/vite",
-    "npmName": "vite",
-    "githubOwner": "vitejs",
-    "githubRepo": "vite",
-    "releases": [
-      {
-        "tag": "v8.0.0-beta.9",
-        "title": "v8.0.0-beta.9",
-        "body": "Please refer to [CHANGELOG.md](https://github.com/vitejs/vite/blob/v8.0.0-beta.9/packages/vite/CHANGELOG.md) for details.",
-        "publishedAt": "2026-01-22T12:49:56Z"
-      },
-      {
-        "tag": "v8.0.0-beta.8",
-        "title": "v8.0.0-beta.8",
-        "body": "Please refer to [CHANGELOG.md](https://github.com/vitejs/vite/blob/v8.0.0-beta.8/packages/vite/CHANGELOG.md) for details.",
-        "publishedAt": "2026-01-15T01:33:26Z"
-      }
-    ]
-  },
-  {
-    "name": "Playwright",
-    "url": "https://github.com/microsoft/playwright",
-    "npmName": "playwright",
-    "githubOwner": "microsoft",
-    "githubRepo": "playwright",
-    "releases": [
-      {
-        "tag": "v1.57.0",
-        "title": "v1.57.0",
-        "body": "## Speedboard\n\nIn HTML reporter, there's a new tab we call \"Speedboard\" - it shows you all your executed tests sorted by slowness.\n\n## Chrome for Testing\n\nStarting with this release, Playwright switches from Chromium to using Chrome for Testing builds.\n\n## Waiting for webserver output\n\n`testConfig.webServer` added a `wait` field. Pass a regular expression, and Playwright will wait until the webserver logs match it.\n\n## Breaking Change\n\nAfter 3 years of being deprecated, we removed `Page#accessibility` from our API.\n\n## Browser Versions\n- Chromium 143.0.7499.4\n- Mozilla Firefox 144.0.2\n- WebKit 26.0",
-        "publishedAt": "2025-11-25T11:16:13Z"
-      },
-      {
-        "tag": "v1.56.1",
-        "title": "v1.56.1",
-        "body": "## Highlights\n\n- chore: allow local-network-access permission in chromium\n- fix(agents): remove workspaceFolder ref from vscode mcp\n- chore: rename agents to test agents\n- chore(mcp): fallback to cwd when resolving test config\n\n## Browser Versions\n- Chromium 141.0.7390.37\n- Mozilla Firefox 142.0.1\n- WebKit 26.0",
-        "publishedAt": "2025-10-17T00:50:36Z"
-      },
-      {
-        "tag": "v1.56.0",
-        "title": "v1.56.0",
-        "body": "## Playwright Agents\n\nIntroducing Playwright Agents, three custom agent definitions designed to guide LLMs through the core process of building a Playwright test.\n\n## New APIs\n- New methods `page.consoleMessages()` and `page.pageErrors()` for retrieving the most recent console messages from the page\n- New method `page.requests()` for retrieving the most recent network requests from the page\n\n## Browser Versions\n- Chromium 141.0.7390.37\n- Mozilla Firefox 142.0.1\n- WebKit 26.0",
-        "publishedAt": "2025-10-06T14:53:30Z"
-      }
-    ]
-  },
-  {
-    "name": "Prisma",
-    "url": "https://github.com/prisma/prisma",
-    "npmName": "prisma",
-    "githubOwner": "prisma",
-    "githubRepo": "prisma",
-    "releases": [
-      {
-        "tag": "7.3.0",
-        "title": "7.3.0",
-        "body": "## ORM\n\n- Fast and Small Query Compilers with new `compilerBuild` option (`fast` or `small`)\n- Bypass the Query Compiler for Raw Queries\n- Update MSSQL to v12.2.0\n- Pin better-sqlite3 version to avoid SQLite bug\n- Revert `@map` enums to v6.19.0 behavior\n- Cast BigInt to text in JSON aggregation",
-        "publishedAt": "2026-01-21T16:09:13Z"
-      },
-      {
-        "tag": "6.19.2",
-        "title": "6.19.2",
-        "body": "Patch release fixing an issue with Prisma Accelerate support in some edge runtime configurations when the `@prisma/client/edge` entrypoint is not being used.",
-        "publishedAt": "2026-01-13T12:09:19Z"
-      },
-      {
-        "tag": "7.2.0",
-        "title": "7.2.0",
-        "body": "## Highlights\n\n- feat: add `sqlcommenter-query-insights` plugin\n- feat(migrate): add `-url` param for `db pull`, `db push`, `migrate dev`\n- feat(config): allow undefined URLs in e.g. `prisma generate`\n- feat(cli): customize `prisma init` based on the JS runtime (Bun vs others)",
-        "publishedAt": "2025-12-17T15:12:49Z"
-      }
-    ]
-  },
-  {
-    "name": "Drizzle ORM",
-    "url": "https://github.com/drizzle-team/drizzle-orm",
-    "npmName": "drizzle-orm",
-    "githubOwner": "drizzle-team",
-    "githubRepo": "drizzle-orm",
-    "releases": [
-      {
-        "tag": "v1.0.0-beta.12",
-        "title": "1.0.0-beta.12",
-        "body": "## Breaking changes\n\n- `.generatedAlwaysAs()` now only accepts `sql` and `() => sql`\n\n## Improvements\n\n- PostgreSQL dialect now has extra schema errors in ts files on `generate` and `push` commands\n- SQLite dialect now has extra schema errors in ts files on `generate` and `push` commands\n\n## Bug fixes\n\n- Fixed various issues with drizzle-kit generate, node:crypto, and backslash in check constraints",
-        "publishedAt": "2026-01-22T15:50:12Z"
-      },
-      {
-        "tag": "v1.0.0-beta.11",
-        "title": "v1.0.0-beta.11",
-        "body": "- Defaulted `PgTimestampString` timezone offset to be `+00` when value gets returned as `Date` instance\n- Cache is now used only when explicitly defined\n- Separated date and int-exclusive column methods from common `pg builder`",
-        "publishedAt": "2026-01-15T11:56:27Z"
-      },
-      {
-        "tag": "v1.0.0-beta.9",
-        "title": "v1.0.0-beta.9",
-        "body": "- Drizzle now has native `@effect/sql-pg` driver support\n- Reworked PgColumn type chain with better type performance\n- Breaking: postgres `.array()` is now not chainable, use `.array('[][]')` for multidimensional\n- Migrated away from `esbuild-register` to `tsx` loader\n- Added native Bun and Deno launch support",
-        "publishedAt": "2026-01-15T11:50:11Z"
-      }
-    ]
-  },
-  {
-    "name": "FastAPI",
-    "url": "https://github.com/fastapi/fastapi",
-    "npmName": null,
-    "githubOwner": "fastapi",
-    "githubRepo": "fastapi",
-    "releases": [
-      {
-        "tag": "0.128.0",
-        "title": "0.128.0",
-        "body": "### Breaking Changes\n\n- Drop support for `pydantic.v1`.",
-        "publishedAt": "2025-12-27T15:20:49Z"
-      },
-      {
-        "tag": "0.127.1",
-        "title": "0.127.1",
-        "body": "### Refactors\n\n- Add a custom `FastAPIDeprecationWarning`.\n\n### Docs\n\n- Add documentary to website.",
-        "publishedAt": "2025-12-26T13:03:58Z"
-      },
-      {
-        "tag": "0.127.0",
-        "title": "0.127.0",
-        "body": "### Breaking Changes\n\n- Add deprecation warnings when using `pydantic.v1`.",
-        "publishedAt": "2025-12-21T16:46:52Z"
-      }
-    ]
-  },
-  {
     "name": ".NET Runtime",
     "url": "https://github.com/dotnet/runtime",
     "npmName": null,
@@ -262,6 +25,54 @@
         "publishedAt": "2026-01-13T21:28:59Z"
       }
     ]
+  },
+  {
+    "name": "Adonis",
+    "url": "https://github.com/adonisjs/core",
+    "npmName": "adonis-framework",
+    "githubOwner": "adonisjs",
+    "githubRepo": "core",
+    "releases": []
+  },
+  {
+    "name": "Alpine.js",
+    "url": "https://github.com/alpinejs/alpine",
+    "npmName": "alpinejs",
+    "githubOwner": "alpinejs",
+    "githubRepo": "alpine",
+    "releases": []
+  },
+  {
+    "name": "Analog",
+    "url": "https://github.com/analogjs/analog",
+    "npmName": null,
+    "githubOwner": "analogjs",
+    "githubRepo": "analog",
+    "releases": []
+  },
+  {
+    "name": "Angular",
+    "url": "https://github.com/angular/angular",
+    "npmName": "@angular/core",
+    "githubOwner": "angular",
+    "githubRepo": "angular",
+    "releases": []
+  },
+  {
+    "name": "Ant Design",
+    "url": "https://github.com/ant-design/ant-design",
+    "npmName": null,
+    "githubOwner": "ant-design",
+    "githubRepo": "ant-design",
+    "releases": []
+  },
+  {
+    "name": "Apollo Client",
+    "url": "https://github.com/apollographql/apollo-client",
+    "npmName": "@apollo/client",
+    "githubOwner": "apollographql",
+    "githubRepo": "apollo-client",
+    "releases": []
   },
   {
     "name": "ASP.NET Core",
@@ -291,31 +102,95 @@
     ]
   },
   {
-    "name": "Redis",
-    "url": "https://github.com/redis/redis",
+    "name": "Astro",
+    "url": "https://github.com/withastro/astro",
+    "npmName": "astro",
+    "githubOwner": "withastro",
+    "githubRepo": "astro",
+    "releases": []
+  },
+  {
+    "name": "Axios",
+    "url": "https://github.com/axios/axios",
+    "npmName": "axios",
+    "githubOwner": "axios",
+    "githubRepo": "axios",
+    "releases": []
+  },
+  {
+    "name": "Beads",
+    "url": "https://github.com/steveyegge/beads",
     "npmName": null,
-    "githubOwner": "redis",
-    "githubRepo": "redis",
+    "githubOwner": "steveyegge",
+    "githubRepo": "beads",
     "releases": [
       {
-        "tag": "8.6-rc1",
-        "title": "8.6-RC1",
-        "body": "### New Features\n\n- Streams: `XADD` idempotency with new `IDMPAUTO` and `IDMP` arguments\n- New eviction policies: `volatile-lrm` and `allkeys-lrm`\n- Hot keys detection and reporting; new command: `HOTKEYS`\n- TLS certificate-based automatic client authentication\n- Time series: support NaN values; new aggregators: `COUNTNAN` and `COUNTALL`",
-        "publishedAt": "2026-01-22T15:17:11Z"
+        "tag": "v0.49.0",
+        "title": "v0.49.0",
+        "body": "### Features\n- Real-time activity feed using fsnotify\n- Add 'view' as alias for 'show' command\n- Add 'bd children <id>' command\n- Add validate command for sync config\n- Federation: SQL user authentication, dolt sql-server mode, peer-to-peer sync\n- Per-worktree export state tracking\n- Jujutsu (jj) version control support\n- SQLite to Dolt migration tooling\n- Incremental export for large repos\n- Per-field merge strategies for conflict resolution\n- Interactive conflict resolution\n\n### Bug Fixes\n- Auto-correct deleted status to tombstone for JSONL compatibility\n- Prevent stack overflow in handleStaleLock\n- Prevent zombie state after database file replacement\n- Enforce single-process mode for Dolt backend\n- Stabilize tree ordering for consistent --tree output",
+        "publishedAt": "2026-01-22T08:20:08Z"
       },
       {
-        "tag": "8.4.0",
-        "title": "8.4.0",
-        "body": "## Major changes compared to 8.2\n\n- DIGEST, DELEX; SET extensions - atomic compare-and-set and compare-and-delete\n- MSETEX - atomically set multiple string keys and update their expiration\n- XREADGROUP - new `CLAIM` option\n- CLUSTER MIGRATION - atomic slot migration\n- CLUSTER SLOT-STATS - per-slot usage metrics\n- Redis query engine: FT.HYBRID - hybrid search and fused scoring\n- I/O threading: substantial throughput increase",
-        "publishedAt": "2025-11-18T15:06:37Z"
+        "tag": "v0.47.1",
+        "title": "v0.47.1",
+        "body": "### Features\n- Add --ready flag to show only available work\n- Add Markdown rendering to comment text\n\n### Bug Fixes\n- Prevent initialization from within git worktrees\n- Exclude sync_base.jsonl from multiple JSONL files check\n- Prefer issues with children/deps when choosing merge target\n- Support custom issue types and statuses in MCP\n- Rebuild blocked_issues_cache after rename-prefix",
+        "publishedAt": "2026-01-12T11:26:23Z"
       },
       {
-        "tag": "8.4-rc1",
-        "title": "8.4-RC1",
-        "body": "### New Features\n\n- New command: `CLUSTER MIGRATION` - atomic slot migration\n- New commands: `DELEX`, `DIGEST`; `SET` extensions\n- New command: `MSETEX` - set multiple keys and update their expiration\n- `XREADGROUP` - add `CLAIM min-idle-time`\n- Add auto-repair options for broken AOF tail on startup",
-        "publishedAt": "2025-11-04T07:33:27Z"
+        "tag": "v0.47.0",
+        "title": "v0.47.0",
+        "body": "### Features\n- Add --dry-run flag to preview issue creation\n- Multi-repo custom types discovery\n- Redirect configuration health checks\n- Auto-discover workflow run ID in gate check\n- Pull-first sync with 3-way merge\n- Visual improvements for list tree, graph, and show commands\n- Add 'attests' edge type for skill attestations\n- Add bd resolve-conflicts command for JSONL merge conflicts\n\n### Bug Fixes\n- Enable cold-start bootstrap for read-only commands\n- Complete socket path shortening for long workspace paths\n- Silence deprecation warnings in --json mode\n- Handle text timestamps in scan for cross-driver compatibility\n- Windows infinite loop fixes\n- Daemon request context timeout to prevent indefinite hangs",
+        "publishedAt": "2026-01-11T08:30:18Z"
       }
     ]
+  },
+  {
+    "name": "bun test",
+    "url": "https://github.com/oven-sh/bun",
+    "npmName": null,
+    "githubOwner": "oven-sh",
+    "githubRepo": "bun",
+    "releases": []
+  },
+  {
+    "name": "Chakra UI",
+    "url": "https://github.com/chakra-ui/chakra-ui",
+    "npmName": null,
+    "githubOwner": "chakra-ui",
+    "githubRepo": "chakra-ui",
+    "releases": []
+  },
+  {
+    "name": "Create React App",
+    "url": "https://github.com/facebook/create-react-app",
+    "npmName": "create-react-app",
+    "githubOwner": "facebook",
+    "githubRepo": "create-react-app",
+    "releases": []
+  },
+  {
+    "name": "Cypress",
+    "url": "https://github.com/cypress-io/cypress",
+    "npmName": "cypress",
+    "githubOwner": "cypress-io",
+    "githubRepo": "cypress",
+    "releases": []
+  },
+  {
+    "name": "Deno Fresh",
+    "url": "https://github.com/denoland/fresh",
+    "npmName": null,
+    "githubOwner": "denoland",
+    "githubRepo": "fresh",
+    "releases": []
+  },
+  {
+    "name": "Directus",
+    "url": "https://github.com/directus/directus",
+    "npmName": null,
+    "githubOwner": "directus",
+    "githubRepo": "directus",
+    "releases": []
   },
   {
     "name": "Docker (Moby)",
@@ -345,58 +220,129 @@
     ]
   },
   {
-    "name": "Kubernetes",
-    "url": "https://github.com/kubernetes/kubernetes",
+    "name": "Docusaurus",
+    "url": "https://github.com/facebook/docusaurus",
     "npmName": null,
-    "githubOwner": "kubernetes",
-    "githubRepo": "kubernetes",
+    "githubOwner": "facebook",
+    "githubRepo": "docusaurus",
+    "releases": []
+  },
+  {
+    "name": "Drizzle ORM",
+    "url": "https://github.com/drizzle-team/drizzle-orm",
+    "npmName": "drizzle-orm",
+    "githubOwner": "drizzle-team",
+    "githubRepo": "drizzle-orm",
     "releases": [
       {
-        "tag": "v1.35.0",
-        "title": "Kubernetes v1.35.0",
-        "body": "See the [CHANGELOG](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.35.md) for more details.",
-        "publishedAt": "2025-12-17T20:01:55Z"
+        "tag": "v1.0.0-beta.12",
+        "title": "1.0.0-beta.12",
+        "body": "## Breaking changes\n\n- `.generatedAlwaysAs()` now only accepts `sql` and `() => sql`\n\n## Improvements\n\n- PostgreSQL dialect now has extra schema errors in ts files on `generate` and `push` commands\n- SQLite dialect now has extra schema errors in ts files on `generate` and `push` commands\n\n## Bug fixes\n\n- Fixed various issues with drizzle-kit generate, node:crypto, and backslash in check constraints",
+        "publishedAt": "2026-01-22T15:50:12Z"
       },
       {
-        "tag": "v1.32.11",
-        "title": "Kubernetes v1.32.11",
-        "body": "See the [CHANGELOG](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.32.md) for more details.",
-        "publishedAt": "2025-12-16T21:28:50Z"
+        "tag": "v1.0.0-beta.11",
+        "title": "v1.0.0-beta.11",
+        "body": "- Defaulted `PgTimestampString` timezone offset to be `+00` when value gets returned as `Date` instance\n- Cache is now used only when explicitly defined\n- Separated date and int-exclusive column methods from common `pg builder`",
+        "publishedAt": "2026-01-15T11:56:27Z"
       },
       {
-        "tag": "v1.35.0-rc.1",
-        "title": "Kubernetes v1.35.0-rc.1",
-        "body": "See the [CHANGELOG](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.35.md) for more details.",
-        "publishedAt": "2025-12-09T19:13:00Z"
+        "tag": "v1.0.0-beta.9",
+        "title": "v1.0.0-beta.9",
+        "body": "- Drizzle now has native `@effect/sql-pg` driver support\n- Reworked PgColumn type chain with better type performance\n- Breaking: postgres `.array()` is now not chainable, use `.array('[][]')` for multidimensional\n- Migrated away from `esbuild-register` to `tsx` loader\n- Added native Bun and Deno launch support",
+        "publishedAt": "2026-01-15T11:50:11Z"
       }
     ]
   },
   {
-    "name": "Terraform",
-    "url": "https://github.com/hashicorp/terraform",
+    "name": "Effector",
+    "url": "https://github.com/effector/effector",
+    "npmName": "effector",
+    "githubOwner": "effector",
+    "githubRepo": "effector",
+    "releases": []
+  },
+  {
+    "name": "ElysiaJS",
+    "url": "https://github.com/elysiajs/elysia",
     "npmName": null,
-    "githubOwner": "hashicorp",
-    "githubRepo": "terraform",
+    "githubOwner": "elysiajs",
+    "githubRepo": "elysia",
+    "releases": []
+  },
+  {
+    "name": "esbuild",
+    "url": "https://github.com/evanw/esbuild",
+    "npmName": "esbuild",
+    "githubOwner": "evanw",
+    "githubRepo": "esbuild",
+    "releases": []
+  },
+  {
+    "name": "Express",
+    "url": "https://github.com/expressjs/express",
+    "npmName": "express",
+    "githubOwner": "expressjs",
+    "githubRepo": "express",
+    "releases": []
+  },
+  {
+    "name": "FastAPI",
+    "url": "https://github.com/fastapi/fastapi",
+    "npmName": null,
+    "githubOwner": "fastapi",
+    "githubRepo": "fastapi",
     "releases": [
       {
-        "tag": "v1.14.3",
-        "title": "v1.14.3",
-        "body": "## 1.14.3 (December 17, 2025)\n\nBUG FIXES:\n\n* stacks: change absolute paths in path.module/path.root to be relative, as documented",
-        "publishedAt": "2025-12-17T11:53:08Z"
+        "tag": "0.128.0",
+        "title": "0.128.0",
+        "body": "### Breaking Changes\n\n- Drop support for `pydantic.v1`.",
+        "publishedAt": "2025-12-27T15:20:49Z"
       },
       {
-        "tag": "v1.14.2",
-        "title": "v1.14.2",
-        "body": "## 1.14.2 (December 11, 2025)\n\nENHANCEMENTS:\n\n* Add component registry source resolution support to Terraform Stacks\n\nBUG FIXES:\n\n* stacks: surface runtime issues with local values to user during plan\n* resource instance apply failures should not cause the resource instance state to be empty",
-        "publishedAt": "2025-12-11T12:47:33Z"
+        "tag": "0.127.1",
+        "title": "0.127.1",
+        "body": "### Refactors\n\n- Add a custom `FastAPIDeprecationWarning`.\n\n### Docs\n\n- Add documentary to website.",
+        "publishedAt": "2025-12-26T13:03:58Z"
       },
       {
-        "tag": "v1.15.0-alpha20251203",
-        "title": "v1.15.0-alpha20251203",
-        "body": "## 1.15.0-alpha20251203 (December 03, 2025)\n\nNEW FEATURES:\n\n* We now produce builds for Windows ARM64\n\nENHANCEMENTS:\n\n* ssh-based provisioner: Re-enable support for PowerShell\n* terraform init log timestamps include millisecond precision\n* init: skip dependencies declared in development override",
-        "publishedAt": "2025-12-03T15:05:36Z"
+        "tag": "0.127.0",
+        "title": "0.127.0",
+        "body": "### Breaking Changes\n\n- Add deprecation warnings when using `pydantic.v1`.",
+        "publishedAt": "2025-12-21T16:46:52Z"
       }
     ]
+  },
+  {
+    "name": "Fastify",
+    "url": "https://github.com/fastify/fastify",
+    "npmName": "fastify",
+    "githubOwner": "fastify",
+    "githubRepo": "fastify",
+    "releases": []
+  },
+  {
+    "name": "Gas Town",
+    "url": "https://github.com/steveyegge/gastown",
+    "npmName": "@gastown/gt",
+    "githubOwner": "steveyegge",
+    "githubRepo": "gastown",
+    "releases": [
+      {
+        "tag": "v0.5.0",
+        "title": "v0.5.0",
+        "body": "### Features\n- Add 'read' as alias for 'show' subcommand\n- Add --comment as alias for --reason in gt close\n- Add OpenCode as built-in agent preset\n- Convoy: redundant observers, specific ID check, dry-run flag\n- Deacon: zombie-scan command for tmux-verified process cleanup\n- Auto-fix capability for SessionHookCheck\n- Hook registry and install command\n- Mail improvements: multiple message IDs, --all flag, numeric index support\n- Orphans: --aggressive flag, kill command\n- Config-based role definition system\n- Squash merge for Refinery to eliminate redundant merge commits\n- Cross-account session access in Seance\n- Misclassified wisp detection and defense-in-depth filtering\n- Configurable polecat branch naming\n\n### Bug Fixes\n- Multi-repo routing for custom types and role slots\n- Auto-recover from stale tmux pane references\n- Use registered rigs for merge queue instead of hardcoded repos\n- Allow feature branches in contributor workflow\n- Session counter bug and --cleanup-orphans flag\n- Prevent gt done from killing itself during session cleanup\n- Resolve claude path for alias installations",
+        "publishedAt": "2026-01-22T07:10:26Z"
+      }
+    ]
+  },
+  {
+    "name": "Gatsby",
+    "url": "https://github.com/gatsbyjs/gatsby",
+    "npmName": "gatsby",
+    "githubOwner": "gatsbyjs",
+    "githubRepo": "gatsby",
+    "releases": []
   },
   {
     "name": "GitHub Actions Runner",
@@ -422,60 +368,6 @@
         "title": "v2.329.0",
         "body": "## What's Changed\n\n* Update safe_sleep.sh for bug when scheduler is paused\n* Acknowledge runner request\n* Map RUNNER_TEMP for container action\n* Bump node.js to latest version in runner\n* Include k8s novolume (version v0.8.0)\n* Report job has infra failure to run-service",
         "publishedAt": "2025-10-14T14:57:30Z"
-      }
-    ]
-  },
-  {
-    "name": "OpenTelemetry Specification",
-    "url": "https://github.com/open-telemetry/opentelemetry-specification",
-    "npmName": null,
-    "githubOwner": "open-telemetry",
-    "githubRepo": "opentelemetry-specification",
-    "releases": [
-      {
-        "tag": "v1.53.0",
-        "title": "v1.53.0",
-        "body": "### Metrics\n\n- Stabilize part of `Enabled` SDK for synchronous instruments.\n\n### Logs\n\n- Add optional Ergonomic API.\n\n### SDK Configuration\n\n- Declarative configuration: clarify default behavior and validation requirements\n- Declarative configuration: add optional programmatic customization to `create`\n\n### Common\n\n- Stabilize complex `AnyValue` attribute value types and related attribute limits.",
-        "publishedAt": "2026-01-09T17:00:08Z"
-      },
-      {
-        "tag": "v1.52.0",
-        "title": "Release 1.52.0",
-        "body": "## Context\n\n- Make the W3C randomness flag required.\n\n## Traces\n\n- Deprecate Zipkin exporter document\n- Add spec for `AlwaysRecord` sampler\n\n## Metrics\n\n- Stabilize `Enabled` API for synchronous instruments.\n\n## Logs\n\n- Stabilize `LogRecordProcessor.Enabled`.",
-        "publishedAt": "2025-12-12T17:20:16Z"
-      },
-      {
-        "tag": "v1.51.0",
-        "title": "Release 1.51.0",
-        "body": "## Metrics\n\n- `AlignedHistogramBucketExemplarReservoir` SHOULD use a time-weighted algorithm.\n\n## Profiles\n\n- Document the profiles signal.\n\n## Common\n\n- Extend the set of attribute value types to support more complex data structures.",
-        "publishedAt": "2025-11-17T14:18:03Z"
-      }
-    ]
-  },
-  {
-    "name": "Prometheus",
-    "url": "https://github.com/prometheus/prometheus",
-    "npmName": null,
-    "githubOwner": "prometheus",
-    "githubRepo": "prometheus",
-    "releases": [
-      {
-        "tag": "v3.5.1",
-        "title": "3.5.1 / 2026-01-07",
-        "body": "This is the current \"Long Term Support\" release.\nNo code changes since 3.5.0, just some dependency updates:\n* Docker library updated from 28.2.2 to 28.5.2\n* Built with Go 1.24.11",
-        "publishedAt": "2026-01-22T13:50:27Z"
-      },
-      {
-        "tag": "v3.9.1",
-        "title": "3.9.1 / 2026-01-07",
-        "body": "- [BUGFIX] Agent: fix crash shortly after startup from invalid type of object\n- [BUGFIX] Scraping: fix relabel keep/drop not working",
-        "publishedAt": "2026-01-07T17:05:53Z"
-      },
-      {
-        "tag": "v3.9.0",
-        "title": "3.9.0 / 2026-01-06",
-        "body": "## Note for users of Native Histograms\n\nIn version 3.9, Native Histograms is no longer experimental, and the feature flag `native-histogram` has no effect.\n\n## Changelog\n\n- [CHANGE] Native Histograms are no longer experimental!\n- [FEATURE] API: Add /api/v1/features for clients to understand which features are supported\n- [FEATURE] Promtool: Add `start_timestamp` field for unit tests\n- [ENHANCEMENT] UI: Add graph option to start the chart's Y axis at zero",
-        "publishedAt": "2026-01-07T10:23:50Z"
       }
     ]
   },
@@ -507,45 +399,801 @@
     ]
   },
   {
-    "name": "Beads",
-    "url": "https://github.com/steveyegge/beads",
+    "name": "Hapi",
+    "url": "https://github.com/hapijs/hapi",
+    "npmName": "@hapi/hapi",
+    "githubOwner": "hapijs",
+    "githubRepo": "hapi",
+    "releases": []
+  },
+  {
+    "name": "Headless UI",
+    "url": "https://github.com/tailwindlabs/headlessui",
+    "npmName": "@headlessui/react",
+    "githubOwner": "tailwindlabs",
+    "githubRepo": "headlessui",
+    "releases": []
+  },
+  {
+    "name": "HeroUI (previously NextUI)",
+    "url": "https://github.com/heroui-inc/heroui",
+    "npmName": "@heroui/react",
+    "githubOwner": "heroui-inc",
+    "githubRepo": "heroui",
+    "releases": []
+  },
+  {
+    "name": "Hono",
+    "url": "https://github.com/honojs/hono",
     "npmName": null,
-    "githubOwner": "steveyegge",
-    "githubRepo": "beads",
+    "githubOwner": "honojs",
+    "githubRepo": "hono",
+    "releases": []
+  },
+  {
+    "name": "HTMX",
+    "url": "https://github.com/bigskysoftware/htmx",
+    "npmName": null,
+    "githubOwner": "bigskysoftware",
+    "githubRepo": "htmx",
+    "releases": []
+  },
+  {
+    "name": "Jest",
+    "url": "https://github.com/jestjs/jest",
+    "npmName": "jest",
+    "githubOwner": "jestjs",
+    "githubRepo": "jest",
+    "releases": []
+  },
+  {
+    "name": "Jotai",
+    "url": "https://github.com/pmndrs/jotai",
+    "npmName": "jotai",
+    "githubOwner": "pmndrs",
+    "githubRepo": "jotai",
+    "releases": []
+  },
+  {
+    "name": "Koa",
+    "url": "https://github.com/koajs/koa",
+    "npmName": "koa",
+    "githubOwner": "koajs",
+    "githubRepo": "koa",
+    "releases": []
+  },
+  {
+    "name": "Kubernetes",
+    "url": "https://github.com/kubernetes/kubernetes",
+    "npmName": null,
+    "githubOwner": "kubernetes",
+    "githubRepo": "kubernetes",
     "releases": [
       {
-        "tag": "v0.49.0",
-        "title": "v0.49.0",
-        "body": "### Features\n- Real-time activity feed using fsnotify\n- Add 'view' as alias for 'show' command\n- Add 'bd children <id>' command\n- Add validate command for sync config\n- Federation: SQL user authentication, dolt sql-server mode, peer-to-peer sync\n- Per-worktree export state tracking\n- Jujutsu (jj) version control support\n- SQLite to Dolt migration tooling\n- Incremental export for large repos\n- Per-field merge strategies for conflict resolution\n- Interactive conflict resolution\n\n### Bug Fixes\n- Auto-correct deleted status to tombstone for JSONL compatibility\n- Prevent stack overflow in handleStaleLock\n- Prevent zombie state after database file replacement\n- Enforce single-process mode for Dolt backend\n- Stabilize tree ordering for consistent --tree output",
-        "publishedAt": "2026-01-22T08:20:08Z"
+        "tag": "v1.35.0",
+        "title": "Kubernetes v1.35.0",
+        "body": "See the [CHANGELOG](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.35.md) for more details.",
+        "publishedAt": "2025-12-17T20:01:55Z"
       },
       {
-        "tag": "v0.47.1",
-        "title": "v0.47.1",
-        "body": "### Features\n- Add --ready flag to show only available work\n- Add Markdown rendering to comment text\n\n### Bug Fixes\n- Prevent initialization from within git worktrees\n- Exclude sync_base.jsonl from multiple JSONL files check\n- Prefer issues with children/deps when choosing merge target\n- Support custom issue types and statuses in MCP\n- Rebuild blocked_issues_cache after rename-prefix",
-        "publishedAt": "2026-01-12T11:26:23Z"
+        "tag": "v1.32.11",
+        "title": "Kubernetes v1.32.11",
+        "body": "See the [CHANGELOG](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.32.md) for more details.",
+        "publishedAt": "2025-12-16T21:28:50Z"
       },
       {
-        "tag": "v0.47.0",
-        "title": "v0.47.0",
-        "body": "### Features\n- Add --dry-run flag to preview issue creation\n- Multi-repo custom types discovery\n- Redirect configuration health checks\n- Auto-discover workflow run ID in gate check\n- Pull-first sync with 3-way merge\n- Visual improvements for list tree, graph, and show commands\n- Add 'attests' edge type for skill attestations\n- Add bd resolve-conflicts command for JSONL merge conflicts\n\n### Bug Fixes\n- Enable cold-start bootstrap for read-only commands\n- Complete socket path shortening for long workspace paths\n- Silence deprecation warnings in --json mode\n- Handle text timestamps in scan for cross-driver compatibility\n- Windows infinite loop fixes\n- Daemon request context timeout to prevent indefinite hangs",
-        "publishedAt": "2026-01-11T08:30:18Z"
+        "tag": "v1.35.0-rc.1",
+        "title": "Kubernetes v1.35.0-rc.1",
+        "body": "See the [CHANGELOG](https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG/CHANGELOG-1.35.md) for more details.",
+        "publishedAt": "2025-12-09T19:13:00Z"
       }
     ]
   },
   {
-    "name": "Gas Town",
-    "url": "https://github.com/steveyegge/gastown",
-    "npmName": "@gastown/gt",
-    "githubOwner": "steveyegge",
-    "githubRepo": "gastown",
+    "name": "Lit",
+    "url": "https://github.com/lit/lit",
+    "npmName": "lit",
+    "githubOwner": "lit",
+    "githubRepo": "lit",
+    "releases": []
+  },
+  {
+    "name": "Magic UI",
+    "url": "https://github.com/magicuidesign/magicui",
+    "npmName": null,
+    "githubOwner": "magicuidesign",
+    "githubRepo": "magicui",
+    "releases": []
+  },
+  {
+    "name": "Mantine",
+    "url": "https://github.com/mantinedev/mantine",
+    "npmName": null,
+    "githubOwner": "mantinedev",
+    "githubRepo": "mantine",
+    "releases": []
+  },
+  {
+    "name": "MobX",
+    "url": "https://github.com/mobxjs/mobx",
+    "npmName": "mobx",
+    "githubOwner": "mobxjs",
+    "githubRepo": "mobx",
+    "releases": []
+  },
+  {
+    "name": "Mocha",
+    "url": "https://github.com/mochajs/mocha",
+    "npmName": "mocha",
+    "githubOwner": "mochajs",
+    "githubRepo": "mocha",
+    "releases": []
+  },
+  {
+    "name": "Mock Service Worker",
+    "url": "https://github.com/mswjs/msw",
+    "npmName": "msw",
+    "githubOwner": "mswjs",
+    "githubRepo": "msw",
+    "releases": []
+  },
+  {
+    "name": "MUI",
+    "url": "https://github.com/mui/material-ui",
+    "npmName": null,
+    "githubOwner": "mui",
+    "githubRepo": "material-ui",
+    "releases": []
+  },
+  {
+    "name": "NestJS",
+    "url": "https://github.com/nestjs/nest",
+    "npmName": "@nestjs/core",
+    "githubOwner": "nestjs",
+    "githubRepo": "nest",
+    "releases": []
+  },
+  {
+    "name": "Next.js",
+    "url": "https://github.com/vercel/next.js",
+    "npmName": "next",
+    "githubOwner": "vercel",
+    "githubRepo": "next.js",
     "releases": [
       {
-        "tag": "v0.5.0",
-        "title": "v0.5.0",
-        "body": "### Features\n- Add 'read' as alias for 'show' subcommand\n- Add --comment as alias for --reason in gt close\n- Add OpenCode as built-in agent preset\n- Convoy: redundant observers, specific ID check, dry-run flag\n- Deacon: zombie-scan command for tmux-verified process cleanup\n- Auto-fix capability for SessionHookCheck\n- Hook registry and install command\n- Mail improvements: multiple message IDs, --all flag, numeric index support\n- Orphans: --aggressive flag, kill command\n- Config-based role definition system\n- Squash merge for Refinery to eliminate redundant merge commits\n- Cross-account session access in Seance\n- Misclassified wisp detection and defense-in-depth filtering\n- Configurable polecat branch naming\n\n### Bug Fixes\n- Multi-repo routing for custom types and role slots\n- Auto-recover from stale tmux pane references\n- Use registered rigs for merge queue instead of hardcoded repos\n- Allow feature branches in contributor workflow\n- Session counter bug and --cleanup-orphans flag\n- Prevent gt done from killing itself during session cleanup\n- Resolve claude path for alias installations",
-        "publishedAt": "2026-01-22T07:10:26Z"
+        "tag": "v16.2.0-canary.3",
+        "title": "v16.2.0-canary.3",
+        "body": "### Core Changes\n\n- Remove `deploymentId` from App Router `RenderOptsPartial`\n- feat: implement LRU cache with invocation ID scoping for minimal mode response cache",
+        "publishedAt": "2026-01-22T19:02:23Z"
+      },
+      {
+        "tag": "v16.2.0-canary.2",
+        "title": "v16.2.0-canary.2",
+        "body": "### Core Changes\n\n- stabilize browser log forward options\n- [devtools] Wrap long file names of stack frames in the error overlay\n- [devtools] Fix notch coloring of error overlay in forced colors mode",
+        "publishedAt": "2026-01-22T15:14:36Z"
+      },
+      {
+        "tag": "v16.2.0-canary.1",
+        "title": "v16.2.0-canary.1",
+        "body": "### Core Changes\n\n- fix: preserve cache behavior for PPR fallback shells with root params\n- Upgrade React from `d2908752-20260119` to `b546603b-20260121`",
+        "publishedAt": "2026-01-21T23:40:53Z"
       }
     ]
+  },
+  {
+    "name": "Nitro",
+    "url": "https://github.com/nitrojs/nitro",
+    "npmName": null,
+    "githubOwner": "nitrojs",
+    "githubRepo": "nitro",
+    "releases": []
+  },
+  {
+    "name": "Node Test Runner",
+    "url": "https://github.com/nodejs/node",
+    "npmName": null,
+    "githubOwner": "nodejs",
+    "githubRepo": "node",
+    "releases": [
+      {
+        "tag": "v25.4.0",
+        "title": "2026-01-19, Version 25.4.0 (Current), @RafaelGSS",
+        "body": "### Notable Changes\n\n* cli: add --require-module/--no-require-module\n* cli: mark --heapsnapshot-near-heap-limit as stable\n* crypto: update root certificates to NSS 3.117\n* events: repurpose `events.listenerCount()` to accept EventTargets\n* http: add http.setGlobalProxyFromEnv()\n* module: mark require(esm) as stable\n* module: mark module compile cache as stable\n* module: allow subpath imports that start with `#/`\n* process: preserve AsyncLocalStorage in queueMicrotask only when needed\n* stream: do not pass `readable.compose()` output via `Readable.from()`\n* util: add convertProcessSignalToExitCode utility\n* v8: mark v8.queryObjects() as stable",
+        "publishedAt": "2026-01-19T17:05:28Z"
+      },
+      {
+        "tag": "v25.3.0",
+        "title": "2026-01-13, Version 25.3.0 (Current), @RafaelGSS",
+        "body": "This is a security release.\n\n### Notable Changes\n\n* (CVE-2025-59465) add TLSSocket default error handler\n* (CVE-2026-21636) add network check on pipe_wrap connect\n* (CVE-2025-55130) require full read and write to symlink APIs\n* (CVE-2025-55132) disable futimes when permission model is enabled\n* (CVE-2025-59466) rethrow stack overflow exceptions in async_hooks\n* (CVE-2025-55131) refactor unsafe buffer creation to remove zero-fill toggle\n* (CVE-2026-21637) route callback exceptions through error handlers",
+        "publishedAt": "2026-01-13T13:58:05Z"
+      },
+      {
+        "tag": "v24.13.0",
+        "title": "2026-01-13, Version 24.13.0 'Krypton' (LTS), @marco-ippolito",
+        "body": "This is a security release.\n\n### Notable Changes\n\n* (CVE-2025-59465) add TLSSocket default error handler\n* (CVE-2025-55132) disable futimes when permission model is enabled\n* (CVE-2025-55130) require full read and write to symlink APIs\n* (CVE-2025-59466) rethrow stack overflow exceptions in async_hooks\n* (CVE-2025-55131) refactor unsafe buffer creation to remove zero-fill toggle\n* (CVE-2026-21637) route callback exceptions through error handlers",
+        "publishedAt": "2026-01-13T13:57:24Z"
+      }
+    ]
+  },
+  {
+    "name": "Nuxt",
+    "url": "https://github.com/nuxt/nuxt",
+    "npmName": "nuxt",
+    "githubOwner": "nuxt",
+    "githubRepo": "nuxt",
+    "releases": []
+  },
+  {
+    "name": "OpenTelemetry Specification",
+    "url": "https://github.com/open-telemetry/opentelemetry-specification",
+    "npmName": null,
+    "githubOwner": "open-telemetry",
+    "githubRepo": "opentelemetry-specification",
+    "releases": [
+      {
+        "tag": "v1.53.0",
+        "title": "v1.53.0",
+        "body": "### Metrics\n\n- Stabilize part of `Enabled` SDK for synchronous instruments.\n\n### Logs\n\n- Add optional Ergonomic API.\n\n### SDK Configuration\n\n- Declarative configuration: clarify default behavior and validation requirements\n- Declarative configuration: add optional programmatic customization to `create`\n\n### Common\n\n- Stabilize complex `AnyValue` attribute value types and related attribute limits.",
+        "publishedAt": "2026-01-09T17:00:08Z"
+      },
+      {
+        "tag": "v1.52.0",
+        "title": "Release 1.52.0",
+        "body": "## Context\n\n- Make the W3C randomness flag required.\n\n## Traces\n\n- Deprecate Zipkin exporter document\n- Add spec for `AlwaysRecord` sampler\n\n## Metrics\n\n- Stabilize `Enabled` API for synchronous instruments.\n\n## Logs\n\n- Stabilize `LogRecordProcessor.Enabled`.",
+        "publishedAt": "2025-12-12T17:20:16Z"
+      },
+      {
+        "tag": "v1.51.0",
+        "title": "Release 1.51.0",
+        "body": "## Metrics\n\n- `AlignedHistogramBucketExemplarReservoir` SHOULD use a time-weighted algorithm.\n\n## Profiles\n\n- Document the profiles signal.\n\n## Common\n\n- Extend the set of attribute value types to support more complex data structures.",
+        "publishedAt": "2025-11-17T14:18:03Z"
+      }
+    ]
+  },
+  {
+    "name": "Parcel",
+    "url": "https://github.com/parcel-bundler/parcel",
+    "npmName": "parcel-bundler",
+    "githubOwner": "parcel-bundler",
+    "githubRepo": "parcel",
+    "releases": []
+  },
+  {
+    "name": "Playwright",
+    "url": "https://github.com/microsoft/playwright",
+    "npmName": "playwright",
+    "githubOwner": "microsoft",
+    "githubRepo": "playwright",
+    "releases": [
+      {
+        "tag": "v1.57.0",
+        "title": "v1.57.0",
+        "body": "## Speedboard\n\nIn HTML reporter, there's a new tab we call \"Speedboard\" - it shows you all your executed tests sorted by slowness.\n\n## Chrome for Testing\n\nStarting with this release, Playwright switches from Chromium to using Chrome for Testing builds.\n\n## Waiting for webserver output\n\n`testConfig.webServer` added a `wait` field. Pass a regular expression, and Playwright will wait until the webserver logs match it.\n\n## Breaking Change\n\nAfter 3 years of being deprecated, we removed `Page#accessibility` from our API.\n\n## Browser Versions\n- Chromium 143.0.7499.4\n- Mozilla Firefox 144.0.2\n- WebKit 26.0",
+        "publishedAt": "2025-11-25T11:16:13Z"
+      },
+      {
+        "tag": "v1.56.1",
+        "title": "v1.56.1",
+        "body": "## Highlights\n\n- chore: allow local-network-access permission in chromium\n- fix(agents): remove workspaceFolder ref from vscode mcp\n- chore: rename agents to test agents\n- chore(mcp): fallback to cwd when resolving test config\n\n## Browser Versions\n- Chromium 141.0.7390.37\n- Mozilla Firefox 142.0.1\n- WebKit 26.0",
+        "publishedAt": "2025-10-17T00:50:36Z"
+      },
+      {
+        "tag": "v1.56.0",
+        "title": "v1.56.0",
+        "body": "## Playwright Agents\n\nIntroducing Playwright Agents, three custom agent definitions designed to guide LLMs through the core process of building a Playwright test.\n\n## New APIs\n- New methods `page.consoleMessages()` and `page.pageErrors()` for retrieving the most recent console messages from the page\n- New method `page.requests()` for retrieving the most recent network requests from the page\n\n## Browser Versions\n- Chromium 141.0.7390.37\n- Mozilla Firefox 142.0.1\n- WebKit 26.0",
+        "publishedAt": "2025-10-06T14:53:30Z"
+      }
+    ]
+  },
+  {
+    "name": "Preact",
+    "url": "https://github.com/preactjs/preact",
+    "npmName": "preact",
+    "githubOwner": "preactjs",
+    "githubRepo": "preact",
+    "releases": []
+  },
+  {
+    "name": "Prisma",
+    "url": "https://github.com/prisma/prisma",
+    "npmName": "prisma",
+    "githubOwner": "prisma",
+    "githubRepo": "prisma",
+    "releases": [
+      {
+        "tag": "7.3.0",
+        "title": "7.3.0",
+        "body": "## ORM\n\n- Fast and Small Query Compilers with new `compilerBuild` option (`fast` or `small`)\n- Bypass the Query Compiler for Raw Queries\n- Update MSSQL to v12.2.0\n- Pin better-sqlite3 version to avoid SQLite bug\n- Revert `@map` enums to v6.19.0 behavior\n- Cast BigInt to text in JSON aggregation",
+        "publishedAt": "2026-01-21T16:09:13Z"
+      },
+      {
+        "tag": "6.19.2",
+        "title": "6.19.2",
+        "body": "Patch release fixing an issue with Prisma Accelerate support in some edge runtime configurations when the `@prisma/client/edge` entrypoint is not being used.",
+        "publishedAt": "2026-01-13T12:09:19Z"
+      },
+      {
+        "tag": "7.2.0",
+        "title": "7.2.0",
+        "body": "## Highlights\n\n- feat: add `sqlcommenter-query-insights` plugin\n- feat(migrate): add `-url` param for `db pull`, `db push`, `migrate dev`\n- feat(config): allow undefined URLs in e.g. `prisma generate`\n- feat(cli): customize `prisma init` based on the JS runtime (Bun vs others)",
+        "publishedAt": "2025-12-17T15:12:49Z"
+      }
+    ]
+  },
+  {
+    "name": "Prometheus",
+    "url": "https://github.com/prometheus/prometheus",
+    "npmName": null,
+    "githubOwner": "prometheus",
+    "githubRepo": "prometheus",
+    "releases": [
+      {
+        "tag": "v3.5.1",
+        "title": "3.5.1 / 2026-01-07",
+        "body": "This is the current \"Long Term Support\" release.\nNo code changes since 3.5.0, just some dependency updates:\n* Docker library updated from 28.2.2 to 28.5.2\n* Built with Go 1.24.11",
+        "publishedAt": "2026-01-22T13:50:27Z"
+      },
+      {
+        "tag": "v3.9.1",
+        "title": "3.9.1 / 2026-01-07",
+        "body": "- [BUGFIX] Agent: fix crash shortly after startup from invalid type of object\n- [BUGFIX] Scraping: fix relabel keep/drop not working",
+        "publishedAt": "2026-01-07T17:05:53Z"
+      },
+      {
+        "tag": "v3.9.0",
+        "title": "3.9.0 / 2026-01-06",
+        "body": "## Note for users of Native Histograms\n\nIn version 3.9, Native Histograms is no longer experimental, and the feature flag `native-histogram` has no effect.\n\n## Changelog\n\n- [CHANGE] Native Histograms are no longer experimental!\n- [FEATURE] API: Add /api/v1/features for clients to understand which features are supported\n- [FEATURE] Promtool: Add `start_timestamp` field for unit tests\n- [ENHANCEMENT] UI: Add graph option to start the chart's Y axis at zero",
+        "publishedAt": "2026-01-07T10:23:50Z"
+      }
+    ]
+  },
+  {
+    "name": "Puppeteer",
+    "url": "https://github.com/puppeteer/puppeteer",
+    "npmName": "puppeteer",
+    "githubOwner": "puppeteer",
+    "githubRepo": "puppeteer",
+    "releases": []
+  },
+  {
+    "name": "Quasar",
+    "url": "https://github.com/quasarframework/quasar",
+    "npmName": null,
+    "githubOwner": "quasarframework",
+    "githubRepo": "quasar",
+    "releases": []
+  },
+  {
+    "name": "Qwik",
+    "url": "https://github.com/QwikDev/qwik",
+    "npmName": null,
+    "githubOwner": "QwikDev",
+    "githubRepo": "qwik",
+    "releases": []
+  },
+  {
+    "name": "Radix",
+    "url": "https://github.com/radix-ui/primitives",
+    "npmName": "@radix-ui",
+    "githubOwner": "radix-ui",
+    "githubRepo": "primitives",
+    "releases": []
+  },
+  {
+    "name": "React",
+    "url": "https://github.com/facebook/react",
+    "npmName": "react",
+    "githubOwner": "facebook",
+    "githubRepo": "react",
+    "releases": [
+      {
+        "tag": "v19.1.4",
+        "title": "19.1.4 (December 11th, 2025)",
+        "body": "## React Server Components\n\n- Add extra loop protection to React Server Functions (@sebmarkbage #35351)",
+        "publishedAt": "2025-12-12T00:11:45Z"
+      },
+      {
+        "tag": "v19.0.3",
+        "title": "19.0.3 (December 11th, 2025)",
+        "body": "## React Server Components\n\n- Add extra loop protection to React Server Functions (@sebmarkbage #35351)",
+        "publishedAt": "2025-12-12T00:12:32Z"
+      },
+      {
+        "tag": "v19.2.3",
+        "title": "19.2.3 (December 11th, 2025)",
+        "body": "## React Server Components\n\n- Add extra loop protection to React Server Functions (@sebmarkbage #35351)",
+        "publishedAt": "2025-12-11T23:57:59Z"
+      }
+    ]
+  },
+  {
+    "name": "React Aria",
+    "url": "https://github.com/adobe/react-spectrum",
+    "npmName": null,
+    "githubOwner": "adobe",
+    "githubRepo": "react-spectrum",
+    "releases": []
+  },
+  {
+    "name": "React Bootstrap",
+    "url": "https://github.com/react-bootstrap/react-bootstrap",
+    "npmName": null,
+    "githubOwner": "react-bootstrap",
+    "githubRepo": "react-bootstrap",
+    "releases": []
+  },
+  {
+    "name": "React Router",
+    "url": "https://github.com/remix-run/react-router",
+    "npmName": "react-router",
+    "githubOwner": "remix-run",
+    "githubRepo": "react-router",
+    "releases": []
+  },
+  {
+    "name": "Recoil",
+    "url": "https://github.com/facebookexperimental/Recoil",
+    "npmName": "recoil",
+    "githubOwner": "facebookexperimental",
+    "githubRepo": "Recoil",
+    "releases": []
+  },
+  {
+    "name": "Redis",
+    "url": "https://github.com/redis/redis",
+    "npmName": null,
+    "githubOwner": "redis",
+    "githubRepo": "redis",
+    "releases": [
+      {
+        "tag": "8.6-rc1",
+        "title": "8.6-RC1",
+        "body": "### New Features\n\n- Streams: `XADD` idempotency with new `IDMPAUTO` and `IDMP` arguments\n- New eviction policies: `volatile-lrm` and `allkeys-lrm`\n- Hot keys detection and reporting; new command: `HOTKEYS`\n- TLS certificate-based automatic client authentication\n- Time series: support NaN values; new aggregators: `COUNTNAN` and `COUNTALL`",
+        "publishedAt": "2026-01-22T15:17:11Z"
+      },
+      {
+        "tag": "8.4.0",
+        "title": "8.4.0",
+        "body": "## Major changes compared to 8.2\n\n- DIGEST, DELEX; SET extensions - atomic compare-and-set and compare-and-delete\n- MSETEX - atomically set multiple string keys and update their expiration\n- XREADGROUP - new `CLAIM` option\n- CLUSTER MIGRATION - atomic slot migration\n- CLUSTER SLOT-STATS - per-slot usage metrics\n- Redis query engine: FT.HYBRID - hybrid search and fused scoring\n- I/O threading: substantial throughput increase",
+        "publishedAt": "2025-11-18T15:06:37Z"
+      },
+      {
+        "tag": "8.4-rc1",
+        "title": "8.4-RC1",
+        "body": "### New Features\n\n- New command: `CLUSTER MIGRATION` - atomic slot migration\n- New commands: `DELEX`, `DIGEST`; `SET` extensions\n- New command: `MSETEX` - set multiple keys and update their expiration\n- `XREADGROUP` - add `CLAIM min-idle-time`\n- Add auto-repair options for broken AOF tail on startup",
+        "publishedAt": "2025-11-04T07:33:27Z"
+      }
+    ]
+  },
+  {
+    "name": "Redux",
+    "url": "https://github.com/reduxjs/redux",
+    "npmName": "redux",
+    "githubOwner": "reduxjs",
+    "githubRepo": "redux",
+    "releases": []
+  },
+  {
+    "name": "Redux Toolkit",
+    "url": "https://github.com/reduxjs/redux-toolkit",
+    "npmName": "@reduxjs/toolkit",
+    "githubOwner": "reduxjs",
+    "githubRepo": "redux-toolkit",
+    "releases": []
+  },
+  {
+    "name": "Relay",
+    "url": "https://github.com/facebook/relay",
+    "npmName": "react-relay",
+    "githubOwner": "facebook",
+    "githubRepo": "relay",
+    "releases": []
+  },
+  {
+    "name": "Remix",
+    "url": "https://github.com/remix-run/remix",
+    "npmName": "create-remix",
+    "githubOwner": "remix-run",
+    "githubRepo": "remix",
+    "releases": []
+  },
+  {
+    "name": "Rolldown",
+    "url": "https://github.com/rolldown/rolldown",
+    "npmName": null,
+    "githubOwner": "rolldown",
+    "githubRepo": "rolldown",
+    "releases": []
+  },
+  {
+    "name": "Rollup",
+    "url": "https://github.com/rollup/rollup",
+    "npmName": "rollup",
+    "githubOwner": "rollup",
+    "githubRepo": "rollup",
+    "releases": []
+  },
+  {
+    "name": "Rspack",
+    "url": "https://github.com/web-infra-dev/rspack",
+    "npmName": null,
+    "githubOwner": "web-infra-dev",
+    "githubRepo": "rspack",
+    "releases": []
+  },
+  {
+    "name": "Selenium",
+    "url": "https://github.com/SeleniumHQ/selenium",
+    "npmName": null,
+    "githubOwner": "SeleniumHQ",
+    "githubRepo": "selenium",
+    "releases": []
+  },
+  {
+    "name": "shadcn/ui",
+    "url": "https://github.com/shadcn-ui/ui",
+    "npmName": null,
+    "githubOwner": "shadcn-ui",
+    "githubRepo": "ui",
+    "releases": []
+  },
+  {
+    "name": "Solid",
+    "url": "https://github.com/solidjs/solid",
+    "npmName": "solid-js",
+    "githubOwner": "solidjs",
+    "githubRepo": "solid",
+    "releases": []
+  },
+  {
+    "name": "SolidStart",
+    "url": "https://github.com/solidjs/solid-start",
+    "npmName": null,
+    "githubOwner": "solidjs",
+    "githubRepo": "solid-start",
+    "releases": []
+  },
+  {
+    "name": "Stencil",
+    "url": "https://github.com/stenciljs/core",
+    "npmName": null,
+    "githubOwner": "stenciljs",
+    "githubRepo": "core",
+    "releases": []
+  },
+  {
+    "name": "Storybook",
+    "url": "https://github.com/storybookjs/storybook",
+    "npmName": "storybook",
+    "githubOwner": "storybookjs",
+    "githubRepo": "storybook",
+    "releases": []
+  },
+  {
+    "name": "Strapi",
+    "url": "https://github.com/strapi/strapi",
+    "npmName": "strapi",
+    "githubOwner": "strapi",
+    "githubRepo": "strapi",
+    "releases": []
+  },
+  {
+    "name": "Svelte",
+    "url": "https://github.com/sveltejs/svelte",
+    "npmName": null,
+    "githubOwner": "sveltejs",
+    "githubRepo": "svelte",
+    "releases": []
+  },
+  {
+    "name": "SvelteKit",
+    "url": "https://github.com/sveltejs/kit",
+    "npmName": "@sveltejs/kit",
+    "githubOwner": "sveltejs",
+    "githubRepo": "kit",
+    "releases": []
+  },
+  {
+    "name": "SWC",
+    "url": "https://github.com/swc-project/swc",
+    "npmName": null,
+    "githubOwner": "swc-project",
+    "githubRepo": "swc",
+    "releases": []
+  },
+  {
+    "name": "SWR",
+    "url": "https://github.com/vercel/swr",
+    "npmName": "swr",
+    "githubOwner": "vercel",
+    "githubRepo": "swr",
+    "releases": []
+  },
+  {
+    "name": "TanStack Query",
+    "url": "https://github.com/TanStack/query",
+    "npmName": "@tanstack/react-query",
+    "githubOwner": "TanStack",
+    "githubRepo": "query",
+    "releases": []
+  },
+  {
+    "name": "TanStack Start",
+    "url": "https://github.com/TanStack/router",
+    "npmName": "@tanstack/react-start",
+    "githubOwner": "TanStack",
+    "githubRepo": "router",
+    "releases": []
+  },
+  {
+    "name": "Terraform",
+    "url": "https://github.com/hashicorp/terraform",
+    "npmName": null,
+    "githubOwner": "hashicorp",
+    "githubRepo": "terraform",
+    "releases": [
+      {
+        "tag": "v1.14.3",
+        "title": "v1.14.3",
+        "body": "## 1.14.3 (December 17, 2025)\n\nBUG FIXES:\n\n* stacks: change absolute paths in path.module/path.root to be relative, as documented",
+        "publishedAt": "2025-12-17T11:53:08Z"
+      },
+      {
+        "tag": "v1.14.2",
+        "title": "v1.14.2",
+        "body": "## 1.14.2 (December 11, 2025)\n\nENHANCEMENTS:\n\n* Add component registry source resolution support to Terraform Stacks\n\nBUG FIXES:\n\n* stacks: surface runtime issues with local values to user during plan\n* resource instance apply failures should not cause the resource instance state to be empty",
+        "publishedAt": "2025-12-11T12:47:33Z"
+      },
+      {
+        "tag": "v1.15.0-alpha20251203",
+        "title": "v1.15.0-alpha20251203",
+        "body": "## 1.15.0-alpha20251203 (December 03, 2025)\n\nNEW FEATURES:\n\n* We now produce builds for Windows ARM64\n\nENHANCEMENTS:\n\n* ssh-based provisioner: Re-enable support for PowerShell\n* terraform init log timestamps include millisecond precision\n* init: skip dependencies declared in development override",
+        "publishedAt": "2025-12-03T15:05:36Z"
+      }
+    ]
+  },
+  {
+    "name": "TestCafe",
+    "url": "https://github.com/DevExpress/testcafe",
+    "npmName": "testcafe",
+    "githubOwner": "DevExpress",
+    "githubRepo": "testcafe",
+    "releases": []
+  },
+  {
+    "name": "Testing Library",
+    "url": "https://github.com/testing-library/react-testing-library",
+    "npmName": "@testing-library/react",
+    "githubOwner": "testing-library",
+    "githubRepo": "react-testing-library",
+    "releases": []
+  },
+  {
+    "name": "tRPC",
+    "url": "https://github.com/trpc/trpc",
+    "npmName": null,
+    "githubOwner": "trpc",
+    "githubRepo": "trpc",
+    "releases": []
+  },
+  {
+    "name": "tsc CLI",
+    "url": "https://github.com/microsoft/TypeScript",
+    "npmName": "typescript",
+    "githubOwner": "microsoft",
+    "githubRepo": "TypeScript",
+    "releases": [
+      {
+        "tag": "v5.9.3",
+        "title": "TypeScript 5.9.3",
+        "body": "For release notes, check out the [release announcement](https://devblogs.microsoft.com/typescript/announcing-typescript-5-9/)\n\n* [fixed issues query for Typescript 5.9.0 (Beta)](https://github.com/Microsoft/TypeScript/issues?utf8=%E2%9C%93&q=milestone%3A%22TypeScript+5.9.0%22+is%3Aclosed+).\n* [fixed issues query for Typescript 5.9.1 (RC)](https://github.com/Microsoft/TypeScript/issues?utf8=%E2%9C%93&q=milestone%3A%22TypeScript+5.9.1%22+is%3Aclosed+).\n* [fixed issues query for Typescript 5.9.3 (Stable)](https://github.com/Microsoft/TypeScript/issues?utf8=%E2%9C%93&q=milestone%3A%22TypeScript+5.9.3%22+is%3Aclosed+).\n\nDownloads are available on:\n* [npm](https://www.npmjs.com/package/typescript)",
+        "publishedAt": "2025-10-01T19:06:07Z"
+      },
+      {
+        "tag": "v5.9.2",
+        "title": "TypeScript 5.9",
+        "body": "For release notes, check out the [release announcement](https://devblogs.microsoft.com/typescript/announcing-typescript-5-9/)\n\n* [fixed issues query for Typescript 5.9.0 (Beta)](https://github.com/Microsoft/TypeScript/issues?utf8=%E2%9C%93&q=milestone%3A%22TypeScript+5.9.0%22+is%3Aclosed+).\n* [fixed issues query for Typescript 5.9.1 (RC)](https://github.com/Microsoft/TypeScript/issues?utf8=%E2%9C%93&q=milestone%3A%22TypeScript+5.9.1%22+is%3Aclosed+).\n\nDownloads are available on:\n* [npm](https://www.npmjs.com/package/typescript)",
+        "publishedAt": "2025-10-01T20:37:10Z"
+      },
+      {
+        "tag": "v5.9-rc",
+        "title": "TypeScript 5.9 RC",
+        "body": "For release notes, check out the [release announcement](https://devblogs.microsoft.com/typescript/announcing-typescript-5-9-rc/)\n\n* [fixed issues query for Typescript 5.9.0 (Beta)](https://github.com/Microsoft/TypeScript/issues?utf8=%E2%9C%93&q=milestone%3A%22TypeScript+5.9.0%22+is%3Aclosed+).\n* [fixed issues query for Typescript 5.9.1 (RC)](https://github.com/Microsoft/TypeScript/issues?utf8=%E2%9C%93&q=milestone%3A%22TypeScript+5.9.1%22+is%3Aclosed+).\n\nDownloads are available on:\n* [npm](https://www.npmjs.com/package/typescript)",
+        "publishedAt": "2025-10-01T20:35:11Z"
+      }
+    ]
+  },
+  {
+    "name": "tsup",
+    "url": "https://github.com/egoist/tsup",
+    "npmName": "tsup",
+    "githubOwner": "egoist",
+    "githubRepo": "tsup",
+    "releases": []
+  },
+  {
+    "name": "Turbopack",
+    "url": "https://github.com/vercel/turborepo",
+    "npmName": null,
+    "githubOwner": "vercel",
+    "githubRepo": "turborepo",
+    "releases": []
+  },
+  {
+    "name": "Vite",
+    "url": "https://github.com/vitejs/vite",
+    "npmName": "vite",
+    "githubOwner": "vitejs",
+    "githubRepo": "vite",
+    "releases": [
+      {
+        "tag": "v8.0.0-beta.9",
+        "title": "v8.0.0-beta.9",
+        "body": "Please refer to [CHANGELOG.md](https://github.com/vitejs/vite/blob/v8.0.0-beta.9/packages/vite/CHANGELOG.md) for details.",
+        "publishedAt": "2026-01-22T12:49:56Z"
+      },
+      {
+        "tag": "v8.0.0-beta.8",
+        "title": "v8.0.0-beta.8",
+        "body": "Please refer to [CHANGELOG.md](https://github.com/vitejs/vite/blob/v8.0.0-beta.8/packages/vite/CHANGELOG.md) for details.",
+        "publishedAt": "2026-01-15T01:33:26Z"
+      }
+    ]
+  },
+  {
+    "name": "Vitest",
+    "url": "https://github.com/vitest-dev/vitest",
+    "npmName": "vitest",
+    "githubOwner": "vitest-dev",
+    "githubRepo": "vitest",
+    "releases": []
+  },
+  {
+    "name": "Vue.js",
+    "url": "https://github.com/vuejs/core",
+    "npmName": "vue",
+    "githubOwner": "vuejs",
+    "githubRepo": "core",
+    "releases": []
+  },
+  {
+    "name": "Waku",
+    "url": "https://github.com/wakujs/waku",
+    "npmName": "waku",
+    "githubOwner": "wakujs",
+    "githubRepo": "waku",
+    "releases": []
+  },
+  {
+    "name": "WebdriverIO",
+    "url": "https://github.com/webdriverio/webdriverio",
+    "npmName": "webdriverio",
+    "githubOwner": "webdriverio",
+    "githubRepo": "webdriverio",
+    "releases": []
+  },
+  {
+    "name": "webpack",
+    "url": "https://github.com/webpack/webpack",
+    "npmName": "webpack",
+    "githubOwner": "webpack",
+    "githubRepo": "webpack",
+    "releases": []
+  },
+  {
+    "name": "XState",
+    "url": "https://github.com/statelyai/xstate",
+    "npmName": "xstate",
+    "githubOwner": "statelyai",
+    "githubRepo": "xstate",
+    "releases": []
+  },
+  {
+    "name": "Zustand",
+    "url": "https://github.com/pmndrs/zustand",
+    "npmName": "zustand",
+    "githubOwner": "pmndrs",
+    "githubRepo": "zustand",
+    "releases": []
   }
 ]
