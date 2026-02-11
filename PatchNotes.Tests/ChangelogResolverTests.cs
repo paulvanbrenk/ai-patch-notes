@@ -94,6 +94,15 @@ public class ChangelogResolverTests
         ChangelogResolver.IsChangelogReference(body).Should().BeTrue();
     }
 
+    [Theory]
+    [InlineData("[Technical notes](https://example.com/docs)")]
+    [InlineData("[Migration notes](https://example.com/migrate)")]
+    [InlineData("[Implementation notes](https://foo.com/internal)")]
+    public void IsChangelogReference_NotesInNonChangelogLink_ReturnsFalse(string body)
+    {
+        ChangelogResolver.IsChangelogReference(body).Should().BeFalse();
+    }
+
     #endregion
 
     #region ExtractPathFromBody Tests
