@@ -20,8 +20,18 @@ public class PatchNotesApiFixture : WebApplicationFactory<Program>, IAsyncLifeti
     private readonly MockNpmHandler _npmHandler = new();
     private readonly string _dbName = $"test_{Guid.NewGuid():N}";
     private SqliteConnection? _connection;
+    private Action<IWebHostBuilder>? _additionalConfig;
 
     public MockNpmHandler NpmHandler => _npmHandler;
+
+    /// <summary>
+    /// Register additional configuration to be applied during WebHost setup.
+    /// Must be called before accessing Services or CreateClient().
+    /// </summary>
+    public void ConfigureSettings(Action<IWebHostBuilder> configure)
+    {
+        _additionalConfig = configure;
+    }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -60,6 +70,8 @@ public class PatchNotesApiFixture : WebApplicationFactory<Program>, IAsyncLifeti
         builder.UseSetting("Stytch:ProjectId", "test-project-id");
         builder.UseSetting("Stytch:Secret", "test-secret");
         builder.UseSetting("Stytch:WebhookSecret", "test-webhook-secret");
+
+        _additionalConfig?.Invoke(builder);
     }
 
     public async Task InitializeAsync()
