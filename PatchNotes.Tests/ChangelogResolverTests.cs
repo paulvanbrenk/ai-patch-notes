@@ -104,6 +104,15 @@ public class ChangelogResolverTests
     }
 
     [Theory]
+    [InlineData("See the migration guide for details on breaking changes")]
+    [InlineData("See our docs for full details")]
+    [InlineData("See above for details")]
+    public void IsChangelogReference_GenericSeeForDetails_ReturnsFalse(string body)
+    {
+        ChangelogResolver.IsChangelogReference(body).Should().BeFalse();
+    }
+
+    [Theory]
     [InlineData("Details: https://example.com/CHANGES.md")]
     [InlineData("Details: https://example.com/history.md")]
     [InlineData("Details: https://example.com/release-notes")]
