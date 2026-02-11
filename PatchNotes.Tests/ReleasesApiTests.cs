@@ -408,6 +408,38 @@ public class ReleasesWatchlistFilterTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task GetReleases_Authenticated_WithPackagesParam_OverridesWatchlist()
+    {
+        // Arrange
+        using var scope = _fixture.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
+
+        var user = await db.Users.FirstAsync(u => u.StytchUserId == PatchNotesApiFixture.TestUserId);
+        var watchedPkg = new Package { Name = "watched-pkg", Url = "https://github.com/watched/repo", GithubOwner = "watched", GithubRepo = "repo", CreatedAt = DateTime.UtcNow };
+        var explicitPkg = new Package { Name = "explicit-pkg", Url = "https://github.com/explicit/repo", GithubOwner = "explicit", GithubRepo = "repo", CreatedAt = DateTime.UtcNow };
+        db.Packages.AddRange(watchedPkg, explicitPkg);
+        await db.SaveChangesAsync();
+
+        db.Watchlists.Add(new Watchlist { UserId = user.Id, PackageId = watchedPkg.Id, CreatedAt = DateTime.UtcNow });
+        await db.SaveChangesAsync();
+
+        db.Releases.AddRange(
+            new Release { PackageId = watchedPkg.Id, Tag = "v1.0.0", PublishedAt = DateTime.UtcNow.AddDays(-1), FetchedAt = DateTime.UtcNow },
+            new Release { PackageId = explicitPkg.Id, Tag = "v2.0.0", PublishedAt = DateTime.UtcNow.AddDays(-1), FetchedAt = DateTime.UtcNow }
+        );
+        await db.SaveChangesAsync();
+
+        // Act - explicit packages param should override user's watchlist
+        var response = await _authClient.GetAsync($"/api/releases?packages={explicitPkg.Id}");
+
+        // Assert - only the explicit package's releases, not the user's watchlist
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var releases = await response.Content.ReadFromJsonAsync<JsonElement>();
+        releases.GetArrayLength().Should().Be(1);
+        releases[0].GetProperty("tag").GetString().Should().Be("v2.0.0");
+    }
+
+    [Fact]
     public async Task GetReleases_Authenticated_WithWatchlistButNoReleasesInWindow_ReturnsEmpty()
     {
         // Arrange
