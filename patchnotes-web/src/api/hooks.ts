@@ -34,7 +34,7 @@ export function usePackage(id: string) {
   })
 }
 
-export interface ReleasesOptions {
+interface ReleasesOptions {
   packages?: string[]
   days?: number
   excludePrerelease?: boolean
@@ -132,29 +132,6 @@ export function useSetWatchlist() {
   return useMutation({
     mutationFn: (packageIds: string[]) =>
       api.put<string[]>('/watchlist', { packageIds }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.watchlist })
-    },
-  })
-}
-
-export function useAddToWatchlist() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: (packageId: string) =>
-      api.post<string>(`/watchlist/${packageId}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.watchlist })
-    },
-  })
-}
-
-export function useRemoveFromWatchlist() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: (packageId: string) => api.delete(`/watchlist/${packageId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.watchlist })
     },
