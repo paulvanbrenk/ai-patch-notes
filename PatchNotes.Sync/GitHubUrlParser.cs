@@ -10,6 +10,12 @@ public static class GitHubUrlParser
     /// <exception cref="ArgumentException">Thrown when the URL cannot be parsed.</exception>
     public static (string Owner, string Repo) Parse(string url)
     {
+        if (url is null)
+        {
+            throw new ArgumentException(
+                "Invalid GitHub URL: 'null'. Expected format: https://github.com/owner/repo or owner/repo");
+        }
+
         // Support full URLs like https://github.com/prettier/prettier
         if (Uri.TryCreate(url, UriKind.Absolute, out var uri)
             && uri.Host.Equals("github.com", StringComparison.OrdinalIgnoreCase))
