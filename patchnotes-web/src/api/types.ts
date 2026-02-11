@@ -41,4 +41,3 @@ export interface UpdatePackageRequest {
   githubOwner?: string
   githubRepo?: string
 }
-

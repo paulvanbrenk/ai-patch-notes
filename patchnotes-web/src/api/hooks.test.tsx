@@ -59,7 +59,6 @@ describe('queryKeys', () => {
       'releases',
     ])
   })
-
 })
 
 describe('usePackages', () => {
@@ -204,4 +203,3 @@ describe('useUpdatePackage', () => {
     })
   })
 })
-
