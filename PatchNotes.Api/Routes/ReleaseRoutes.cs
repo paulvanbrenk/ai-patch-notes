@@ -191,6 +191,7 @@ public static class ReleaseRoutes
                 httpContext.Response.Headers.Connection = "keep-alive";
 
                 var fullSummary = new System.Text.StringBuilder();
+                var eventId = 0;
 
                 try
                 {
@@ -198,7 +199,7 @@ public static class ReleaseRoutes
                     {
                         fullSummary.Append(chunk);
                         var chunkData = JsonSerializer.Serialize(new { type = "chunk", content = chunk });
-                        await httpContext.Response.WriteAsync($"data: {chunkData}\n\n", httpContext.RequestAborted);
+                        await httpContext.Response.WriteAsync($"id: {++eventId}\ndata: {chunkData}\n\n", httpContext.RequestAborted);
                         await httpContext.Response.Body.FlushAsync(httpContext.RequestAborted);
                     }
 
@@ -230,7 +231,7 @@ public static class ReleaseRoutes
                             package = new { release.Package.Id, release.Package.NpmName }
                         }
                     });
-                    await httpContext.Response.WriteAsync($"data: {completeData}\n\n", httpContext.RequestAborted);
+                    await httpContext.Response.WriteAsync($"id: {++eventId}\ndata: {completeData}\n\n", httpContext.RequestAborted);
                 }
                 catch (OperationCanceledException)
                 {
@@ -241,10 +242,10 @@ public static class ReleaseRoutes
                 {
                     logger.LogError(ex, "AI summarization failed for release {ReleaseId} during streaming", id);
                     var errorData = JsonSerializer.Serialize(new { type = "error", message = "AI summarization service is currently unavailable. Please try again later." });
-                    await httpContext.Response.WriteAsync($"data: {errorData}\n\n");
+                    await httpContext.Response.WriteAsync($"id: {++eventId}\ndata: {errorData}\n\n");
                 }
 
-                await httpContext.Response.WriteAsync("data: [DONE]\n\n");
+                await httpContext.Response.WriteAsync($"id: {++eventId}\ndata: [DONE]\n\n");
 
                 return Results.Empty;
             }
