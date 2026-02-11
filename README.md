@@ -14,17 +14,16 @@ A GitHub release viewer for npm packages. Track release notes across your favori
 
 ## Project Status
 
-**Stage:** Development (MVP)
-**Health Score:** 8/10
+**Stage:** Production (MVP)
 
 | Area | Status |
 |------|--------|
-| Architecture | ✅ Solid (.NET + React separation) |
+| Architecture | ✅ .NET API + React SPA + Azure Functions |
 | Code Quality | ✅ Good |
-| CI/CD | ✅ GitHub Actions (build, test, deploy) |
-| Testing | ✅ 141 Vitest tests + xUnit API/Sync tests |
-| Authentication | ✅ Stytch B2C configured |
-| Error Handling | ✅ Error boundaries + toast notifications |
+| CI/CD | ✅ GitHub Actions (build, test, deploy API + Function + frontend) |
+| Testing | ✅ 334 xUnit tests + 129 Vitest tests |
+| Authentication | ✅ Stytch B2C |
+| Sync | ✅ Concurrent pipeline (Channel-based producer-consumer) |
 
 ## Features
 
@@ -46,7 +45,7 @@ A GitHub release viewer for npm packages. Track release notes across your favori
 ## Prerequisites
 
 - .NET 10 SDK
-- Node.js 18+
+- Node.js 22+
 - [direnv](https://direnv.net/) (recommended for secrets management)
 
 ## Configuration
