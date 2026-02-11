@@ -231,7 +231,8 @@ public class SyncService
                 p => p.GithubOwner == owner && p.GithubRepo == repo,
                 cancellationToken);
 
-        if (package == null)
+        var isNewPackage = package == null;
+        if (isNewPackage)
         {
             package = new Package
             {
@@ -246,7 +247,17 @@ public class SyncService
             _logger.LogInformation("Created package {Owner}/{Repo}", owner, repo);
         }
 
-        return await SyncPackageAsync(package, cancellationToken: cancellationToken);
+        try
+        {
+            return await SyncPackageAsync(package!, cancellationToken: cancellationToken);
+        }
+        catch when (isNewPackage)
+        {
+            _logger.LogWarning("Sync failed for new package {Owner}/{Repo}, removing phantom package", owner, repo);
+            _db.Packages.Remove(package!);
+            await _db.SaveChangesAsync(cancellationToken);
+            throw;
+        }
     }
 
     /// <summary>

@@ -721,6 +721,51 @@ public class SyncServiceTests : IDisposable
         package.GithubRepo.Should().Be("empty-repo");
     }
 
+    [Fact]
+    public async Task SyncRepoAsync_WhenGitHubFails_RemovesNewlyCreatedPackage()
+    {
+        // Arrange - GitHub returns 404 for nonexistent repo
+        _mockGitHub
+            .Setup(x => x.GetAllReleasesAsync("nonexistent", "repo", It.IsAny<CancellationToken>()))
+            .Returns(ThrowingAsyncEnumerable<GitHubRelease>("Not Found"));
+
+        // Act
+        var act = () => _syncService.SyncRepoAsync("nonexistent", "repo");
+
+        // Assert - exception propagates and phantom package is cleaned up
+        await act.Should().ThrowAsync<Exception>().WithMessage("Not Found");
+        var packages = await _db.Packages.ToListAsync();
+        packages.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task SyncRepoAsync_WhenGitHubFails_KeepsExistingPackage()
+    {
+        // Arrange - existing package, GitHub fails during sync
+        var existing = new Package
+        {
+            Name = "myrepo",
+            Url = "https://github.com/owner/myrepo",
+            GithubOwner = "owner",
+            GithubRepo = "myrepo"
+        };
+        _db.Packages.Add(existing);
+        await _db.SaveChangesAsync();
+
+        _mockGitHub
+            .Setup(x => x.GetAllReleasesAsync("owner", "myrepo", It.IsAny<CancellationToken>()))
+            .Returns(ThrowingAsyncEnumerable<GitHubRelease>("API Error"));
+
+        // Act
+        var act = () => _syncService.SyncRepoAsync("owner", "myrepo");
+
+        // Assert - exception propagates but existing package is NOT removed
+        await act.Should().ThrowAsync<Exception>().WithMessage("API Error");
+        var packages = await _db.Packages.ToListAsync();
+        packages.Should().ContainSingle();
+        packages[0].Id.Should().Be(existing.Id);
+    }
+
     #endregion
 
     #region BackfillVersionFieldsAsync Tests
