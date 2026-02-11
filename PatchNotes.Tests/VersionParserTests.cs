@@ -1,5 +1,5 @@
 using FluentAssertions;
-using PatchNotes.Api.Routes;
+using PatchNotes.Data;
 
 namespace PatchNotes.Tests;
 

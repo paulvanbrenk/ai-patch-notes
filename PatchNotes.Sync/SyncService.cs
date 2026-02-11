@@ -15,7 +15,6 @@ public class SyncService
     private readonly IGitHubClient _github;
     private readonly ILogger<SyncService> _logger;
     private readonly ChangelogResolver? _changelogResolver;
-    private readonly VersionGroupingService _versionGrouping = new();
 
     public SyncService(
         PatchNotesDbContext db,
@@ -174,7 +173,7 @@ public class SyncService
                 }
             }
 
-            var parsed = _versionGrouping.ParseTag(ghRelease.TagName);
+            var parsed = VersionParser.ParseTagValues(ghRelease.TagName);
             var release = new Release
             {
                 PackageId = package.Id,
@@ -303,7 +302,7 @@ public class SyncService
 
         foreach (var release in releases)
         {
-            var parsed = _versionGrouping.ParseTag(release.Tag);
+            var parsed = VersionParser.ParseTagValues(release.Tag);
             if (release.MajorVersion != parsed.MajorVersion
                 || release.MinorVersion != parsed.MinorVersion
                 || release.PatchVersion != parsed.PatchVersion

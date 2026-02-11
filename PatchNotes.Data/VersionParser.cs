@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace PatchNotes.Api.Routes;
+namespace PatchNotes.Data;
 
 /// <summary>
 /// Represents a parsed semantic version with all components.
@@ -27,7 +27,6 @@ public record ParsedVersion(
         var baseGroup = $"{Major}.x";
         if (IsPrerelease)
         {
-            // Extract the pre-release type (alpha, beta, rc, canary, etc.)
             var prereleaseType = GetPrereleaseType();
             return $"{baseGroup}-{prereleaseType}";
         }
@@ -43,7 +42,6 @@ public record ParsedVersion(
         if (string.IsNullOrEmpty(Prerelease))
             return "stable";
 
-        // Match the first identifier (word) in the prerelease
         var match = Regex.Match(Prerelease, @"^([a-zA-Z]+)");
         return match.Success ? match.Groups[1].Value.ToLowerInvariant() : "prerelease";
     }
@@ -67,9 +65,9 @@ public record VersionParseResult
 }
 
 /// <summary>
-/// Represents a group of releases by version.
+/// Represents a group of parsed versions by tag (used by tag-based grouping).
 /// </summary>
-public record VersionGroup(
+public record TagVersionGroup(
     string GroupKey,
     int MajorVersion,
     bool IsPrerelease,
@@ -77,7 +75,9 @@ public record VersionGroup(
     List<ParsedVersion> Versions);
 
 /// <summary>
-/// Parses semantic versions from release tags with support for various formats.
+/// Consolidated parser for semantic versions from release tags.
+/// Supports standard semver, monorepo, release-style, simple (MAJOR.MINOR),
+/// and non-standard prerelease formats.
 /// </summary>
 public static class VersionParser
 {
@@ -88,25 +88,30 @@ public static class VersionParser
         "nightly", "dev", "experimental", "snapshot", "pre", "insiders"
     ];
 
-    // Regex for standard semver: v?MAJOR.MINOR.PATCH[-PRERELEASE][+BUILD]
+    // Non-standard prerelease: 1.0.0beta1, 1.0.0.rc1
+    private static readonly Regex NonStandardPrereleaseRegex = new(
+        @"^v?(\d+)\.(\d+)\.(\d+)[.\s]?(alpha|beta|canary|rc|next|nightly|dev|preview)\d*$",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    // Monorepo: @scope/package@v?MAJOR.MINOR[.PATCH][-PRE][+BUILD]
+    private static readonly Regex MonorepoRegex = new(
+        @"^(@?[\w-]+(?:/[\w-]+)*)[@/]v?(\d+)\.(\d+)(?:\.(\d+))?(?:-([a-zA-Z0-9]+(?:\.[a-zA-Z0-9]+)*))?(?:\+([a-zA-Z0-9]+(?:\.[a-zA-Z0-9]+)*))?$",
+        RegexOptions.Compiled);
+
+    // Release-style: release[-/]v?MAJOR.MINOR[.PATCH][-PRE]
+    private static readonly Regex ReleaseTagRegex = new(
+        @"^release[-/]v?(\d+)\.(\d+)(?:\.(\d+))?(?:-([a-zA-Z0-9]+(?:\.[a-zA-Z0-9]+)*))?$",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+    // Standard semver: v?MAJOR.MINOR.PATCH[-PRE][+BUILD]
     private static readonly Regex SemverRegex = new(
         @"^v?(\d+)\.(\d+)\.(\d+)(?:-([a-zA-Z0-9]+(?:\.[a-zA-Z0-9]+)*))?(?:\+([a-zA-Z0-9]+(?:\.[a-zA-Z0-9]+)*))?$",
         RegexOptions.Compiled);
 
-    // Regex for monorepo tags: @scope/package@v?MAJOR.MINOR.PATCH or @package/v?MAJOR.MINOR.PATCH
-    private static readonly Regex MonorepoRegex = new(
-        @"^(@?[\w-]+(?:/[\w-]+)*)[@/]v?(\d+)\.(\d+)\.(\d+)(?:-([a-zA-Z0-9]+(?:\.[a-zA-Z0-9]+)*))?(?:\+([a-zA-Z0-9]+(?:\.[a-zA-Z0-9]+)*))?$",
-        RegexOptions.Compiled);
-
-    // Regex for simpler version formats: v?MAJOR.MINOR[-PRERELEASE]
+    // Simple semver: v?MAJOR.MINOR[-PRE]
     private static readonly Regex SimpleSemverRegex = new(
         @"^v?(\d+)\.(\d+)(?:-([a-zA-Z0-9]+(?:\.[a-zA-Z0-9]+)*))?$",
         RegexOptions.Compiled);
-
-    // Regex for release-style tags: release-v?MAJOR.MINOR.PATCH
-    private static readonly Regex ReleaseTagRegex = new(
-        @"^release[-/]v?(\d+)\.(\d+)\.(\d+)(?:-([a-zA-Z0-9]+(?:\.[a-zA-Z0-9]+)*))?$",
-        RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     /// <summary>
     /// Parses a release tag into a semantic version.
@@ -118,7 +123,14 @@ public static class VersionParser
 
         tag = tag.Trim();
 
-        // Try monorepo format first (most specific)
+        // Try non-standard prerelease first (e.g., "1.0.0beta1", "1.0.0.rc1")
+        var nonStd = NonStandardPrereleaseRegex.Match(tag);
+        if (nonStd.Success)
+        {
+            return ParseNonStandardPrereleaseMatch(nonStd, tag);
+        }
+
+        // Try monorepo format (most specific after non-standard)
         var monorepoMatch = MonorepoRegex.Match(tag);
         if (monorepoMatch.Success)
         {
@@ -149,15 +161,44 @@ public static class VersionParser
         return VersionParseResult.Fail(tag, "Tag does not match any known version format");
     }
 
+    /// <summary>
+    /// Parses a tag into denormalized version fields for storage.
+    /// Returns -1 for MajorVersion when the tag cannot be parsed (unversioned).
+    /// </summary>
+    public static (int MajorVersion, int MinorVersion, int PatchVersion, bool IsPrerelease) ParseTagValues(string tag)
+    {
+        var result = Parse(tag);
+        if (result.Success)
+            return (result.Version!.Major, result.Version.Minor, result.Version.Patch, result.Version.IsPrerelease);
+        return (-1, 0, 0, false);
+    }
+
+    private static VersionParseResult ParseNonStandardPrereleaseMatch(Match match, string tag)
+    {
+        if (!int.TryParse(match.Groups[1].Value, out var major) ||
+            !int.TryParse(match.Groups[2].Value, out var minor) ||
+            !int.TryParse(match.Groups[3].Value, out var patch))
+        {
+            return VersionParseResult.Fail(tag, "Failed to parse version numbers");
+        }
+
+        var prerelease = match.Groups[4].Value;
+        return VersionParseResult.Ok(new ParsedVersion(
+            major, minor, patch, prerelease, null, tag));
+    }
+
     private static VersionParseResult ParseMonorepoMatch(Match match, string tag)
     {
         var package = match.Groups[1].Value;
         if (!int.TryParse(match.Groups[2].Value, out var major) ||
-            !int.TryParse(match.Groups[3].Value, out var minor) ||
-            !int.TryParse(match.Groups[4].Value, out var patch))
+            !int.TryParse(match.Groups[3].Value, out var minor))
         {
             return VersionParseResult.Fail(tag, "Failed to parse version numbers");
         }
+
+        var patch = 0;
+        if (match.Groups[4].Success)
+            int.TryParse(match.Groups[4].Value, out patch);
 
         var prerelease = match.Groups[5].Success ? match.Groups[5].Value : null;
         var build = match.Groups[6].Success ? match.Groups[6].Value : null;
@@ -169,11 +210,14 @@ public static class VersionParser
     private static VersionParseResult ParseReleaseMatch(Match match, string tag)
     {
         if (!int.TryParse(match.Groups[1].Value, out var major) ||
-            !int.TryParse(match.Groups[2].Value, out var minor) ||
-            !int.TryParse(match.Groups[3].Value, out var patch))
+            !int.TryParse(match.Groups[2].Value, out var minor))
         {
             return VersionParseResult.Fail(tag, "Failed to parse version numbers");
         }
+
+        var patch = 0;
+        if (match.Groups[3].Success)
+            int.TryParse(match.Groups[3].Value, out patch);
 
         var prerelease = match.Groups[4].Success ? match.Groups[4].Value : null;
 
@@ -239,9 +283,9 @@ public static class VersionParser
     /// Groups a collection of release tags by major version.
     /// Separates stable releases from pre-releases.
     /// </summary>
-    public static Dictionary<string, VersionGroup> GroupByMajorVersion(IEnumerable<string> tags)
+    public static Dictionary<string, TagVersionGroup> GroupByMajorVersion(IEnumerable<string> tags)
     {
-        var groups = new Dictionary<string, VersionGroup>();
+        var groups = new Dictionary<string, TagVersionGroup>();
 
         foreach (var tag in tags)
         {
@@ -254,7 +298,7 @@ public static class VersionParser
 
             if (!groups.TryGetValue(groupKey, out var group))
             {
-                group = new VersionGroup(
+                group = new TagVersionGroup(
                     groupKey,
                     version.Major,
                     version.IsPrerelease,
@@ -273,7 +317,7 @@ public static class VersionParser
     /// Groups releases and returns them sorted by major version (descending)
     /// with stable releases before their corresponding pre-releases.
     /// </summary>
-    public static List<VersionGroup> GroupAndSort(IEnumerable<string> tags)
+    public static List<TagVersionGroup> GroupAndSort(IEnumerable<string> tags)
     {
         var groups = GroupByMajorVersion(tags);
 

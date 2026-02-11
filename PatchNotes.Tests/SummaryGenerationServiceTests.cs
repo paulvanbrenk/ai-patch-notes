@@ -348,7 +348,7 @@ public class SummaryGenerationServiceTests : IDisposable
     private async Task<Release> AddRelease(
         string packageId, string tag, string? title = null, string? body = null)
     {
-        var parsed = _groupingService.ParseTag(tag);
+        var parsed = VersionParser.ParseTagValues(tag);
         var release = new Release
         {
             PackageId = packageId,

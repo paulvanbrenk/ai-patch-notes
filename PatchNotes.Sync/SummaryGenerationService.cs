@@ -172,7 +172,7 @@ public class SummaryGenerationService
 
     private async Task<string> GenerateGroupSummaryAsync(
         string packageName,
-        VersionGroup group,
+        ReleaseVersionGroup group,
         CancellationToken cancellationToken)
     {
         var cutoff = DateTime.UtcNow - SummaryWindow;
