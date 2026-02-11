@@ -107,6 +107,8 @@ public static class ReleaseRoutes
         // POST /api/releases/{id}/summarize - Generate AI summary for a release
         app.MapPost("/api/releases/{id}/summarize", async (string id, HttpContext httpContext, PatchNotesDbContext db, IAiClient aiClient, ILoggerFactory loggerFactory) =>
         {
+            var logger = loggerFactory.CreateLogger("PatchNotes.Api.Routes.ReleaseRoutes");
+
             var release = await db.Releases
                 .Include(r => r.Package)
                 .FirstOrDefaultAsync(r => r.Id == id);
@@ -171,7 +173,7 @@ public static class ReleaseRoutes
                     {
                         // Another request already persisted a summary - that's fine,
                         // the streamed chunks were already sent to the client
-                        loggerFactory.CreateLogger("PatchNotes.Api.Routes.ReleaseRoutes").LogInformation("Concurrent summary persistence for release {ReleaseId} - another request won the race", id);
+                        logger.LogInformation("Concurrent summary persistence for release {ReleaseId} - another request won the race", id);
                     }
 
                     var completeData = JsonSerializer.Serialize(new
@@ -195,8 +197,7 @@ public static class ReleaseRoutes
                 }
                 catch (Exception ex)
                 {
-                    loggerFactory.CreateLogger("PatchNotes.Api.Routes.ReleaseRoutes")
-                        .LogError(ex, "AI summarization failed for release {ReleaseId} during streaming", id);
+                    logger.LogError(ex, "AI summarization failed for release {ReleaseId} during streaming", id);
                     var errorData = JsonSerializer.Serialize(new { type = "error", message = "AI summarization service is currently unavailable. Please try again later." });
                     await httpContext.Response.WriteAsync($"data: {errorData}\n\n");
                 }
@@ -214,8 +215,7 @@ public static class ReleaseRoutes
             }
             catch (Exception ex)
             {
-                loggerFactory.CreateLogger("PatchNotes.Api.Routes.ReleaseRoutes")
-                    .LogError(ex, "AI summarization failed for release {ReleaseId}", id);
+                logger.LogError(ex, "AI summarization failed for release {ReleaseId}", id);
                 return Results.Problem(
                     detail: "AI summarization service is currently unavailable. Please try again later.",
                     statusCode: 503);
@@ -233,7 +233,7 @@ public static class ReleaseRoutes
             catch (DbUpdateConcurrencyException)
             {
                 // Another request already persisted a summary - return it instead
-                loggerFactory.CreateLogger("PatchNotes.Api.Routes.ReleaseRoutes").LogInformation("Concurrent summary persistence for release {ReleaseId} - returning winner's summary", id);
+                logger.LogInformation("Concurrent summary persistence for release {ReleaseId} - returning winner's summary", id);
                 await db.Entry(release).ReloadAsync();
             }
 
