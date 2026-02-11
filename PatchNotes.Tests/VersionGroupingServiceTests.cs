@@ -10,7 +10,7 @@ public class VersionGroupingServiceTests
 
     private Release MakeRelease(string tag, string packageId = "pkg-1")
     {
-        var parsed = _sut.ParseTag(tag);
+        var parsed = VersionParser.ParseTagValues(tag);
         return new Release
         {
             Tag = tag,
