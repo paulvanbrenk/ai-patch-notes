@@ -71,13 +71,6 @@ public record VersionParseResult
 /// </summary>
 public static class VersionParser
 {
-    // Pre-release keywords for heuristic detection
-    private static readonly string[] PrereleaseKeywords =
-    [
-        "alpha", "beta", "canary", "preview", "rc", "next",
-        "nightly", "dev", "experimental", "snapshot", "pre", "insiders"
-    ];
-
     // Non-standard prerelease: 1.0.0beta1, 1.0.0.rc1
     private static readonly Regex NonStandardPrereleaseRegex = new(
         @"^v?(\d+)\.(\d+)\.(\d+)[.\s]?(alpha|beta|canary|rc|next|nightly|dev|preview)\d*$",
@@ -256,17 +249,12 @@ public static class VersionParser
 
     /// <summary>
     /// Determines if a tag represents a pre-release version.
-    /// Uses both semantic versioning rules and heuristic keyword detection.
+    /// Returns true only when the tag parses successfully and contains a pre-release identifier.
     /// </summary>
     public static bool IsPrerelease(string tag)
     {
         var result = Parse(tag);
-        if (result.Success && result.Version!.IsPrerelease)
-            return true;
-
-        // Fallback to keyword-based detection for edge cases
-        var lowerTag = tag.ToLowerInvariant();
-        return PrereleaseKeywords.Any(keyword => lowerTag.Contains(keyword));
+        return result.Success && result.Version!.IsPrerelease;
     }
 
 }
