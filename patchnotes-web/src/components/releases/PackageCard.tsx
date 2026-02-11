@@ -44,9 +44,10 @@ export function PackageCard({
   const addToWatchlist = useAddToWatchlist()
   const removeFromWatchlist = useRemoveFromWatchlist()
 
-  const isWatched = packageId ? watchlist?.includes(packageId) ?? false : false
-  const isMutating =
-    addToWatchlist.isPending || removeFromWatchlist.isPending
+  const isWatched = packageId
+    ? (watchlist?.includes(packageId) ?? false)
+    : false
+  const isMutating = addToWatchlist.isPending || removeFromWatchlist.isPending
 
   const handleWatchToggle = (e: React.MouseEvent) => {
     e.stopPropagation()
