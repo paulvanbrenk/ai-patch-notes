@@ -3,11 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 import { http, HttpResponse } from 'msw'
 import { server } from '../test/mocks/server'
-import {
-  mockPackages,
-  mockReleases,
-  mockNotifications,
-} from '../test/mocks/handlers'
+import { mockPackages, mockReleases } from '../test/mocks/handlers'
 import {
   usePackages,
   usePackage,
@@ -16,10 +12,6 @@ import {
   useAddPackage,
   useDeletePackage,
   useUpdatePackage,
-  useNotifications,
-  useNotificationsUnreadCount,
-  useMarkNotificationAsRead,
-  useDeleteNotification,
   queryKeys,
 } from './hooks'
 
@@ -65,17 +57,6 @@ describe('queryKeys', () => {
       'packages',
       'pkg-react-test-id',
       'releases',
-    ])
-  })
-
-  it('generates correct notifications key', () => {
-    expect(queryKeys.notifications).toEqual(['notifications'])
-  })
-
-  it('generates correct notificationsUnreadCount key', () => {
-    expect(queryKeys.notificationsUnreadCount).toEqual([
-      'notifications',
-      'unread-count',
     ])
   })
 })
@@ -220,103 +201,5 @@ describe('useUpdatePackage', () => {
     expect(result.current.data).toMatchObject({
       githubOwner: 'new-owner',
     })
-  })
-})
-
-describe('useNotifications', () => {
-  it('fetches notifications successfully', async () => {
-    const { result } = renderHook(() => useNotifications(), {
-      wrapper: createWrapper(),
-    })
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true))
-
-    expect(result.current.data).toEqual(mockNotifications)
-  })
-
-  it('fetches with unreadOnly filter', async () => {
-    server.use(
-      http.get('/api/notifications', ({ request }) => {
-        const url = new URL(request.url)
-        if (url.searchParams.get('unreadOnly') === 'true') {
-          return HttpResponse.json(mockNotifications.filter((n) => n.unread))
-        }
-        return HttpResponse.json(mockNotifications)
-      })
-    )
-
-    const { result } = renderHook(
-      () => useNotifications({ unreadOnly: true }),
-      {
-        wrapper: createWrapper(),
-      }
-    )
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true))
-  })
-
-  it('fetches with packageId filter', async () => {
-    server.use(
-      http.get('/api/notifications', ({ request }) => {
-        const url = new URL(request.url)
-        const packageId = url.searchParams.get('packageId')
-        if (packageId) {
-          return HttpResponse.json(
-            mockNotifications.filter((n) => n.package?.id === packageId)
-          )
-        }
-        return HttpResponse.json(mockNotifications)
-      })
-    )
-
-    const { result } = renderHook(
-      () => useNotifications({ packageId: 'pkg-react-test-id' }),
-      {
-        wrapper: createWrapper(),
-      }
-    )
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true))
-  })
-})
-
-describe('useNotificationsUnreadCount', () => {
-  it('fetches unread count successfully', async () => {
-    const { result } = renderHook(() => useNotificationsUnreadCount(), {
-      wrapper: createWrapper(),
-    })
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true))
-
-    expect(result.current.data).toEqual({ count: 1 })
-  })
-})
-
-describe('useMarkNotificationAsRead', () => {
-  it('marks notification as read successfully', async () => {
-    const { result } = renderHook(() => useMarkNotificationAsRead(), {
-      wrapper: createWrapper(),
-    })
-
-    result.current.mutate('notif-test-id-1')
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true))
-
-    expect(result.current.data).toMatchObject({
-      id: 'notif-test-id-1',
-      unread: false,
-    })
-  })
-})
-
-describe('useDeleteNotification', () => {
-  it('deletes notification successfully', async () => {
-    const { result } = renderHook(() => useDeleteNotification(), {
-      wrapper: createWrapper(),
-    })
-
-    result.current.mutate('notif-test-id-1')
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true))
   })
 })

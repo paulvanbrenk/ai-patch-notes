@@ -1,10 +1,5 @@
 import { http, HttpResponse } from 'msw'
-import type {
-  Package,
-  Release,
-  Notification,
-  UnreadCount,
-} from '../../api/types'
+import type { Package, Release } from '../../api/types'
 
 const API_BASE = '/api'
 
@@ -60,28 +55,6 @@ export const mockReleases: Release[] = [
       npmName: 'lodash',
       githubOwner: 'lodash',
       githubRepo: 'lodash',
-    },
-  },
-]
-
-export const mockNotifications: Notification[] = [
-  {
-    id: 'notif-test-id-1',
-    gitHubId: 'gh-123',
-    reason: 'subscribed',
-    subjectTitle: 'New release available',
-    subjectType: 'Release',
-    subjectUrl: 'https://github.com/facebook/react/releases/v19.0.0',
-    repositoryFullName: 'facebook/react',
-    unread: true,
-    updatedAt: '2026-01-15T10:00:00Z',
-    lastReadAt: null,
-    fetchedAt: '2026-01-15T10:00:00Z',
-    package: {
-      id: 'pkg-react-test-id',
-      npmName: 'react',
-      githubOwner: 'facebook',
-      githubRepo: 'react',
     },
   },
 ]
@@ -176,32 +149,6 @@ export const handlers = [
     if (index !== -1) {
       mockWatchlist.splice(index, 1)
     }
-    return new HttpResponse(null, { status: 204 })
-  }),
-
-  // GET /notifications
-  http.get(`${API_BASE}/notifications`, () => {
-    return HttpResponse.json(mockNotifications)
-  }),
-
-  // GET /notifications/unread-count
-  http.get(`${API_BASE}/notifications/unread-count`, () => {
-    const count = mockNotifications.filter((n) => n.unread).length
-    return HttpResponse.json({ count } satisfies UnreadCount)
-  }),
-
-  // PATCH /notifications/:id/read
-  http.patch(`${API_BASE}/notifications/:id/read`, ({ params }) => {
-    const id = params.id as string
-    return HttpResponse.json({
-      id,
-      unread: false,
-      lastReadAt: new Date().toISOString(),
-    })
-  }),
-
-  // DELETE /notifications/:id
-  http.delete(`${API_BASE}/notifications/:id`, () => {
     return new HttpResponse(null, { status: 204 })
   }),
 
