@@ -65,16 +65,6 @@ public record VersionParseResult
 }
 
 /// <summary>
-/// Represents a group of parsed versions by tag (used by tag-based grouping).
-/// </summary>
-public record TagVersionGroup(
-    string GroupKey,
-    int MajorVersion,
-    bool IsPrerelease,
-    string? PrereleaseType,
-    List<ParsedVersion> Versions);
-
-/// <summary>
 /// Consolidated parser for semantic versions from release tags.
 /// Supports standard semver, monorepo, release-style, simple (MAJOR.MINOR),
 /// and non-standard prerelease formats.
@@ -279,52 +269,4 @@ public static class VersionParser
         return PrereleaseKeywords.Any(keyword => lowerTag.Contains(keyword));
     }
 
-    /// <summary>
-    /// Groups a collection of release tags by major version.
-    /// Separates stable releases from pre-releases.
-    /// </summary>
-    public static Dictionary<string, TagVersionGroup> GroupByMajorVersion(IEnumerable<string> tags)
-    {
-        var groups = new Dictionary<string, TagVersionGroup>();
-
-        foreach (var tag in tags)
-        {
-            var result = Parse(tag);
-            if (!result.Success)
-                continue;
-
-            var version = result.Version!;
-            var groupKey = version.GetVersionGroupKey();
-
-            if (!groups.TryGetValue(groupKey, out var group))
-            {
-                group = new TagVersionGroup(
-                    groupKey,
-                    version.Major,
-                    version.IsPrerelease,
-                    version.IsPrerelease ? version.GetPrereleaseType() : null,
-                    []);
-                groups[groupKey] = group;
-            }
-
-            group.Versions.Add(version);
-        }
-
-        return groups;
-    }
-
-    /// <summary>
-    /// Groups releases and returns them sorted by major version (descending)
-    /// with stable releases before their corresponding pre-releases.
-    /// </summary>
-    public static List<TagVersionGroup> GroupAndSort(IEnumerable<string> tags)
-    {
-        var groups = GroupByMajorVersion(tags);
-
-        return groups.Values
-            .OrderByDescending(g => g.MajorVersion)
-            .ThenBy(g => g.IsPrerelease) // stable before pre-release
-            .ThenBy(g => g.PrereleaseType)
-            .ToList();
-    }
 }
