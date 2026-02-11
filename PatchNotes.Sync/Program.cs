@@ -78,15 +78,16 @@ try
     // Handle -s <owner/repo> flag: generate summaries for a specific package
     if (summarizeRepo != null)
     {
-        var parts = summarizeRepo.Split('/');
-        if (parts.Length != 2 || string.IsNullOrWhiteSpace(parts[0]) || string.IsNullOrWhiteSpace(parts[1]))
+        string owner, repo;
+        try
         {
-            logger.LogError("Invalid repository format. Expected: owner/repo (e.g., prettier/prettier)");
+            (owner, repo) = GitHubUrlParser.Parse(summarizeRepo);
+        }
+        catch (ArgumentException)
+        {
+            logger.LogError("Invalid repository format. Expected: owner/repo or https://github.com/owner/repo");
             return ExitFatalError;
         }
-
-        var owner = parts[0];
-        var repo = parts[1];
 
         logger.LogInformation("Generating summaries for {Owner}/{Repo}", owner, repo);
 
