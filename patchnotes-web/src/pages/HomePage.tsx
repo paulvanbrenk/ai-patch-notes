@@ -20,7 +20,7 @@ import { ThemeToggle } from '../components/theme'
 import { UserMenu } from '../components/auth'
 import { useFilterStore } from '../stores/filterStore'
 import { useSubscriptionStore } from '../stores/subscriptionStore'
-import { usePackages, useReleases } from '../api/hooks'
+import { usePackages, useReleases, useWatchlist } from '../api/hooks'
 import type { Release as ApiRelease } from '../api/types'
 
 // ============================================================================
@@ -428,11 +428,26 @@ export function HomePage() {
 
   // Fetch real data
   const { data: packages, isLoading: packagesLoading } = usePackages()
+  const { data: watchlist, isLoading: watchlistLoading } = useWatchlist()
+
+  // Build release query options based on auth state and watchlist
+  const releaseOptions = useMemo(() => {
+    const opts: Parameters<typeof useReleases>[0] = {}
+    if (!showPrerelease) {
+      opts.excludePrerelease = true
+    }
+    // Authenticated users with a non-empty watchlist: filter by watchlist
+    if (user && watchlist && watchlist.length > 0) {
+      opts.packages = watchlist
+    }
+    return opts
+  }, [showPrerelease, user, watchlist])
+
   const { data: releases, isLoading: releasesLoading } = useReleases(
-    showPrerelease ? undefined : { excludePrerelease: true }
+    Object.keys(releaseOptions).length > 0 ? releaseOptions : undefined
   )
 
-  const isLoading = packagesLoading || releasesLoading
+  const isLoading = packagesLoading || releasesLoading || (user ? watchlistLoading : false)
 
   // Build a packageId -> display name map from packages
   const packageNames = useMemo(() => {
@@ -570,6 +585,22 @@ export function HomePage() {
               </button>
             </div>
           </div>
+
+          {/* Watchlist Banners */}
+          {!user && (
+            <div className="mb-6 rounded-lg border border-border-default bg-surface-primary p-4 text-center">
+              <p className="text-sm text-text-secondary">
+                <a href="/login" className="font-medium text-brand-600 hover:text-brand-700">Sign in</a> to customize your feed
+              </p>
+            </div>
+          )}
+          {user && watchlist && watchlist.length === 0 && !watchlistLoading && (
+            <div className="mb-6 rounded-lg border border-border-default bg-surface-primary p-4 text-center">
+              <p className="text-sm text-text-secondary">
+                Add packages to your watchlist to see relevant releases here.
+              </p>
+            </div>
+          )}
 
           {/* Content */}
           {isLoading ? (
