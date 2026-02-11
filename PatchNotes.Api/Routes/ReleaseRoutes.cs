@@ -274,9 +274,10 @@ public static class ReleaseRoutes
             }
             catch (DbUpdateConcurrencyException)
             {
-                // Another request already persisted a summary - return it instead
-                logger.LogInformation("Concurrent summary persistence for release {ReleaseId} - returning winner's summary", id);
-                await db.Entry(release).ReloadAsync();
+                // Another request already persisted a summary — use locally-generated one.
+                // ReloadAsync() is intentionally omitted: it can throw under SQLite concurrency
+                // and release.Summary already holds a valid summary from the local generation above.
+                logger.LogInformation("Concurrent summary persistence for release {ReleaseId} - returning locally generated summary", id);
             }
 
             return Results.Ok(new
