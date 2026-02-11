@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useStytchUser } from '@stytch/react'
 import { api } from './client'
 import type {
   Package,
@@ -181,9 +182,11 @@ export function useDeleteNotification() {
 }
 
 export function useWatchlist() {
+  const { user } = useStytchUser()
   return useQuery({
     queryKey: queryKeys.watchlist,
     queryFn: () => api.get<string[]>('/watchlist'),
+    enabled: !!user,
   })
 }
 
