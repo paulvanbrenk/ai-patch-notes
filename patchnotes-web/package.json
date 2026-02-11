@@ -27,10 +27,10 @@
   "dependencies": {
     "@stytch/react": "^19.18.1",
     "@stytch/vanilla-js": "^5.44.2",
-    "@tanstack/ai": "^0.3.0",
-    "@tanstack/ai-react": "^0.3.0",
-    "@tanstack/react-query": "^5.90.20",
-    "@tanstack/react-router": "^1.158.0",
+    "@tanstack/ai": "^0.4.2",
+    "@tanstack/ai-react": "^0.5.2",
+    "@tanstack/react-query": "^5.90.21",
+    "@tanstack/react-router": "^1.159.5",
     "lucide-react": "^0.563.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
@@ -41,7 +41,7 @@
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "@tailwindcss/vite": "^4.1.18",
-    "@tanstack/router-plugin": "^1.158.0",
+    "@tanstack/router-plugin": "^1.159.5",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
