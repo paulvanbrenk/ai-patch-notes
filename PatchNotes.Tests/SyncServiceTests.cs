@@ -1022,6 +1022,208 @@ public class SyncServiceTests : IDisposable
 
     #endregion
 
+    #region SyncPackageAsync + ChangelogResolver Integration Tests
+
+    [Fact]
+    public async Task SyncPackageAsync_WithChangelogResolver_ResolvesChangelogReferenceBody()
+    {
+        // Arrange
+        var mockChangelogLogger = new Mock<ILogger<ChangelogResolver>>();
+        var changelogResolver = new ChangelogResolver(_mockGitHub.Object, mockChangelogLogger.Object);
+        var syncService = new SyncService(_db, _mockGitHub.Object, _mockLogger.Object, changelogResolver);
+
+        var package = new Package { Name = "vite", Url = "https://github.com/vitejs/vite", GithubOwner = "vitejs", GithubRepo = "vite" };
+        _db.Packages.Add(package);
+        await _db.SaveChangesAsync();
+
+        var referenceBody = "Please refer to [CHANGELOG.md](https://github.com/vitejs/vite/blob/v7.3.1/packages/vite/CHANGELOG.md) for details.";
+        SetupGitHubReleases("vitejs", "vite", [
+            CreateRelease("v7.3.1", DateTime.UtcNow, "Vite 7.3.1", referenceBody)
+        ]);
+
+        var changelog = """
+            ## 7.3.1
+
+            - Fixed HMR regression
+            - Improved build performance
+
+            ## 7.3.0
+
+            Previous version.
+            """;
+        _mockGitHub
+            .Setup(x => x.GetFileContentAsync("vitejs", "vite", "packages/vite/CHANGELOG.md", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(changelog);
+
+        // Act
+        var result = await syncService.SyncPackageAsync(package);
+
+        // Assert
+        result.ReleasesAdded.Should().Be(1);
+        var release = await _db.Releases.SingleAsync(r => r.PackageId == package.Id);
+        release.Body.Should().Contain("Fixed HMR regression");
+        release.Body.Should().Contain("Improved build performance");
+        release.Body.Should().NotContain("refer to");
+    }
+
+    [Fact]
+    public async Task SyncPackageAsync_WithChangelogResolver_KeepsOriginalBody_WhenResolutionReturnsNull()
+    {
+        // Arrange
+        var mockChangelogLogger = new Mock<ILogger<ChangelogResolver>>();
+        var changelogResolver = new ChangelogResolver(_mockGitHub.Object, mockChangelogLogger.Object);
+        var syncService = new SyncService(_db, _mockGitHub.Object, _mockLogger.Object, changelogResolver);
+
+        var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", GithubOwner = "owner", GithubRepo = "repo" };
+        _db.Packages.Add(package);
+        await _db.SaveChangesAsync();
+
+        var referenceBody = "See CHANGELOG.md for details";
+        SetupGitHubReleases("owner", "repo", [
+            CreateRelease("v1.0.0", DateTime.UtcNow, body: referenceBody)
+        ]);
+
+        // All changelog file lookups return null (file not found)
+        _mockGitHub
+            .Setup(x => x.GetFileContentAsync("owner", "repo", It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((string?)null);
+
+        // Act
+        var result = await syncService.SyncPackageAsync(package);
+
+        // Assert - original body is preserved when resolver returns null
+        result.ReleasesAdded.Should().Be(1);
+        var release = await _db.Releases.SingleAsync(r => r.PackageId == package.Id);
+        release.Body.Should().Be(referenceBody);
+    }
+
+    [Fact]
+    public async Task SyncPackageAsync_WithChangelogResolver_KeepsOriginalBody_WhenResolutionThrows()
+    {
+        // Arrange
+        var mockChangelogLogger = new Mock<ILogger<ChangelogResolver>>();
+        var changelogResolver = new ChangelogResolver(_mockGitHub.Object, mockChangelogLogger.Object);
+        var syncService = new SyncService(_db, _mockGitHub.Object, _mockLogger.Object, changelogResolver);
+
+        var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", GithubOwner = "owner", GithubRepo = "repo" };
+        _db.Packages.Add(package);
+        await _db.SaveChangesAsync();
+
+        var referenceBody = "See CHANGELOG.md for full details";
+        SetupGitHubReleases("owner", "repo", [
+            CreateRelease("v1.0.0", DateTime.UtcNow, body: referenceBody)
+        ]);
+
+        // Changelog fetch throws
+        _mockGitHub
+            .Setup(x => x.GetFileContentAsync("owner", "repo", It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new HttpRequestException("API error"));
+
+        // Act
+        var result = await syncService.SyncPackageAsync(package);
+
+        // Assert - original body preserved, no exception propagated
+        result.ReleasesAdded.Should().Be(1);
+        var release = await _db.Releases.SingleAsync(r => r.PackageId == package.Id);
+        release.Body.Should().Be(referenceBody);
+    }
+
+    [Fact]
+    public async Task SyncPackageAsync_WithChangelogResolver_DoesNotResolve_WhenBodyIsRealContent()
+    {
+        // Arrange
+        var mockChangelogLogger = new Mock<ILogger<ChangelogResolver>>();
+        var changelogResolver = new ChangelogResolver(_mockGitHub.Object, mockChangelogLogger.Object);
+        var syncService = new SyncService(_db, _mockGitHub.Object, _mockLogger.Object, changelogResolver);
+
+        var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", GithubOwner = "owner", GithubRepo = "repo" };
+        _db.Packages.Add(package);
+        await _db.SaveChangesAsync();
+
+        var realBody = "## Bug Fixes\n\n- Fixed authentication issue\n- Fixed memory leak in worker pool\n\n## Features\n\n- Added dark mode support";
+        SetupGitHubReleases("owner", "repo", [
+            CreateRelease("v1.0.0", DateTime.UtcNow, body: realBody)
+        ]);
+
+        // Act
+        var result = await syncService.SyncPackageAsync(package);
+
+        // Assert - body is kept as-is, no file content fetched
+        result.ReleasesAdded.Should().Be(1);
+        var release = await _db.Releases.SingleAsync(r => r.PackageId == package.Id);
+        release.Body.Should().Be(realBody);
+        _mockGitHub.Verify(
+            x => x.GetFileContentAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task SyncPackageAsync_WithChangelogResolver_ResolvesViaFallbackPath()
+    {
+        // Arrange - body references changelog but no URL path, so resolver uses standard paths
+        var mockChangelogLogger = new Mock<ILogger<ChangelogResolver>>();
+        var changelogResolver = new ChangelogResolver(_mockGitHub.Object, mockChangelogLogger.Object);
+        var syncService = new SyncService(_db, _mockGitHub.Object, _mockLogger.Object, changelogResolver);
+
+        var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", GithubOwner = "owner", GithubRepo = "repo" };
+        _db.Packages.Add(package);
+        await _db.SaveChangesAsync();
+
+        var referenceBody = "See CHANGELOG.md for details";
+        SetupGitHubReleases("owner", "repo", [
+            CreateRelease("v2.0.0", DateTime.UtcNow, body: referenceBody)
+        ]);
+
+        var changelog = """
+            ## 2.0.0
+
+            Breaking: Removed deprecated API.
+
+            ## 1.0.0
+
+            Initial release.
+            """;
+        _mockGitHub
+            .Setup(x => x.GetFileContentAsync("owner", "repo", "CHANGELOG.md", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(changelog);
+
+        // Act
+        var result = await syncService.SyncPackageAsync(package);
+
+        // Assert
+        result.ReleasesAdded.Should().Be(1);
+        var release = await _db.Releases.SingleAsync(r => r.PackageId == package.Id);
+        release.Body.Should().Contain("Removed deprecated API");
+        release.Body.Should().NotContain("See CHANGELOG.md");
+    }
+
+    [Fact]
+    public async Task SyncPackageAsync_WithoutChangelogResolver_DoesNotAttemptResolution()
+    {
+        // Arrange - using the default _syncService which has no ChangelogResolver
+        var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", GithubOwner = "owner", GithubRepo = "repo" };
+        _db.Packages.Add(package);
+        await _db.SaveChangesAsync();
+
+        var referenceBody = "See CHANGELOG.md for details";
+        SetupGitHubReleases("owner", "repo", [
+            CreateRelease("v1.0.0", DateTime.UtcNow, body: referenceBody)
+        ]);
+
+        // Act
+        var result = await _syncService.SyncPackageAsync(package);
+
+        // Assert - body is kept as-is, no file content fetched
+        result.ReleasesAdded.Should().Be(1);
+        var release = await _db.Releases.SingleAsync(r => r.PackageId == package.Id);
+        release.Body.Should().Be(referenceBody);
+        _mockGitHub.Verify(
+            x => x.GetFileContentAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    #endregion
+
     #region Helper Methods
 
     private void SetupGitHubReleases(string owner, string repo, List<GitHubRelease> releases)
