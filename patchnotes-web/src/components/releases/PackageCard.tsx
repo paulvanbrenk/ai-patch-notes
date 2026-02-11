@@ -1,6 +1,14 @@
+import { useStytchUser } from '@stytch/react'
+import { Eye, EyeOff, Loader2 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardContent, Badge } from '../ui'
+import {
+  useWatchlist,
+  useAddToWatchlist,
+  useRemoveFromWatchlist,
+} from '../../api/hooks'
 
 interface PackageCardProps {
+  packageId?: string
   npmName: string
   githubOwner: string
   githubRepo: string
@@ -22,6 +30,7 @@ function formatDate(dateString: string): string {
 }
 
 export function PackageCard({
+  packageId,
   npmName,
   githubOwner,
   githubRepo,
@@ -30,6 +39,26 @@ export function PackageCard({
   onClick,
   hoverable,
 }: PackageCardProps) {
+  const { user } = useStytchUser()
+  const { data: watchlist } = useWatchlist()
+  const addToWatchlist = useAddToWatchlist()
+  const removeFromWatchlist = useRemoveFromWatchlist()
+
+  const isWatched = packageId
+    ? (watchlist?.includes(packageId) ?? false)
+    : false
+  const isMutating = addToWatchlist.isPending || removeFromWatchlist.isPending
+
+  const handleWatchToggle = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!packageId || isMutating) return
+    if (isWatched) {
+      removeFromWatchlist.mutate(packageId)
+    } else {
+      addToWatchlist.mutate(packageId)
+    }
+  }
+
   const githubUrl = `https://github.com/${githubOwner}/${githubRepo}`
   const npmUrl = `https://www.npmjs.com/package/${npmName}`
 
@@ -54,11 +83,34 @@ export function PackageCard({
             </p>
           </div>
         </div>
-        {releaseCount !== undefined && (
-          <Badge>
-            {releaseCount} release{releaseCount !== 1 ? 's' : ''}
-          </Badge>
-        )}
+        <div className="flex items-center gap-2">
+          {user && packageId && (
+            <button
+              onClick={handleWatchToggle}
+              disabled={isMutating}
+              title={isWatched ? 'Unwatch package' : 'Watch package'}
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md transition-colors disabled:opacity-50 ${
+                isWatched
+                  ? 'bg-brand-50 text-brand-600 hover:bg-brand-100 dark:bg-brand-900/20 dark:text-brand-400 dark:hover:bg-brand-900/30'
+                  : 'bg-surface-tertiary text-text-secondary hover:bg-surface-tertiary/80 hover:text-text-primary'
+              }`}
+            >
+              {isMutating ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : isWatched ? (
+                <Eye className="w-3.5 h-3.5" />
+              ) : (
+                <EyeOff className="w-3.5 h-3.5" />
+              )}
+              {isWatched ? 'Watching' : 'Watch'}
+            </button>
+          )}
+          {releaseCount !== undefined && (
+            <Badge>
+              {releaseCount} release{releaseCount !== 1 ? 's' : ''}
+            </Badge>
+          )}
+        </div>
       </CardHeader>
 
       <CardContent>
