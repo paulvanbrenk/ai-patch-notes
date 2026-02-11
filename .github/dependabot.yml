@@ -17,33 +17,14 @@ updates:
     schedule:
       interval: "weekly"
     groups:
-      react:
+      production:
+        dependency-type: "production"
         patterns:
-          - "react*"
-          - "@types/react*"
-      tanstack:
+          - "*"
+      dev-dependencies:
+        dependency-type: "development"
         patterns:
-          - "@tanstack/*"
-      testing:
-        patterns:
-          - "@testing-library/*"
-          - "vitest*"
-          - "@vitest/*"
-          - "msw"
-          - "jsdom"
-      linting:
-        patterns:
-          - "eslint*"
-          - "prettier*"
-          - "typescript-eslint"
-          - "lint-staged"
-      build:
-        patterns:
-          - "vite*"
-          - "@vitejs/*"
-          - "typescript"
-          - "tailwindcss"
-          - "@tailwindcss/*"
+          - "*"
 
   # NuGet dependencies for .NET projects
   - package-ecosystem: "nuget"
