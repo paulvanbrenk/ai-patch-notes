@@ -103,6 +103,25 @@ public class ChangelogResolverTests
         ChangelogResolver.IsChangelogReference(body).Should().BeFalse();
     }
 
+    [Theory]
+    [InlineData("Details: https://example.com/CHANGES.md")]
+    [InlineData("Details: https://example.com/history.md")]
+    [InlineData("Details: https://example.com/release-notes")]
+    public void IsChangelogReference_BareUrlWithSpecificKeywords_ReturnsTrue(string body)
+    {
+        ChangelogResolver.IsChangelogReference(body).Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData("Compare: https://github.com/owner/repo/compare/v1...v2#changes")]
+    [InlineData("See: https://example.com/commit-history")]
+    [InlineData("Link: https://github.com/owner/repo/wiki/Breaking-Changes")]
+    [InlineData("Diff: https://example.com/view-changes")]
+    public void IsChangelogReference_BroadUrlKeywords_ReturnsFalse(string body)
+    {
+        ChangelogResolver.IsChangelogReference(body).Should().BeFalse();
+    }
+
     [Fact]
     public void IsChangelogReference_ReleaseNotesLink_ReturnsTrue()
     {
