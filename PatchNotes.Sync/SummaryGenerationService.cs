@@ -11,6 +11,12 @@ namespace PatchNotes.Sync;
 /// </summary>
 public class SummaryGenerationService
 {
+    /// <summary>
+    /// Maximum time window of releases to include in a single summary.
+    /// Older releases in the group are excluded to keep AI request payloads manageable.
+    /// </summary>
+    private static readonly TimeSpan SummaryWindow = TimeSpan.FromDays(7);
+
     private readonly PatchNotesDbContext _db;
     private readonly IAiClient _aiClient;
     private readonly VersionGroupingService _groupingService;
@@ -169,8 +175,22 @@ public class SummaryGenerationService
         VersionGroup group,
         CancellationToken cancellationToken)
     {
-        var releaseInputs = group.Releases
+        var cutoff = DateTime.UtcNow - SummaryWindow;
+        var ordered = group.Releases
             .OrderByDescending(r => r.PublishedAt)
+            .ToList();
+
+        var recentReleases = ordered
+            .Where(r => r.PublishedAt >= cutoff)
+            .ToList();
+
+        // Fall back to the latest release if none are within the window
+        if (recentReleases.Count == 0)
+        {
+            recentReleases = ordered.Take(1).ToList();
+        }
+
+        var releaseInputs = recentReleases
             .Select(r => new ReleaseInput(r.Tag, r.Title, r.Body, r.PublishedAt))
             .ToList();
 
