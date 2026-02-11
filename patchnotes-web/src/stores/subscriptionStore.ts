@@ -1,9 +1,7 @@
 import { create } from 'zustand'
-import {
-  getSubscriptionStatus,
-  createCheckoutSession,
-  createPortalSession,
-} from '../api/subscription'
+import { getSubscriptionStatus } from '../api/subscription'
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'
 
 interface SubscriptionState {
   isPro: boolean
@@ -12,8 +10,8 @@ interface SubscriptionState {
   isLoading: boolean
   error: string | null
   checkSubscription: () => Promise<void>
-  startCheckout: () => Promise<void>
-  openPortal: () => Promise<void>
+  startCheckout: () => void
+  openPortal: () => void
   reset: () => void
 }
 
@@ -45,33 +43,25 @@ export const useSubscriptionStore = create<SubscriptionState>((set) => ({
     }
   },
 
-  startCheckout: async () => {
+  startCheckout: () => {
     set({ isLoading: true, error: null })
-    try {
-      const { url } = await createCheckoutSession()
-      // Redirect to Stripe Checkout
-      window.location.href = url
-    } catch (error) {
-      set({
-        error:
-          error instanceof Error ? error.message : 'Failed to start checkout',
-        isLoading: false,
-      })
-    }
+    // Submit a form POST — the server returns a 303 redirect to Stripe.
+    // The redirect URL never touches client-side JS (open redirect prevention).
+    const form = document.createElement('form')
+    form.method = 'POST'
+    form.action = `${API_BASE_URL}/subscription/checkout`
+    document.body.appendChild(form)
+    form.submit()
   },
 
-  openPortal: async () => {
+  openPortal: () => {
     set({ isLoading: true, error: null })
-    try {
-      const { url } = await createPortalSession()
-      // Redirect to Stripe Customer Portal
-      window.location.href = url
-    } catch (error) {
-      set({
-        error: error instanceof Error ? error.message : 'Failed to open portal',
-        isLoading: false,
-      })
-    }
+    // Submit a form POST — the server returns a 303 redirect to Stripe.
+    const form = document.createElement('form')
+    form.method = 'POST'
+    form.action = `${API_BASE_URL}/subscription/portal`
+    document.body.appendChild(form)
+    form.submit()
   },
 
   reset: () => {
