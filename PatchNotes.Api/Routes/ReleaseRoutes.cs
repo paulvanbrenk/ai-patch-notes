@@ -49,7 +49,7 @@ public static class ReleaseRoutes
 
         // GET /api/releases - Query releases for selected packages
         app.MapGet("/api/releases", async (string? packages, int? days, bool? excludePrerelease, int? majorVersion,
-            HttpContext httpContext, PatchNotesDbContext db, IStytchClient stytchClient,
+            bool? watchlist, HttpContext httpContext, PatchNotesDbContext db, IStytchClient stytchClient,
             IOptions<DefaultWatchlistOptions> watchlistOptions) =>
         {
             var daysToQuery = days ?? 7;
@@ -59,7 +59,35 @@ public static class ReleaseRoutes
                 .Include(r => r.Package)
                 .Where(r => r.PublishedAt >= cutoffDate);
 
-            if (!string.IsNullOrEmpty(packages))
+            if (watchlist == true)
+            {
+                // Explicit watchlist filter — require authentication
+                var sessionToken = httpContext.Request.Cookies["stytch_session"];
+                if (string.IsNullOrEmpty(sessionToken))
+                {
+                    return Results.Json(new { error = "Authentication required for watchlist filter" }, statusCode: 401);
+                }
+
+                var session = await stytchClient.AuthenticateSessionAsync(sessionToken, httpContext.RequestAborted);
+                if (session == null)
+                {
+                    return Results.Json(new { error = "Authentication required for watchlist filter" }, statusCode: 401);
+                }
+
+                var user = await db.Users.FirstOrDefaultAsync(u => u.StytchUserId == session.UserId);
+                if (user == null)
+                {
+                    return Results.Json(new { error = "Authentication required for watchlist filter" }, statusCode: 401);
+                }
+
+                var watchlistIds = await db.Watchlists
+                    .Where(w => w.UserId == user.Id)
+                    .Select(w => w.PackageId)
+                    .ToListAsync();
+
+                query = query.Where(r => watchlistIds.Contains(r.PackageId));
+            }
+            else if (!string.IsNullOrEmpty(packages))
             {
                 var packageIds = packages.Split(',')
                     .Select(p => p.Trim())
