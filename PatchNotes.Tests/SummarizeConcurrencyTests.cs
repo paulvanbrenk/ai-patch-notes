@@ -149,6 +149,41 @@ public class SummarizeConcurrencyTests
     }
 
     /// <summary>
+    /// Verifies that SSE streaming events include sequential id: fields for resumability.
+    /// </summary>
+    [Fact]
+    public async Task StreamingSummarize_EventsIncludeSequentialIds()
+    {
+        await using var fixture = new SummarizeTestFixture();
+        await fixture.InitializeAsync();
+
+        var releaseId = await fixture.SeedReleaseNeedingSummary();
+
+        using var client = fixture.CreateAuthenticatedClient();
+        var request = new HttpRequestMessage(HttpMethod.Post, $"/api/releases/{releaseId}/summarize");
+        request.Headers.Add("Accept", "text/event-stream");
+
+        var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Content.Headers.ContentType!.MediaType.Should().Be("text/event-stream");
+
+        var body = await response.Content.ReadAsStringAsync();
+        var lines = body.Split('\n');
+
+        // Extract all id: values in order
+        var ids = lines
+            .Where(l => l.StartsWith("id: "))
+            .Select(l => int.Parse(l.Substring(4).Trim()))
+            .ToList();
+
+        // DelayedMockAiClient yields 3 chunks + 1 complete + 1 [DONE] = 5 events
+        ids.Should().HaveCountGreaterThanOrEqualTo(3, "each SSE event should have an id");
+        ids.Should().BeInAscendingOrder("event ids should be sequential");
+        ids.First().Should().Be(1, "event ids should start at 1");
+    }
+
+    /// <summary>
     /// Verifies that after concurrent requests, only one summary is persisted
     /// (no corruption or duplicate writes).
     /// </summary>

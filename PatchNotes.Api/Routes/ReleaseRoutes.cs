@@ -49,7 +49,7 @@ public static class ReleaseRoutes
 
         // GET /api/releases - Query releases for selected packages
         app.MapGet("/api/releases", async (string? packages, int? days, bool? excludePrerelease, int? majorVersion,
-            HttpContext httpContext, PatchNotesDbContext db, IStytchClient stytchClient,
+            bool? watchlist, HttpContext httpContext, PatchNotesDbContext db, IStytchClient stytchClient,
             IOptions<DefaultWatchlistOptions> watchlistOptions) =>
         {
             var daysToQuery = days ?? 7;
@@ -59,7 +59,35 @@ public static class ReleaseRoutes
                 .Include(r => r.Package)
                 .Where(r => r.PublishedAt >= cutoffDate);
 
-            if (!string.IsNullOrEmpty(packages))
+            if (watchlist == true)
+            {
+                // Explicit watchlist filter — require authentication
+                var sessionToken = httpContext.Request.Cookies["stytch_session"];
+                if (string.IsNullOrEmpty(sessionToken))
+                {
+                    return Results.Json(new { error = "Authentication required for watchlist filter" }, statusCode: 401);
+                }
+
+                var session = await stytchClient.AuthenticateSessionAsync(sessionToken, httpContext.RequestAborted);
+                if (session == null)
+                {
+                    return Results.Json(new { error = "Authentication required for watchlist filter" }, statusCode: 401);
+                }
+
+                var user = await db.Users.FirstOrDefaultAsync(u => u.StytchUserId == session.UserId);
+                if (user == null)
+                {
+                    return Results.Json(new { error = "Authentication required for watchlist filter" }, statusCode: 401);
+                }
+
+                var watchlistIds = await db.Watchlists
+                    .Where(w => w.UserId == user.Id)
+                    .Select(w => w.PackageId)
+                    .ToListAsync();
+
+                query = query.Where(r => watchlistIds.Contains(r.PackageId));
+            }
+            else if (!string.IsNullOrEmpty(packages))
             {
                 var packageIds = packages.Split(',')
                     .Select(p => p.Trim())
@@ -163,6 +191,7 @@ public static class ReleaseRoutes
                 httpContext.Response.Headers.Connection = "keep-alive";
 
                 var fullSummary = new System.Text.StringBuilder();
+                var eventId = 0;
 
                 try
                 {
@@ -170,7 +199,7 @@ public static class ReleaseRoutes
                     {
                         fullSummary.Append(chunk);
                         var chunkData = JsonSerializer.Serialize(new { type = "chunk", content = chunk });
-                        await httpContext.Response.WriteAsync($"data: {chunkData}\n\n", httpContext.RequestAborted);
+                        await httpContext.Response.WriteAsync($"id: {++eventId}\ndata: {chunkData}\n\n", httpContext.RequestAborted);
                         await httpContext.Response.Body.FlushAsync(httpContext.RequestAborted);
                     }
 
@@ -202,7 +231,7 @@ public static class ReleaseRoutes
                             package = new { release.Package.Id, release.Package.NpmName }
                         }
                     });
-                    await httpContext.Response.WriteAsync($"data: {completeData}\n\n", httpContext.RequestAborted);
+                    await httpContext.Response.WriteAsync($"id: {++eventId}\ndata: {completeData}\n\n", httpContext.RequestAborted);
                 }
                 catch (OperationCanceledException)
                 {
@@ -213,10 +242,10 @@ public static class ReleaseRoutes
                 {
                     logger.LogError(ex, "AI summarization failed for release {ReleaseId} during streaming", id);
                     var errorData = JsonSerializer.Serialize(new { type = "error", message = "AI summarization service is currently unavailable. Please try again later." });
-                    await httpContext.Response.WriteAsync($"data: {errorData}\n\n");
+                    await httpContext.Response.WriteAsync($"id: {++eventId}\ndata: {errorData}\n\n");
                 }
 
-                await httpContext.Response.WriteAsync("data: [DONE]\n\n");
+                await httpContext.Response.WriteAsync($"id: {++eventId}\ndata: [DONE]\n\n");
 
                 return Results.Empty;
             }
