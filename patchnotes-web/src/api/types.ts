@@ -42,26 +42,3 @@ export interface UpdatePackageRequest {
   githubRepo?: string
 }
 
-export interface Notification {
-  id: string
-  gitHubId: string
-  reason: string
-  subjectTitle: string
-  subjectType: string
-  subjectUrl: string | null
-  repositoryFullName: string
-  unread: boolean
-  updatedAt: string
-  lastReadAt: string | null
-  fetchedAt: string
-  package: {
-    id: string
-    npmName: string
-    githubOwner: string
-    githubRepo: string
-  } | null
-}
-
-export interface UnreadCount {
-  count: number
-}
