@@ -14,6 +14,15 @@ public static class SubscriptionRoutes
         "http://localhost:3000",
     };
 
+    /// <summary>
+    /// Stripe domains that are safe to redirect to.
+    /// </summary>
+    private static readonly string[] AllowedStripeHosts =
+    {
+        "checkout.stripe.com",
+        "billing.stripe.com",
+    };
+
     private static string GetValidatedOrigin(HttpContext httpContext)
     {
         var origin = httpContext.Request.Headers.Origin.FirstOrDefault();
@@ -23,6 +32,24 @@ public static class SubscriptionRoutes
         }
         // Fallback to first allowed origin in production
         return AllowedOrigins.First();
+    }
+
+    private static bool IsValidStripeRedirectUrl(string? url)
+    {
+        if (string.IsNullOrEmpty(url))
+            return false;
+
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
+            return false;
+
+        return uri.Scheme == "https"
+            && AllowedStripeHosts.Any(h => uri.Host.Equals(h, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static IResult SeeOtherRedirect(HttpContext httpContext, string url)
+    {
+        httpContext.Response.Headers.Location = url;
+        return Results.StatusCode(StatusCodes.Status303SeeOther);
     }
 
     public static WebApplication MapSubscriptionRoutes(this WebApplication app)
@@ -84,7 +111,12 @@ public static class SubscriptionRoutes
             var sessionService = new SessionService();
             var session = await sessionService.CreateAsync(sessionOptions);
 
-            return Results.Ok(new { url = session.Url });
+            if (!IsValidStripeRedirectUrl(session.Url))
+            {
+                return Results.Problem("Checkout session returned an invalid URL");
+            }
+
+            return SeeOtherRedirect(httpContext, session.Url);
         }).AddEndpointFilterFactory(requireAuth);
 
         // POST /api/subscription/portal - Create Stripe Customer Portal session
@@ -118,7 +150,12 @@ public static class SubscriptionRoutes
             var portalService = new Stripe.BillingPortal.SessionService();
             var session = await portalService.CreateAsync(portalOptions);
 
-            return Results.Ok(new { url = session.Url });
+            if (!IsValidStripeRedirectUrl(session.Url))
+            {
+                return Results.Problem("Portal session returned an invalid URL");
+            }
+
+            return SeeOtherRedirect(httpContext, session.Url);
         }).AddEndpointFilterFactory(requireAuth);
 
         // GET /api/subscription/status - Get current subscription status
