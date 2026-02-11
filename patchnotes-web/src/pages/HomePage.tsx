@@ -21,7 +21,12 @@ import { UserMenu } from '../components/auth'
 import { PackagePicker } from '../components/package-picker/PackagePicker'
 import { useFilterStore } from '../stores/filterStore'
 import { useSubscriptionStore } from '../stores/subscriptionStore'
-import { usePackages, useReleases, useWatchlist, useSetWatchlist } from '../api/hooks'
+import {
+  usePackages,
+  useReleases,
+  useWatchlist,
+  useSetWatchlist,
+} from '../api/hooks'
 import type { Release as ApiRelease } from '../api/types'
 
 // ============================================================================
