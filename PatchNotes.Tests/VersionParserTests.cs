@@ -223,9 +223,9 @@ public class VersionParserTests
 
     // Edge case: keyword in tag but not in prerelease position
     [Theory]
-    [InlineData("alphabetical-1.0.0", true)]  // Contains "alpha" - heuristic catches this
-    [InlineData("beta-package@1.0.0", true)]  // Contains "beta" - heuristic catches this
-    public void IsPrerelease_KeywordInTagName_UsesHeuristic(string tag, bool expected)
+    [InlineData("alphabetical-1.0.0", false)]  // Contains "alpha" but not a prerelease identifier
+    [InlineData("beta-package@1.0.0", false)]  // Contains "beta" but package name, not prerelease
+    public void IsPrerelease_KeywordInTagName_NotFalsePositive(string tag, bool expected)
     {
         var result = VersionParser.IsPrerelease(tag);
 
