@@ -165,6 +165,51 @@ Port is set in `Properties/launchSettings.json` → `applicationUrl`. Binds to `
 
 ---
 
+## Step 5 — Hardware watchdog (auto-reboot on hard lockup)
+
+The Intel Meteor Lake chipset has a hardware watchdog timer (`iTCO_wdt`). If the system locks up hard (e.g. kernel hang), the watchdog fires and forces a reboot without needing SSH or physical access.
+
+### Load the kernel module
+
+```bash
+sudo modprobe iTCO_wdt
+```
+
+Make it persistent:
+
+```bash
+echo "iTCO_wdt" | sudo tee /etc/modules-load.d/watchdog.conf
+```
+
+### Configure systemd to pet the watchdog
+
+Add to `/etc/systemd/system.conf`:
+
+```ini
+RuntimeWatchdog=15s
+RebootWatchdog=10min
+```
+
+Apply without rebooting:
+
+```bash
+sudo systemctl daemon-reexec
+```
+
+### Verify
+
+```bash
+wdctl
+```
+
+Should show `iTCO_wdt [version 6]` with a timeout and active countdown.
+
+### How it works
+
+systemd (PID 1) pings the hardware watchdog at regular intervals. If the kernel locks up and PID 1 can't run, the hardware timer expires and forces a reboot. No software needed — it's a chipset-level timer.
+
+---
+
 ## Checklist
 - [x] dnsmasq answers `*.devbox.home.arpa` (IPv4 only for now) and forwards other queries
 - [x] Dev VLAN (`10.10.10.0/29`, VLAN 10) with DHCP DNS → devbox, IPv6 disabled
@@ -173,3 +218,4 @@ Port is set in `Properties/launchSettings.json` → `applicationUrl`. Binds to `
 - [x] Vite pinned to port `1100`, `allowedHosts: true`
 - [x] .NET API pinned to port `2101`, binds `0.0.0.0`
 - [x] CORS allows `.devbox.home.arpa` in dev only
+- [x] Hardware watchdog (`iTCO_wdt`) with systemd `RuntimeWatchdog=15s`
