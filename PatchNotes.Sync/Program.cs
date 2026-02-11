@@ -15,9 +15,23 @@ const int ExitFatalError = 2;
 
 // Parse command-line arguments
 var seedOnly = args.Contains("--seed");
+var hasSFlag = Array.IndexOf(args, "-s") >= 0;
 var summarizeRepo = GetArgValue(args, "-s");
+var hasRFlag = Array.IndexOf(args, "-r") >= 0;
 var repoIndex = Array.IndexOf(args, "-r");
 string? repoUrl = repoIndex >= 0 && repoIndex + 1 < args.Length ? args[repoIndex + 1] : null;
+
+// Validate: if -s or -r flag is present but missing its required value, show error
+if (hasSFlag && summarizeRepo == null)
+{
+    Console.Error.WriteLine("Error: -s flag requires a value. Usage: sync -s <owner/repo>");
+    return ExitFatalError;
+}
+if (hasRFlag && repoUrl == null)
+{
+    Console.Error.WriteLine("Error: -r flag requires a value. Usage: sync -r <github-url>");
+    return ExitFatalError;
+}
 
 static string? GetArgValue(string[] args, string flag)
 {
@@ -78,15 +92,16 @@ try
     // Handle -s <owner/repo> flag: generate summaries for a specific package
     if (summarizeRepo != null)
     {
-        var parts = summarizeRepo.Split('/');
-        if (parts.Length != 2 || string.IsNullOrWhiteSpace(parts[0]) || string.IsNullOrWhiteSpace(parts[1]))
+        string owner, repo;
+        try
+        {
+            (owner, repo) = GitHubUrlParser.Parse(summarizeRepo);
+        }
+        catch (ArgumentException)
         {
             logger.LogError("Invalid repository format. Expected: owner/repo (e.g., prettier/prettier)");
             return ExitFatalError;
         }
-
-        var owner = parts[0];
-        var repo = parts[1];
 
         logger.LogInformation("Generating summaries for {Owner}/{Repo}", owner, repo);
 

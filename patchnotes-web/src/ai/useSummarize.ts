@@ -24,8 +24,14 @@ export function useSummarize(options: UseSummarizeOptions = {}) {
   const [summary, setSummary] = useState<string | null>(null)
   const optionsRef = useRef(options)
   optionsRef.current = options
+  const abortControllerRef = useRef<AbortController | null>(null)
 
   const summarize = useCallback(async (releaseId: string) => {
+    // Abort any in-flight request before starting a new one
+    abortControllerRef.current?.abort()
+    const controller = new AbortController()
+    abortControllerRef.current = controller
+
     setIsLoading(true)
     setError(null)
     setSummary(null)
@@ -39,6 +45,7 @@ export function useSummarize(options: UseSummarizeOptions = {}) {
             Accept: 'text/event-stream',
           },
           credentials: 'include',
+          signal: controller.signal,
         }
       )
 
@@ -96,24 +103,37 @@ export function useSummarize(options: UseSummarizeOptions = {}) {
         optionsRef.current.onSuccess?.(data)
       }
     } catch (err) {
+      // Don't update state if the request was aborted
+      if (controller.signal.aborted) return
+
       const error = err instanceof Error ? err : new Error('Unknown error')
       setError(error)
       optionsRef.current.onError?.(error)
     } finally {
-      setIsLoading(false)
+      if (!controller.signal.aborted) {
+        setIsLoading(false)
+      }
     }
   }, [])
 
+  const cancel = useCallback(() => {
+    abortControllerRef.current?.abort()
+    abortControllerRef.current = null
+    setIsLoading(false)
+  }, [])
+
   const reset = useCallback(() => {
+    cancel()
     setSummary(null)
     setError(null)
-  }, [])
+  }, [cancel])
 
   return {
     summarize,
     isLoading,
     error,
     summary,
+    cancel,
     reset,
   }
 }

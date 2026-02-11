@@ -33,14 +33,15 @@ public class GitHubUrlParserTests
     }
 
     [Theory]
+    [InlineData(null)]
     [InlineData("")]
     [InlineData("not-a-url")]
     [InlineData("https://gitlab.com/owner/repo")]
     [InlineData("https://github.com/")]
     [InlineData("https://github.com/owner-only")]
-    public void Parse_WithInvalidUrl_ThrowsArgumentException(string url)
+    public void Parse_WithInvalidUrl_ThrowsArgumentException(string? url)
     {
-        var act = () => GitHubUrlParser.Parse(url);
+        var act = () => GitHubUrlParser.Parse(url!);
 
         act.Should().Throw<ArgumentException>()
             .WithMessage("*Invalid GitHub URL*");

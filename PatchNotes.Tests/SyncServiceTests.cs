@@ -721,6 +721,305 @@ public class SyncServiceTests : IDisposable
         package.GithubRepo.Should().Be("empty-repo");
     }
 
+    [Fact]
+    public async Task SyncRepoAsync_WhenGitHubFails_RemovesNewlyCreatedPackage()
+    {
+        // Arrange - GitHub returns 404 for nonexistent repo
+        _mockGitHub
+            .Setup(x => x.GetAllReleasesAsync("nonexistent", "repo", It.IsAny<CancellationToken>()))
+            .Returns(ThrowingAsyncEnumerable<GitHubRelease>("Not Found"));
+
+        // Act
+        var act = () => _syncService.SyncRepoAsync("nonexistent", "repo");
+
+        // Assert - exception propagates and phantom package is cleaned up
+        await act.Should().ThrowAsync<Exception>().WithMessage("Not Found");
+        var packages = await _db.Packages.ToListAsync();
+        packages.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task SyncRepoAsync_WhenGitHubFails_KeepsExistingPackage()
+    {
+        // Arrange - existing package, GitHub fails during sync
+        var existing = new Package
+        {
+            Name = "myrepo",
+            Url = "https://github.com/owner/myrepo",
+            GithubOwner = "owner",
+            GithubRepo = "myrepo"
+        };
+        _db.Packages.Add(existing);
+        await _db.SaveChangesAsync();
+
+        _mockGitHub
+            .Setup(x => x.GetAllReleasesAsync("owner", "myrepo", It.IsAny<CancellationToken>()))
+            .Returns(ThrowingAsyncEnumerable<GitHubRelease>("API Error"));
+
+        // Act
+        var act = () => _syncService.SyncRepoAsync("owner", "myrepo");
+
+        // Assert - exception propagates but existing package is NOT removed
+        await act.Should().ThrowAsync<Exception>().WithMessage("API Error");
+        var packages = await _db.Packages.ToListAsync();
+        packages.Should().ContainSingle();
+        packages[0].Id.Should().Be(existing.Id);
+    }
+
+    #endregion
+
+    #region BackfillVersionFieldsAsync Tests
+
+    [Fact]
+    public async Task BackfillVersionFieldsAsync_SetsVersionFieldsForSemverTags()
+    {
+        // Arrange
+        var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", GithubOwner = "owner", GithubRepo = "repo" };
+        _db.Packages.Add(package);
+        _db.Releases.AddRange(
+            new Release { PackageId = package.Id, Tag = "v1.2.3", PublishedAt = DateTime.UtcNow, FetchedAt = DateTime.UtcNow },
+            new Release { PackageId = package.Id, Tag = "v10.0.1", PublishedAt = DateTime.UtcNow, FetchedAt = DateTime.UtcNow }
+        );
+        await _db.SaveChangesAsync();
+
+        // Act
+        var updated = await _syncService.BackfillVersionFieldsAsync();
+
+        // Assert
+        updated.Should().Be(2);
+        var releases = await _db.Releases.OrderBy(r => r.Tag).ToListAsync();
+
+        releases[0].Tag.Should().Be("v1.2.3");
+        releases[0].MajorVersion.Should().Be(1);
+        releases[0].MinorVersion.Should().Be(2);
+        releases[0].PatchVersion.Should().Be(3);
+        releases[0].IsPrerelease.Should().BeFalse();
+
+        releases[1].Tag.Should().Be("v10.0.1");
+        releases[1].MajorVersion.Should().Be(10);
+        releases[1].MinorVersion.Should().Be(0);
+        releases[1].PatchVersion.Should().Be(1);
+        releases[1].IsPrerelease.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task BackfillVersionFieldsAsync_SetsIsPrerelease_ForPrereleaseTags()
+    {
+        // Arrange
+        var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", GithubOwner = "owner", GithubRepo = "repo" };
+        _db.Packages.Add(package);
+        _db.Releases.AddRange(
+            new Release { PackageId = package.Id, Tag = "v2.0.0-beta.1", PublishedAt = DateTime.UtcNow, FetchedAt = DateTime.UtcNow },
+            new Release { PackageId = package.Id, Tag = "v3.0.0-rc.2", PublishedAt = DateTime.UtcNow, FetchedAt = DateTime.UtcNow }
+        );
+        await _db.SaveChangesAsync();
+
+        // Act
+        var updated = await _syncService.BackfillVersionFieldsAsync();
+
+        // Assert
+        updated.Should().Be(2);
+        var releases = await _db.Releases.OrderBy(r => r.Tag).ToListAsync();
+
+        releases[0].MajorVersion.Should().Be(2);
+        releases[0].MinorVersion.Should().Be(0);
+        releases[0].PatchVersion.Should().Be(0);
+        releases[0].IsPrerelease.Should().BeTrue();
+
+        releases[1].MajorVersion.Should().Be(3);
+        releases[1].IsPrerelease.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task BackfillVersionFieldsAsync_HandlesMonorepoTags()
+    {
+        // Arrange
+        var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", GithubOwner = "owner", GithubRepo = "repo" };
+        _db.Packages.Add(package);
+        _db.Releases.Add(
+            new Release { PackageId = package.Id, Tag = "create-vite@8.0.0", PublishedAt = DateTime.UtcNow, FetchedAt = DateTime.UtcNow }
+        );
+        await _db.SaveChangesAsync();
+
+        // Act
+        var updated = await _syncService.BackfillVersionFieldsAsync();
+
+        // Assert
+        updated.Should().Be(1);
+        var release = await _db.Releases.SingleAsync();
+        release.MajorVersion.Should().Be(8);
+        release.MinorVersion.Should().Be(0);
+        release.PatchVersion.Should().Be(0);
+        release.IsPrerelease.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task BackfillVersionFieldsAsync_HandlesNonSemverTags_SetsMajorVersionToNegativeOne()
+    {
+        // Arrange
+        var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", GithubOwner = "owner", GithubRepo = "repo" };
+        _db.Packages.Add(package);
+        _db.Releases.Add(
+            new Release { PackageId = package.Id, Tag = "nightly-2025-01-15", PublishedAt = DateTime.UtcNow, FetchedAt = DateTime.UtcNow }
+        );
+        await _db.SaveChangesAsync();
+
+        // Act
+        var updated = await _syncService.BackfillVersionFieldsAsync();
+
+        // Assert
+        updated.Should().Be(1);
+        var release = await _db.Releases.SingleAsync();
+        release.MajorVersion.Should().Be(-1);
+        release.MinorVersion.Should().Be(0);
+        release.PatchVersion.Should().Be(0);
+        release.IsPrerelease.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task BackfillVersionFieldsAsync_IsIdempotent_ReturnsZeroOnSecondRun()
+    {
+        // Arrange
+        var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", GithubOwner = "owner", GithubRepo = "repo" };
+        _db.Packages.Add(package);
+        _db.Releases.AddRange(
+            new Release { PackageId = package.Id, Tag = "v1.0.0", PublishedAt = DateTime.UtcNow, FetchedAt = DateTime.UtcNow },
+            new Release { PackageId = package.Id, Tag = "v2.0.0-alpha.1", PublishedAt = DateTime.UtcNow, FetchedAt = DateTime.UtcNow },
+            new Release { PackageId = package.Id, Tag = "not-a-version", PublishedAt = DateTime.UtcNow, FetchedAt = DateTime.UtcNow }
+        );
+        await _db.SaveChangesAsync();
+
+        // Act - first run
+        var firstRun = await _syncService.BackfillVersionFieldsAsync();
+        // Capture values after first run
+        var releasesAfterFirst = await _db.Releases.OrderBy(r => r.Tag).ToListAsync();
+        var firstRunValues = releasesAfterFirst.Select(r => (r.MajorVersion, r.MinorVersion, r.PatchVersion, r.IsPrerelease)).ToList();
+
+        // Act - second run
+        var secondRun = await _syncService.BackfillVersionFieldsAsync();
+        // Capture values after second run
+        var releasesAfterSecond = await _db.Releases.OrderBy(r => r.Tag).ToListAsync();
+        var secondRunValues = releasesAfterSecond.Select(r => (r.MajorVersion, r.MinorVersion, r.PatchVersion, r.IsPrerelease)).ToList();
+
+        // Assert
+        firstRun.Should().Be(3);
+        secondRun.Should().Be(0);
+        secondRunValues.Should().BeEquivalentTo(firstRunValues);
+    }
+
+    [Fact]
+    public async Task BackfillVersionFieldsAsync_DoesNotSave_WhenNoChangesNeeded()
+    {
+        // Arrange - seed releases with already-correct version fields
+        var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", GithubOwner = "owner", GithubRepo = "repo" };
+        _db.Packages.Add(package);
+        _db.Releases.Add(new Release
+        {
+            PackageId = package.Id,
+            Tag = "v5.3.1",
+            PublishedAt = DateTime.UtcNow,
+            FetchedAt = DateTime.UtcNow,
+            MajorVersion = 5,
+            MinorVersion = 3,
+            PatchVersion = 1,
+            IsPrerelease = false
+        });
+        await _db.SaveChangesAsync();
+
+        // Act
+        var updated = await _syncService.BackfillVersionFieldsAsync();
+
+        // Assert - no changes needed, so updated count should be 0
+        updated.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task BackfillVersionFieldsAsync_WithMixedTags_CorrectlyParsesAll()
+    {
+        // Arrange - mix of semver, monorepo, prerelease, and non-semver
+        var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", GithubOwner = "owner", GithubRepo = "repo" };
+        _db.Packages.Add(package);
+        _db.Releases.AddRange(
+            new Release { PackageId = package.Id, Tag = "v1.0.0", PublishedAt = DateTime.UtcNow, FetchedAt = DateTime.UtcNow },
+            new Release { PackageId = package.Id, Tag = "v2.1.0-beta.3", PublishedAt = DateTime.UtcNow, FetchedAt = DateTime.UtcNow },
+            new Release { PackageId = package.Id, Tag = "@scope/pkg@3.0.0", PublishedAt = DateTime.UtcNow, FetchedAt = DateTime.UtcNow },
+            new Release { PackageId = package.Id, Tag = "random-tag", PublishedAt = DateTime.UtcNow, FetchedAt = DateTime.UtcNow }
+        );
+        await _db.SaveChangesAsync();
+
+        // Act
+        var updated = await _syncService.BackfillVersionFieldsAsync();
+
+        // Assert
+        updated.Should().Be(4);
+        var releases = await _db.Releases.ToListAsync();
+        var byTag = releases.ToDictionary(r => r.Tag);
+
+        // Standard semver
+        byTag["v1.0.0"].MajorVersion.Should().Be(1);
+        byTag["v1.0.0"].MinorVersion.Should().Be(0);
+        byTag["v1.0.0"].PatchVersion.Should().Be(0);
+        byTag["v1.0.0"].IsPrerelease.Should().BeFalse();
+
+        // Prerelease
+        byTag["v2.1.0-beta.3"].MajorVersion.Should().Be(2);
+        byTag["v2.1.0-beta.3"].MinorVersion.Should().Be(1);
+        byTag["v2.1.0-beta.3"].PatchVersion.Should().Be(0);
+        byTag["v2.1.0-beta.3"].IsPrerelease.Should().BeTrue();
+
+        // Monorepo scoped
+        byTag["@scope/pkg@3.0.0"].MajorVersion.Should().Be(3);
+        byTag["@scope/pkg@3.0.0"].MinorVersion.Should().Be(0);
+        byTag["@scope/pkg@3.0.0"].PatchVersion.Should().Be(0);
+        byTag["@scope/pkg@3.0.0"].IsPrerelease.Should().BeFalse();
+
+        // Non-semver
+        byTag["random-tag"].MajorVersion.Should().Be(-1);
+        byTag["random-tag"].MinorVersion.Should().Be(0);
+        byTag["random-tag"].PatchVersion.Should().Be(0);
+        byTag["random-tag"].IsPrerelease.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task BackfillVersionFieldsAsync_OnlyUpdatesReleasesWithWrongFields()
+    {
+        // Arrange - one release already correct, one needs updating
+        var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", GithubOwner = "owner", GithubRepo = "repo" };
+        _db.Packages.Add(package);
+        _db.Releases.AddRange(
+            new Release
+            {
+                PackageId = package.Id, Tag = "v1.0.0", PublishedAt = DateTime.UtcNow, FetchedAt = DateTime.UtcNow,
+                MajorVersion = 1, MinorVersion = 0, PatchVersion = 0, IsPrerelease = false // already correct
+            },
+            new Release
+            {
+                PackageId = package.Id, Tag = "v2.0.0", PublishedAt = DateTime.UtcNow, FetchedAt = DateTime.UtcNow,
+                MajorVersion = 0, MinorVersion = 0, PatchVersion = 0, IsPrerelease = false // needs update
+            }
+        );
+        await _db.SaveChangesAsync();
+
+        // Act
+        var updated = await _syncService.BackfillVersionFieldsAsync();
+
+        // Assert - only the one that needed updating
+        updated.Should().Be(1);
+
+        var release = await _db.Releases.SingleAsync(r => r.Tag == "v2.0.0");
+        release.MajorVersion.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task BackfillVersionFieldsAsync_WithNoReleases_ReturnsZero()
+    {
+        // Act
+        var updated = await _syncService.BackfillVersionFieldsAsync();
+
+        // Assert
+        updated.Should().Be(0);
+    }
+
     #endregion
 
     #region Helper Methods
