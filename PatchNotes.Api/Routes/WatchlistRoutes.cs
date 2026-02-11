@@ -5,7 +5,7 @@ namespace PatchNotes.Api.Routes;
 
 public static class WatchlistRoutes
 {
-    private const int FreeWatchlistLimit = 5;
+    internal const int FreeWatchlistLimit = 5;
     private const int MaxWatchlistSize = 1000;
 
     public static WebApplication MapWatchlistRoutes(this WebApplication app)

@@ -43,6 +43,8 @@ if (!string.IsNullOrEmpty(stripeSecretKey))
 builder.Services.AddOpenApi();
 builder.Services.AddPatchNotesDbContext(builder.Configuration);
 builder.Services.AddHttpClient();
+builder.Services.Configure<DefaultWatchlistOptions>(
+    builder.Configuration.GetSection(DefaultWatchlistOptions.SectionName));
 
 builder.Services.AddAiClient(options =>
 {
