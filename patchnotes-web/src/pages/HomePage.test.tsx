@@ -107,8 +107,9 @@ describe('HomePage', () => {
       await waitFor(() => {
         expect(screen.getByText('react')).toBeInTheDocument()
       })
-      // Lodash should not appear since it's not in the watchlist
-      expect(screen.queryByText('lodash')).not.toBeInTheDocument()
+      // Lodash releases should not appear since it's not in the watchlist
+      // (lodash still appears in the PackagePicker sidebar)
+      expect(screen.queryByText('v4.x')).not.toBeInTheDocument()
     })
 
     it('does not show sign-in banner', async () => {
