@@ -2,6 +2,19 @@
 
 One-pass setup guide for the PatchNotes Azure infrastructure. Covers custom domain, Function App, Application Insights, and GitHub Actions OIDC — with validation checks after each section.
 
+## PR Merge Order
+
+These PRs must be merged in order before deploying:
+
+| Order | PR | Branch | Description |
+|-------|----|--------|-------------|
+| 1 | [#161](https://github.com/tinytoolsllc/ai-patch-notes/pull/161) | `feat/azure-function-sync-pipeline` | Azure Function project + SyncPipeline + CLI update |
+| 2 | [#162](https://github.com/tinytoolsllc/ai-patch-notes/pull/162) | `feat/init-sync` | `--init` CLI flag for initial catalog seed + sync (rebased on #161) |
+| 3 | [#163](https://github.com/tinytoolsllc/ai-patch-notes/pull/163) | `feat/deploy-sync-function` | CI/CD deploy workflow for Function App (rebased on #161) |
+| 4 | [#170](https://github.com/tinytoolsllc/ai-patch-notes/pull/170) | `feat/app-insights` | Application Insights telemetry for API |
+
+After merging all PRs, run the Azure setup steps below.
+
 ## Variables
 
 Set these once at the top of your shell session. Every command below references them.
