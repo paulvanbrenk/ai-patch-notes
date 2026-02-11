@@ -36,7 +36,7 @@ public class ChangelogResolver
         RegexOptions.Compiled);
 
     private static readonly string[] ChangelogLinkTitles =
-        ["changelog", "changes", "history", "release notes", "notes", "what's changed"];
+        ["changelog", "changes", "history", "release notes", "what's changed"];
 
     private static readonly string[] ChangelogUrlKeywords =
         ["changelog", "changes", "history", "release-notes"];

@@ -94,6 +94,22 @@ public class ChangelogResolverTests
         ChangelogResolver.IsChangelogReference(body).Should().BeTrue();
     }
 
+    [Theory]
+    [InlineData("[Technical notes](https://example.com/docs)")]
+    [InlineData("[Migration notes](https://example.com/migrate)")]
+    [InlineData("[Implementation notes](https://foo.com/internal)")]
+    public void IsChangelogReference_GenericNotesLink_ReturnsFalse(string body)
+    {
+        ChangelogResolver.IsChangelogReference(body).Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsChangelogReference_ReleaseNotesLink_ReturnsTrue()
+    {
+        var body = "See [Release Notes](https://example.com/releases) for details.";
+        ChangelogResolver.IsChangelogReference(body).Should().BeTrue();
+    }
+
     #endregion
 
     #region ExtractPathFromBody Tests
