@@ -128,12 +128,19 @@ try
         var syncService = scope.ServiceProvider.GetRequiredService<SyncService>();
         await db.Database.MigrateAsync();
 
-        var scopedSyncService = scope.ServiceProvider.GetRequiredService<SyncService>();
-        var repoResult = await scopedSyncService.SyncRepoAsync(owner, repo);
-        logger.LogInformation(
-            "Sync complete: {Releases} releases fetched",
-            repoResult.ReleasesAdded);
-        return ExitSuccess;
+        try
+        {
+            var repoResult = await syncService.SyncRepoAsync(owner, repo);
+            logger.LogInformation(
+                "Sync complete: {Releases} releases fetched",
+                repoResult.ReleasesAdded);
+            return ExitSuccess;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to sync repository {Owner}/{Repo}", owner, repo);
+            return ExitPartialFailure;
+        }
     }
 
     logger.LogInformation("PatchNotes Sync starting");
