@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using PatchNotes.Data;
@@ -17,9 +18,20 @@ public class PatchNotesApiFixture : WebApplicationFactory<Program>, IAsyncLifeti
     public const string TestUserId = "test-user-id";
 
     private readonly MockNpmHandler _npmHandler = new();
+    private readonly string _dbName = $"test_{Guid.NewGuid():N}";
     private SqliteConnection? _connection;
+    private Action<IWebHostBuilder>? _additionalConfig;
 
     public MockNpmHandler NpmHandler => _npmHandler;
+
+    /// <summary>
+    /// Register additional configuration to be applied during WebHost setup.
+    /// Must be called before accessing Services or CreateClient().
+    /// </summary>
+    public void ConfigureSettings(Action<IWebHostBuilder> configure)
+    {
+        _additionalConfig = configure;
+    }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -27,22 +39,21 @@ public class PatchNotesApiFixture : WebApplicationFactory<Program>, IAsyncLifeti
 
         builder.ConfigureServices(services =>
         {
-            // Remove existing DbContext registration
-            var dbContextDescriptor = services.SingleOrDefault(
-                d => d.ServiceType == typeof(DbContextOptions<PatchNotesDbContext>));
-            if (dbContextDescriptor != null)
-            {
-                services.Remove(dbContextDescriptor);
-            }
+            // Remove existing DbContext registrations
+            services.RemoveAll<DbContextOptions<PatchNotesDbContext>>();
+            services.RemoveAll<DbContextOptions<SqliteContext>>();
+            services.RemoveAll<PatchNotesDbContext>();
 
-            // Create a shared connection for in-memory SQLite
-            _connection = new SqliteConnection("Data Source=:memory:");
+            // Use a named shared-cache in-memory SQLite database so each DbContext
+            // scope gets its own connection (needed for concurrent request tests).
+            var connectionString = $"Data Source={_dbName};Mode=Memory;Cache=Shared";
+            _connection = new SqliteConnection(connectionString);
             _connection.Open();
 
-            // Use in-memory SQLite for testing with shared connection
             services.AddDbContext<PatchNotesDbContext>(options =>
             {
-                options.UseSqlite(_connection);
+                options.UseSqlite(connectionString);
+                options.AddInterceptors(new SqliteBusyTimeoutInterceptor());
             });
 
             // Remove existing HttpClientFactory and add mock
@@ -59,6 +70,8 @@ public class PatchNotesApiFixture : WebApplicationFactory<Program>, IAsyncLifeti
         builder.UseSetting("Stytch:ProjectId", "test-project-id");
         builder.UseSetting("Stytch:Secret", "test-secret");
         builder.UseSetting("Stytch:WebhookSecret", "test-webhook-secret");
+
+        _additionalConfig?.Invoke(builder);
     }
 
     public async Task InitializeAsync()
@@ -235,5 +248,26 @@ public class MockStytchClient : IStytchClient
         }
 
         return Task.FromResult<StytchUser?>(null);
+    }
+}
+
+/// <summary>
+/// Sets PRAGMA busy_timeout on each new SQLite connection so concurrent writers
+/// wait instead of immediately throwing "database is locked".
+/// </summary>
+internal class SqliteBusyTimeoutInterceptor : DbConnectionInterceptor
+{
+    public override void ConnectionOpened(DbConnection connection, ConnectionEndEventData eventData)
+    {
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = "PRAGMA busy_timeout = 5000";
+        cmd.ExecuteNonQuery();
+    }
+
+    public override async Task ConnectionOpenedAsync(DbConnection connection, ConnectionEndEventData eventData, CancellationToken cancellationToken = default)
+    {
+        await using var cmd = connection.CreateCommand();
+        cmd.CommandText = "PRAGMA busy_timeout = 5000";
+        await cmd.ExecuteNonQueryAsync(cancellationToken);
     }
 }

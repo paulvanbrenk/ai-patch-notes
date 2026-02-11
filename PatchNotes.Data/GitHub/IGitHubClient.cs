@@ -36,65 +36,16 @@ public interface IGitHubClient
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Gets notifications for the authenticated user.
-    /// </summary>
-    /// <param name="all">If true, show notifications marked as read.</param>
-    /// <param name="participating">If true, only show notifications in which the user is directly participating.</param>
-    /// <param name="since">Only show notifications updated after this time.</param>
-    /// <param name="perPage">Number of notifications per page (max 50).</param>
-    /// <param name="page">Page number for pagination.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>A list of notifications.</returns>
-    Task<IReadOnlyList<GitHubNotification>> GetNotificationsAsync(
-        bool all = false,
-        bool participating = false,
-        DateTime? since = null,
-        int perPage = 50,
-        int page = 1,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Gets all notifications for the authenticated user, handling pagination automatically.
-    /// </summary>
-    /// <param name="all">If true, show notifications marked as read.</param>
-    /// <param name="participating">If true, only show notifications in which the user is directly participating.</param>
-    /// <param name="since">Only show notifications updated after this time.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>An async enumerable of notifications.</returns>
-    IAsyncEnumerable<GitHubNotification> GetAllNotificationsAsync(
-        bool all = false,
-        bool participating = false,
-        DateTime? since = null,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Gets notifications for a specific repository.
+    /// Gets the raw content of a file from a GitHub repository.
     /// </summary>
     /// <param name="owner">The repository owner.</param>
     /// <param name="repo">The repository name.</param>
-    /// <param name="all">If true, show notifications marked as read.</param>
-    /// <param name="participating">If true, only show notifications in which the user is directly participating.</param>
-    /// <param name="since">Only show notifications updated after this time.</param>
-    /// <param name="perPage">Number of notifications per page (max 50).</param>
-    /// <param name="page">Page number for pagination.</param>
+    /// <param name="path">The file path within the repository.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>A list of notifications for the repository.</returns>
-    Task<IReadOnlyList<GitHubNotification>> GetRepositoryNotificationsAsync(
+    /// <returns>The file content as a string, or null if the file doesn't exist or is too large.</returns>
+    Task<string?> GetFileContentAsync(
         string owner,
         string repo,
-        bool all = false,
-        bool participating = false,
-        DateTime? since = null,
-        int perPage = 50,
-        int page = 1,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Marks a notification as read.
-    /// </summary>
-    /// <param name="notificationId">The notification ID.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    Task MarkNotificationAsReadAsync(
-        string notificationId,
+        string path,
         CancellationToken cancellationToken = default);
 }

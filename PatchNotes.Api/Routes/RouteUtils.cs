@@ -46,18 +46,6 @@ public static class RouteUtils
         return (null, null);
     }
 
-    /// <summary>
-    /// Determines if a tag represents a pre-release version.
-    /// Delegates to VersionParser for comprehensive detection.
-    /// </summary>
-    public static bool IsPrerelease(string tag) => VersionParser.IsPrerelease(tag);
-
-    /// <summary>
-    /// Extracts the major version from a tag.
-    /// Delegates to VersionParser for comprehensive format support.
-    /// </summary>
-    public static int? GetMajorVersion(string tag) => VersionParser.GetMajorVersion(tag);
-
     public static Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate> CreateAuthFilter()
     {
         return (context, next) => async invocationContext =>
@@ -114,5 +102,5 @@ public static class RouteUtils
     }
 }
 
-public record AddPackageRequest(string NpmName);
-public record UpdatePackageRequest(string? GithubOwner, string? GithubRepo);
+public record AddPackageRequest(string NpmName, string? TagPrefix = null);
+public record UpdatePackageRequest(string? GithubOwner, string? GithubRepo, string? TagPrefix = null);

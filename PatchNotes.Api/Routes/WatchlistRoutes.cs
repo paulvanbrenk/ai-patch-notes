@@ -5,6 +5,7 @@ namespace PatchNotes.Api.Routes;
 
 public static class WatchlistRoutes
 {
+    internal const int FreeWatchlistLimit = 5;
     private const int MaxWatchlistSize = 1000;
 
     public static WebApplication MapWatchlistRoutes(this WebApplication app)
@@ -51,6 +52,10 @@ public static class WatchlistRoutes
 
             var packageIds = request.PackageIds ?? [];
 
+            if (!user.IsPro && packageIds.Length > FreeWatchlistLimit)
+            {
+                return Results.Json(new { error = $"Free plan is limited to {FreeWatchlistLimit} packages. Upgrade to Pro for unlimited." }, statusCode: 403);
+            }
             if (packageIds.Length > MaxWatchlistSize)
             {
                 return Results.BadRequest(new { error = $"Watchlist cannot exceed {MaxWatchlistSize} packages" });
@@ -112,6 +117,10 @@ public static class WatchlistRoutes
             }
 
             var watchlistSize = await db.Watchlists.CountAsync(w => w.UserId == user.Id);
+            if (!user.IsPro && watchlistSize >= FreeWatchlistLimit)
+            {
+                return Results.Json(new { error = $"Free plan is limited to {FreeWatchlistLimit} packages. Upgrade to Pro for unlimited." }, statusCode: 403);
+            }
             if (watchlistSize >= MaxWatchlistSize)
             {
                 return Results.BadRequest(new { error = $"Watchlist cannot exceed {MaxWatchlistSize} packages" });

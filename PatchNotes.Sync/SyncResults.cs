@@ -7,8 +7,8 @@ namespace PatchNotes.Sync;
 /// </summary>
 public record SyncResult
 {
-    public int PackagesSynced { get; set; }
-    public int ReleasesAdded { get; set; }
+    public int PackagesSynced { get; internal set; }
+    public int ReleasesAdded { get; internal set; }
     public List<SyncError> Errors { get; } = [];
 
     /// <summary>
@@ -46,6 +46,19 @@ public record PackageSyncResult
 public record SyncError(string PackageName, string Message);
 
 /// <summary>
-/// Result of syncing notifications.
+/// Result of generating version group summaries.
 /// </summary>
-public record NotificationSyncResult(int Added, int Updated);
+public record SummaryGenerationResult
+{
+    public int SummariesGenerated { get; internal set; }
+    public int GroupsSkipped { get; internal set; }
+    public List<SummaryGenerationError> Errors { get; } = [];
+
+    public bool Success => Errors.Count == 0;
+}
+
+/// <summary>
+/// Error that occurred during summary generation.
+/// </summary>
+public record SummaryGenerationError(
+    string PackageId, int MajorVersion, bool IsPrerelease, string Message);

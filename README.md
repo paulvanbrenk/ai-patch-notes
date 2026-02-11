@@ -147,8 +147,9 @@ curl -X POST http://localhost:5031/api/packages \
   -H "X-API-Key: your-api-key" \
   -d '{"npmName": "lodash"}'
 
-# Get AI summary of a release
-curl -X POST http://localhost:5031/api/releases/1/summarize
+# Get AI summary of a release (requires auth)
+curl -X POST http://localhost:5031/api/releases/1/summarize \
+  -H "Cookie: stytch_session=your-session-token"
 ```
 
 ### Run the sync

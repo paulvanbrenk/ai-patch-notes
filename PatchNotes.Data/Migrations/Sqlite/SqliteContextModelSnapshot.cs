@@ -17,69 +17,6 @@ namespace PatchNotes.Data.Migrations.Sqlite
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.2");
 
-            modelBuilder.Entity("PatchNotes.Data.Notification", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasMaxLength(21)
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("FetchedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("GitHubId")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("LastReadAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("PackageId")
-                        .HasMaxLength(21)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Reason")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("RepositoryFullName")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("SubjectTitle")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("SubjectType")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("SubjectUrl")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("Unread")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GitHubId")
-                        .IsUnique();
-
-                    b.HasIndex("PackageId");
-
-                    b.HasIndex("Unread");
-
-                    b.HasIndex("UpdatedAt");
-
-                    b.ToTable("Notifications");
-                });
-
             modelBuilder.Entity("PatchNotes.Data.Package", b =>
                 {
                     b.Property<string>("Id")
@@ -108,6 +45,10 @@ namespace PatchNotes.Data.Migrations.Sqlite
 
                     b.Property<string>("NpmName")
                         .HasMaxLength(256)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TagPrefix")
+                        .HasMaxLength(64)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Url")
@@ -148,10 +89,22 @@ namespace PatchNotes.Data.Migrations.Sqlite
                     b.Property<DateTime>("FetchedAt")
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("IsPrerelease")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("MajorVersion")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("MinorVersion")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("PackageId")
                         .IsRequired()
                         .HasMaxLength(21)
                         .HasColumnType("TEXT");
+
+                    b.Property<int>("PatchVersion")
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("PublishedAt")
                         .HasColumnType("TEXT");
@@ -160,6 +113,16 @@ namespace PatchNotes.Data.Migrations.Sqlite
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("SummaryGeneratedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("SummaryStale")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("SummaryVersion")
+                        .IsConcurrencyToken()
+                        .HasMaxLength(21)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Tag")
@@ -177,7 +140,44 @@ namespace PatchNotes.Data.Migrations.Sqlite
                     b.HasIndex("PackageId", "Tag")
                         .IsUnique();
 
+                    b.HasIndex("PackageId", "MajorVersion", "IsPrerelease");
+
                     b.ToTable("Releases");
+                });
+
+            modelBuilder.Entity("PatchNotes.Data.ReleaseSummary", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(21)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("GeneratedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsPrerelease")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("MajorVersion")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("PackageId")
+                        .IsRequired()
+                        .HasMaxLength(21)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Summary")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PackageId", "MajorVersion", "IsPrerelease")
+                        .IsUnique();
+
+                    b.ToTable("ReleaseSummaries");
                 });
 
             modelBuilder.Entity("PatchNotes.Data.User", b =>
@@ -264,19 +264,21 @@ namespace PatchNotes.Data.Migrations.Sqlite
                     b.ToTable("Watchlists");
                 });
 
-            modelBuilder.Entity("PatchNotes.Data.Notification", b =>
-                {
-                    b.HasOne("PatchNotes.Data.Package", "Package")
-                        .WithMany()
-                        .HasForeignKey("PackageId");
-
-                    b.Navigation("Package");
-                });
-
             modelBuilder.Entity("PatchNotes.Data.Release", b =>
                 {
                     b.HasOne("PatchNotes.Data.Package", "Package")
                         .WithMany("Releases")
+                        .HasForeignKey("PackageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Package");
+                });
+
+            modelBuilder.Entity("PatchNotes.Data.ReleaseSummary", b =>
+                {
+                    b.HasOne("PatchNotes.Data.Package", "Package")
+                        .WithMany("ReleaseSummaries")
                         .HasForeignKey("PackageId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -305,6 +307,8 @@ namespace PatchNotes.Data.Migrations.Sqlite
 
             modelBuilder.Entity("PatchNotes.Data.Package", b =>
                 {
+                    b.Navigation("ReleaseSummaries");
+
                     b.Navigation("Releases");
 
                     b.Navigation("Watchlists");

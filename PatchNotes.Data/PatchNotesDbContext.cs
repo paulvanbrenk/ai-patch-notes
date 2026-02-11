@@ -9,12 +9,17 @@ public class PatchNotesDbContext : DbContext
     {
     }
 
+    protected PatchNotesDbContext(DbContextOptions options)
+        : base(options)
+    {
+    }
+
     public DbSet<Package> Packages => Set<Package>();
     public DbSet<Release> Releases => Set<Release>();
-    public DbSet<Notification> Notifications => Set<Notification>();
-    public DbSet<User> Users => Set<User>();
+public DbSet<User> Users => Set<User>();
     public DbSet<Watchlist> Watchlists => Set<Watchlist>();
     public DbSet<ProcessedWebhookEvent> ProcessedWebhookEvents => Set<ProcessedWebhookEvent>();
+    public DbSet<ReleaseSummary> ReleaseSummaries => Set<ReleaseSummary>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -26,6 +31,7 @@ public class PatchNotesDbContext : DbContext
             entity.Property(e => e.NpmName).HasMaxLength(256);
             entity.Property(e => e.GithubOwner).HasMaxLength(128);
             entity.Property(e => e.GithubRepo).HasMaxLength(128);
+            entity.Property(e => e.TagPrefix).HasMaxLength(64);
             entity.HasIndex(e => e.NpmName).IsUnique();
         });
 
@@ -34,28 +40,14 @@ public class PatchNotesDbContext : DbContext
             entity.Property(e => e.Id).HasMaxLength(21);
             entity.Property(e => e.PackageId).HasMaxLength(21);
             entity.Property(e => e.Tag).HasMaxLength(128);
+            entity.Property(e => e.SummaryStale).HasDefaultValue(true);
+            entity.Property(e => e.SummaryVersion).HasMaxLength(21).IsConcurrencyToken();
             entity.HasIndex(e => e.PublishedAt);
             entity.HasIndex(e => new { e.PackageId, e.Tag }).IsUnique();
+            entity.HasIndex(e => new { e.PackageId, e.MajorVersion, e.IsPrerelease });
             entity.HasOne(e => e.Package)
                 .WithMany(p => p.Releases)
                 .HasForeignKey(e => e.PackageId);
-        });
-
-        modelBuilder.Entity<Notification>(entity =>
-        {
-            entity.Property(e => e.Id).HasMaxLength(21);
-            entity.Property(e => e.PackageId).HasMaxLength(21);
-            entity.Property(e => e.GitHubId).HasMaxLength(64);
-            entity.Property(e => e.Reason).HasMaxLength(64);
-            entity.Property(e => e.SubjectType).HasMaxLength(64);
-            entity.Property(e => e.RepositoryFullName).HasMaxLength(256);
-            entity.HasIndex(e => e.GitHubId).IsUnique();
-            entity.HasIndex(e => e.UpdatedAt);
-            entity.HasIndex(e => e.Unread);
-            entity.HasOne(e => e.Package)
-                .WithMany()
-                .HasForeignKey(e => e.PackageId)
-                .IsRequired(false);
         });
 
         modelBuilder.Entity<User>(entity =>
@@ -76,6 +68,17 @@ public class PatchNotesDbContext : DbContext
         {
             entity.HasKey(e => e.EventId);
             entity.Property(e => e.EventId).HasMaxLength(128);
+        });
+
+        modelBuilder.Entity<ReleaseSummary>(entity =>
+        {
+            entity.Property(e => e.Id).HasMaxLength(21);
+            entity.Property(e => e.PackageId).HasMaxLength(21);
+            entity.HasIndex(e => new { e.PackageId, e.MajorVersion, e.IsPrerelease }).IsUnique();
+            entity.HasOne(e => e.Package)
+                .WithMany(p => p.ReleaseSummaries)
+                .HasForeignKey(e => e.PackageId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Watchlist>(entity =>

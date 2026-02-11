@@ -35,6 +35,8 @@ export const mockReleases: Release[] = [
     tag: 'v19.0.0',
     title: 'React 19',
     body: 'Major release with new features',
+    summary: null,
+    summaryGeneratedAt: null,
     publishedAt: '2026-01-10T00:00:00Z',
     fetchedAt: '2026-01-15T10:00:00Z',
     package: {
@@ -49,6 +51,8 @@ export const mockReleases: Release[] = [
     tag: 'v4.18.0',
     title: 'Lodash 4.18.0',
     body: 'Bug fixes and improvements',
+    summary: null,
+    summaryGeneratedAt: null,
     publishedAt: '2026-01-08T00:00:00Z',
     fetchedAt: '2026-01-14T10:00:00Z',
     package: {
@@ -126,17 +130,6 @@ export const handlers = [
       return new HttpResponse(null, { status: 404 })
     }
     return HttpResponse.json({ ...pkg, ...body })
-  }),
-
-  // POST /packages/:id/sync
-  http.post(`${API_BASE}/packages/:id/sync`, ({ params }) => {
-    const id = params.id as string
-    return HttpResponse.json({
-      id,
-      npmName: 'react',
-      lastFetchedAt: new Date().toISOString(),
-      releasesAdded: 2,
-    })
   }),
 
   // GET /releases

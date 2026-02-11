@@ -14,15 +14,19 @@ public class SyncService
     private readonly PatchNotesDbContext _db;
     private readonly IGitHubClient _github;
     private readonly ILogger<SyncService> _logger;
+    private readonly ChangelogResolver? _changelogResolver;
+    private readonly VersionGroupingService _versionGrouping = new();
 
     public SyncService(
         PatchNotesDbContext db,
         IGitHubClient github,
-        ILogger<SyncService> logger)
+        ILogger<SyncService> logger,
+        ChangelogResolver? changelogResolver = null)
     {
         _db = db;
         _github = github;
         _logger = logger;
+        _changelogResolver = changelogResolver;
     }
 
     /// <summary>
@@ -129,6 +133,11 @@ public class SyncService
             if (!ghRelease.PublishedAt.HasValue)
                 continue;
 
+            // Skip releases that don't match the tag prefix filter
+            if (!string.IsNullOrEmpty(package.TagPrefix) &&
+                !ghRelease.TagName.StartsWith(package.TagPrefix, StringComparison.Ordinal))
+                continue;
+
             // If we have a last fetched date, skip older releases
             // GitHub returns releases newest-first, so once we hit an old one, we can stop
             if (since.HasValue && ghRelease.PublishedAt.Value <= since.Value)
@@ -138,14 +147,46 @@ public class SyncService
             if (existingTags.Contains(ghRelease.TagName))
                 continue;
 
+            var body = ghRelease.Body;
+
+            // Resolve external changelog references
+            if (_changelogResolver != null && ChangelogResolver.IsChangelogReference(body))
+            {
+                try
+                {
+                    var resolved = await _changelogResolver.ResolveAsync(
+                        package.GithubOwner, package.GithubRepo,
+                        ghRelease.TagName, body, cancellationToken);
+
+                    if (resolved != null)
+                    {
+                        _logger.LogInformation(
+                            "Resolved changelog reference for {Package} {Tag}",
+                            package.Name, ghRelease.TagName);
+                        body = resolved;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex,
+                        "Failed to resolve changelog for {Package} {Tag}, keeping original body",
+                        package.Name, ghRelease.TagName);
+                }
+            }
+
+            var parsed = _versionGrouping.ParseTag(ghRelease.TagName);
             var release = new Release
             {
                 PackageId = package.Id,
                 Tag = ghRelease.TagName,
                 Title = ghRelease.Name,
-                Body = ghRelease.Body,
+                Body = body,
                 PublishedAt = ghRelease.PublishedAt.Value,
-                FetchedAt = fetchedAt
+                FetchedAt = fetchedAt,
+                MajorVersion = parsed.MajorVersion,
+                MinorVersion = parsed.MinorVersion,
+                PatchVersion = parsed.PatchVersion,
+                IsPrerelease = parsed.IsPrerelease
             };
 
             _db.Releases.Add(release);
@@ -163,7 +204,7 @@ public class SyncService
         if (includeExistingWithoutSummary)
         {
             var existingWithoutSummary = await _db.Releases
-                .Where(r => r.PackageId == package.Id && r.Summary == null)
+                .Where(r => r.PackageId == package.Id && (r.Summary == null || r.SummaryStale))
                 .Where(r => !releasesNeedingSummary.Select(x => x.Id).Contains(r.Id))
                 .ToListAsync(cancellationToken);
 
@@ -171,6 +212,52 @@ public class SyncService
         }
 
         return new PackageSyncResult(releasesAdded, releasesNeedingSummary);
+    }
+
+    /// <summary>
+    /// Syncs a single repository by owner/repo, creating the package if it doesn't exist.
+    /// </summary>
+    /// <param name="owner">GitHub repository owner.</param>
+    /// <param name="repo">GitHub repository name.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Result with count of releases added and releases needing summaries.</returns>
+    public async Task<PackageSyncResult> SyncRepoAsync(
+        string owner,
+        string repo,
+        CancellationToken cancellationToken = default)
+    {
+        var package = await _db.Packages
+            .FirstOrDefaultAsync(
+                p => p.GithubOwner == owner && p.GithubRepo == repo,
+                cancellationToken);
+
+        var isNewPackage = package == null;
+        if (isNewPackage)
+        {
+            package = new Package
+            {
+                Name = repo,
+                Url = $"https://github.com/{owner}/{repo}",
+                GithubOwner = owner,
+                GithubRepo = repo,
+                CreatedAt = DateTime.UtcNow
+            };
+            _db.Packages.Add(package);
+            await _db.SaveChangesAsync(cancellationToken);
+            _logger.LogInformation("Created package {Owner}/{Repo}", owner, repo);
+        }
+
+        try
+        {
+            return await SyncPackageAsync(package!, cancellationToken: cancellationToken);
+        }
+        catch when (isNewPackage)
+        {
+            _logger.LogWarning("Sync failed for new package {Owner}/{Repo}, removing phantom package", owner, repo);
+            _db.Packages.Remove(package!);
+            await _db.SaveChangesAsync(cancellationToken);
+            throw;
+        }
     }
 
     /// <summary>
@@ -182,7 +269,7 @@ public class SyncService
     {
         return await _db.Releases
             .Include(r => r.Package)
-            .Where(r => r.Summary == null)
+            .Where(r => r.Summary == null || r.SummaryStale)
             .OrderByDescending(r => r.PublishedAt)
             .ToListAsync(cancellationToken);
     }
@@ -198,8 +285,44 @@ public class SyncService
         CancellationToken cancellationToken = default)
     {
         return await _db.Releases
-            .Where(r => r.PackageId == packageId && r.Summary == null)
+            .Where(r => r.PackageId == packageId && (r.Summary == null || r.SummaryStale))
             .OrderByDescending(r => r.PublishedAt)
             .ToListAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Backfills denormalized version fields for all existing releases.
+    /// Parses the Tag and updates MajorVersion, MinorVersion, PatchVersion, and IsPrerelease.
+    /// Safe to call multiple times (idempotent).
+    /// </summary>
+    /// <returns>Number of releases updated.</returns>
+    public async Task<int> BackfillVersionFieldsAsync(CancellationToken cancellationToken = default)
+    {
+        var releases = await _db.Releases.ToListAsync(cancellationToken);
+        var updated = 0;
+
+        foreach (var release in releases)
+        {
+            var parsed = _versionGrouping.ParseTag(release.Tag);
+            if (release.MajorVersion != parsed.MajorVersion
+                || release.MinorVersion != parsed.MinorVersion
+                || release.PatchVersion != parsed.PatchVersion
+                || release.IsPrerelease != parsed.IsPrerelease)
+            {
+                release.MajorVersion = parsed.MajorVersion;
+                release.MinorVersion = parsed.MinorVersion;
+                release.PatchVersion = parsed.PatchVersion;
+                release.IsPrerelease = parsed.IsPrerelease;
+                updated++;
+            }
+        }
+
+        if (updated > 0)
+        {
+            await _db.SaveChangesAsync(cancellationToken);
+            _logger.LogInformation("Backfilled version fields for {Count} releases", updated);
+        }
+
+        return updated;
     }
 }

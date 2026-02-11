@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="SeedData\packages.json" />
+    <EmbeddedResource Include="AI\Prompts\changelog-summary.txt" />
   </ItemGroup>
 
 </Project>

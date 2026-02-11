@@ -1,7 +1,6 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using PatchNotes.Data;
-using PatchNotes.Sync;
 
 namespace PatchNotes.Api.Routes;
 
@@ -24,6 +23,7 @@ public static class PackageRoutes
                     p.NpmName,
                     p.GithubOwner,
                     p.GithubRepo,
+                    p.TagPrefix,
                     p.LastFetchedAt,
                     p.CreatedAt
                 })
@@ -44,6 +44,7 @@ public static class PackageRoutes
                     p.NpmName,
                     p.GithubOwner,
                     p.GithubRepo,
+                    p.TagPrefix,
                     p.LastFetchedAt,
                     p.CreatedAt,
                     ReleaseCount = p.Releases.Count
@@ -76,6 +77,8 @@ public static class PackageRoutes
                     r.Tag,
                     r.Title,
                     r.Body,
+                    r.Summary,
+                    r.SummaryGeneratedAt,
                     r.PublishedAt,
                     r.FetchedAt,
                     Package = new
@@ -185,6 +188,7 @@ public static class PackageRoutes
                 NpmName = request.NpmName,
                 GithubOwner = owner,
                 GithubRepo = repoName,
+                TagPrefix = request.TagPrefix,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -199,6 +203,7 @@ public static class PackageRoutes
                 package.NpmName,
                 package.GithubOwner,
                 package.GithubRepo,
+                package.TagPrefix,
                 package.CreatedAt
             });
         }).AddEndpointFilterFactory(requireAuth)
@@ -223,6 +228,11 @@ public static class PackageRoutes
                 package.GithubRepo = request.GithubRepo;
             }
 
+            if (request.TagPrefix != null)
+            {
+                package.TagPrefix = request.TagPrefix == "" ? null : request.TagPrefix;
+            }
+
             await db.SaveChangesAsync();
 
             return Results.Ok(new
@@ -233,6 +243,7 @@ public static class PackageRoutes
                 package.NpmName,
                 package.GithubOwner,
                 package.GithubRepo,
+                package.TagPrefix,
                 package.LastFetchedAt,
                 package.CreatedAt
             });
@@ -252,28 +263,6 @@ public static class PackageRoutes
             await db.SaveChangesAsync();
 
             return Results.NoContent();
-        }).AddEndpointFilterFactory(requireAuth)
-          .AddEndpointFilterFactory(requireAdmin);
-
-        // POST /api/packages/{id}/sync - Trigger sync for a specific package
-        app.MapPost("/api/packages/{id}/sync", async (string id, PatchNotesDbContext db, SyncService syncService) =>
-        {
-            var package = await db.Packages.FindAsync(id);
-            if (package == null)
-            {
-                return Results.NotFound(new { error = "Package not found" });
-            }
-
-            var result = await syncService.SyncPackageAsync(package);
-
-            return Results.Ok(new
-            {
-                package.Id,
-                package.Name,
-                package.NpmName,
-                package.LastFetchedAt,
-                releasesAdded = result.ReleasesAdded
-            });
         }).AddEndpointFilterFactory(requireAuth)
           .AddEndpointFilterFactory(requireAdmin);
 

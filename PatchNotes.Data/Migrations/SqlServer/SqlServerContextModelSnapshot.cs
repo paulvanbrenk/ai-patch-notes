@@ -22,69 +22,6 @@ namespace PatchNotes.Data.Migrations.SqlServer
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("PatchNotes.Data.Notification", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasMaxLength(21)
-                        .HasColumnType("nvarchar(21)");
-
-                    b.Property<DateTime>("FetchedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("GitHubId")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
-
-                    b.Property<DateTime?>("LastReadAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("PackageId")
-                        .HasMaxLength(21)
-                        .HasColumnType("nvarchar(21)");
-
-                    b.Property<string>("Reason")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
-
-                    b.Property<string>("RepositoryFullName")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("SubjectTitle")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SubjectType")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
-
-                    b.Property<string>("SubjectUrl")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("Unread")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GitHubId")
-                        .IsUnique();
-
-                    b.HasIndex("PackageId");
-
-                    b.HasIndex("Unread");
-
-                    b.HasIndex("UpdatedAt");
-
-                    b.ToTable("Notifications");
-                });
-
             modelBuilder.Entity("PatchNotes.Data.Package", b =>
                 {
                     b.Property<string>("Id")
@@ -114,6 +51,10 @@ namespace PatchNotes.Data.Migrations.SqlServer
                     b.Property<string>("NpmName")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("TagPrefix")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("Url")
                         .IsRequired()
@@ -154,10 +95,22 @@ namespace PatchNotes.Data.Migrations.SqlServer
                     b.Property<DateTime>("FetchedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<bool>("IsPrerelease")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MajorVersion")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MinorVersion")
+                        .HasColumnType("int");
+
                     b.Property<string>("PackageId")
                         .IsRequired()
                         .HasMaxLength(21)
                         .HasColumnType("nvarchar(21)");
+
+                    b.Property<int>("PatchVersion")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("PublishedAt")
                         .HasColumnType("datetime2");
@@ -167,6 +120,16 @@ namespace PatchNotes.Data.Migrations.SqlServer
 
                     b.Property<DateTime?>("SummaryGeneratedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<bool>("SummaryStale")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("SummaryVersion")
+                        .IsConcurrencyToken()
+                        .HasMaxLength(21)
+                        .HasColumnType("nvarchar(21)");
 
                     b.Property<string>("Tag")
                         .IsRequired()
@@ -183,7 +146,44 @@ namespace PatchNotes.Data.Migrations.SqlServer
                     b.HasIndex("PackageId", "Tag")
                         .IsUnique();
 
+                    b.HasIndex("PackageId", "MajorVersion", "IsPrerelease");
+
                     b.ToTable("Releases");
+                });
+
+            modelBuilder.Entity("PatchNotes.Data.ReleaseSummary", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(21)
+                        .HasColumnType("nvarchar(21)");
+
+                    b.Property<DateTime>("GeneratedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsPrerelease")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MajorVersion")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PackageId")
+                        .IsRequired()
+                        .HasMaxLength(21)
+                        .HasColumnType("nvarchar(21)");
+
+                    b.Property<string>("Summary")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PackageId", "MajorVersion", "IsPrerelease")
+                        .IsUnique();
+
+                    b.ToTable("ReleaseSummaries");
                 });
 
             modelBuilder.Entity("PatchNotes.Data.User", b =>
@@ -270,19 +270,21 @@ namespace PatchNotes.Data.Migrations.SqlServer
                     b.ToTable("Watchlists");
                 });
 
-            modelBuilder.Entity("PatchNotes.Data.Notification", b =>
-                {
-                    b.HasOne("PatchNotes.Data.Package", "Package")
-                        .WithMany()
-                        .HasForeignKey("PackageId");
-
-                    b.Navigation("Package");
-                });
-
             modelBuilder.Entity("PatchNotes.Data.Release", b =>
                 {
                     b.HasOne("PatchNotes.Data.Package", "Package")
                         .WithMany("Releases")
+                        .HasForeignKey("PackageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Package");
+                });
+
+            modelBuilder.Entity("PatchNotes.Data.ReleaseSummary", b =>
+                {
+                    b.HasOne("PatchNotes.Data.Package", "Package")
+                        .WithMany("ReleaseSummaries")
                         .HasForeignKey("PackageId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -311,6 +313,8 @@ namespace PatchNotes.Data.Migrations.SqlServer
 
             modelBuilder.Entity("PatchNotes.Data.Package", b =>
                 {
+                    b.Navigation("ReleaseSummaries");
+
                     b.Navigation("Releases");
 
                     b.Navigation("Watchlists");

@@ -213,7 +213,6 @@ public static class VersionParser
 
     /// <summary>
     /// Extracts the major version from a tag. Returns null if parsing fails.
-    /// This is an improved version of RouteUtils.GetMajorVersion that handles more formats.
     /// </summary>
     public static int? GetMajorVersion(string tag)
     {

@@ -1,8 +1,6 @@
 using PatchNotes.Data;
-using PatchNotes.Data.GitHub;
 using PatchNotes.Data.AI;
 using PatchNotes.Data.Stytch;
-using PatchNotes.Sync;
 using PatchNotes.Api.Routes;
 using PatchNotes.Api.Webhooks;
 using Stripe;
@@ -42,14 +40,11 @@ if (!string.IsNullOrEmpty(stripeSecretKey))
     StripeConfiguration.ApiKey = stripeSecretKey;
 }
 
+builder.Services.Configure<DefaultWatchlistOptions>(builder.Configuration.GetSection(DefaultWatchlistOptions.SectionName));
+
 builder.Services.AddOpenApi();
 builder.Services.AddPatchNotesDbContext(builder.Configuration);
 builder.Services.AddHttpClient();
-
-builder.Services.AddGitHubClient(options =>
-{
-    options.Token = builder.Configuration["GitHub:Token"];
-});
 
 builder.Services.AddAiClient(options =>
 {
@@ -67,8 +62,6 @@ builder.Services.AddAiClient(options =>
 });
 
 builder.Services.AddSingleton<IStytchClient, StytchClient>();
-
-builder.Services.AddScoped<SyncService>();
 
 builder.Services.AddCors(options =>
 {
@@ -124,10 +117,10 @@ app.UseCors();
 app.MapStatusPageRoutes();
 app.MapPackageRoutes();
 app.MapReleaseRoutes();
-app.MapNotificationRoutes();
 app.MapUserRoutes();
 app.MapWatchlistRoutes();
 app.MapSubscriptionRoutes();
+app.MapSummaryRoutes();
 app.MapStytchWebhook();
 app.MapStripeWebhook();
 
