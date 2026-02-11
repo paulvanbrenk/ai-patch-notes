@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useStytchUser } from '@stytch/react'
 import {
   FlaskConical,
@@ -18,9 +18,10 @@ import {
 } from '../components/ui'
 import { ThemeToggle } from '../components/theme'
 import { UserMenu } from '../components/auth'
+import { PackagePicker } from '../components/package-picker/PackagePicker'
 import { useFilterStore } from '../stores/filterStore'
 import { useSubscriptionStore } from '../stores/subscriptionStore'
-import { usePackages, useReleases, useWatchlist } from '../api/hooks'
+import { usePackages, useReleases, useWatchlist, useSetWatchlist } from '../api/hooks'
 import type { Release as ApiRelease } from '../api/types'
 
 // ============================================================================
@@ -429,6 +430,14 @@ export function HomePage() {
   // Fetch real data
   const { data: packages, isLoading: packagesLoading } = usePackages()
   const { data: watchlist, isLoading: watchlistLoading } = useWatchlist()
+  const setWatchlist = useSetWatchlist()
+
+  const handleWatchlistChange = useCallback(
+    (selectedIds: string[]) => {
+      setWatchlist.mutate(selectedIds)
+    },
+    [setWatchlist]
+  )
 
   // Build release query options based on auth state and watchlist
   const releaseOptions = useMemo(() => {
@@ -609,67 +618,86 @@ export function HomePage() {
             </div>
           )}
 
-          {/* Content */}
-          {isLoading ? (
-            <div className="space-y-4">
-              <SkeletonCard />
-              <SkeletonCard />
-              <SkeletonCard />
-            </div>
-          ) : groupByPackage ? (
-            <div className="space-y-8">
-              {Object.entries(groupedByPackageMap).map(
-                ([packageName, groups]) => (
-                  <section key={packageName}>
-                    <h2 className="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
-                      <PackageIcon name={packageName} />
-                      {packageName}
-                      <span className="text-sm font-normal text-text-tertiary">
-                        ({groups.length} version
-                        {groups.length !== 1 && 's'})
-                      </span>
-                    </h2>
-                    <div className="space-y-4">
-                      {groups.map((group) => (
-                        <SummaryCard
-                          key={group.id}
-                          group={group}
-                          isExpanded={expandedGroups.has(group.id)}
-                          onToggle={() => toggleExpanded(group.id)}
-                        />
-                      ))}
-                    </div>
-                  </section>
-                )
+          {/* Main layout */}
+          <div className="flex gap-6">
+            {/* Content */}
+            <div className="flex-1 min-w-0">
+              {isLoading ? (
+                <div className="space-y-4">
+                  <SkeletonCard />
+                  <SkeletonCard />
+                  <SkeletonCard />
+                </div>
+              ) : groupByPackage ? (
+                <div className="space-y-8">
+                  {Object.entries(groupedByPackageMap).map(
+                    ([packageName, groups]) => (
+                      <section key={packageName}>
+                        <h2 className="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
+                          <PackageIcon name={packageName} />
+                          {packageName}
+                          <span className="text-sm font-normal text-text-tertiary">
+                            ({groups.length} version
+                            {groups.length !== 1 && 's'})
+                          </span>
+                        </h2>
+                        <div className="space-y-4">
+                          {groups.map((group) => (
+                            <SummaryCard
+                              key={group.id}
+                              group={group}
+                              isExpanded={expandedGroups.has(group.id)}
+                              onToggle={() => toggleExpanded(group.id)}
+                            />
+                          ))}
+                        </div>
+                      </section>
+                    )
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {sortedGroups.map((group) => (
+                    <SummaryCard
+                      key={group.id}
+                      group={group}
+                      isExpanded={expandedGroups.has(group.id)}
+                      onToggle={() => toggleExpanded(group.id)}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* Empty State */}
+              {!isLoading && versionGroups.length === 0 && (
+                <div className="text-center py-16">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-surface-tertiary flex items-center justify-center">
+                    <FlaskConicalOff className="w-8 h-8 text-text-tertiary" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-text-primary mb-2">
+                    No releases found
+                  </h3>
+                  <p className="text-text-secondary">
+                    Try adjusting your filters to see more releases.
+                  </p>
+                </div>
               )}
             </div>
-          ) : (
-            <div className="space-y-4">
-              {sortedGroups.map((group) => (
-                <SummaryCard
-                  key={group.id}
-                  group={group}
-                  isExpanded={expandedGroups.has(group.id)}
-                  onToggle={() => toggleExpanded(group.id)}
-                />
-              ))}
-            </div>
-          )}
 
-          {/* Empty State */}
-          {!isLoading && versionGroups.length === 0 && (
-            <div className="text-center py-16">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-surface-tertiary flex items-center justify-center">
-                <FlaskConicalOff className="w-8 h-8 text-text-tertiary" />
+            {/* Watchlist Sidebar */}
+            {user && (
+              <div className="hidden lg:block w-80 flex-shrink-0">
+                <div className="sticky top-24">
+                  <PackagePicker
+                    packages={packages ?? []}
+                    isLoading={packagesLoading}
+                    watchlistIds={watchlist ?? []}
+                    onWatchlistChange={handleWatchlistChange}
+                  />
+                </div>
               </div>
-              <h3 className="text-lg font-semibold text-text-primary mb-2">
-                No releases found
-              </h3>
-              <p className="text-text-secondary">
-                Try adjusting your filters to see more releases.
-              </p>
-            </div>
-          )}
+            )}
+          </div>
         </Container>
       </main>
     </div>
