@@ -39,7 +39,7 @@ public class ChangelogResolver
         ["changelog", "changes", "history", "release notes", "what's changed"];
 
     private static readonly string[] ChangelogUrlKeywords =
-        ["changelog", "changes", "history", "release-notes"];
+        ["changelog", "changes.md", "history.md", "release-notes"];
 
     private static readonly Regex GitHubBlobUrlPattern = new(
         @"https://github\.com/[^/]+/[^/]+/blob/[^/]+/(?<path>[^#?)]+)",
