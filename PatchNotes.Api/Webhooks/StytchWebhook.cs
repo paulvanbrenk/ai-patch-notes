@@ -70,7 +70,7 @@ public static class StytchWebhook
                 // IMPORTANT: Don't trust data in the webhook payload - fetch fresh data from Stytch API
                 switch (stytchEvent)
                 {
-                    case { object_type: "user", action: "created" or "updated" }:
+                    case { object_type: "user", action: "CREATE" or "UPDATE" }:
                         {
                             // Fetch fresh user data from Stytch API (webhook data may be stale)
                             var stytchUser = await stytchClient.GetUserAsync(stytchEvent.id);
@@ -107,7 +107,7 @@ public static class StytchWebhook
                             break;
                         }
 
-                    case { object_type: "user", action: "deleted" }:
+                    case { object_type: "user", action: "DELETE" }:
                         {
                             var user = await db.Users.FirstOrDefaultAsync(u => u.StytchUserId == stytchEvent.id);
                             if (user != null)
