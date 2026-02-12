@@ -82,7 +82,7 @@ az functionapp config appsettings set \
 
 ## Project Structure
 
-The Azure Function project wraps the existing `SyncService` and `SummaryGenerationService` from `PatchNotes.Data` and `PatchNotes.Sync`.
+The Azure Function project uses a `SyncPipeline` that runs sync and summary generation concurrently as a producer-consumer pipeline using `Channel<string>`. As soon as a package finishes syncing, its summaries start generating while the next package syncs.
 
 ```
 PatchNotes.Functions/
@@ -107,10 +107,10 @@ PatchNotes.Functions/
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="2.0.0" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Timer" Version="4.4.0" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="2.0.0" />
-    <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.22.0" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="2.50.0" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Timer" Version="4.3.1" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="2.0.7" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.ApplicationInsights" Version="2.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -120,6 +120,8 @@ PatchNotes.Functions/
 
 </Project>
 ```
+
+> **Note:** .NET 10 requires `Microsoft.Azure.Functions.Worker` >= 2.50.0 and `Microsoft.Azure.Functions.Worker.Sdk` >= 2.0.5.
 
 ### Program.cs (Host Setup)
 
@@ -136,7 +138,6 @@ var host = new HostBuilder()
     .ConfigureFunctionsWorkerDefaults()
     .ConfigureServices((context, services) =>
     {
-        services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();
 
         services.AddPatchNotesDbContext(context.Configuration);
@@ -150,13 +151,21 @@ var host = new HostBuilder()
 
         services.AddAiClient(options =>
         {
-            context.Configuration.GetSection(AiClientOptions.SectionName).Bind(options);
+            var section = context.Configuration.GetSection(AiClientOptions.SectionName);
+            var baseUrl = section["BaseUrl"];
+            if (!string.IsNullOrEmpty(baseUrl))
+                options.BaseUrl = baseUrl;
+            options.ApiKey = section["ApiKey"];
+            var model = section["Model"];
+            if (!string.IsNullOrEmpty(model))
+                options.Model = model;
         });
 
         services.AddTransient<ChangelogResolver>();
         services.AddTransient<VersionGroupingService>();
         services.AddTransient<SyncService>();
         services.AddTransient<SummaryGenerationService>();
+        services.AddTransient<SyncPipeline>();
     })
     .Build();
 
@@ -173,22 +182,37 @@ using PatchNotes.Sync;
 namespace PatchNotes.Functions;
 
 public class SyncTimerFunction(
-    SyncService syncService,
-    SummaryGenerationService summaryService,
+    SyncPipeline pipeline,
     ILogger<SyncTimerFunction> logger)
 {
     // Runs every 6 hours: at midnight, 6am, noon, 6pm UTC
     [Function("SyncReleases")]
     public async Task Run(
-        [TimerTrigger("0 0 */6 * * *")] TimerInfo timerInfo)
+        [TimerTrigger("0 0 */6 * * *")] TimerInfo timerInfo,
+        CancellationToken cancellationToken)
     {
         logger.LogInformation("Sync function triggered at {Time}", DateTime.UtcNow);
 
-        // TODO: implement sync and summary generation logic
-        // See PatchNotes.Sync/Program.cs for reference
+        var result = await pipeline.RunAsync(cancellationToken);
+
+        logger.LogInformation(
+            "Sync pipeline complete: {Packages} packages synced, {Releases} releases added, " +
+            "{Summaries} summaries generated, {SyncErrors} sync errors, {SummaryErrors} summary errors",
+            result.PackagesSynced,
+            result.ReleasesAdded,
+            result.SummariesGenerated,
+            result.SyncErrors.Count,
+            result.SummaryErrors.Count);
+
+        if (timerInfo.ScheduleStatus is not null)
+        {
+            logger.LogInformation("Next sync scheduled at {NextRun}", timerInfo.ScheduleStatus.Next);
+        }
     }
 }
 ```
+
+The function uses `SyncPipeline` which runs sync and summary generation concurrently via a bounded `Channel<string>`. Each side gets its own DI scope (via `IServiceScopeFactory`) for DbContext thread safety.
 
 ### host.json
 

@@ -33,6 +33,9 @@ bld/
 *.db-shm
 *.db-wal
 
+# Azure Functions local settings (contains secrets)
+local.settings.json
+
 # OS
 .DS_Store
 Thumbs.db

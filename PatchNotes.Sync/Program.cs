@@ -69,6 +69,7 @@ builder.Services.AddTransient<ChangelogResolver>();
 builder.Services.AddTransient<VersionGroupingService>();
 builder.Services.AddTransient<SyncService>();
 builder.Services.AddTransient<SummaryGenerationService>();
+builder.Services.AddTransient<SyncPipeline>();
 
 using var host = builder.Build();
 
@@ -161,51 +162,29 @@ try
     logger.LogInformation("PatchNotes Sync starting");
 
     {
-        using var scope = host.Services.CreateScope();
-        var syncService = scope.ServiceProvider.GetRequiredService<SyncService>();
-        var summaryService = scope.ServiceProvider.GetRequiredService<SummaryGenerationService>();
+        var pipeline = host.Services.GetRequiredService<SyncPipeline>();
+        var result = await pipeline.RunAsync();
 
-        // Backfill denormalized version fields for any existing releases
-        var backfilled = await syncService.BackfillVersionFieldsAsync();
-        if (backfilled > 0)
-        {
-            logger.LogInformation("Backfilled version fields for {Count} existing releases", backfilled);
-        }
-
-        var result = await syncService.SyncAllAsync();
-
-        // Generate summaries for packages with new/stale releases
-        if (result.ReleasesNeedingSummary.Count > 0)
-        {
-            logger.LogInformation(
-                "Generating summaries for {Count} releases needing summaries",
-                result.ReleasesNeedingSummary.Count);
-
-            var summaryResult = await summaryService.GenerateAllSummariesAsync();
-
-            logger.LogInformation(
-                "Summary generation complete: {Generated} generated, {Skipped} skipped, {Errors} errors",
-                summaryResult.SummariesGenerated,
-                summaryResult.GroupsSkipped,
-                summaryResult.Errors.Count);
-        }
+        logger.LogInformation(
+            "Pipeline complete: {Packages} packages synced, {Releases} releases added, " +
+            "{Summaries} summaries generated",
+            result.PackagesSynced,
+            result.ReleasesAdded,
+            result.SummariesGenerated);
 
         if (result.Success)
         {
-            logger.LogInformation(
-                "Sync completed successfully: {Packages} packages, {Releases} releases",
-                result.PackagesSynced,
-                result.ReleasesAdded);
             return ExitSuccess;
         }
         else
         {
-            logger.LogWarning(
-                "Sync completed with {ErrorCount} errors",
-                result.Errors.Count);
-            foreach (var error in result.Errors)
+            foreach (var error in result.SyncErrors)
             {
-                logger.LogWarning("  {Package}: {Message}", error.PackageName, error.Message);
+                logger.LogWarning("  Sync error — {Package}: {Message}", error.PackageName, error.Message);
+            }
+            foreach (var error in result.SummaryErrors)
+            {
+                logger.LogWarning("  Summary error — {PackageId}: {Message}", error.PackageId, error.Message);
             }
             return ExitPartialFailure;
         }

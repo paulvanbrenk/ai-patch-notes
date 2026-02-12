@@ -1,0 +1,135 @@
+using System.Threading.Channels;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using PatchNotes.Data;
+
+namespace PatchNotes.Sync;
+
+/// <summary>
+/// Orchestrates sync and summary generation as a producer-consumer pipeline.
+/// The producer syncs packages from GitHub and writes package IDs to a channel.
+/// The consumer reads package IDs and generates AI summaries concurrently.
+/// </summary>
+public class SyncPipeline
+{
+    private readonly IServiceScopeFactory _scopeFactory;
+    private readonly ILogger<SyncPipeline> _logger;
+
+    public SyncPipeline(IServiceScopeFactory scopeFactory, ILogger<SyncPipeline> logger)
+    {
+        _scopeFactory = scopeFactory;
+        _logger = logger;
+    }
+
+    /// <summary>
+    /// Runs the sync pipeline: sync packages (producer) and generate summaries (consumer) concurrently.
+    /// </summary>
+    public async Task<PipelineResult> RunAsync(CancellationToken ct = default)
+    {
+        var channel = Channel.CreateBounded<string>(new BoundedChannelOptions(5)
+        {
+            SingleWriter = true,
+            SingleReader = true,
+        });
+
+        var result = new PipelineResult();
+
+        var producerTask = ProduceAsync(channel.Writer, result, ct);
+        var consumerTask = ConsumeAsync(channel.Reader, result, ct);
+
+        await Task.WhenAll(producerTask, consumerTask);
+
+        return result;
+    }
+
+    private async Task ProduceAsync(
+        ChannelWriter<string> writer,
+        PipelineResult result,
+        CancellationToken ct)
+    {
+        try
+        {
+            await using var scope = _scopeFactory.CreateAsyncScope();
+            var syncService = scope.ServiceProvider.GetRequiredService<SyncService>();
+
+            // Backfill denormalized version fields for any existing releases
+            var backfilled = await syncService.BackfillVersionFieldsAsync(ct);
+            if (backfilled > 0)
+            {
+                _logger.LogInformation("Backfilled version fields for {Count} existing releases", backfilled);
+            }
+
+            var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
+            var packages = await db.Packages.ToListAsync(ct);
+
+            _logger.LogInformation("Pipeline: syncing {Count} packages", packages.Count);
+
+            foreach (var package in packages)
+            {
+                if (ct.IsCancellationRequested) break;
+
+                try
+                {
+                    var packageResult = await syncService.SyncPackageAsync(package, cancellationToken: ct);
+                    result.PackagesSynced++;
+                    result.ReleasesAdded += packageResult.ReleasesAdded;
+
+                    if (packageResult.ReleasesAdded > 0)
+                    {
+                        _logger.LogInformation(
+                            "Synced {Package}: {Count} new releases",
+                            package.Name, packageResult.ReleasesAdded);
+                    }
+                    else
+                    {
+                        _logger.LogDebug("Synced {Package}: no new releases", package.Name);
+                    }
+
+                    // If this package has releases needing summaries, enqueue it
+                    if (packageResult.ReleasesNeedingSummary.Count > 0)
+                    {
+                        await writer.WriteAsync(package.Id, ct);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    result.SyncErrors.Add(new SyncError(package.Name, ex.Message));
+                    _logger.LogError(ex, "Failed to sync {Package}", package.Name);
+                }
+            }
+        }
+        finally
+        {
+            writer.Complete();
+            _logger.LogDebug("Pipeline: producer finished");
+        }
+    }
+
+    private async Task ConsumeAsync(
+        ChannelReader<string> reader,
+        PipelineResult result,
+        CancellationToken ct)
+    {
+        await using var scope = _scopeFactory.CreateAsyncScope();
+        var summaryService = scope.ServiceProvider.GetRequiredService<SummaryGenerationService>();
+
+        await foreach (var packageId in reader.ReadAllAsync(ct))
+        {
+            try
+            {
+                var summaryResult = await summaryService.GenerateGroupSummariesAsync(packageId, ct);
+                result.SummariesGenerated += summaryResult.SummariesGenerated;
+                result.GroupsSkipped += summaryResult.GroupsSkipped;
+                result.SummaryErrors.AddRange(summaryResult.Errors);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to generate summaries for package {PackageId}", packageId);
+                result.SummaryErrors.Add(new SummaryGenerationError(packageId, 0, false, ex.Message));
+            }
+        }
+
+        _logger.LogDebug("Pipeline: consumer finished");
+    }
+}
