@@ -10,20 +10,20 @@ A GitHub release viewer for npm packages. Track release notes across your favori
 |-------------|-----|--------|
 | Frontend | https://app.mypkgupdate.com | Live |
 | API | https://api-mypkgupdate-com.azurewebsites.net | Live |
+| Sync Function | fn-patchnotes-sync (Azure Functions) | Timer (every 6h) |
 
 ## Project Status
 
-**Stage:** Development (MVP)
-**Health Score:** 8/10
+**Stage:** Production (MVP)
 
 | Area | Status |
 |------|--------|
-| Architecture | ✅ Solid (.NET + React separation) |
+| Architecture | ✅ .NET API + React SPA + Azure Functions |
 | Code Quality | ✅ Good |
-| CI/CD | ✅ GitHub Actions (build, test, deploy) |
-| Testing | ✅ 141 Vitest tests + xUnit API/Sync tests |
-| Authentication | ✅ Stytch B2C configured |
-| Error Handling | ✅ Error boundaries + toast notifications |
+| CI/CD | ✅ GitHub Actions (build, test, deploy API + Function + frontend) |
+| Testing | ✅ 334 xUnit tests + 129 Vitest tests |
+| Authentication | ✅ Stytch B2C |
+| Sync | ✅ Concurrent pipeline (Channel-based producer-consumer) |
 
 ## Features
 
@@ -36,15 +36,16 @@ A GitHub release viewer for npm packages. Track release notes across your favori
 
 ## Architecture
 
-- **PatchNotes.Data** - EF Core models, SQLite database, GitHub API client, Groq LLM client
+- **PatchNotes.Data** - EF Core models, SQLite/SQL Server, GitHub API client, AI client
 - **PatchNotes.Api** - ASP.NET Core Web API (port 5031)
-- **PatchNotes.Sync** - Console app to fetch releases from GitHub
+- **PatchNotes.Sync** - CLI tool + SyncPipeline for concurrent sync & summary generation
+- **PatchNotes.Functions** - Azure Functions timer trigger that runs the SyncPipeline every 6 hours
 - **patchnotes-web** - React frontend with TanStack Router & Query
 
 ## Prerequisites
 
 - .NET 10 SDK
-- Node.js 18+
+- Node.js 22+
 - [direnv](https://direnv.net/) (recommended for secrets management)
 
 ## Configuration
@@ -152,21 +153,28 @@ curl -X POST http://localhost:5031/api/releases/1/summarize \
   -H "Cookie: stytch_session=your-session-token"
 ```
 
-### Run the sync
+### Sync CLI
 
 ```bash
-cd PatchNotes.Sync
-dotnet run
+# Run full sync pipeline (concurrent sync + summary generation)
+dotnet run --project PatchNotes.Sync
+
+# Sync a single repo
+dotnet run --project PatchNotes.Sync -- -r https://github.com/prettier/prettier
+
+# Generate summaries for a specific package
+dotnet run --project PatchNotes.Sync -- -s prettier/prettier
+
+# Seed package catalog from packages.json and sync all from GitHub (first-time setup)
+dotnet run --project PatchNotes.Sync -- --init
+
+# Seed database with sample data (local dev)
+dotnet run --project PatchNotes.Sync -- --seed
 ```
 
 Exit codes: 0=success, 1=partial failure, 2=fatal error
 
-### Seed sample data
-
-```bash
-cd PatchNotes.Sync
-dotnet run -- --seed
-```
+The default sync uses a **producer-consumer pipeline** (`SyncPipeline`) — as soon as a package finishes syncing, its summaries start generating while the next package syncs.
 
 ## Project Structure
 
@@ -176,8 +184,11 @@ PatchNotes/
 ├── PatchNotes.Data/          # Data layer
 │   ├── Migrations/           # EF Core migrations
 │   ├── GitHub/               # GitHub API client
-│   └── Groq/                 # Groq LLM client
-├── PatchNotes.Sync/          # Sync console app
+│   ├── AI/                   # AI client (OpenAI-compatible)
+│   └── SeedData/             # Package catalog (packages.json)
+├── PatchNotes.Sync/          # Sync CLI + SyncPipeline
+├── PatchNotes.Functions/     # Azure Functions (timer-triggered sync)
+├── PatchNotes.Tests/         # xUnit tests
 └── patchnotes-web/           # React frontend
     └── src/
         ├── components/
@@ -193,8 +204,10 @@ PatchNotes/
 
 **Backend:**
 - .NET 10 / ASP.NET Core
-- Entity Framework Core + SQLite
+- Entity Framework Core (SQLite dev / SQL Server prod)
+- Azure Functions (isolated worker, timer trigger)
 - GitHub API integration
+- AI summaries (OpenAI-compatible API)
 
 **Frontend:**
 - React 18 + TypeScript

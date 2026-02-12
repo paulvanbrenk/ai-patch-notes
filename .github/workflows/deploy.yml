@@ -43,6 +43,15 @@ jobs:
           name: api
           path: ./publish/api
 
+      - name: Publish Sync Function
+        run: dotnet publish PatchNotes.Functions/PatchNotes.Functions.csproj --no-build --configuration Release --output ./publish/functions
+
+      - name: Upload Sync Function artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: functions
+          path: ./publish/functions
+
   build-frontend:
     name: Build Frontend
     runs-on: ubuntu-latest
@@ -164,3 +173,29 @@ jobs:
           api_location: ""
           output_location: ""
           skip_app_build: true
+
+  deploy-sync-function:
+    name: Deploy Sync Function
+    needs: [build-api, migrate-database]
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+    steps:
+      - name: Download Sync Function artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: functions
+          path: ./functions
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy to Azure Functions
+        uses: azure/functions-action@v2
+        with:
+          app-name: fn-patchnotes-sync
+          package: ./functions
