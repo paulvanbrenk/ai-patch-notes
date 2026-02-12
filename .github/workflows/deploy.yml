@@ -51,6 +51,7 @@ jobs:
         with:
           name: functions
           path: ./publish/functions
+          include-hidden-files: true
 
   build-frontend:
     name: Build Frontend
