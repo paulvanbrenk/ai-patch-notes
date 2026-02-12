@@ -24,7 +24,7 @@ public class ChangelogResolver
     ];
 
     private static readonly Regex ChangelogReferencePattern = new(
-        @"CHANGELOG\.md|HISTORY\.md|CHANGES\.md|See .* for (full )?details|Full changelog: https://github\.com/",
+        @"CHANGELOG\.md|HISTORY\.md|CHANGES\.md|Full changelog: https://github\.com/",
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     private static readonly Regex MarkdownLinkPattern = new(
