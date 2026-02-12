@@ -21,6 +21,64 @@ public static class DbSeeder
         await context.SaveChangesAsync();
     }
 
+    /// <summary>
+    /// Seeds the package catalog from the embedded packages.json without sample releases.
+    /// Skips packages that already exist (by owner/repo). Does not set LastFetchedAt,
+    /// so a subsequent sync will fetch all releases from GitHub.
+    /// </summary>
+    /// <returns>Number of new packages added.</returns>
+    public static async Task<int> SeedPackageCatalogAsync(PatchNotesDbContext context)
+    {
+        var seedPackages = await LoadSeedPackagesAsync();
+
+        var existing = await context.Packages
+            .Select(p => new { p.GithubOwner, p.GithubRepo })
+            .ToListAsync();
+
+        var existingSet = existing
+            .Select(p => $"{p.GithubOwner}/{p.GithubRepo}".ToLowerInvariant())
+            .ToHashSet();
+
+        var now = DateTime.UtcNow;
+        var added = 0;
+
+        foreach (var sp in seedPackages)
+        {
+            var key = $"{sp.GithubOwner}/{sp.GithubRepo}".ToLowerInvariant();
+            if (existingSet.Contains(key))
+                continue;
+
+            context.Packages.Add(new Package
+            {
+                Name = sp.Name,
+                Url = sp.Url,
+                NpmName = sp.NpmName,
+                GithubOwner = sp.GithubOwner,
+                GithubRepo = sp.GithubRepo,
+                CreatedAt = now,
+                // LastFetchedAt intentionally null — sync will fetch all releases
+            });
+            added++;
+        }
+
+        if (added > 0)
+            await context.SaveChangesAsync();
+
+        return added;
+    }
+
+    private static async Task<List<SeedPackage>> LoadSeedPackagesAsync()
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+        var resourceName = "PatchNotes.Data.SeedData.packages.json";
+
+        await using var stream = assembly.GetManifestResourceStream(resourceName);
+        if (stream == null)
+            throw new InvalidOperationException($"Could not find embedded resource: {resourceName}");
+
+        return await JsonSerializer.DeserializeAsync<List<SeedPackage>>(stream) ?? [];
+    }
+
     private static async Task<List<Package>> LoadSeedDataAsync(DateTime now)
     {
         var assembly = Assembly.GetExecutingAssembly();

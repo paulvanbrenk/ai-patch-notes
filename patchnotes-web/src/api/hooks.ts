@@ -7,8 +7,6 @@ import type {
   AddPackageRequest,
   AddPackageResponse,
   UpdatePackageRequest,
-  Notification,
-  UnreadCount,
 } from './types'
 
 export const queryKeys = {
@@ -18,8 +16,6 @@ export const queryKeys = {
   release: (id: string) => ['releases', id] as const,
   packageReleases: (packageId: string) =>
     ['packages', packageId, 'releases'] as const,
-  notifications: ['notifications'] as const,
-  notificationsUnreadCount: ['notifications', 'unread-count'] as const,
   watchlist: ['watchlist'] as const,
 }
 
@@ -117,66 +113,6 @@ export function useUpdatePackage() {
       api.patch<Package>(`/packages/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.packages })
-    },
-  })
-}
-
-export function useNotifications(options?: {
-  unreadOnly?: boolean
-  packageId?: string
-}) {
-  const params = new URLSearchParams()
-  if (options?.unreadOnly) {
-    params.set('unreadOnly', 'true')
-  }
-  if (options?.packageId) {
-    params.set('packageId', options.packageId)
-  }
-  const queryString = params.toString()
-  const endpoint = queryString
-    ? `/notifications?${queryString}`
-    : '/notifications'
-
-  return useQuery({
-    queryKey: [...queryKeys.notifications, options],
-    queryFn: () => api.get<Notification[]>(endpoint),
-  })
-}
-
-export function useNotificationsUnreadCount() {
-  return useQuery({
-    queryKey: queryKeys.notificationsUnreadCount,
-    queryFn: () => api.get<UnreadCount>('/notifications/unread-count'),
-  })
-}
-
-export function useMarkNotificationAsRead() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: (id: string) =>
-      api.patch<{ id: string; unread: boolean; lastReadAt: string }>(
-        `/notifications/${id}/read`
-      ),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.notifications })
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.notificationsUnreadCount,
-      })
-    },
-  })
-}
-
-export function useDeleteNotification() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: (id: string) => api.delete(`/notifications/${id}`),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.notifications })
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.notificationsUnreadCount,
-      })
     },
   })
 }

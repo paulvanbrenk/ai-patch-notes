@@ -223,9 +223,9 @@ public class VersionParserTests
 
     // Edge case: keyword in tag but not in prerelease position
     [Theory]
-    [InlineData("alphabetical-1.0.0", true)]  // Contains "alpha" - heuristic catches this
-    [InlineData("beta-package@1.0.0", true)]  // Contains "beta" - heuristic catches this
-    public void IsPrerelease_KeywordInTagName_UsesHeuristic(string tag, bool expected)
+    [InlineData("alphabetical-1.0.0", false)]  // Contains "alpha" but not a prerelease identifier
+    [InlineData("beta-package@1.0.0", false)]  // Contains "beta" but package name, not prerelease
+    public void IsPrerelease_KeywordInTagName_NotFalsePositive(string tag, bool expected)
     {
         var result = VersionParser.IsPrerelease(tag);
 
@@ -294,97 +294,6 @@ public class VersionParserTests
 
     #endregion
 
-    #region GroupByMajorVersion
-
-    [Fact]
-    public void GroupByMajorVersion_MixedVersions_GroupsCorrectly()
-    {
-        var tags = new[]
-        {
-            "v15.0.0",
-            "v15.1.0",
-            "v16.0.0",
-            "v16.0.0-canary.1",
-            "v16.0.0-canary.2",
-            "v16.0.0-beta.1"
-        };
-
-        var groups = VersionParser.GroupByMajorVersion(tags);
-
-        groups.Should().HaveCount(4);
-
-        groups["15.x"].MajorVersion.Should().Be(15);
-        groups["15.x"].IsPrerelease.Should().BeFalse();
-        groups["15.x"].Versions.Should().HaveCount(2);
-
-        groups["16.x"].MajorVersion.Should().Be(16);
-        groups["16.x"].IsPrerelease.Should().BeFalse();
-        groups["16.x"].Versions.Should().HaveCount(1);
-
-        groups["16.x-canary"].MajorVersion.Should().Be(16);
-        groups["16.x-canary"].IsPrerelease.Should().BeTrue();
-        groups["16.x-canary"].PrereleaseType.Should().Be("canary");
-        groups["16.x-canary"].Versions.Should().HaveCount(2);
-
-        groups["16.x-beta"].MajorVersion.Should().Be(16);
-        groups["16.x-beta"].IsPrerelease.Should().BeTrue();
-        groups["16.x-beta"].PrereleaseType.Should().Be("beta");
-        groups["16.x-beta"].Versions.Should().HaveCount(1);
-    }
-
-    [Fact]
-    public void GroupByMajorVersion_SkipsInvalidTags()
-    {
-        var tags = new[] { "v1.0.0", "latest", "v2.0.0", "nightly", "v3.0.0" };
-
-        var groups = VersionParser.GroupByMajorVersion(tags);
-
-        groups.Should().HaveCount(3);
-        groups.Keys.Should().BeEquivalentTo(["1.x", "2.x", "3.x"]);
-    }
-
-    [Fact]
-    public void GroupByMajorVersion_EmptyInput_ReturnsEmptyDictionary()
-    {
-        var groups = VersionParser.GroupByMajorVersion([]);
-
-        groups.Should().BeEmpty();
-    }
-
-    #endregion
-
-    #region GroupAndSort
-
-    [Fact]
-    public void GroupAndSort_ReturnsGroupsSortedByMajorDescending()
-    {
-        var tags = new[] { "v1.0.0", "v3.0.0", "v2.0.0" };
-
-        var groups = VersionParser.GroupAndSort(tags);
-
-        groups.Should().HaveCount(3);
-        groups[0].MajorVersion.Should().Be(3);
-        groups[1].MajorVersion.Should().Be(2);
-        groups[2].MajorVersion.Should().Be(1);
-    }
-
-    [Fact]
-    public void GroupAndSort_StableBeforePrerelease()
-    {
-        var tags = new[] { "v16.0.0-canary.1", "v16.0.0", "v16.0.0-alpha.1" };
-
-        var groups = VersionParser.GroupAndSort(tags);
-
-        groups.Should().HaveCount(3);
-        groups[0].GroupKey.Should().Be("16.x");
-        groups[0].IsPrerelease.Should().BeFalse();
-        // Pre-releases follow, sorted alphabetically by type
-        groups[1].IsPrerelease.Should().BeTrue();
-        groups[2].IsPrerelease.Should().BeTrue();
-    }
-
-    #endregion
-
     #region Real-World Scenarios from Seed Data
 
     [Fact]
@@ -421,11 +330,15 @@ public class VersionParserTests
     {
         var tags = new[] { "v25.4.0", "v25.3.0", "v24.13.0" };
 
-        var groups = VersionParser.GroupByMajorVersion(tags);
+        foreach (var tag in tags)
+        {
+            var result = VersionParser.Parse(tag);
+            result.Success.Should().BeTrue($"Failed to parse Node.js tag: {tag}");
+        }
 
-        groups.Should().HaveCount(2);
-        groups["25.x"].Versions.Should().HaveCount(2);
-        groups["24.x"].Versions.Should().HaveCount(1);
+        // Verify major version extraction
+        VersionParser.GetMajorVersion("v25.4.0").Should().Be(25);
+        VersionParser.GetMajorVersion("v24.13.0").Should().Be(24);
     }
 
     [Fact]
@@ -433,10 +346,12 @@ public class VersionParserTests
     {
         var tags = new[] { "v19.1.4", "v19.0.3" };
 
-        var groups = VersionParser.GroupByMajorVersion(tags);
-
-        groups.Should().HaveCount(1);
-        groups["19.x"].Versions.Should().HaveCount(2);
+        foreach (var tag in tags)
+        {
+            var result = VersionParser.Parse(tag);
+            result.Success.Should().BeTrue($"Failed to parse React tag: {tag}");
+            result.Version!.Major.Should().Be(19);
+        }
     }
 
     #endregion

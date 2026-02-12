@@ -15,6 +15,7 @@ const int ExitFatalError = 2;
 
 // Parse command-line arguments
 var seedOnly = args.Contains("--seed");
+var initSync = args.Contains("--init");
 var hasSFlag = Array.IndexOf(args, "-s") >= 0;
 var summarizeRepo = GetArgValue(args, "-s");
 var hasRFlag = Array.IndexOf(args, "-r") >= 0;
@@ -88,6 +89,30 @@ try
         await DbSeeder.SeedAsync(db);
         logger.LogInformation("Database seeded successfully");
         return ExitSuccess;
+    }
+
+    // Handle --init flag: seed package catalog from packages.json, then sync all from GitHub
+    if (initSync)
+    {
+        using var scope = host.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
+        await db.Database.MigrateAsync();
+
+        var added = await DbSeeder.SeedPackageCatalogAsync(db);
+        if (added > 0)
+            logger.LogInformation("Added {Count} packages from seed catalog", added);
+        else
+            logger.LogInformation("All seed packages already exist in database");
+
+        var pipeline = host.Services.GetRequiredService<SyncPipeline>();
+        var result = await pipeline.RunAsync();
+
+        logger.LogInformation(
+            "Init complete: {Packages} packages synced, {Releases} releases added, " +
+            "{Summaries} summaries generated",
+            result.PackagesSynced, result.ReleasesAdded, result.SummariesGenerated);
+
+        return result.Success ? ExitSuccess : ExitPartialFailure;
     }
 
     // Handle -s <owner/repo> flag: generate summaries for a specific package
