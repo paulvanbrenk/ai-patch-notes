@@ -9,7 +9,16 @@ if (!publicToken) {
   )
 }
 
-export const stytchClient = new StytchUIClient(publicToken || '')
+export const stytchClient = new StytchUIClient(publicToken || '', {
+  cookieOptions: {
+    // Share session cookies across *.myreleasenotes.ai so the API
+    // subdomain (api.myreleasenotes.ai) receives them on requests.
+    ...(import.meta.env.PROD && {
+      domain: 'myreleasenotes.ai',
+      availableToSubdomains: true,
+    }),
+  },
+})
 
 const products = [Products.emailMagicLinks]
 
