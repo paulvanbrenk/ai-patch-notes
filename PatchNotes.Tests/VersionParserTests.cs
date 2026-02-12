@@ -141,6 +141,31 @@ public class VersionParserTests
 
     #endregion
 
+    #region Non-Standard Prerelease Parsing
+
+    [Theory]
+    [InlineData("1.0.0beta2", 1, 0, 0, "beta2")]
+    [InlineData("1.0.0beta1", 1, 0, 0, "beta1")]
+    [InlineData("1.0.0alpha3", 1, 0, 0, "alpha3")]
+    [InlineData("1.0.0rc1", 1, 0, 0, "rc1")]
+    [InlineData("v2.0.0beta10", 2, 0, 0, "beta10")]
+    [InlineData("1.0.0.rc2", 1, 0, 0, "rc2")]
+    [InlineData("1.0.0beta", 1, 0, 0, "beta")]
+    [InlineData("1.0.0alpha", 1, 0, 0, "alpha")]
+    public void Parse_NonStandardPrerelease_ExtractsFullPrerelease(string tag, int major, int minor, int patch, string expectedPrerelease)
+    {
+        var result = VersionParser.Parse(tag);
+
+        result.Success.Should().BeTrue($"Failed to parse non-standard prerelease tag: {tag}");
+        result.Version!.Major.Should().Be(major);
+        result.Version.Minor.Should().Be(minor);
+        result.Version.Patch.Should().Be(patch);
+        result.Version.Prerelease.Should().Be(expectedPrerelease);
+        result.Version.IsPrerelease.Should().BeTrue();
+    }
+
+    #endregion
+
     #region Non-Semver Tags (Should Fail)
 
     [Theory]
