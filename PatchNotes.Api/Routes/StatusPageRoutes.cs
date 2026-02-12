@@ -162,7 +162,7 @@ public static class StatusPageRoutes
 <body>
     <div class=""container"">
         <h1 class=""logo"">PatchNotes API</h1>
-        <p class=""subtitle"">api.mypkgupdate.com</p>
+        <p class=""subtitle"">api.myreleasenotes.ai</p>
 
         <div class=""status-card"">
             <div class=""status-indicator"">
