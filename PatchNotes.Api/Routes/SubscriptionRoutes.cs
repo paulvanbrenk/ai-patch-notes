@@ -9,7 +9,7 @@ public static class SubscriptionRoutes
 {
     private static readonly HashSet<string> AllowedOrigins = new(StringComparer.OrdinalIgnoreCase)
     {
-        "https://app.mypkgupdate.com",
+        "https://app.myreleasenotes.ai",
         "http://localhost:5173",
         "http://localhost:3000",
     };
