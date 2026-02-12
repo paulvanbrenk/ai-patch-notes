@@ -73,7 +73,7 @@ public static class VersionParser
 {
     // Non-standard prerelease: 1.0.0beta1, 1.0.0.rc1
     private static readonly Regex NonStandardPrereleaseRegex = new(
-        @"^v?(\d+)\.(\d+)\.(\d+)[.\s]?(alpha|beta|canary|rc|next|nightly|dev|preview)\d*$",
+        @"^v?(\d+)\.(\d+)\.(\d+)[.\s]?((?:alpha|beta|canary|rc|next|nightly|dev|preview)\d*)$",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     // Monorepo: @scope/package@v?MAJOR.MINOR[.PATCH][-PRE][+BUILD]
