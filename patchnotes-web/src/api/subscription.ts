@@ -1,6 +1,6 @@
 import { api } from './client'
 
-export interface SubscriptionStatus {
+interface SubscriptionStatus {
   isPro: boolean
   status: string | null
   expiresAt: string | null

@@ -2,7 +2,7 @@ import { useState, useCallback, useRef } from 'react'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'
 
-export interface SummarizeResult {
+interface SummarizeResult {
   releaseId: string
   tag: string
   title: string | null
@@ -13,7 +13,7 @@ export interface SummarizeResult {
   }
 }
 
-export interface UseSummarizeOptions {
+interface UseSummarizeOptions {
   onSuccess?: (result: SummarizeResult) => void
   onError?: (error: Error) => void
 }
