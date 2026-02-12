@@ -8,7 +8,7 @@ import { Checkbox } from '../ui/Checkbox'
 
 interface Package {
   id: string
-  npmName: string
+  npmName: string | null
   githubOwner: string
   githubRepo: string
 }
@@ -235,7 +235,7 @@ export function PackagePicker({
               <Checkbox
                 checked={selectedIds.has(pkg.id)}
                 onChange={() => handleToggle(pkg.id)}
-                label={pkg.npmName}
+                label={pkg.npmName ?? `${pkg.githubOwner}/${pkg.githubRepo}`}
                 description={`${pkg.githubOwner}/${pkg.githubRepo}`}
               />
             </div>
