@@ -1,6 +1,6 @@
 export interface Package {
   id: string
-  npmName: string
+  npmName: string | null
   githubOwner: string
   githubRepo: string
   lastFetchedAt: string | null
@@ -19,7 +19,7 @@ export interface Release {
   fetchedAt: string
   package: {
     id: string
-    npmName: string
+    npmName: string | null
     githubOwner: string
     githubRepo: string
   }

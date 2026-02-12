@@ -86,7 +86,10 @@ function buildVersionGroups(
 
     let group = groupMap.get(key)
     if (!group) {
-      const packageName = packageNames.get(packageId) ?? release.package.npmName
+      const packageName =
+        packageNames.get(packageId) ??
+        release.package.npmName ??
+        `${release.package.githubOwner}/${release.package.githubRepo}`
       group = {
         id: key,
         packageName,
@@ -469,7 +472,8 @@ export function HomePage() {
     const map = new Map<string, string>()
     if (packages) {
       for (const pkg of packages) {
-        map.set(pkg.id, pkg.npmName)
+        const name = pkg.npmName ?? `${pkg.githubOwner}/${pkg.githubRepo}`
+        map.set(pkg.id, name)
       }
     }
     return map
