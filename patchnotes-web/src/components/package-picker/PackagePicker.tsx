@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Sparkles } from 'lucide-react'
 import { Card } from '../ui/Card'
@@ -78,7 +78,10 @@ export function PackagePicker({
     }
   }, [useWatchlist, watchlistIds])
 
-  const selectedIds = useWatchlist ? new Set(watchlistIds) : localSelectedIds
+  const selectedIds = useMemo(
+    () => (useWatchlist ? new Set(watchlistIds) : localSelectedIds),
+    [useWatchlist, watchlistIds, localSelectedIds]
+  )
 
   // Persist selection to localStorage (only when not using watchlist)
   useEffect(() => {

@@ -42,6 +42,16 @@ if (!string.IsNullOrEmpty(stripeSecretKey))
 
 builder.Services.Configure<DefaultWatchlistOptions>(builder.Configuration.GetSection(DefaultWatchlistOptions.SectionName));
 
+if (builder.Environment.IsProduction() || builder.Environment.IsStaging())
+{
+    if (string.IsNullOrEmpty(builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"]))
+    {
+        throw new InvalidOperationException(
+            "Missing required APPLICATIONINSIGHTS_CONNECTION_STRING configuration. " +
+            "Set this value in app settings or environment variables.");
+    }
+    builder.Services.AddApplicationInsightsTelemetry();
+}
 builder.Services.AddOpenApi();
 builder.Services.AddPatchNotesDbContext(builder.Configuration);
 builder.Services.AddHttpClient();
