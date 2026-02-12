@@ -34,10 +34,10 @@ export function Privacy() {
               collect, use, and protect your information when you use our
               service at{' '}
               <a
-                href="https://app.mypkgupdate.com"
+                href="https://app.myreleasenotes.ai"
                 className="text-brand-500 hover:underline"
               >
-                app.mypkgupdate.com
+                app.myreleasenotes.ai
               </a>
               .
             </p>
