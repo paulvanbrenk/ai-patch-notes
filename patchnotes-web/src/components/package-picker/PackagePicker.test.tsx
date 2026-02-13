@@ -192,7 +192,9 @@ describe('PackagePicker', () => {
 
   describe('add package', () => {
     it('renders add package input when onAddPackage provided', () => {
-      render(<PackagePicker packages={mockPackages} onAddPackage={() => {}} />)
+      render(
+        <PackagePicker packages={mockPackages} onAddPackage={async () => {}} />
+      )
       expect(
         screen.getByPlaceholderText('Add package (e.g., lodash)')
       ).toBeInTheDocument()
@@ -249,7 +251,9 @@ describe('PackagePicker', () => {
     })
 
     it('disables add button when input is empty', () => {
-      render(<PackagePicker packages={mockPackages} onAddPackage={() => {}} />)
+      render(
+        <PackagePicker packages={mockPackages} onAddPackage={async () => {}} />
+      )
       expect(screen.getByRole('button', { name: 'Add' })).toBeDisabled()
     })
 
