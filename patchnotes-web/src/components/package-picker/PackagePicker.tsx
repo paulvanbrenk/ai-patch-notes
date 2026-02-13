@@ -17,7 +17,7 @@ interface PackagePickerProps {
   packages: Package[]
   isLoading?: boolean
   onSelectionChange?: (selectedIds: string[]) => void
-  onAddPackage?: (npmName: string) => void
+  onAddPackage?: (npmName: string) => Promise<void>
   storageKey?: string
   isPro?: boolean
   packageLimit?: number
