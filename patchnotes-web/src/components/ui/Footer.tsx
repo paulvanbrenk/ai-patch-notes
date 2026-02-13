@@ -19,12 +19,21 @@ export const Footer = forwardRef<HTMLElement, FooterProps>(
         {...props}
       >
         <Container>
-          <div className="h-12 flex items-center justify-center gap-1.5">
-            <Hammer className="w-4 h-4 text-text-tertiary" strokeWidth={1.5} />
-            <span className="text-sm text-text-secondary">
-              Forged in Gas Town
-            </span>
-            <Anvil className="w-4 h-4 text-text-tertiary" strokeWidth={1.5} />
+          <div className="py-3 flex flex-col items-center gap-1.5">
+            <div className="flex items-center gap-1.5">
+              <Hammer
+                className="w-4 h-4 text-text-tertiary"
+                strokeWidth={1.5}
+              />
+              <span className="text-sm text-text-secondary">
+                Forged in Gas Town
+              </span>
+              <Anvil className="w-4 h-4 text-text-tertiary" strokeWidth={1.5} />
+            </div>
+            <p className="text-[10px] text-text-tertiary text-center">
+              GitHub is a trademark of GitHub, Inc. This site is not affiliated
+              with GitHub, Inc.
+            </p>
           </div>
         </Container>
       </footer>
