@@ -19,18 +19,18 @@
 
 ### Critical Problems
 
-| Issue | Severity | File(s) |
-|-------|----------|---------|
-| No hero/marketing landing page - visitors land on a raw data feed | Critical | `HomePage.tsx` |
-| All SEO meta tags missing (description, og:\*, twitter:\*, canonical) | Critical | `index.html` |
-| Brand mismatch - domain is `myreleasenotes.ai`, title says "Patch Notes" | High | `index.html`, `HeaderTitle.tsx` |
-| Favicon is default `vite.svg` | High | `index.html` |
-| No value proposition visible to first-time visitors | Critical | `HomePage.tsx` |
-| Icon-only toolbar with no tooltips or labels | Medium | `HomePage.tsx` |
-| Raw markdown dump in expanded releases - URLs not clickable | High | Release components |
-| Footer is just "Forged in Gas Town" - no links or navigation | Medium | `Footer.tsx` |
-| No social proof, testimonials, or trust signals | Medium | N/A |
-| No search/filter for finding packages | Medium | `HomePage.tsx` |
+| Issue | Severity | File(s) | Status |
+|-------|----------|---------|--------|
+| No hero/marketing landing page - visitors land on a raw data feed | Critical | `HomePage.tsx` | ✅ Fixed |
+| All SEO meta tags missing (description, og:\*, twitter:\*, canonical) | Critical | `index.html` | Open |
+| Brand mismatch - domain is `myreleasenotes.ai`, title says "Patch Notes" | High | `index.html`, `HeaderTitle.tsx` | Open |
+| Favicon is default `vite.svg` | High | `index.html` | ✅ Fixed |
+| No value proposition visible to first-time visitors | Critical | `HomePage.tsx` | ✅ Fixed |
+| Icon-only toolbar with no tooltips or labels | Medium | `HomePage.tsx` | Open |
+| Raw markdown dump in expanded releases - URLs not clickable | High | Release components | Open |
+| Footer is just "Forged in Gas Town" - no links or navigation | Medium | `Footer.tsx` | Open |
+| No social proof, testimonials, or trust signals | Medium | N/A | Open |
+| No search/filter for finding packages | Medium | `HomePage.tsx` | Open |
 
 ---
 
@@ -46,10 +46,12 @@ File: `src/components/landing/HeroCard.tsx`
 
 A single `Card`-based component with 4 carousel slides controlled by `useState`:
 
-1. **Hero** — Logo, headline ("Never miss a release that matters"), subheadline, "Get Started Free" CTA → `/login`
+1. **Hero** — 3 value-prop highlights (AI Summaries, Always Free, Weekly Digest) in icon-circle layout + "Get Started Free" CTA → `/login`
 2. **Features** — 4 features in a compact 2×2 grid (icons + short text): AI Summaries, Track Any Package, Smart Filtering, Works Everywhere
-3. **How It Works** — 3 numbered steps: Sign up, Pick packages, Stay updated
+3. **How It Works** — 3 numbered steps: Sign up, Pick packages, Stay updated + "Create your free account" CTA
 4. **Pricing** — Free vs Pro side-by-side with feature checklists
+
+**Layout:** The title and subtitle are rendered at a **fixed position** at the top of the card (outside the slide body), so they stay in the same place across all slides. Only the body content below changes per slide.
 
 **Navigation:** Dot indicators at bottom + prev/next chevron buttons on the sides.
 
@@ -57,12 +59,12 @@ A single `Card`-based component with 4 carousel slides controlled by `useState`:
 
 ```
 ┌──────────────────────────────────────┐
-│  [←]                        [✕]      │
+│  [←]    Title (fixed position) [✕]   │
+│         Subtitle (fixed)             │
 │                                      │
-│         Slide Content Here           │
+│         Slide Body Here              │
 │                                      │
 │                              [→]     │
-│                                      │
 │           ● ● ● ●  (dots)           │
 └──────────────────────────────────────┘
 ```
@@ -70,7 +72,10 @@ A single `Card`-based component with 4 carousel slides controlled by `useState`:
 **Key decisions:**
 - Replaced the previous separate `/preview` landing page approach — all content is now inline on the home page
 - No external carousel library — just index state + conditional rendering
-- Uses existing `Card`, `Button`, `Logo` components and Lucide icons
+- Uses existing `Card` (`padding="none"`), `Button` components and Lucide icons
+- Fixed-height body container (`h-[190px]`) so arrows and dots never shift between slides
+- Filter buttons (prerelease, group, sort) are placed **below** the hero card since they control the release list
+- Logo moved to the header title bar (left of "Patch Notes")
 - Responsive: single-column grids on mobile for features/pricing slides
 - Dark mode compatible via existing design token classes
 
@@ -105,12 +110,12 @@ A single `Card`-based component with 4 carousel slides controlled by `useState`:
 <link rel="canonical" href="https://www.myreleasenotes.ai/">
 ```
 
-### 2.2 Replace the favicon
+### 2.2 Replace the favicon ✅ DONE
 
-- Replace `vite.svg` with a branded icon (SVG preferred for sharpness)
-- Add `apple-touch-icon` (180x180 PNG)
-- Add `manifest.json` with icon sizes (192x192, 512x512)
-- Suggested icon: A stylized "P" or a release/tag icon in the brand blue
+- Replaced `vite.svg` with `favicon.svg` — the same notepad+box logo used in the header
+- Updated `index.html` to reference `favicon.svg`
+- Deleted the default `vite.svg`
+- Still TODO: Add `apple-touch-icon` (180x180 PNG), `manifest.json` with icon sizes
 
 ### 2.3 Add structured data (JSON-LD)
 
@@ -336,7 +341,7 @@ The app already has `apple-mobile-web-app-capable` meta tags. Complete the PWA s
 | ✅ | Add inline pricing preview | Medium | Medium | 1 |
 | ✅ | Improve sign-in banner copy | Low | Medium | 5.2 |
 | P0 | Add SEO meta tags to `index.html` | Low | Very High | 2.1 |
-| P0 | Replace vite.svg favicon | Low | High | 2.2 |
+| ✅ | Replace vite.svg favicon | Low | High | 2.2 |
 | P1 | Fix release note markdown rendering | Low | High | 3.2 |
 | P1 | Add toolbar tooltips | Low | Medium | 3.1 |
 | P1 | Resolve brand naming consistency | Low | Medium | 4.1 |
@@ -354,14 +359,18 @@ The app already has `apple-mobile-web-app-capable` meta tags. Complete the PWA s
 
 ---
 
-## Files Changed (Phase 1 — complete)
+## Files Changed (Phases 1 & 2.2 — complete)
 
 | File | Status | Changes |
 |------|--------|---------|
-| `patchnotes-web/src/components/landing/HeroCard.tsx` | ✅ Created | Inline carousel with 4 slides (hero, features, how-it-works, pricing) |
-| `patchnotes-web/src/components/landing/Logo.tsx` | ✅ Created | SVG logo component used in hero slide |
+| `patchnotes-web/src/components/landing/HeroCard.tsx` | ✅ Created | Inline carousel with fixed-position header + 4 slide bodies |
+| `patchnotes-web/src/components/landing/Logo.tsx` | ✅ Created | SVG logo component used in header title bar |
 | `patchnotes-web/src/stores/filterStore.ts` | ✅ Modified | Added `heroDismissed` boolean + `dismissHero()` action |
-| `patchnotes-web/src/pages/HomePage.tsx` | ✅ Modified | Replaced sign-in banner with `HeroCard` for logged-out users |
+| `patchnotes-web/src/pages/HomePage.tsx` | ✅ Modified | Logo in header, HeroCard above filters, filters above release list |
+| `patchnotes-web/src/pages/HomePage.test.tsx` | ✅ Modified | Updated tests for hero card instead of sign-in banner |
+| `patchnotes-web/index.html` | ✅ Modified | Changed favicon from `vite.svg` to `favicon.svg` |
+| `patchnotes-web/public/favicon.svg` | ✅ Created | Branded notepad+box logo matching header |
+| `patchnotes-web/public/vite.svg` | ❌ Deleted | Default Vite favicon removed |
 | `patchnotes-web/src/components/landing/HeroSection.tsx` | ❌ Deleted | Replaced by HeroCard carousel |
 | `patchnotes-web/src/components/landing/FeaturesSection.tsx` | ❌ Deleted | Replaced by HeroCard carousel |
 | `patchnotes-web/src/components/landing/HowItWorksSection.tsx` | ❌ Deleted | Replaced by HeroCard carousel |
@@ -373,12 +382,10 @@ The app already has `apple-mobile-web-app-capable` meta tags. Complete the PWA s
 
 | File | Purpose | Phase |
 |------|---------|-------|
-| `patchnotes-web/index.html` | Meta tags, favicon, structured data, manifest link | 2 |
+| `patchnotes-web/index.html` | Meta tags, structured data, manifest link | 2.1, 2.3 |
 | `patchnotes-web/src/components/ui/Footer.tsx` | Navigation links, social links, copyright | 3.3 |
-| `patchnotes-web/src/components/ui/HeaderTitle.tsx` | Logo integration | 4.1 |
 | `patchnotes-web/src/components/landing/SocialProof.tsx` | Stats bar / testimonials | 5.1 |
 | `patchnotes-web/src/components/ui/Tooltip.tsx` | Reusable tooltip component | 3.1 |
 | `patchnotes-web/src/components/ui/Skeleton.tsx` | Loading skeleton primitive | 6.1 |
-| `patchnotes-web/public/favicon.svg` | Branded favicon | 2.2 |
 | `patchnotes-web/public/og-image.png` | Social sharing image | 2.4 |
 | `patchnotes-web/public/manifest.json` | PWA manifest | 6.4 |
