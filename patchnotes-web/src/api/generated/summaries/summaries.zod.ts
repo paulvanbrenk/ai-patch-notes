@@ -17,7 +17,7 @@ export const getPackageSummariesQueryMajorVersionRegExpTwo = new RegExp('^-?(?:0
 
 export const GetPackageSummariesQueryParams = zod.object({
   "includePrerelease": zod.boolean().optional(),
-  "majorVersion": zod.union([zod.number().regex(getPackageSummariesQueryMajorVersionRegExpOne),zod.string().regex(getPackageSummariesQueryMajorVersionRegExpTwo)]).optional()
+  "majorVersion": zod.coerce.number().optional()
 })
 
 export const getPackageSummariesResponseMajorVersionRegExpOne = new RegExp('^-?(?:0|[1-9]\\d\*)$');
@@ -28,7 +28,7 @@ export const GetPackageSummariesResponseItem = zod.object({
   "id": zod.string(),
   "packageId": zod.string(),
   "packageName": zod.string(),
-  "majorVersion": zod.union([zod.number().regex(getPackageSummariesResponseMajorVersionRegExpOne),zod.string().regex(getPackageSummariesResponseMajorVersionRegExpTwo)]).optional(),
+  "majorVersion": zod.coerce.number().optional(),
   "isPrerelease": zod.boolean().optional(),
   "summary": zod.string().nullish(),
   "generatedAt": zod.iso.datetime({}).optional(),
@@ -43,7 +43,7 @@ export const getSummariesQueryLimitRegExpTwo = new RegExp('^-?(?:0|[1-9]\\d\*)$'
 export const GetSummariesQueryParams = zod.object({
   "packages": zod.string().optional(),
   "includePrerelease": zod.boolean().optional(),
-  "limit": zod.union([zod.number().regex(getSummariesQueryLimitRegExpOne),zod.string().regex(getSummariesQueryLimitRegExpTwo)]).optional()
+  "limit": zod.coerce.number().optional()
 })
 
 export const getSummariesResponseMajorVersionRegExpOne = new RegExp('^-?(?:0|[1-9]\\d\*)$');
@@ -54,7 +54,7 @@ export const GetSummariesResponseItem = zod.object({
   "id": zod.string(),
   "packageId": zod.string(),
   "packageName": zod.string(),
-  "majorVersion": zod.union([zod.number().regex(getSummariesResponseMajorVersionRegExpOne),zod.string().regex(getSummariesResponseMajorVersionRegExpTwo)]).optional(),
+  "majorVersion": zod.coerce.number().optional(),
   "isPrerelease": zod.boolean().optional(),
   "summary": zod.string().nullish(),
   "generatedAt": zod.iso.datetime({}).optional(),

@@ -36,9 +36,9 @@ export const getReleasesQueryMajorVersionRegExpTwo = new RegExp('^-?(?:0|[1-9]\\
 
 export const GetReleasesQueryParams = zod.object({
   "packages": zod.string().optional(),
-  "days": zod.union([zod.number().regex(getReleasesQueryDaysRegExpOne),zod.string().regex(getReleasesQueryDaysRegExpTwo)]).optional(),
+  "days": zod.coerce.number().optional(),
   "excludePrerelease": zod.boolean().optional(),
-  "majorVersion": zod.union([zod.number().regex(getReleasesQueryMajorVersionRegExpOne),zod.string().regex(getReleasesQueryMajorVersionRegExpTwo)]).optional(),
+  "majorVersion": zod.coerce.number().optional(),
   "watchlist": zod.boolean().optional()
 })
 
