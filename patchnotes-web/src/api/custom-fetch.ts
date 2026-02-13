@@ -1,4 +1,4 @@
-import { ApiError } from './client.ts'
+import { ApiError, API_ROOT } from './client.ts'
 
 /**
  * Custom fetch instance for Orval-generated API hooks.
@@ -6,8 +6,8 @@ import { ApiError } from './client.ts'
  * Orval calls this as customFetch<T>(url, requestInit) where T is the
  * generated response type (e.g. { data: PackageDto[], status: 200, headers: Headers }).
  *
- * The generated URLs already include the /api prefix, so we pass them
- * through to fetch() without prepending a base URL.
+ * The generated URLs already include the /api prefix, so we prepend only
+ * the base URL (e.g. https://api.myreleasenotes.ai) without /api.
  */
 export const customFetch = async <T>(
   url: string,
@@ -24,7 +24,7 @@ export const customFetch = async <T>(
 
   let response: Response
   try {
-    response = await fetch(url, config)
+    response = await fetch(`${API_ROOT}${url}`, config)
   } catch (error) {
     throw new ApiError(
       0,

@@ -1,6 +1,8 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'
+import { API_ROOT } from '../api/client'
+
+const API_BASE_URL = `${API_ROOT}/api`
 
 interface SummarizeResult {
   releaseId: string
