@@ -52,6 +52,38 @@ jobs:
       - name: Test
         run: dotnet test PatchNotes.slnx --no-build --configuration Release --verbosity normal
 
+      - name: Export OpenAPI spec
+        env:
+          ASPNETCORE_ENVIRONMENT: Development
+          ASPNETCORE_URLS: http://localhost:5000
+          Stytch__ProjectId: "project-test-00000000-0000-0000-0000-000000000000"
+          Stytch__Secret: "secret-test-00000000-0000-0000-0000-000000000000"
+          Stytch__WebhookSecret: "whsec_dummy"
+          ConnectionStrings__PatchNotes: "Data Source=:memory:"
+        run: |
+          dotnet run --project PatchNotes.Api --configuration Release --no-build --no-launch-profile &
+          APP_PID=$!
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:5000/openapi/v1.json -o /tmp/openapi.json && break
+            sleep 1
+          done
+          kill $APP_PID 2>/dev/null || true
+          wait $APP_PID 2>/dev/null || true
+          if [ ! -f /tmp/openapi.json ]; then
+            echo "::error::Failed to export OpenAPI spec — API did not start"
+            exit 1
+          fi
+
+      - name: Check OpenAPI spec is up to date
+        run: |
+          # Strip "servers" block (contains localhost URL that varies by environment)
+          jq 'del(.servers)' patchnotes-web/openapi.json > /tmp/committed.json
+          jq 'del(.servers)' /tmp/openapi.json > /tmp/exported.json
+          diff /tmp/committed.json /tmp/exported.json || {
+            echo "::error::OpenAPI spec is stale! Run the API locally and update patchnotes-web/openapi.json"
+            exit 1
+          }
+
   frontend:
     name: Frontend (React)
     runs-on: ubuntu-latest
@@ -71,6 +103,14 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Check generated API types are up to date
+        run: |
+          npm run generate:api
+          git diff --exit-code src/api/generated/ || {
+            echo "::error::Generated API types are stale! Run 'npm run generate:api' and commit the result."
+            exit 1
+          }
 
       - name: Lint
         run: npm run lint

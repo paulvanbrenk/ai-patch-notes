@@ -20,7 +20,7 @@
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "knip": "knip",
-    "generate:api": "orval && node scripts/fix-orval-zod.mjs"
+    "generate:api": "orval"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
