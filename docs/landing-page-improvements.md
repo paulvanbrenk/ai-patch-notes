@@ -193,7 +193,12 @@ AFTER:
 
 ### 3.3 Improve the footer
 
-Redesign `src/components/ui/Footer.tsx`:
+**Partial — GitHub trademark disclaimer added ✅**
+
+Added a disclaimer below "Forged in Gas Town":
+> GitHub is a trademark of GitHub, Inc. This site is not affiliated with GitHub, Inc.
+
+**Remaining:** Full footer redesign with navigation links.
 
 ```
 Suggested layout:
@@ -202,6 +207,7 @@ Suggested layout:
 |  Track GitHub          GitHub | Twitter/X        |
 |  releases.                                       |
 |                       Forged in Gas Town          |
+|  GitHub is a trademark of GitHub, Inc. ...        |
 +--------------------------------------------------+
 ```
 
@@ -336,7 +342,7 @@ The app already has `apple-mobile-web-app-capable` meta tags. Complete the PWA s
 | ✅ | Add inline pricing preview | Medium | Medium | 1 |
 | ✅ | Improve sign-in banner copy | Low | Medium | 5.2 |
 | ✅ | Add SEO meta tags to `index.html` | Low | Very High | 2.1 |
-| P0 | Replace vite.svg favicon | Low | High | 2.2 |
+| ✅ | Replace vite.svg favicon | Low | High | 2.2 |
 | P1 | Fix release note markdown rendering | Low | High | 3.2 |
 | P1 | Add toolbar tooltips | Low | Medium | 3.1 |
 | P1 | Resolve brand naming consistency | Low | Medium | 4.1 |
@@ -354,7 +360,7 @@ The app already has `apple-mobile-web-app-capable` meta tags. Complete the PWA s
 
 ---
 
-## Files Changed (Phases 1, 2.1–2.3 — complete)
+## Files Changed (Phases 1, 2.1–2.3, partial 3.3 — complete)
 
 | File | Status | Changes |
 |------|--------|---------|
@@ -366,6 +372,8 @@ The app already has `apple-mobile-web-app-capable` meta tags. Complete the PWA s
 | `patchnotes-web/index.html` | ✅ Modified | SEO meta tags (og:*, twitter:*, canonical), JSON-LD structured data, favicon |
 | `patchnotes-web/public/favicon.svg` | ✅ Created | Branded notepad+box logo matching header |
 | `patchnotes-web/public/vite.svg` | ❌ Deleted | Default Vite favicon removed |
+| `patchnotes-web/src/components/ui/Footer.tsx` | ✅ Modified | Added GitHub trademark disclaimer below "Forged in Gas Town" |
+| `patchnotes-web/src/index.css` | ✅ Modified | Added `--font-size-2xs: 0.625rem` to `@theme` for `text-2xs` utility |
 | `patchnotes-web/src/components/landing/HeroSection.tsx` | ❌ Deleted | Replaced by HeroCard carousel |
 | `patchnotes-web/src/components/landing/FeaturesSection.tsx` | ❌ Deleted | Replaced by HeroCard carousel |
 | `patchnotes-web/src/components/landing/HowItWorksSection.tsx` | ❌ Deleted | Replaced by HeroCard carousel |
@@ -377,7 +385,7 @@ The app already has `apple-mobile-web-app-capable` meta tags. Complete the PWA s
 
 | File | Purpose | Phase |
 |------|---------|-------|
-| `patchnotes-web/src/components/ui/Footer.tsx` | Navigation links, social links, copyright, trademark disclaimer | 3.3 |
+| `patchnotes-web/src/components/ui/Footer.tsx` | Navigation links, social links, copyright (disclaimer already added) | 3.3 |
 | `patchnotes-web/src/components/landing/SocialProof.tsx` | Stats bar / testimonials | 5.1 |
 | `patchnotes-web/src/components/ui/Tooltip.tsx` | Reusable tooltip component | 3.1 |
 | `patchnotes-web/src/components/ui/Skeleton.tsx` | Loading skeleton primitive | 6.1 |
