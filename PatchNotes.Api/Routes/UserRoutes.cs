@@ -60,31 +60,30 @@ public static class UserRoutes
                 db.Users.Add(user);
                 await db.SaveChangesAsync();
 
-                // Auto-populate watchlist with default packages
+                // Auto-populate watchlist with default packages (single batch query)
                 var defaults = watchlistOptions.Value.Packages;
                 if (defaults.Length > 0)
                 {
                     var limit = user.IsPro ? defaults.Length : Math.Min(defaults.Length, WatchlistRoutes.FreeWatchlistLimit);
-                    var added = 0;
 
-                    foreach (var fullName in defaults)
+                    var ownerRepoPairs = defaults
+                        .Select(p => p.Split('/', 2))
+                        .Where(parts => parts.Length == 2)
+                        .Select(parts => parts[0] + "/" + parts[1])
+                        .ToList();
+
+                    var matchingPackages = await db.Packages
+                        .Where(p => ownerRepoPairs.Contains(p.GithubOwner + "/" + p.GithubRepo))
+                        .ToListAsync();
+
+                    foreach (var package in matchingPackages.Take(limit))
                     {
-                        if (added >= limit) break;
-
-                        var parts = fullName.Split('/', 2);
-                        if (parts.Length != 2) continue;
-
-                        var package = await db.Packages
-                            .FirstOrDefaultAsync(p => p.GithubOwner == parts[0] && p.GithubRepo == parts[1]);
-                        if (package == null) continue;
-
                         db.Watchlists.Add(new Watchlist
                         {
                             UserId = user.Id,
                             PackageId = package.Id,
                             CreatedAt = DateTime.UtcNow,
                         });
-                        added++;
                     }
 
                     await db.SaveChangesAsync();
