@@ -82,7 +82,7 @@ A single `Card`-based component with 4 carousel slides controlled by `useState`:
 
 **Goal:** Make the site discoverable and shareable.
 
-### 2.1 Add meta tags to `index.html`
+### 2.1 Add meta tags to `index.html` ✅ DONE
 
 ```html
 <title>Patch Notes - Track GitHub Releases | myreleasenotes.ai</title>
@@ -105,16 +105,16 @@ A single `Card`-based component with 4 carousel slides controlled by `useState`:
 <link rel="canonical" href="https://www.myreleasenotes.ai/">
 ```
 
-### 2.2 Replace the favicon
+### 2.2 Replace the favicon ✅ DONE
 
-- Replace `vite.svg` with a branded icon (SVG preferred for sharpness)
-- Add `apple-touch-icon` (180x180 PNG)
-- Add `manifest.json` with icon sizes (192x192, 512x512)
-- Suggested icon: A stylized "P" or a release/tag icon in the brand blue
+- Replaced `vite.svg` with `favicon.svg` — the same notepad+box logo used in the header
+- Updated `index.html` to reference `favicon.svg`
+- Deleted the default `vite.svg`
+- Still TODO: Add `apple-touch-icon` (180x180 PNG), `manifest.json` with icon sizes
 
-### 2.3 Add structured data (JSON-LD)
+### 2.3 Add structured data (JSON-LD) ✅ DONE
 
-Add to `index.html`:
+Added to `index.html`:
 
 ```html
 <script type="application/ld+json">
@@ -335,7 +335,7 @@ The app already has `apple-mobile-web-app-capable` meta tags. Complete the PWA s
 | ✅ | Add "How It Works" section | Low | Medium | 1 |
 | ✅ | Add inline pricing preview | Medium | Medium | 1 |
 | ✅ | Improve sign-in banner copy | Low | Medium | 5.2 |
-| P0 | Add SEO meta tags to `index.html` | Low | Very High | 2.1 |
+| ✅ | Add SEO meta tags to `index.html` | Low | Very High | 2.1 |
 | P0 | Replace vite.svg favicon | Low | High | 2.2 |
 | P1 | Fix release note markdown rendering | Low | High | 3.2 |
 | P1 | Add toolbar tooltips | Low | Medium | 3.1 |
@@ -343,7 +343,7 @@ The app already has `apple-mobile-web-app-capable` meta tags. Complete the PWA s
 | P2 | Improve footer with navigation | Low | Medium | 3.3 |
 | P2 | Add search/filter for packages | Medium | High | 3.4 |
 | P2 | Add social proof / stats | Low | Medium | 5.1 |
-| P2 | Add structured data (JSON-LD) | Low | Medium | 2.3 |
+| ✅ | Add structured data (JSON-LD) | Low | Medium | 2.3 |
 | P3 | Design a proper logo | Medium | Medium | 4.2 |
 | P3 | Add loading skeletons | Low | Low | 6.1 |
 | P3 | Create OG image for sharing | Medium | Medium | 2.4 |
@@ -354,14 +354,18 @@ The app already has `apple-mobile-web-app-capable` meta tags. Complete the PWA s
 
 ---
 
-## Files Changed (Phase 1 — complete)
+## Files Changed (Phases 1, 2.1–2.3 — complete)
 
 | File | Status | Changes |
 |------|--------|---------|
-| `patchnotes-web/src/components/landing/HeroCard.tsx` | ✅ Created | Inline carousel with 4 slides (hero, features, how-it-works, pricing) |
-| `patchnotes-web/src/components/landing/Logo.tsx` | ✅ Created | SVG logo component used in hero slide |
+| `patchnotes-web/src/components/landing/HeroCard.tsx` | ✅ Created | Inline carousel with 4 slides; separate mobile/web components per slide; pricing comparison table |
+| `patchnotes-web/src/components/landing/Logo.tsx` | ✅ Created | SVG logo component used in header title bar |
 | `patchnotes-web/src/stores/filterStore.ts` | ✅ Modified | Added `heroDismissed` boolean + `dismissHero()` action |
-| `patchnotes-web/src/pages/HomePage.tsx` | ✅ Modified | Replaced sign-in banner with `HeroCard` for logged-out users |
+| `patchnotes-web/src/pages/HomePage.tsx` | ✅ Modified | HeroCard above filters, logo in header, filters below hero |
+| `patchnotes-web/src/pages/HomePage.test.tsx` | ✅ Modified | Updated tests for hero card instead of sign-in banner |
+| `patchnotes-web/index.html` | ✅ Modified | SEO meta tags (og:*, twitter:*, canonical), JSON-LD structured data, favicon |
+| `patchnotes-web/public/favicon.svg` | ✅ Created | Branded notepad+box logo matching header |
+| `patchnotes-web/public/vite.svg` | ❌ Deleted | Default Vite favicon removed |
 | `patchnotes-web/src/components/landing/HeroSection.tsx` | ❌ Deleted | Replaced by HeroCard carousel |
 | `patchnotes-web/src/components/landing/FeaturesSection.tsx` | ❌ Deleted | Replaced by HeroCard carousel |
 | `patchnotes-web/src/components/landing/HowItWorksSection.tsx` | ❌ Deleted | Replaced by HeroCard carousel |
@@ -373,12 +377,9 @@ The app already has `apple-mobile-web-app-capable` meta tags. Complete the PWA s
 
 | File | Purpose | Phase |
 |------|---------|-------|
-| `patchnotes-web/index.html` | Meta tags, favicon, structured data, manifest link | 2 |
-| `patchnotes-web/src/components/ui/Footer.tsx` | Navigation links, social links, copyright | 3.3 |
-| `patchnotes-web/src/components/ui/HeaderTitle.tsx` | Logo integration | 4.1 |
+| `patchnotes-web/src/components/ui/Footer.tsx` | Navigation links, social links, copyright, trademark disclaimer | 3.3 |
 | `patchnotes-web/src/components/landing/SocialProof.tsx` | Stats bar / testimonials | 5.1 |
 | `patchnotes-web/src/components/ui/Tooltip.tsx` | Reusable tooltip component | 3.1 |
 | `patchnotes-web/src/components/ui/Skeleton.tsx` | Loading skeleton primitive | 6.1 |
-| `patchnotes-web/public/favicon.svg` | Branded favicon | 2.2 |
 | `patchnotes-web/public/og-image.png` | Social sharing image | 2.4 |
 | `patchnotes-web/public/manifest.json` | PWA manifest | 6.4 |
