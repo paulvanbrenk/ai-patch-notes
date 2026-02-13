@@ -5,7 +5,7 @@ interface ReleaseCardProps {
   tag: string
   title?: string | null
   body?: string | null
-  publishedAt: string
+  publishedAt?: string
   htmlUrl?: string | null
   hoverable?: boolean
   onClick?: () => void
@@ -125,13 +125,15 @@ export function ReleaseCard({
             )}
           </CardTitle>
         </div>
-        <time
-          dateTime={publishedAt}
-          title={formatDate(publishedAt)}
-          className="text-sm text-text-tertiary whitespace-nowrap"
-        >
-          {formatRelativeTime(publishedAt)}
-        </time>
+        {publishedAt && (
+          <time
+            dateTime={publishedAt}
+            title={formatDate(publishedAt)}
+            className="text-sm text-text-tertiary whitespace-nowrap"
+          >
+            {formatRelativeTime(publishedAt)}
+          </time>
+        )}
       </CardHeader>
 
       {body && (

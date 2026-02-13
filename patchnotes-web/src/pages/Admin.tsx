@@ -15,9 +15,9 @@ import {
   useDeletePackage,
   useUpdatePackage,
 } from '../api/hooks'
-import type { Package } from '../api/types'
+import type { PackageDto } from '../api/generated/model'
 
-function formatDate(dateString: string | null): string {
+function formatDate(dateString: string | null | undefined): string {
   if (!dateString) return 'Never'
   return new Date(dateString).toLocaleString()
 }
@@ -25,7 +25,7 @@ function formatDate(dateString: string | null): string {
 interface EditPackageModalProps {
   open: boolean
   onClose: () => void
-  pkg: Package | null
+  pkg: PackageDto | null
 }
 
 function EditPackageModal({ open, onClose, pkg }: EditPackageModalProps) {
@@ -75,9 +75,9 @@ function EditPackageModal({ open, onClose, pkg }: EditPackageModalProps) {
 }
 
 interface PackageRowProps {
-  pkg: Package
-  onEdit: (pkg: Package) => void
-  onDelete: (pkg: Package) => void
+  pkg: PackageDto
+  onEdit: (pkg: PackageDto) => void
+  onDelete: (pkg: PackageDto) => void
   isDeleting: boolean
 }
 
@@ -129,7 +129,7 @@ export function Admin() {
 
   const [showAddForm, setShowAddForm] = useState(false)
   const [newPackageName, setNewPackageName] = useState('')
-  const [editingPackage, setEditingPackage] = useState<Package | null>(null)
+  const [editingPackage, setEditingPackage] = useState<PackageDto | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const handleAddPackage = async () => {
@@ -144,7 +144,7 @@ export function Admin() {
     }
   }
 
-  const handleDeletePackage = async (pkg: Package) => {
+  const handleDeletePackage = async (pkg: PackageDto) => {
     if (!confirm(`Are you sure you want to delete ${pkg.npmName}?`)) return
 
     setDeletingId(pkg.id)

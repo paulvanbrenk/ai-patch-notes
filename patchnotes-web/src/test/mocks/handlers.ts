@@ -1,13 +1,18 @@
 import { http, HttpResponse } from 'msw'
-import type { Package, Release } from '../../api/types'
+import type {
+  PackageDto,
+  PackageDetailDto,
+  ReleaseDto,
+} from '../../api/generated/model'
 
 const API_BASE = '/api'
 
 export const mockWatchlist: string[] = []
 
-export const mockPackages: Package[] = [
+export const mockPackages: PackageDto[] = [
   {
     id: 'pkg-react-test-id',
+    name: 'react',
     npmName: 'react',
     githubOwner: 'facebook',
     githubRepo: 'react',
@@ -16,6 +21,7 @@ export const mockPackages: Package[] = [
   },
   {
     id: 'pkg-lodash-test-id',
+    name: 'lodash',
     npmName: 'lodash',
     githubOwner: 'lodash',
     githubRepo: 'lodash',
@@ -24,7 +30,11 @@ export const mockPackages: Package[] = [
   },
 ]
 
-export const mockReleases: Release[] = [
+export const mockPackageDetails: PackageDetailDto[] = mockPackages.map(
+  (pkg) => ({ ...pkg, releaseCount: 0 })
+)
+
+export const mockReleases: ReleaseDto[] = [
   {
     id: 'rel-react-19-test-id',
     tag: 'v19.0.0',
@@ -59,6 +69,16 @@ export const mockReleases: Release[] = [
   },
 ]
 
+// Package releases include extra fields in their package object (PackageReleasePackageDto)
+export const mockPackageReleases = mockReleases.map((r) => ({
+  ...r,
+  package: {
+    ...r.package,
+    name:
+      r.package.npmName ?? `${r.package.githubOwner}/${r.package.githubRepo}`,
+  },
+}))
+
 export const handlers = [
   // GET /packages
   http.get(`${API_BASE}/packages`, () => {
@@ -68,7 +88,7 @@ export const handlers = [
   // GET /packages/:id
   http.get(`${API_BASE}/packages/:id`, ({ params }) => {
     const id = params.id as string
-    const pkg = mockPackages.find((p) => p.id === id)
+    const pkg = mockPackageDetails.find((p) => p.id === id)
     if (!pkg) {
       return new HttpResponse(null, { status: 404 })
     }
@@ -78,8 +98,9 @@ export const handlers = [
   // POST /packages
   http.post(`${API_BASE}/packages`, async ({ request }) => {
     const body = (await request.json()) as { npmName: string }
-    const newPackage: Package = {
+    const newPackage: PackageDto = {
       id: 'pkg-new-test-id',
+      name: body.npmName,
       npmName: body.npmName,
       githubOwner: 'owner',
       githubRepo: body.npmName,
@@ -97,7 +118,7 @@ export const handlers = [
   // PATCH /packages/:id
   http.patch(`${API_BASE}/packages/:id`, async ({ params, request }) => {
     const id = params.id as string
-    const body = (await request.json()) as Partial<Package>
+    const body = (await request.json()) as Partial<PackageDto>
     const pkg = mockPackages.find((p) => p.id === id)
     if (!pkg) {
       return new HttpResponse(null, { status: 404 })
@@ -110,10 +131,22 @@ export const handlers = [
     return HttpResponse.json(mockReleases)
   }),
 
+  // GET /releases/:id
+  http.get(`${API_BASE}/releases/:id`, ({ params }) => {
+    const id = params.id as string
+    const release = mockReleases.find((r) => r.id === id)
+    if (!release) {
+      return new HttpResponse(null, { status: 404 })
+    }
+    return HttpResponse.json(release)
+  }),
+
   // GET /packages/:id/releases
   http.get(`${API_BASE}/packages/:id/releases`, ({ params }) => {
     const packageId = params.id as string
-    const releases = mockReleases.filter((r) => r.package.id === packageId)
+    const releases = mockPackageReleases.filter(
+      (r) => r.package.id === packageId
+    )
     return HttpResponse.json(releases)
   }),
 

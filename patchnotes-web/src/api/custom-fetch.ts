@@ -1,17 +1,18 @@
 import { ApiError } from './client.ts'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'
-
 /**
  * Custom fetch instance for Orval-generated API hooks.
- * Orval calls this as customFetch<T>(url, requestInit).
+ *
+ * Orval calls this as customFetch<T>(url, requestInit) where T is the
+ * generated response type (e.g. { data: PackageDto[], status: 200, headers: Headers }).
+ *
+ * The generated URLs already include the /api prefix, so we pass them
+ * through to fetch() without prepending a base URL.
  */
 export const customFetch = async <T>(
   url: string,
   init: RequestInit
 ): Promise<T> => {
-  const fullUrl = `${API_BASE_URL}${url}`
-
   const config: RequestInit = {
     ...init,
     credentials: 'include',
@@ -23,7 +24,7 @@ export const customFetch = async <T>(
 
   let response: Response
   try {
-    response = await fetch(fullUrl, config)
+    response = await fetch(url, config)
   } catch (error) {
     throw new ApiError(
       0,
@@ -38,11 +39,9 @@ export const customFetch = async <T>(
     throw new ApiError(response.status, response.statusText, errorData)
   }
 
-  if (response.status === 204) {
-    return undefined as T
-  }
+  const data = response.status === 204 ? undefined : await response.json()
 
-  return response.json()
+  return { data, status: response.status, headers: response.headers } as T
 }
 
 export default customFetch

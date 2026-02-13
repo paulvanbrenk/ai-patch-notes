@@ -3,7 +3,11 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { ReactNode } from 'react'
 import { http, HttpResponse } from 'msw'
 import { server } from '../test/mocks/server'
-import { mockPackages, mockReleases } from '../test/mocks/handlers'
+import {
+  mockPackages,
+  mockReleases,
+  mockPackageReleases,
+} from '../test/mocks/handlers'
 import {
   usePackages,
   usePackage,
@@ -12,7 +16,6 @@ import {
   useAddPackage,
   useDeletePackage,
   useUpdatePackage,
-  queryKeys,
 } from './hooks'
 
 function createWrapper() {
@@ -35,31 +38,6 @@ function createWrapper() {
     )
   }
 }
-
-describe('queryKeys', () => {
-  it('generates correct packages key', () => {
-    expect(queryKeys.packages).toEqual(['packages'])
-  })
-
-  it('generates correct package key', () => {
-    expect(queryKeys.package('pkg-react-test-id')).toEqual([
-      'packages',
-      'pkg-react-test-id',
-    ])
-  })
-
-  it('generates correct releases key', () => {
-    expect(queryKeys.releases).toEqual(['releases'])
-  })
-
-  it('generates correct packageReleases key', () => {
-    expect(queryKeys.packageReleases('pkg-react-test-id')).toEqual([
-      'packages',
-      'pkg-react-test-id',
-      'releases',
-    ])
-  })
-})
 
 describe('usePackages', () => {
   it('fetches packages successfully', async () => {
@@ -95,7 +73,11 @@ describe('usePackage', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
-    expect(result.current.data).toEqual(mockPackages[0])
+    expect(result.current.data).toMatchObject({
+      id: 'pkg-react-test-id',
+      githubOwner: 'facebook',
+      githubRepo: 'react',
+    })
   })
 
   it('does not fetch when id is empty', async () => {
@@ -145,7 +127,7 @@ describe('usePackageReleases', () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
-    expect(result.current.data).toEqual([mockReleases[0]])
+    expect(result.current.data).toEqual([mockPackageReleases[0]])
   })
 
   it('does not fetch when packageId is empty', async () => {
@@ -168,7 +150,7 @@ describe('useAddPackage', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
     expect(result.current.data).toMatchObject({
-      npmName: 'axios',
+      data: { npmName: 'axios' },
     })
   })
 })
@@ -199,7 +181,7 @@ describe('useUpdatePackage', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
 
     expect(result.current.data).toMatchObject({
-      githubOwner: 'new-owner',
+      data: { githubOwner: 'new-owner' },
     })
   })
 })

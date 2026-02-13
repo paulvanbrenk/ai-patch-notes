@@ -8,7 +8,7 @@ import { Checkbox } from '../ui/Checkbox'
 
 interface Package {
   id: string
-  npmName: string | null
+  npmName?: string | null
   githubOwner: string
   githubRepo: string
 }

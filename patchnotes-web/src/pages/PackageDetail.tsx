@@ -12,13 +12,14 @@ import {
 } from '../components/ui'
 import { ReleaseCard } from '../components/releases'
 import { usePackage, usePackageReleases } from '../api/hooks'
-import type { Release } from '../api/types'
+import type { PackageReleaseDto } from '../api/generated/model'
 
 interface PackageDetailProps {
   packageId: string
 }
 
-function formatDate(dateString: string): string {
+function formatDate(dateString: string | undefined): string {
+  if (!dateString) return ''
   const date = new Date(dateString)
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
@@ -29,7 +30,7 @@ function formatDate(dateString: string): string {
   })
 }
 
-function getReleaseUrl(release: Release): string {
+function getReleaseUrl(release: PackageReleaseDto): string {
   const { githubOwner, githubRepo } = release.package
   return `https://github.com/${githubOwner}/${githubRepo}/releases/tag/${release.tag}`
 }
@@ -118,7 +119,7 @@ export function PackageDetail({ packageId }: PackageDetailProps) {
                   </p>
                 </div>
               </div>
-              {pkg.releaseCount !== undefined && (
+              {pkg.releaseCount != null && (
                 <Badge>
                   {pkg.releaseCount} release{pkg.releaseCount !== 1 ? 's' : ''}
                 </Badge>

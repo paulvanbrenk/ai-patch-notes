@@ -27,7 +27,7 @@ import {
   useWatchlist,
   useSetWatchlist,
 } from '../api/hooks'
-import type { Release as ApiRelease } from '../api/types'
+import type { ReleaseDto } from '../api/generated/model'
 
 // ============================================================================
 // Types
@@ -46,7 +46,7 @@ interface VersionGroup {
   summary: string
   releaseCount: number
   lastUpdated: string
-  releases: ApiRelease[]
+  releases: ReleaseDto[]
 }
 
 // ============================================================================
@@ -73,7 +73,7 @@ function isPrerelease(tag: string): boolean {
 }
 
 function buildVersionGroups(
-  releases: ApiRelease[],
+  releases: ReleaseDto[],
   packageNames: Map<string, string>
 ): VersionGroup[] {
   const groupMap = new Map<string, VersionGroup>()
@@ -83,6 +83,7 @@ function buildVersionGroups(
     const major = parseMajorVersion(release.tag)
     const prerelease = isPrerelease(release.tag)
     const key = `${packageId}-${major}-${prerelease}`
+    const publishedAt = release.publishedAt ?? ''
 
     let group = groupMap.get(key)
     if (!group) {
@@ -102,7 +103,7 @@ function buildVersionGroups(
           : undefined,
         summary: '',
         releaseCount: 0,
-        lastUpdated: release.publishedAt,
+        lastUpdated: publishedAt,
         releases: [],
       }
       groupMap.set(key, group)
@@ -112,10 +113,9 @@ function buildVersionGroups(
     group.releaseCount++
 
     if (
-      new Date(release.publishedAt).getTime() >
-      new Date(group.lastUpdated).getTime()
+      new Date(publishedAt).getTime() > new Date(group.lastUpdated).getTime()
     ) {
-      group.lastUpdated = release.publishedAt
+      group.lastUpdated = publishedAt
     }
   }
 
@@ -123,7 +123,8 @@ function buildVersionGroups(
   for (const group of groupMap.values()) {
     group.releases.sort(
       (a, b) =>
-        new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+        new Date(b.publishedAt ?? 0).getTime() -
+        new Date(a.publishedAt ?? 0).getTime()
     )
 
     // Build a placeholder summary from release titles
@@ -154,7 +155,8 @@ function formatRelativeTime(dateString: string): string {
   return `${Math.floor(diffDays / 30)}mo ago`
 }
 
-function formatDate(dateString: string): string {
+function formatDate(dateString: string | undefined): string {
+  if (!dateString) return ''
   return new Date(dateString).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
