@@ -11,10 +11,7 @@ import {
   deletePackage,
   updatePackage,
 } from './generated/packages/packages'
-import {
-  useGetRelease,
-  useGetReleases,
-} from './generated/releases/releases'
+import { useGetRelease, useGetReleases } from './generated/releases/releases'
 import {
   useGetWatchlist,
   getGetWatchlistQueryKey,

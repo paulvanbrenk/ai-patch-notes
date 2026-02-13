@@ -113,8 +113,7 @@ function buildVersionGroups(
     group.releaseCount++
 
     if (
-      new Date(publishedAt).getTime() >
-      new Date(group.lastUpdated).getTime()
+      new Date(publishedAt).getTime() > new Date(group.lastUpdated).getTime()
     ) {
       group.lastUpdated = publishedAt
     }

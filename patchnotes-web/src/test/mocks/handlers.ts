@@ -1,5 +1,9 @@
 import { http, HttpResponse } from 'msw'
-import type { PackageDto, PackageDetailDto, ReleaseDto } from '../../api/generated/model'
+import type {
+  PackageDto,
+  PackageDetailDto,
+  ReleaseDto,
+} from '../../api/generated/model'
 
 const API_BASE = '/api'
 
@@ -70,7 +74,8 @@ export const mockPackageReleases = mockReleases.map((r) => ({
   ...r,
   package: {
     ...r.package,
-    name: r.package.npmName ?? `${r.package.githubOwner}/${r.package.githubRepo}`,
+    name:
+      r.package.npmName ?? `${r.package.githubOwner}/${r.package.githubRepo}`,
   },
 }))
 
