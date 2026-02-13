@@ -1,36 +1,52 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useStytchUser } from '@stytch/react'
-import { api } from './client'
-import type {
-  Package,
-  Release,
-  AddPackageRequest,
-  AddPackageResponse,
-  UpdatePackageRequest,
-} from './types'
+import type { GetReleasesParams } from './generated/model'
 
-export const queryKeys = {
-  packages: ['packages'] as const,
-  package: (id: string) => ['packages', id] as const,
-  releases: ['releases'] as const,
-  release: (id: string) => ['releases', id] as const,
-  packageReleases: (packageId: string) =>
-    ['packages', packageId, 'releases'] as const,
-  watchlist: ['watchlist'] as const,
-}
+import {
+  useGetPackages,
+  useGetPackage,
+  useGetPackageReleases,
+  getGetPackagesQueryKey,
+  createPackage,
+  deletePackage,
+  updatePackage,
+} from './generated/packages/packages'
+import {
+  useGetRelease,
+  useGetReleases,
+} from './generated/releases/releases'
+import {
+  useGetWatchlist,
+  getGetWatchlistQueryKey,
+  setWatchlist,
+} from './generated/watchlist/watchlist'
+
+import {
+  GetPackagesResponse,
+  GetPackageResponse,
+  GetPackageReleasesResponse,
+} from './generated/packages/packages.zod'
+import {
+  GetReleaseResponse,
+  GetReleasesResponse,
+} from './generated/releases/releases.zod'
+import { GetWatchlistResponse } from './generated/watchlist/watchlist.zod'
+
+// ── Query Hooks ──────────────────────────────────────────────
 
 export function usePackages() {
-  return useQuery({
-    queryKey: queryKeys.packages,
-    queryFn: () => api.get<Package[]>('/packages'),
+  return useGetPackages({
+    query: {
+      select: (res) => GetPackagesResponse.parse(res.data),
+    },
   })
 }
 
 export function usePackage(id: string) {
-  return useQuery({
-    queryKey: queryKeys.package(id),
-    queryFn: () => api.get<Package>(`/packages/${id}`),
-    enabled: !!id,
+  return useGetPackage(id, {
+    query: {
+      select: (res) => GetPackageResponse.parse(res.data),
+    },
   })
 }
 
@@ -42,54 +58,47 @@ interface ReleasesOptions {
 }
 
 export function useReleases(options?: ReleasesOptions) {
-  const params = new URLSearchParams()
-  if (options?.packages?.length) {
-    params.set('packages', options.packages.join(','))
-  }
-  if (options?.days) {
-    params.set('days', options.days.toString())
-  }
-  if (options?.excludePrerelease) {
-    params.set('excludePrerelease', 'true')
-  }
-  if (options?.majorVersion !== undefined) {
-    params.set('majorVersion', options.majorVersion.toString())
-  }
-  const queryString = params.toString()
-  const endpoint = queryString ? `/releases?${queryString}` : '/releases'
+  const params: GetReleasesParams | undefined = options
+    ? {
+        packages: options.packages?.join(','),
+        days: options.days,
+        excludePrerelease: options.excludePrerelease,
+        majorVersion: options.majorVersion,
+      }
+    : undefined
 
-  return useQuery({
-    queryKey: [...queryKeys.releases, options],
-    queryFn: () => api.get<Release[]>(endpoint),
+  return useGetReleases(params, {
+    query: {
+      select: (res) => GetReleasesResponse.parse(res.data),
+    },
   })
 }
 
 export function useRelease(id: string) {
-  return useQuery({
-    queryKey: queryKeys.release(id),
-    queryFn: () => api.get<Release>(`/releases/${id}`),
-    enabled: !!id,
+  return useGetRelease(id, {
+    query: {
+      select: (res) => GetReleaseResponse.parse(res.data),
+    },
   })
 }
 
 export function usePackageReleases(packageId: string) {
-  return useQuery({
-    queryKey: queryKeys.packageReleases(packageId),
-    queryFn: () => api.get<Release[]>(`/packages/${packageId}/releases`),
-    enabled: !!packageId,
+  return useGetPackageReleases(packageId, {
+    query: {
+      select: (res) => GetPackageReleasesResponse.parse(res.data),
+    },
   })
 }
+
+// ── Mutation Hooks ───────────────────────────────────────────
 
 export function useAddPackage() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (npmName: string) =>
-      api.post<AddPackageResponse>('/packages', {
-        npmName,
-      } satisfies AddPackageRequest),
+    mutationFn: (npmName: string) => createPackage({ npmName }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.packages })
+      queryClient.invalidateQueries({ queryKey: getGetPackagesQueryKey() })
     },
   })
 }
@@ -98,9 +107,9 @@ export function useDeletePackage() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id: string) => api.delete(`/packages/${id}`),
+    mutationFn: (id: string) => deletePackage(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.packages })
+      queryClient.invalidateQueries({ queryKey: getGetPackagesQueryKey() })
     },
   })
 }
@@ -109,20 +118,34 @@ export function useUpdatePackage() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, ...data }: UpdatePackageRequest & { id: string }) =>
-      api.patch<Package>(`/packages/${id}`, data),
+    mutationFn: ({
+      id,
+      githubOwner,
+      githubRepo,
+    }: {
+      id: string
+      githubOwner?: string
+      githubRepo?: string
+    }) =>
+      updatePackage(id, {
+        githubOwner: githubOwner ?? null,
+        githubRepo: githubRepo ?? null,
+      }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.packages })
+      queryClient.invalidateQueries({ queryKey: getGetPackagesQueryKey() })
     },
   })
 }
 
+// ── Watchlist Hooks ──────────────────────────────────────────
+
 export function useWatchlist() {
   const { user } = useStytchUser()
-  return useQuery({
-    queryKey: queryKeys.watchlist,
-    queryFn: () => api.get<string[]>('/watchlist'),
-    enabled: !!user,
+  return useGetWatchlist({
+    query: {
+      enabled: !!user,
+      select: (res) => GetWatchlistResponse.parse(res.data),
+    },
   })
 }
 
@@ -130,10 +153,9 @@ export function useSetWatchlist() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (packageIds: string[]) =>
-      api.put<string[]>('/watchlist', { packageIds }),
+    mutationFn: (packageIds: string[]) => setWatchlist({ packageIds }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.watchlist })
+      queryClient.invalidateQueries({ queryKey: getGetWatchlistQueryKey() })
     },
   })
 }
