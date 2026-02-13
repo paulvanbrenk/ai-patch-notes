@@ -15,7 +15,7 @@ export const stytchClient = createStytchClient(publicToken || '', {
   },
 })
 
-const products = [Products.emailMagicLinks]
+const products = [Products.emailMagicLinks, Products.oauth]
 
 if (import.meta.env.DEV) {
   products.push(Products.passwords)
@@ -28,6 +28,11 @@ export const stytchLoginConfig = {
     loginExpirationMinutes: 30,
     signupRedirectURL: `${window.location.origin}/authenticate`,
     signupExpirationMinutes: 30,
+  },
+  oauthOptions: {
+    providers: [{ type: 'github' as const }],
+    loginRedirectURL: `${window.location.origin}/authenticate`,
+    signupRedirectURL: `${window.location.origin}/authenticate`,
   },
   ...(import.meta.env.DEV && {
     passwordOptions: {
