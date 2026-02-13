@@ -261,7 +261,6 @@ public class SyncService
                 Url = $"https://github.com/{owner}/{repo}",
                 GithubOwner = owner,
                 GithubRepo = repo,
-                CreatedAt = DateTimeOffset.UtcNow
             };
             _db.Packages.Add(package);
             await _db.SaveChangesAsync(cancellationToken);

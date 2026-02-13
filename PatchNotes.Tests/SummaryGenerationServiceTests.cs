@@ -134,7 +134,6 @@ public class SummaryGenerationServiceTests : IDisposable
         summaries.Should().ContainSingle();
         summaries[0].Summary.Should().Be("Generated summary for the version group.");
         summaries[0].GeneratedAt.Should().Be(generatedAt); // Original time preserved
-        summaries[0].UpdatedAt.Should().NotBeNull();
         summaries[0].UpdatedAt.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(5));
     }
 

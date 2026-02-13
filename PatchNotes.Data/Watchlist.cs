@@ -1,6 +1,6 @@
 namespace PatchNotes.Data;
 
-public class Watchlist
+public class Watchlist : IHasCreatedAt
 {
     public string Id { get; set; } = IdGenerator.NewId();
     public string UserId { get; set; } = null!;

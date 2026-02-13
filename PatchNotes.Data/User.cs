@@ -1,6 +1,6 @@
 namespace PatchNotes.Data;
 
-public class User
+public class User : IHasCreatedAt, IHasUpdatedAt
 {
     public string Id { get; set; } = IdGenerator.NewId();
 

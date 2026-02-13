@@ -199,7 +199,6 @@ public static class PackageRoutes
                 GithubOwner = owner,
                 GithubRepo = repoName,
                 TagPrefix = request.TagPrefix,
-                CreatedAt = DateTimeOffset.UtcNow
             };
 
             db.Packages.Add(package);

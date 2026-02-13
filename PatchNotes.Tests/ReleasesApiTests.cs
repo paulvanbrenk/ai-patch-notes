@@ -48,7 +48,7 @@ public class ReleasesApiTests : IAsyncLifetime
         // Arrange
         using var scope = _fixture.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
-        var package = new Package { Name = "test-pkg", Url = "https://github.com/owner/repo", NpmName = "test-pkg", GithubOwner = "owner", GithubRepo = "repo", CreatedAt = DateTimeOffset.UtcNow };
+        var package = new Package { Name = "test-pkg", Url = "https://github.com/owner/repo", NpmName = "test-pkg", GithubOwner = "owner", GithubRepo = "repo" };
         db.Packages.Add(package);
         await db.SaveChangesAsync();
 
@@ -88,7 +88,7 @@ public class ReleasesApiTests : IAsyncLifetime
         // Arrange
         using var scope = _fixture.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
-        var package = new Package { Name = "test-pkg", Url = "https://github.com/owner/repo", NpmName = "test-pkg", GithubOwner = "owner", GithubRepo = "repo", CreatedAt = DateTimeOffset.UtcNow };
+        var package = new Package { Name = "test-pkg", Url = "https://github.com/owner/repo", NpmName = "test-pkg", GithubOwner = "owner", GithubRepo = "repo" };
         db.Packages.Add(package);
         await db.SaveChangesAsync();
 
@@ -114,8 +114,8 @@ public class ReleasesApiTests : IAsyncLifetime
         // Arrange
         using var scope = _fixture.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
-        var package1 = new Package { Name = "pkg1", Url = "https://github.com/owner/repo1", NpmName = "pkg1", GithubOwner = "owner", GithubRepo = "repo1", CreatedAt = DateTimeOffset.UtcNow };
-        var package2 = new Package { Name = "pkg2", Url = "https://github.com/owner/repo2", NpmName = "pkg2", GithubOwner = "owner", GithubRepo = "repo2", CreatedAt = DateTimeOffset.UtcNow };
+        var package1 = new Package { Name = "pkg1", Url = "https://github.com/owner/repo1", NpmName = "pkg1", GithubOwner = "owner", GithubRepo = "repo1" };
+        var package2 = new Package { Name = "pkg2", Url = "https://github.com/owner/repo2", NpmName = "pkg2", GithubOwner = "owner", GithubRepo = "repo2" };
         db.Packages.AddRange(package1, package2);
         await db.SaveChangesAsync();
 
@@ -141,9 +141,9 @@ public class ReleasesApiTests : IAsyncLifetime
         // Arrange
         using var scope = _fixture.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
-        var package1 = new Package { Name = "pkg1", Url = "https://github.com/owner/repo1", NpmName = "pkg1", GithubOwner = "owner", GithubRepo = "repo1", CreatedAt = DateTimeOffset.UtcNow };
-        var package2 = new Package { Name = "pkg2", Url = "https://github.com/owner/repo2", NpmName = "pkg2", GithubOwner = "owner", GithubRepo = "repo2", CreatedAt = DateTimeOffset.UtcNow };
-        var package3 = new Package { Name = "pkg3", Url = "https://github.com/owner/repo3", NpmName = "pkg3", GithubOwner = "owner", GithubRepo = "repo3", CreatedAt = DateTimeOffset.UtcNow };
+        var package1 = new Package { Name = "pkg1", Url = "https://github.com/owner/repo1", NpmName = "pkg1", GithubOwner = "owner", GithubRepo = "repo1" };
+        var package2 = new Package { Name = "pkg2", Url = "https://github.com/owner/repo2", NpmName = "pkg2", GithubOwner = "owner", GithubRepo = "repo2" };
+        var package3 = new Package { Name = "pkg3", Url = "https://github.com/owner/repo3", NpmName = "pkg3", GithubOwner = "owner", GithubRepo = "repo3" };
         db.Packages.AddRange(package1, package2, package3);
         await db.SaveChangesAsync();
 
@@ -169,7 +169,7 @@ public class ReleasesApiTests : IAsyncLifetime
         // Arrange
         using var scope = _fixture.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
-        var package = new Package { Name = "test-pkg", Url = "https://github.com/owner/repo", NpmName = "test-pkg", GithubOwner = "owner", GithubRepo = "repo", CreatedAt = DateTimeOffset.UtcNow };
+        var package = new Package { Name = "test-pkg", Url = "https://github.com/owner/repo", NpmName = "test-pkg", GithubOwner = "owner", GithubRepo = "repo" };
         db.Packages.Add(package);
         await db.SaveChangesAsync();
 
@@ -198,7 +198,7 @@ public class ReleasesApiTests : IAsyncLifetime
         // Arrange
         using var scope = _fixture.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
-        var package = new Package { Name = "my-package", Url = "https://github.com/my-owner/my-repo", NpmName = "my-package", GithubOwner = "my-owner", GithubRepo = "my-repo", CreatedAt = DateTimeOffset.UtcNow };
+        var package = new Package { Name = "my-package", Url = "https://github.com/my-owner/my-repo", NpmName = "my-package", GithubOwner = "my-owner", GithubRepo = "my-repo" };
         db.Packages.Add(package);
         await db.SaveChangesAsync();
 
@@ -256,8 +256,6 @@ public class ReleasesWatchlistFilterTests : IAsyncLifetime
         {
             StytchUserId = PatchNotesApiFixture.TestUserId,
             Email = "test@example.com",
-            CreatedAt = DateTimeOffset.UtcNow,
-            UpdatedAt = DateTimeOffset.UtcNow,
         });
         await db.SaveChangesAsync();
     }
@@ -277,8 +275,8 @@ public class ReleasesWatchlistFilterTests : IAsyncLifetime
         using var scope = _fixture.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
 
-        var defaultPkg = new Package { Name = "default-pkg", Url = "https://github.com/default-owner/default-repo", GithubOwner = "default-owner", GithubRepo = "default-repo", CreatedAt = DateTimeOffset.UtcNow };
-        var otherPkg = new Package { Name = "other-pkg", Url = "https://github.com/other/repo", GithubOwner = "other", GithubRepo = "repo", CreatedAt = DateTimeOffset.UtcNow };
+        var defaultPkg = new Package { Name = "default-pkg", Url = "https://github.com/default-owner/default-repo", GithubOwner = "default-owner", GithubRepo = "default-repo" };
+        var otherPkg = new Package { Name = "other-pkg", Url = "https://github.com/other/repo", GithubOwner = "other", GithubRepo = "repo" };
         db.Packages.AddRange(defaultPkg, otherPkg);
         await db.SaveChangesAsync();
 
@@ -305,8 +303,8 @@ public class ReleasesWatchlistFilterTests : IAsyncLifetime
         using var scope = _fixture.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
 
-        var defaultPkg = new Package { Name = "default-pkg", Url = "https://github.com/default-owner/default-repo", GithubOwner = "default-owner", GithubRepo = "default-repo", CreatedAt = DateTimeOffset.UtcNow };
-        var otherPkg = new Package { Name = "other-pkg", Url = "https://github.com/other/repo", GithubOwner = "other", GithubRepo = "repo", CreatedAt = DateTimeOffset.UtcNow };
+        var defaultPkg = new Package { Name = "default-pkg", Url = "https://github.com/default-owner/default-repo", GithubOwner = "default-owner", GithubRepo = "default-repo" };
+        var otherPkg = new Package { Name = "other-pkg", Url = "https://github.com/other/repo", GithubOwner = "other", GithubRepo = "repo" };
         db.Packages.AddRange(defaultPkg, otherPkg);
         await db.SaveChangesAsync();
 
@@ -334,13 +332,13 @@ public class ReleasesWatchlistFilterTests : IAsyncLifetime
         var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
 
         var user = await db.Users.FirstAsync(u => u.StytchUserId == PatchNotesApiFixture.TestUserId);
-        var watchedPkg = new Package { Name = "watched-pkg", Url = "https://github.com/watched/repo", GithubOwner = "watched", GithubRepo = "repo", CreatedAt = DateTimeOffset.UtcNow };
-        var defaultPkg = new Package { Name = "default-pkg", Url = "https://github.com/default-owner/default-repo", GithubOwner = "default-owner", GithubRepo = "default-repo", CreatedAt = DateTimeOffset.UtcNow };
-        var otherPkg = new Package { Name = "other-pkg", Url = "https://github.com/other/repo", GithubOwner = "other", GithubRepo = "repo", CreatedAt = DateTimeOffset.UtcNow };
+        var watchedPkg = new Package { Name = "watched-pkg", Url = "https://github.com/watched/repo", GithubOwner = "watched", GithubRepo = "repo" };
+        var defaultPkg = new Package { Name = "default-pkg", Url = "https://github.com/default-owner/default-repo", GithubOwner = "default-owner", GithubRepo = "default-repo" };
+        var otherPkg = new Package { Name = "other-pkg", Url = "https://github.com/other/repo", GithubOwner = "other", GithubRepo = "repo" };
         db.Packages.AddRange(watchedPkg, defaultPkg, otherPkg);
         await db.SaveChangesAsync();
 
-        db.Watchlists.Add(new Watchlist { UserId = user.Id, PackageId = watchedPkg.Id, CreatedAt = DateTimeOffset.UtcNow });
+        db.Watchlists.Add(new Watchlist { UserId = user.Id, PackageId = watchedPkg.Id });
         await db.SaveChangesAsync();
 
         db.Releases.AddRange(
@@ -367,8 +365,8 @@ public class ReleasesWatchlistFilterTests : IAsyncLifetime
         using var scope = _fixture.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
 
-        var defaultPkg = new Package { Name = "default-pkg", Url = "https://github.com/default-owner/default-repo", GithubOwner = "default-owner", GithubRepo = "default-repo", CreatedAt = DateTimeOffset.UtcNow };
-        var otherPkg = new Package { Name = "other-pkg", Url = "https://github.com/other/repo", GithubOwner = "other", GithubRepo = "repo", CreatedAt = DateTimeOffset.UtcNow };
+        var defaultPkg = new Package { Name = "default-pkg", Url = "https://github.com/default-owner/default-repo", GithubOwner = "default-owner", GithubRepo = "default-repo" };
+        var otherPkg = new Package { Name = "other-pkg", Url = "https://github.com/other/repo", GithubOwner = "other", GithubRepo = "repo" };
         db.Packages.AddRange(defaultPkg, otherPkg);
         await db.SaveChangesAsync();
 
@@ -395,7 +393,7 @@ public class ReleasesWatchlistFilterTests : IAsyncLifetime
         using var scope = _fixture.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
 
-        var otherPkg = new Package { Name = "other-pkg", Url = "https://github.com/other/repo", GithubOwner = "other", GithubRepo = "repo", CreatedAt = DateTimeOffset.UtcNow };
+        var otherPkg = new Package { Name = "other-pkg", Url = "https://github.com/other/repo", GithubOwner = "other", GithubRepo = "repo" };
         db.Packages.Add(otherPkg);
         await db.SaveChangesAsync();
 
@@ -419,12 +417,12 @@ public class ReleasesWatchlistFilterTests : IAsyncLifetime
         var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
 
         var user = await db.Users.FirstAsync(u => u.StytchUserId == PatchNotesApiFixture.TestUserId);
-        var watchedPkg = new Package { Name = "watched-pkg", Url = "https://github.com/watched/repo", GithubOwner = "watched", GithubRepo = "repo", CreatedAt = DateTimeOffset.UtcNow };
-        var explicitPkg = new Package { Name = "explicit-pkg", Url = "https://github.com/explicit/repo", GithubOwner = "explicit", GithubRepo = "repo", CreatedAt = DateTimeOffset.UtcNow };
+        var watchedPkg = new Package { Name = "watched-pkg", Url = "https://github.com/watched/repo", GithubOwner = "watched", GithubRepo = "repo" };
+        var explicitPkg = new Package { Name = "explicit-pkg", Url = "https://github.com/explicit/repo", GithubOwner = "explicit", GithubRepo = "repo" };
         db.Packages.AddRange(watchedPkg, explicitPkg);
         await db.SaveChangesAsync();
 
-        db.Watchlists.Add(new Watchlist { UserId = user.Id, PackageId = watchedPkg.Id, CreatedAt = DateTimeOffset.UtcNow });
+        db.Watchlists.Add(new Watchlist { UserId = user.Id, PackageId = watchedPkg.Id });
         await db.SaveChangesAsync();
 
         db.Releases.AddRange(
@@ -451,12 +449,12 @@ public class ReleasesWatchlistFilterTests : IAsyncLifetime
         var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
 
         var user = await db.Users.FirstAsync(u => u.StytchUserId == PatchNotesApiFixture.TestUserId);
-        var watchedPkg = new Package { Name = "watched-pkg", Url = "https://github.com/watched/repo", GithubOwner = "watched", GithubRepo = "repo", CreatedAt = DateTimeOffset.UtcNow };
-        var otherPkg = new Package { Name = "other-pkg", Url = "https://github.com/other/repo", GithubOwner = "other", GithubRepo = "repo", CreatedAt = DateTimeOffset.UtcNow };
+        var watchedPkg = new Package { Name = "watched-pkg", Url = "https://github.com/watched/repo", GithubOwner = "watched", GithubRepo = "repo" };
+        var otherPkg = new Package { Name = "other-pkg", Url = "https://github.com/other/repo", GithubOwner = "other", GithubRepo = "repo" };
         db.Packages.AddRange(watchedPkg, otherPkg);
         await db.SaveChangesAsync();
 
-        db.Watchlists.Add(new Watchlist { UserId = user.Id, PackageId = watchedPkg.Id, CreatedAt = DateTimeOffset.UtcNow });
+        db.Watchlists.Add(new Watchlist { UserId = user.Id, PackageId = watchedPkg.Id });
         await db.SaveChangesAsync();
 
         db.Releases.AddRange(
@@ -492,7 +490,7 @@ public class ReleasesWatchlistFilterTests : IAsyncLifetime
         using var scope = _fixture.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
 
-        var otherPkg = new Package { Name = "other-pkg", Url = "https://github.com/other/repo", GithubOwner = "other", GithubRepo = "repo", CreatedAt = DateTimeOffset.UtcNow };
+        var otherPkg = new Package { Name = "other-pkg", Url = "https://github.com/other/repo", GithubOwner = "other", GithubRepo = "repo" };
         db.Packages.Add(otherPkg);
         await db.SaveChangesAsync();
 
@@ -526,12 +524,12 @@ public class ReleasesWatchlistFilterTests : IAsyncLifetime
         var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
 
         var user = await db.Users.FirstAsync(u => u.StytchUserId == PatchNotesApiFixture.TestUserId);
-        var watchedPkg = new Package { Name = "watched-pkg", Url = "https://github.com/watched/repo", GithubOwner = "watched", GithubRepo = "repo", CreatedAt = DateTimeOffset.UtcNow };
-        var defaultPkg = new Package { Name = "default-pkg", Url = "https://github.com/default-owner/default-repo", GithubOwner = "default-owner", GithubRepo = "default-repo", CreatedAt = DateTimeOffset.UtcNow };
+        var watchedPkg = new Package { Name = "watched-pkg", Url = "https://github.com/watched/repo", GithubOwner = "watched", GithubRepo = "repo" };
+        var defaultPkg = new Package { Name = "default-pkg", Url = "https://github.com/default-owner/default-repo", GithubOwner = "default-owner", GithubRepo = "default-repo" };
         db.Packages.AddRange(watchedPkg, defaultPkg);
         await db.SaveChangesAsync();
 
-        db.Watchlists.Add(new Watchlist { UserId = user.Id, PackageId = watchedPkg.Id, CreatedAt = DateTimeOffset.UtcNow });
+        db.Watchlists.Add(new Watchlist { UserId = user.Id, PackageId = watchedPkg.Id });
         await db.SaveChangesAsync();
 
         // Only default package has releases in window — user's watchlist package does not

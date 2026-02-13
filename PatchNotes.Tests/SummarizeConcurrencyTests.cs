@@ -39,7 +39,6 @@ public class SummarizeConcurrencyTests
             {
                 Name = "test-pkg", Url = "https://github.com/o/r",
                 NpmName = "test-pkg", GithubOwner = "o", GithubRepo = "r",
-                CreatedAt = DateTimeOffset.UtcNow
             };
             db.Packages.Add(package);
             await db.SaveChangesAsync();
@@ -253,7 +252,6 @@ internal class SummarizeTestFixture : PatchNotesApiFixture
             NpmName = "concurrency-test-pkg",
             GithubOwner = "owner",
             GithubRepo = "repo",
-            CreatedAt = DateTimeOffset.UtcNow
         };
         db.Packages.Add(package);
         await db.SaveChangesAsync();

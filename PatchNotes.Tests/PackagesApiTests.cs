@@ -48,8 +48,8 @@ public class PackagesApiTests : IAsyncLifetime
         using var scope = _fixture.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
         db.Packages.AddRange(
-            new Package { Name = "react", Url = "https://github.com/facebook/react", NpmName = "react", GithubOwner = "facebook", GithubRepo = "react", CreatedAt = DateTimeOffset.UtcNow },
-            new Package { Name = "vue", Url = "https://github.com/vuejs/core", NpmName = "vue", GithubOwner = "vuejs", GithubRepo = "core", CreatedAt = DateTimeOffset.UtcNow }
+            new Package { Name = "react", Url = "https://github.com/facebook/react", NpmName = "react", GithubOwner = "facebook", GithubRepo = "react" },
+            new Package { Name = "vue", Url = "https://github.com/vuejs/core", NpmName = "vue", GithubOwner = "vuejs", GithubRepo = "core" }
         );
         await db.SaveChangesAsync();
 
@@ -76,7 +76,6 @@ public class PackagesApiTests : IAsyncLifetime
             NpmName = "lodash",
             GithubOwner = "lodash",
             GithubRepo = "lodash",
-            CreatedAt = createdAt,
             LastFetchedAt = createdAt.AddHours(1)
         });
         await db.SaveChangesAsync();
@@ -171,7 +170,6 @@ public class PackagesApiTests : IAsyncLifetime
             NpmName = "duplicate-pkg",
             GithubOwner = "owner",
             GithubRepo = "repo",
-            CreatedAt = DateTimeOffset.UtcNow
         });
         await db.SaveChangesAsync();
 
@@ -218,7 +216,6 @@ public class PackagesApiTests : IAsyncLifetime
             NpmName = "to-delete",
             GithubOwner = "owner",
             GithubRepo = "repo",
-            CreatedAt = DateTimeOffset.UtcNow
         };
         db.Packages.Add(pkg);
         await db.SaveChangesAsync();

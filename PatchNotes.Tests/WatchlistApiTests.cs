@@ -29,11 +29,9 @@ public class WatchlistApiTests : IAsyncLifetime
         {
             StytchUserId = PatchNotesApiFixture.TestUserId,
             Email = "test@example.com",
-            CreatedAt = DateTimeOffset.UtcNow,
-            UpdatedAt = DateTimeOffset.UtcNow,
         });
-        var react = new Package { Name = "react", Url = "https://github.com/facebook/react", NpmName = "react", GithubOwner = "facebook", GithubRepo = "react", CreatedAt = DateTimeOffset.UtcNow };
-        var vue = new Package { Name = "vue", Url = "https://github.com/vuejs/core", NpmName = "vue", GithubOwner = "vuejs", GithubRepo = "core", CreatedAt = DateTimeOffset.UtcNow };
+        var react = new Package { Name = "react", Url = "https://github.com/facebook/react", NpmName = "react", GithubOwner = "facebook", GithubRepo = "react" };
+        var vue = new Package { Name = "vue", Url = "https://github.com/vuejs/core", NpmName = "vue", GithubOwner = "vuejs", GithubRepo = "core" };
         db.Packages.AddRange(react, vue);
         await db.SaveChangesAsync();
         _reactPackageId = react.Id;

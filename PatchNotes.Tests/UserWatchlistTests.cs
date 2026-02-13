@@ -54,7 +54,7 @@ public class UserWatchlistTests : IAsyncLifetime
                 Url = $"https://github.com/{owner}/{repo}",
                 GithubOwner = owner,
                 GithubRepo = repo,
-                CreatedAt = DateTimeOffset.UtcNow,
+
             };
             db.Packages.Add(pkg);
             _defaultPackages.Add(pkg);
@@ -173,7 +173,7 @@ public class UserWatchlistMissingPackagesTests : IAsyncLifetime
                 Url = $"https://github.com/{owner}/{repo}",
                 GithubOwner = owner,
                 GithubRepo = repo,
-                CreatedAt = DateTimeOffset.UtcNow,
+
             };
             db.Packages.Add(pkg);
             _seededPackages.Add(pkg);

@@ -69,13 +69,22 @@ public class SummaryGenerationService
                 s => (s.MajorVersion, s.IsPrerelease),
                 cancellationToken);
 
+        // Remove orphaned summaries (null from a previous failed generation) so they get recreated
+        var orphanedKeys = new HashSet<(int, bool)>();
+        foreach (var (key, summary) in existingSummaries.Where(kv => string.IsNullOrEmpty(kv.Value.Summary)).ToList())
+        {
+            _db.ReleaseSummaries.Remove(summary);
+            existingSummaries.Remove(key);
+            orphanedKeys.Add(key);
+        }
+
         foreach (var group in groups)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Only regenerate if the group has releases that need summaries
+            // Regenerate if the group has stale releases or had a previously failed summary
             var hasStaleReleases = group.Releases.Any(r => r.NeedsSummary);
-            if (!hasStaleReleases)
+            if (!hasStaleReleases && !orphanedKeys.Contains((group.MajorVersion, group.IsPrerelease)))
             {
                 result.GroupsSkipped++;
                 continue;
@@ -96,7 +105,6 @@ public class SummaryGenerationService
                 if (existingSummaries.TryGetValue(key, out var existing))
                 {
                     existing.Summary = summary;
-                    existing.UpdatedAt = DateTimeOffset.UtcNow;
                 }
                 else
                 {
@@ -147,10 +155,17 @@ public class SummaryGenerationService
     {
         var aggregateResult = new SummaryGenerationResult();
 
-        // Find all packages that have at least one stale release
-        var packageIds = await _db.Releases
+        // Find all packages that have at least one stale release or a failed summary
+        var staleReleasePackageIds = _db.Releases
             .Where(r => r.Summary == null || r.SummaryStale)
-            .Select(r => r.PackageId)
+            .Select(r => r.PackageId);
+
+        var orphanedSummaryPackageIds = _db.ReleaseSummaries
+            .Where(s => s.Summary == null || s.Summary == "")
+            .Select(s => s.PackageId);
+
+        var packageIds = await staleReleasePackageIds
+            .Union(orphanedSummaryPackageIds)
             .Distinct()
             .ToListAsync(cancellationToken);
 

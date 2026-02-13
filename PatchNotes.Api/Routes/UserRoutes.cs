@@ -58,8 +58,6 @@ public static class UserRoutes
                 {
                     StytchUserId = stytchUserId!,
                     Email = email,
-                    CreatedAt = DateTimeOffset.UtcNow,
-                    UpdatedAt = DateTimeOffset.UtcNow,
                     LastLoginAt = DateTimeOffset.UtcNow
                 };
                 db.Users.Add(user);
@@ -87,7 +85,6 @@ public static class UserRoutes
                         {
                             UserId = user.Id,
                             PackageId = package.Id,
-                            CreatedAt = DateTimeOffset.UtcNow,
                         });
                     }
 
@@ -97,7 +94,6 @@ public static class UserRoutes
             else
             {
                 user!.Email = email ?? user.Email;
-                user.UpdatedAt = DateTimeOffset.UtcNow;
                 user.LastLoginAt = DateTimeOffset.UtcNow;
                 await db.SaveChangesAsync();
             }

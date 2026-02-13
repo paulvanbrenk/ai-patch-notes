@@ -1,6 +1,6 @@
 namespace PatchNotes.Data;
 
-public class Package
+public class Package : IHasCreatedAt
 {
     public string Id { get; set; } = IdGenerator.NewId();
     public required string Name { get; set; }
