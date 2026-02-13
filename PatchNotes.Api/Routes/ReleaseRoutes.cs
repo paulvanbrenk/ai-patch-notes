@@ -189,6 +189,8 @@ public static class ReleaseRoutes
                 httpContext.Response.Headers.Connection = "keep-alive";
 
                 var fullSummary = new System.Text.StringBuilder();
+                // Sequential counter for event ordering and dropped-event detection.
+                // Does NOT enable SSE resumability (no Last-Event-ID handling).
                 var eventId = 0;
 
                 try

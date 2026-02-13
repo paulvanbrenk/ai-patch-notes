@@ -149,7 +149,7 @@ public class SummarizeConcurrencyTests
     }
 
     /// <summary>
-    /// Verifies that SSE streaming events include sequential id: fields for resumability.
+    /// Verifies that SSE streaming events include sequential id: fields for ordering/debugging.
     /// </summary>
     [Fact]
     public async Task StreamingSummarize_EventsIncludeSequentialIds()
