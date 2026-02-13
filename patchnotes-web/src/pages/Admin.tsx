@@ -148,11 +148,7 @@ export function Admin() {
     if (!confirm(`Are you sure you want to delete ${pkg.npmName}?`)) return
 
     setDeletingId(pkg.id)
-    try {
-      await deletePackage.mutateAsync(pkg.id)
-    } finally {
-      setDeletingId(null)
-    }
+    await deletePackage.mutateAsync(pkg.id).finally(() => setDeletingId(null))
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
