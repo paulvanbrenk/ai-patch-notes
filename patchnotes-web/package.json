@@ -19,7 +19,8 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "knip": "knip"
+    "knip": "knip",
+    "generate:api": "orval"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
@@ -52,6 +53,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.4",
     "@vitest/coverage-v8": "^4.0.18",
+    "ajv": "^8.17.1",
     "babel-plugin-react-compiler": "^1.0.0",
     "eslint": "^10.0.0",
     "eslint-config-prettier": "^10.1.8",
@@ -62,11 +64,13 @@
     "knip": "^5.83.1",
     "lint-staged": "^16.2.7",
     "msw": "^2.12.10",
+    "orval": "^8.3.0",
     "prettier": "^3.8.1",
     "tailwindcss": "^4.1.18",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.55.0",
     "vite": "^7.2.4",
-    "vitest": "^4.0.17"
+    "vitest": "^4.0.17",
+    "zod": "^4.3.6"
   }
 }

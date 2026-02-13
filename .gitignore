@@ -27,6 +27,7 @@ bld/
 # NuGet
 *.nupkg
 **/[Pp]ackages/*
+!patchnotes-web/src/api/generated/packages/*
 
 # SQLite databases (dev)
 *.db

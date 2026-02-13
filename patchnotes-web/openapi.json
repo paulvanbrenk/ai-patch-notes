@@ -1,0 +1,1209 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "PatchNotes.Api | v1",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:2101/"
+    }
+  ],
+  "paths": {
+    "/webhooks/stytch": {
+      "post": {
+        "tags": [
+          "PatchNotes.Api"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/webhooks/stripe": {
+      "post": {
+        "tags": [
+          "PatchNotes.Api"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/packages": {
+      "get": {
+        "tags": [
+          "Packages"
+        ],
+        "operationId": "GetPackages",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PackageDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Packages"
+        ],
+        "operationId": "CreatePackage",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddPackageRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "409": {
+            "description": "Conflict"
+          }
+        }
+      }
+    },
+    "/api/packages/{id}": {
+      "get": {
+        "tags": [
+          "Packages"
+        ],
+        "operationId": "GetPackage",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageDetailDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Packages"
+        ],
+        "operationId": "UpdatePackage",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePackageRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Packages"
+        ],
+        "operationId": "DeletePackage",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/packages/{id}/releases": {
+      "get": {
+        "tags": [
+          "Packages"
+        ],
+        "operationId": "GetPackageReleases",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PackageReleaseDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/releases/{id}": {
+      "get": {
+        "tags": [
+          "Releases"
+        ],
+        "operationId": "GetRelease",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReleaseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/releases": {
+      "get": {
+        "tags": [
+          "Releases"
+        ],
+        "operationId": "GetReleases",
+        "parameters": [
+          {
+            "name": "packages",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "days",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "excludePrerelease",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "majorVersion",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "watchlist",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReleaseDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/releases/{id}/summarize": {
+      "post": {
+        "tags": [
+          "Releases"
+        ],
+        "operationId": "SummarizeRelease",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SummarizeResultDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/users/me": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "GetCurrentUser",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/users/login": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "LoginUser",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/watchlist": {
+      "get": {
+        "tags": [
+          "Watchlist"
+        ],
+        "operationId": "GetWatchlist",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Watchlist"
+        ],
+        "operationId": "SetWatchlist",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetWatchlistRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/watchlist/{packageId}": {
+      "post": {
+        "tags": [
+          "Watchlist"
+        ],
+        "operationId": "AddToWatchlist",
+        "parameters": [
+          {
+            "name": "packageId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "409": {
+            "description": "Conflict"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Watchlist"
+        ],
+        "operationId": "RemoveFromWatchlist",
+        "parameters": [
+          {
+            "name": "packageId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/subscription/checkout": {
+      "post": {
+        "tags": [
+          "Subscription"
+        ],
+        "operationId": "CreateCheckoutSession",
+        "responses": {
+          "303": {
+            "description": "See Other"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/subscription/portal": {
+      "post": {
+        "tags": [
+          "Subscription"
+        ],
+        "operationId": "CreatePortalSession",
+        "responses": {
+          "303": {
+            "description": "See Other"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/subscription/status": {
+      "get": {
+        "tags": [
+          "Subscription"
+        ],
+        "operationId": "GetSubscriptionStatus",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubscriptionStatusDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/packages/{id}/summaries": {
+      "get": {
+        "tags": [
+          "Summaries"
+        ],
+        "operationId": "GetPackageSummaries",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "includePrerelease",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "majorVersion",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReleaseSummaryDto"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/summaries": {
+      "get": {
+        "tags": [
+          "Summaries"
+        ],
+        "operationId": "GetSummaries",
+        "parameters": [
+          {
+            "name": "packages",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "includePrerelease",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReleaseSummaryDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AddPackageRequest": {
+        "required": [
+          "npmName"
+        ],
+        "type": "object",
+        "properties": {
+          "npmName": {
+            "type": "string"
+          },
+          "tagPrefix": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "PackageDetailDto": {
+        "required": [
+          "id",
+          "name",
+          "githubOwner",
+          "githubRepo"
+        ],
+        "type": "object",
+        "properties": {
+          "releaseCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "url": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "npmName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "githubOwner": {
+            "type": "string"
+          },
+          "githubRepo": {
+            "type": "string"
+          },
+          "tagPrefix": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "lastFetchedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PackageDto": {
+        "required": [
+          "id",
+          "name",
+          "githubOwner",
+          "githubRepo"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "url": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "npmName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "githubOwner": {
+            "type": "string"
+          },
+          "githubRepo": {
+            "type": "string"
+          },
+          "tagPrefix": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "lastFetchedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PackageReleaseDto": {
+        "required": [
+          "id",
+          "tag",
+          "package"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "tag": {
+            "type": "string"
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "body": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "summary": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "summaryGeneratedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "fetchedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "package": {
+            "$ref": "#/components/schemas/PackageReleasePackageDto"
+          }
+        }
+      },
+      "PackageReleasePackageDto": {
+        "required": [
+          "id",
+          "name",
+          "githubOwner",
+          "githubRepo"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "url": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "npmName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "githubOwner": {
+            "type": "string"
+          },
+          "githubRepo": {
+            "type": "string"
+          }
+        }
+      },
+      "ReleaseDto": {
+        "required": [
+          "id",
+          "tag",
+          "package"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "tag": {
+            "type": "string"
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "body": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "summary": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "summaryGeneratedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "fetchedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "package": {
+            "$ref": "#/components/schemas/ReleasePackageDto"
+          }
+        }
+      },
+      "ReleasePackageDto": {
+        "required": [
+          "id",
+          "githubOwner",
+          "githubRepo"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "npmName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "githubOwner": {
+            "type": "string"
+          },
+          "githubRepo": {
+            "type": "string"
+          }
+        }
+      },
+      "ReleasePackageSummaryDto": {
+        "required": [
+          "id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "npmName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "ReleaseSummaryDto": {
+        "required": [
+          "id",
+          "packageId",
+          "packageName"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "packageId": {
+            "type": "string"
+          },
+          "packageName": {
+            "type": "string"
+          },
+          "majorVersion": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "isPrerelease": {
+            "type": "boolean"
+          },
+          "summary": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "generatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          }
+        }
+      },
+      "SetWatchlistRequest": {
+        "required": [
+          "packageIds"
+        ],
+        "type": "object",
+        "properties": {
+          "packageIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "SubscriptionStatusDto": {
+        "required": [
+          "isPro"
+        ],
+        "type": "object",
+        "properties": {
+          "isPro": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "expiresAt": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "SummarizeResultDto": {
+        "required": [
+          "id",
+          "tag",
+          "package"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "tag": {
+            "type": "string"
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "summary": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "package": {
+            "$ref": "#/components/schemas/ReleasePackageSummaryDto"
+          }
+        }
+      },
+      "UpdatePackageRequest": {
+        "required": [
+          "githubOwner",
+          "githubRepo"
+        ],
+        "type": "object",
+        "properties": {
+          "githubOwner": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "githubRepo": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "tagPrefix": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "UserDto": {
+        "required": [
+          "id",
+          "stytchUserId"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "stytchUserId": {
+            "type": "string"
+          },
+          "email": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "name": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastLoginAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "PatchNotes.Api"
+    },
+    {
+      "name": "Packages"
+    },
+    {
+      "name": "Releases"
+    },
+    {
+      "name": "Users"
+    },
+    {
+      "name": "Watchlist"
+    },
+    {
+      "name": "Subscription"
+    },
+    {
+      "name": "Summaries"
+    }
+  ]
+}
