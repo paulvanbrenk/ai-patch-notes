@@ -20,18 +20,13 @@ import { Card, Button } from '../ui'
 
 const SLIDE_COUNT = 4
 
-const FREE_FEATURES = [
-  'Track up to 5 packages',
-  'AI-powered release summaries',
-  'Version grouping & filtering',
-  'Dark mode support',
-]
-
-const PRO_FEATURES = [
-  'Everything in Free',
-  'Track unlimited packages',
-  'No advertisements',
-  'Weekly email highlights',
+const PRICING_ROWS: { label: string; free: string; pro: string }[] = [
+  { label: 'Packages', free: '5', pro: 'Unlimited' },
+  { label: 'AI Summaries', free: '✓', pro: '✓' },
+  { label: 'Grouping & Filtering', free: '✓', pro: '✓' },
+  { label: 'Dark Mode', free: '✓', pro: '✓' },
+  { label: 'No Ads', free: '✗', pro: '✓' },
+  { label: 'Weekly Email', free: '✗', pro: '✓' },
 ]
 
 const features = [
@@ -101,15 +96,33 @@ const highlights = [
 // Slide Bodies (content below the fixed header)
 // ---------------------------------------------------------------------------
 
-function HeroBody() {
+function HeroBodyMobile() {
+  return (
+    <div className="flex flex-col items-center gap-3">
+      <div className="flex flex-col gap-1.5">
+        {highlights.map((h) => (
+          <span
+            key={h.title}
+            className="flex items-center gap-2 text-sm text-text-secondary"
+          >
+            <Check className="w-4 h-4 text-emerald-500 shrink-0" />
+            {h.title} — {h.description}
+          </span>
+        ))}
+      </div>
+      <Link to="/login">
+        <Button className="px-6 text-xs">Get Started Free</Button>
+      </Link>
+    </div>
+  )
+}
+
+function HeroBodyWeb() {
   return (
     <div className="flex flex-col items-center">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center gap-5 sm:gap-8">
+      <div className="flex items-center justify-center gap-8">
         {highlights.map((h) => (
-          <div
-            key={h.title}
-            className="flex items-start gap-3 sm:flex-col sm:items-center sm:text-center"
-          >
+          <div key={h.title} className="flex flex-col items-center text-center">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white">
               <h.icon className="h-4 w-4" strokeWidth={1.5} />
             </div>
@@ -129,9 +142,45 @@ function HeroBody() {
   )
 }
 
-function FeaturesBody() {
+function HeroBody() {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 px-2">
+    <>
+      <div className="sm:hidden">
+        <HeroBodyMobile />
+      </div>
+      <div className="hidden sm:block">
+        <HeroBodyWeb />
+      </div>
+    </>
+  )
+}
+
+function FeaturesBodyMobile() {
+  return (
+    <div className="grid grid-cols-1 gap-2">
+      {features.map((f) => (
+        <div key={f.title} className="flex items-start gap-2">
+          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-brand-50 dark:bg-brand-950">
+            <f.icon
+              className="h-3.5 w-3.5 text-brand-600 dark:text-brand-400"
+              strokeWidth={1.5}
+            />
+          </div>
+          <div>
+            <p className="text-xs font-medium text-text-primary">{f.title}</p>
+            <p className="text-[11px] leading-tight text-text-secondary">
+              {f.description}
+            </p>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function FeaturesBodyWeb() {
+  return (
+    <div className="grid grid-cols-2 gap-3 px-2">
       {features.map((f) => (
         <div key={f.title} className="flex items-start gap-3">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-50 dark:bg-brand-950">
@@ -150,14 +199,52 @@ function FeaturesBody() {
   )
 }
 
-function HowItWorksBody() {
+function FeaturesBody() {
+  return (
+    <>
+      <div className="sm:hidden">
+        <FeaturesBodyMobile />
+      </div>
+      <div className="hidden sm:block">
+        <FeaturesBodyWeb />
+      </div>
+    </>
+  )
+}
+
+function HowItWorksBodyMobile() {
+  return (
+    <div className="flex flex-col gap-4">
+      {steps.map((step, i) => (
+        <div key={step.title} className="flex items-start gap-2">
+          <div className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white">
+            <step.icon className="h-3.5 w-3.5" strokeWidth={1.5} />
+            <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-surface-primary border-2 border-brand-600 text-[8px] font-bold text-brand-600">
+              {i + 1}
+            </span>
+          </div>
+          <div>
+            <p className="text-xs font-medium text-text-primary">
+              {step.title}
+            </p>
+            <p className="text-[11px] leading-tight text-text-secondary">
+              {step.description}
+            </p>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function HowItWorksBodyWeb() {
   return (
     <div className="flex flex-col items-center">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-center gap-5 sm:gap-8">
+      <div className="flex items-center justify-center gap-8">
         {steps.map((step, i) => (
           <div
             key={step.title}
-            className="flex items-start gap-3 sm:flex-col sm:items-center sm:text-center"
+            className="flex flex-col items-center text-center"
           >
             <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white">
               <step.icon className="h-4 w-4" strokeWidth={1.5} />
@@ -185,54 +272,71 @@ function HowItWorksBody() {
   )
 }
 
+function HowItWorksBody() {
+  return (
+    <>
+      <div className="sm:hidden">
+        <HowItWorksBodyMobile />
+      </div>
+      <div className="hidden sm:block">
+        <HowItWorksBodyWeb />
+      </div>
+    </>
+  )
+}
+
 function PricingBody() {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-w-lg mx-auto px-2">
-      {/* Free */}
-      <div className="rounded-lg border border-border-default bg-surface-secondary p-2.5">
-        <p className="text-sm font-semibold text-text-primary mb-0.5">Free</p>
-        <p className="text-lg font-bold text-text-primary">
-          $0
-          <span className="text-sm font-normal text-text-secondary">
-            /forever
-          </span>
-        </p>
-        <ul className="mt-2 space-y-1">
-          {FREE_FEATURES.map((f) => (
-            <li
-              key={f}
-              className="flex items-start gap-2 text-xs text-text-secondary"
-            >
-              <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
-              {f}
-            </li>
-          ))}
-        </ul>
-      </div>
-      {/* Pro */}
-      <div className="rounded-lg border-2 border-brand-500 dark:border-brand-400 bg-surface-secondary p-2.5 relative">
-        <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold bg-brand-500 text-white rounded-full">
-          <Sparkles className="w-3 h-3" />
-          Popular
-        </span>
-        <p className="text-sm font-semibold text-text-primary mb-0.5">Pro</p>
-        <p className="text-lg font-bold text-text-primary">
-          $20
-          <span className="text-sm font-normal text-text-secondary">/year</span>
-        </p>
-        <ul className="mt-2 space-y-1">
-          {PRO_FEATURES.map((f) => (
-            <li
-              key={f}
-              className="flex items-start gap-2 text-xs text-text-secondary"
-            >
-              <Check className="w-3.5 h-3.5 text-brand-500 shrink-0 mt-0.5" />
-              {f}
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
+    <table className="w-full max-w-sm sm:max-w-md mx-auto text-xs sm:text-sm">
+      <thead>
+        <tr>
+          <th className="text-left py-1 pr-2 text-text-tertiary font-normal" />
+          <th className="py-1 px-2 text-center">
+            <p className="font-semibold text-text-primary">Free</p>
+            <p className="text-text-secondary font-normal text-[10px] sm:text-xs">
+              $0
+            </p>
+          </th>
+          <th className="py-1 px-2 text-center">
+            <p className="font-semibold text-brand-500">Pro</p>
+            <p className="text-text-secondary font-normal text-[10px] sm:text-xs">
+              $20/yr
+            </p>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {PRICING_ROWS.map((row) => (
+          <tr key={row.label} className="border-t border-border-default">
+            <td className="py-1 pr-2 text-text-secondary">{row.label}</td>
+            <td className="py-1 px-2 text-center">
+              <span
+                className={
+                  row.free === '\u2713'
+                    ? 'text-emerald-500'
+                    : row.free === '\u2717'
+                      ? 'text-text-tertiary'
+                      : 'text-text-primary font-medium'
+                }
+              >
+                {row.free}
+              </span>
+            </td>
+            <td className="py-1 px-2 text-center">
+              <span
+                className={
+                  row.pro === '\u2713'
+                    ? 'text-emerald-500'
+                    : 'text-text-primary font-medium'
+                }
+              >
+                {row.pro}
+              </span>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   )
 }
 
@@ -305,7 +409,7 @@ export function HeroCard({ onDismiss }: { onDismiss: () => void }) {
 
       <div className="px-8 pt-3 pb-1">
         {/* Fixed-position header */}
-        <div className="text-center mb-3">
+        <div className="text-center mb-2 sm:mb-3 h-[44px] sm:h-auto flex flex-col justify-center">
           <h3 className="text-base font-semibold text-text-primary">
             {slide.title}
           </h3>
