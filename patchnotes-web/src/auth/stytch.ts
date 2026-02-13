@@ -1,5 +1,4 @@
-import { createStytchUIClient } from '@stytch/react'
-import { Products } from '@stytch/vanilla-js'
+import { createStytchClient, Products } from '@stytch/react'
 
 const publicToken = import.meta.env.VITE_STYTCH_PUBLIC_TOKEN
 
@@ -9,7 +8,7 @@ if (!publicToken) {
   )
 }
 
-export const stytchClient = createStytchUIClient(publicToken || '', {
+export const stytchClient = createStytchClient(publicToken || '', {
   cookieOptions: {
     domain: import.meta.env.PROD ? '.myreleasenotes.ai' : undefined,
   },
@@ -37,61 +36,53 @@ export const stytchLoginConfig = {
   }),
 }
 
-// Theme-aware styles for Stytch login component
-export function getStytchStyles(isDark: boolean) {
-  // Use transparent container to blend with page background
-  // Style inputs with borders instead of background contrast
-  const colors = isDark
-    ? {
-        surface: 'transparent',
-        text: '#e5e7eb',
-        textSecondary: '#9ca3af',
-        border: '#374151',
-        inputBg: 'rgba(255, 255, 255, 0.05)',
-        brand: '#818cf8',
-      }
-    : {
-        surface: 'transparent',
-        text: '#1f2937',
-        textSecondary: '#6b7280',
-        border: '#d1d5db',
-        inputBg: '#ffffff',
-        brand: '#4f46e5',
-      }
-
+// Theme-aware presentation for Stytch login component
+export function getStytchPresentation(isDark: boolean) {
   return {
-    fontFamily: '"Inter", ui-sans-serif, system-ui, sans-serif',
-    container: {
-      backgroundColor: colors.surface,
-      borderColor: colors.border,
-      borderRadius: '12px',
-    },
-    colors: {
-      primary: colors.text,
-      secondary: colors.textSecondary,
-      success: '#10b981',
-      error: '#ef4444',
-    },
-    buttons: {
-      primary: {
-        backgroundColor: colors.brand,
-        borderColor: colors.brand,
-        borderRadius: '8px',
-        textColor: '#ffffff',
-      },
-      secondary: {
-        backgroundColor: 'transparent',
-        borderColor: colors.border,
-        borderRadius: '8px',
-        textColor: colors.text,
-      },
-    },
-    inputs: {
-      backgroundColor: colors.inputBg,
-      borderColor: colors.border,
-      borderRadius: '8px',
-      textColor: colors.text,
-      placeholderColor: colors.textSecondary,
-    },
+    theme: isDark
+      ? {
+          'color-scheme': 'dark' as const,
+          'font-family': '"Inter", ui-sans-serif, system-ui, sans-serif',
+          primary: '#818cf8',
+          'primary-foreground': '#ffffff',
+          background: 'transparent',
+          foreground: '#e5e7eb',
+          secondary: '#374151',
+          'secondary-foreground': '#e5e7eb',
+          muted: '#1f2937',
+          'muted-foreground': '#9ca3af',
+          border: '#374151',
+          input: '#374151',
+          ring: '#818cf8',
+          destructive: '#ef4444',
+          'destructive-foreground': '#ffffff',
+          warning: '#f59e0b',
+          success: '#10b981',
+          'button-radius': '8px',
+          'input-radius': '8px',
+          'container-radius': '12px',
+        }
+      : {
+          'color-scheme': 'light' as const,
+          'font-family': '"Inter", ui-sans-serif, system-ui, sans-serif',
+          primary: '#4f46e5',
+          'primary-foreground': '#ffffff',
+          background: 'transparent',
+          foreground: '#1f2937',
+          secondary: '#f3f4f6',
+          'secondary-foreground': '#1f2937',
+          muted: '#f9fafb',
+          'muted-foreground': '#6b7280',
+          border: '#d1d5db',
+          input: '#d1d5db',
+          ring: '#4f46e5',
+          destructive: '#ef4444',
+          'destructive-foreground': '#ffffff',
+          warning: '#f59e0b',
+          success: '#10b981',
+          'button-radius': '8px',
+          'input-radius': '8px',
+          'container-radius': '12px',
+        },
   }
 }

@@ -3,7 +3,7 @@ import { useStytchUser } from '@stytch/react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { useEffect, useMemo } from 'react'
 import { ArrowLeft } from 'lucide-react'
-import { stytchLoginConfig, getStytchStyles } from '../auth/stytch'
+import { stytchLoginConfig, getStytchPresentation } from '../auth/stytch'
 import { useTheme } from '../components/theme'
 import { ThemeToggle } from '../components/theme'
 
@@ -12,8 +12,8 @@ export function Login() {
   const navigate = useNavigate()
   const { resolvedTheme } = useTheme()
 
-  const stytchStyles = useMemo(
-    () => getStytchStyles(resolvedTheme === 'dark'),
+  const stytchPresentation = useMemo(
+    () => getStytchPresentation(resolvedTheme === 'dark'),
     [resolvedTheme]
   )
 
@@ -62,7 +62,10 @@ export function Login() {
 
       {/* Main content */}
       <main className="relative z-10 flex flex-col items-center justify-center px-4 pt-24 pb-24">
-        <StytchLogin config={stytchLoginConfig} styles={stytchStyles} />
+        <StytchLogin
+          config={stytchLoginConfig}
+          presentation={stytchPresentation}
+        />
 
         {/* Footer text */}
         <p className="mt-6 text-center text-xs text-text-tertiary">
