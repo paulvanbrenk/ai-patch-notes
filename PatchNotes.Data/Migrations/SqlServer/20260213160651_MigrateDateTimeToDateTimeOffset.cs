@@ -79,13 +79,23 @@ namespace PatchNotes.Data.Migrations.SqlServer
                 oldType: "datetime2",
                 oldNullable: true);
 
-            migrationBuilder.AlterColumn<DateTimeOffset>(
-                name: "PublishedAt",
-                table: "Releases",
-                type: "datetimeoffset",
-                nullable: false,
-                oldClrType: typeof(DateTime),
-                oldType: "datetime2");
+            // AlterColumn on an indexed column causes EF to DROP/CREATE the index.
+            // The index may not exist on all environments, so handle it with raw SQL.
+            migrationBuilder.Sql(@"
+                IF EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_Releases_PublishedAt' AND object_id = OBJECT_ID('Releases'))
+                    DROP INDEX [IX_Releases_PublishedAt] ON [Releases];
+
+                DECLARE @var_pub nvarchar(max);
+                SELECT @var_pub = QUOTENAME([d].[name])
+                FROM [sys].[default_constraints] [d]
+                INNER JOIN [sys].[columns] [c] ON [d].[parent_column_id] = [c].[column_id] AND [d].[parent_object_id] = [c].[object_id]
+                WHERE ([d].[parent_object_id] = OBJECT_ID(N'[Releases]') AND [c].[name] = N'PublishedAt');
+                IF @var_pub IS NOT NULL EXEC(N'ALTER TABLE [Releases] DROP CONSTRAINT ' + @var_pub + ';');
+
+                ALTER TABLE [Releases] ALTER COLUMN [PublishedAt] datetimeoffset NOT NULL;
+
+                CREATE INDEX [IX_Releases_PublishedAt] ON [Releases] ([PublishedAt]);
+            ");
 
             migrationBuilder.AlterColumn<DateTimeOffset>(
                 name: "FetchedAt",
