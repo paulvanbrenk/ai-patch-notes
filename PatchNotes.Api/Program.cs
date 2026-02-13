@@ -92,7 +92,7 @@ builder.Services.AddCors(options =>
                       return isAllowed;
                   })
               .WithHeaders("Content-Type", "X-API-Key", "Accept")
-              .WithMethods("GET", "POST", "PATCH", "DELETE")
+              .WithMethods("GET", "POST", "PUT", "PATCH", "DELETE")
               .AllowCredentials();
     });
 });
