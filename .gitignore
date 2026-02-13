@@ -52,3 +52,6 @@ node_modules/
 !.claude/commands/
 .logs/
 state.json
+
+# Gas Town (added by gt)
+.claude/
