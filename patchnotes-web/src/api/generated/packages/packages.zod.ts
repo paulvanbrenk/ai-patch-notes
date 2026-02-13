@@ -15,8 +15,8 @@ export const GetPackagesResponseItem = zod.object({
   "githubOwner": zod.string(),
   "githubRepo": zod.string(),
   "tagPrefix": zod.string().nullish(),
-  "lastFetchedAt": zod.iso.datetime({}).nullish(),
-  "createdAt": zod.iso.datetime({}).optional()
+  "lastFetchedAt": zod.iso.datetime({"offset":true}).nullish(),
+  "createdAt": zod.iso.datetime({"offset":true}).optional()
 })
 export const GetPackagesResponse = zod.array(GetPackagesResponseItem)
 
@@ -38,8 +38,8 @@ export const GetPackageResponse = zod.object({
   "githubOwner": zod.string(),
   "githubRepo": zod.string(),
   "tagPrefix": zod.string().nullish(),
-  "lastFetchedAt": zod.iso.datetime({}).nullish(),
-  "createdAt": zod.iso.datetime({}).optional()
+  "lastFetchedAt": zod.iso.datetime({"offset":true}).nullish(),
+  "createdAt": zod.iso.datetime({"offset":true}).optional()
 })
 
 export const UpdatePackageParams = zod.object({
@@ -60,8 +60,8 @@ export const UpdatePackageResponse = zod.object({
   "githubOwner": zod.string(),
   "githubRepo": zod.string(),
   "tagPrefix": zod.string().nullish(),
-  "lastFetchedAt": zod.iso.datetime({}).nullish(),
-  "createdAt": zod.iso.datetime({}).optional()
+  "lastFetchedAt": zod.iso.datetime({"offset":true}).nullish(),
+  "createdAt": zod.iso.datetime({"offset":true}).optional()
 })
 
 export const DeletePackageParams = zod.object({
@@ -78,9 +78,9 @@ export const GetPackageReleasesResponseItem = zod.object({
   "title": zod.string().nullish(),
   "body": zod.string().nullish(),
   "summary": zod.string().nullish(),
-  "summaryGeneratedAt": zod.iso.datetime({}).nullish(),
-  "publishedAt": zod.iso.datetime({}).optional(),
-  "fetchedAt": zod.iso.datetime({}).optional(),
+  "summaryGeneratedAt": zod.iso.datetime({"offset":true}).nullish(),
+  "publishedAt": zod.iso.datetime({"offset":true}).optional(),
+  "fetchedAt": zod.iso.datetime({"offset":true}).optional(),
   "package": zod.object({
   "id": zod.string(),
   "name": zod.string(),

@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useStytchUser } from '@stytch/react'
+import * as z from 'zod'
 import type { GetReleasesParams } from './generated/model'
 
 import {
@@ -29,12 +30,26 @@ import {
 } from './generated/releases/releases.zod'
 import { GetWatchlistResponse } from './generated/watchlist/watchlist.zod'
 
+// ── Helpers ─────────────────────────────────────────────────
+
+function safeParse<T extends z.ZodType>(
+  schema: T,
+  data: unknown
+): z.output<T> | null {
+  const result = schema.safeParse(data)
+  if (!result.success) {
+    console.error('[Zod validation error]', z.prettifyError(result.error))
+    return null
+  }
+  return result.data
+}
+
 // ── Query Hooks ──────────────────────────────────────────────
 
 export function usePackages() {
   return useGetPackages({
     query: {
-      select: (res) => GetPackagesResponse.parse(res.data),
+      select: (res) => safeParse(GetPackagesResponse, res.data),
     },
   })
 }
@@ -42,7 +57,7 @@ export function usePackages() {
 export function usePackage(id: string) {
   return useGetPackage(id, {
     query: {
-      select: (res) => GetPackageResponse.parse(res.data),
+      select: (res) => safeParse(GetPackageResponse, res.data),
     },
   })
 }
@@ -66,7 +81,7 @@ export function useReleases(options?: ReleasesOptions) {
 
   return useGetReleases(params, {
     query: {
-      select: (res) => GetReleasesResponse.parse(res.data),
+      select: (res) => safeParse(GetReleasesResponse, res.data),
     },
   })
 }
@@ -74,7 +89,7 @@ export function useReleases(options?: ReleasesOptions) {
 export function useRelease(id: string) {
   return useGetRelease(id, {
     query: {
-      select: (res) => GetReleaseResponse.parse(res.data),
+      select: (res) => safeParse(GetReleaseResponse, res.data),
     },
   })
 }
@@ -82,7 +97,7 @@ export function useRelease(id: string) {
 export function usePackageReleases(packageId: string) {
   return useGetPackageReleases(packageId, {
     query: {
-      select: (res) => GetPackageReleasesResponse.parse(res.data),
+      select: (res) => safeParse(GetPackageReleasesResponse, res.data),
     },
   })
 }
@@ -141,7 +156,7 @@ export function useWatchlist() {
   return useGetWatchlist({
     query: {
       enabled: !!user,
-      select: (res) => GetWatchlistResponse.parse(res.data),
+      select: (res) => safeParse(GetWatchlistResponse, res.data),
     },
   })
 }

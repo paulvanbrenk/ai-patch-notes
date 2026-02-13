@@ -23,8 +23,8 @@ export const GetPackageSummariesResponseItem = zod.object({
   "majorVersion": zod.number().optional(),
   "isPrerelease": zod.boolean().optional(),
   "summary": zod.string().nullish(),
-  "generatedAt": zod.iso.datetime({}).optional(),
-  "updatedAt": zod.iso.datetime({}).nullish()
+  "generatedAt": zod.iso.datetime({"offset":true}).optional(),
+  "updatedAt": zod.iso.datetime({"offset":true}).nullish()
 })
 export const GetPackageSummariesResponse = zod.array(GetPackageSummariesResponseItem)
 
@@ -41,8 +41,8 @@ export const GetSummariesResponseItem = zod.object({
   "majorVersion": zod.number().optional(),
   "isPrerelease": zod.boolean().optional(),
   "summary": zod.string().nullish(),
-  "generatedAt": zod.iso.datetime({}).optional(),
-  "updatedAt": zod.iso.datetime({}).nullish()
+  "generatedAt": zod.iso.datetime({"offset":true}).optional(),
+  "updatedAt": zod.iso.datetime({"offset":true}).nullish()
 })
 export const GetSummariesResponse = zod.array(GetSummariesResponseItem)
 
