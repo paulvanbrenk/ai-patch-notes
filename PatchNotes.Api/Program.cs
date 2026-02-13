@@ -52,6 +52,7 @@ if (builder.Environment.IsProduction() || builder.Environment.IsStaging())
     }
     builder.Services.AddApplicationInsightsTelemetry();
 }
+builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 builder.Services.AddPatchNotesDbContext(builder.Configuration);
 builder.Services.AddHttpClient();

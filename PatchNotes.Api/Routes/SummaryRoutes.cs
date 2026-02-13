@@ -7,8 +7,10 @@ public static class SummaryRoutes
 {
     public static WebApplication MapSummaryRoutes(this WebApplication app)
     {
+        var summariesGroup = app.MapGroup("/api").WithTags("Summaries");
+
         // GET /api/packages/{id}/summaries - Get all release summaries for a package
-        app.MapGet("/api/packages/{id}/summaries", async (
+        summariesGroup.MapGet("/packages/{id}/summaries", async (
             string id,
             bool? includePrerelease,
             int? majorVersion,
@@ -36,24 +38,27 @@ public static class SummaryRoutes
 
             var summaries = await query
                 .OrderByDescending(s => s.MajorVersion)
-                .Select(s => new
+                .Select(s => new ReleaseSummaryDto
                 {
-                    s.Id,
-                    s.PackageId,
+                    Id = s.Id,
+                    PackageId = s.PackageId,
                     PackageName = s.Package.Name,
-                    s.MajorVersion,
-                    s.IsPrerelease,
-                    s.Summary,
-                    s.GeneratedAt,
-                    s.UpdatedAt
+                    MajorVersion = s.MajorVersion,
+                    IsPrerelease = s.IsPrerelease,
+                    Summary = s.Summary,
+                    GeneratedAt = s.GeneratedAt,
+                    UpdatedAt = s.UpdatedAt
                 })
                 .ToListAsync();
 
             return Results.Ok(summaries);
-        });
+        })
+        .Produces<List<ReleaseSummaryDto>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound)
+        .WithName("GetPackageSummaries");
 
         // GET /api/summaries - Get summaries across all packages (or filtered)
-        app.MapGet("/api/summaries", async (
+        summariesGroup.MapGet("/summaries", async (
             string? packages,
             bool? includePrerelease,
             int? limit,
@@ -85,22 +90,36 @@ public static class SummaryRoutes
             var summaries = await query
                 .OrderByDescending(s => s.MajorVersion)
                 .Take(take)
-                .Select(s => new
+                .Select(s => new ReleaseSummaryDto
                 {
-                    s.Id,
-                    s.PackageId,
+                    Id = s.Id,
+                    PackageId = s.PackageId,
                     PackageName = s.Package.Name,
-                    s.MajorVersion,
-                    s.IsPrerelease,
-                    s.Summary,
-                    s.GeneratedAt,
-                    s.UpdatedAt
+                    MajorVersion = s.MajorVersion,
+                    IsPrerelease = s.IsPrerelease,
+                    Summary = s.Summary,
+                    GeneratedAt = s.GeneratedAt,
+                    UpdatedAt = s.UpdatedAt
                 })
                 .ToListAsync();
 
             return Results.Ok(summaries);
-        });
+        })
+        .Produces<List<ReleaseSummaryDto>>(StatusCodes.Status200OK)
+        .WithName("GetSummaries");
 
         return app;
     }
+}
+
+public class ReleaseSummaryDto
+{
+    public required string Id { get; set; }
+    public required string PackageId { get; set; }
+    public required string PackageName { get; set; }
+    public int MajorVersion { get; set; }
+    public bool IsPrerelease { get; set; }
+    public string? Summary { get; set; }
+    public DateTime GeneratedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
 }

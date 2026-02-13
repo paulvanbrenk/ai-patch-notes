@@ -8,21 +8,23 @@ public static class UserRoutes
 {
     public static WebApplication MapUserRoutes(this WebApplication app)
     {
+        var group = app.MapGroup("/api/users").WithTags("Users");
+
         // GET /api/users/me - Get current authenticated user
-        app.MapGet("/api/users/me", async (HttpContext httpContext, PatchNotesDbContext db) =>
+        group.MapGet("/me", async (HttpContext httpContext, PatchNotesDbContext db) =>
         {
             var stytchUserId = httpContext.Items["StytchUserId"] as string;
 
             var user = await db.Users
                 .Where(u => u.StytchUserId == stytchUserId)
-                .Select(u => new
+                .Select(u => new UserDto
                 {
-                    u.Id,
-                    u.StytchUserId,
-                    u.Email,
-                    u.Name,
-                    u.CreatedAt,
-                    u.LastLoginAt
+                    Id = u.Id,
+                    StytchUserId = u.StytchUserId,
+                    Email = u.Email,
+                    Name = u.Name,
+                    CreatedAt = u.CreatedAt,
+                    LastLoginAt = u.LastLoginAt
                 })
                 .FirstOrDefaultAsync();
 
@@ -33,10 +35,13 @@ public static class UserRoutes
 
             return Results.Ok(user);
         })
-        .AddEndpointFilterFactory(RouteUtils.CreateAuthFilter());
+        .AddEndpointFilterFactory(RouteUtils.CreateAuthFilter())
+        .Produces<UserDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound)
+        .WithName("GetCurrentUser");
 
         // POST /api/users/login - Create or update user on login (called from frontend after auth)
-        app.MapPost("/api/users/login", async (
+        group.MapPost("/login", async (
             HttpContext httpContext,
             PatchNotesDbContext db,
             IOptions<DefaultWatchlistOptions> watchlistOptions) =>
@@ -97,18 +102,30 @@ public static class UserRoutes
                 await db.SaveChangesAsync();
             }
 
-            return Results.Ok(new
+            return Results.Ok(new UserDto
             {
-                user.Id,
-                user.StytchUserId,
-                user.Email,
-                user.Name,
-                user.CreatedAt,
-                user.LastLoginAt
+                Id = user.Id,
+                StytchUserId = user.StytchUserId,
+                Email = user.Email,
+                Name = user.Name,
+                CreatedAt = user.CreatedAt,
+                LastLoginAt = user.LastLoginAt
             });
         })
-        .AddEndpointFilterFactory(RouteUtils.CreateAuthFilter());
+        .AddEndpointFilterFactory(RouteUtils.CreateAuthFilter())
+        .Produces<UserDto>(StatusCodes.Status200OK)
+        .WithName("LoginUser");
 
         return app;
     }
+}
+
+public class UserDto
+{
+    public required string Id { get; set; }
+    public required string StytchUserId { get; set; }
+    public string? Email { get; set; }
+    public string? Name { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime? LastLoginAt { get; set; }
 }
