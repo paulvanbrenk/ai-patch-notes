@@ -76,7 +76,10 @@ jobs:
 
       - name: Check OpenAPI spec is up to date
         run: |
-          diff patchnotes-web/openapi.json /tmp/openapi.json || {
+          # Strip "servers" block (contains localhost URL that varies by environment)
+          jq 'del(.servers)' patchnotes-web/openapi.json > /tmp/committed.json
+          jq 'del(.servers)' /tmp/openapi.json > /tmp/exported.json
+          diff /tmp/committed.json /tmp/exported.json || {
             echo "::error::OpenAPI spec is stale! Run the API locally and update patchnotes-web/openapi.json"
             exit 1
           }
