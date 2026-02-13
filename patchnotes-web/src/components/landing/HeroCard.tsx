@@ -168,7 +168,7 @@ function FeaturesBodyMobile() {
           </div>
           <div>
             <p className="text-xs font-medium text-text-primary">{f.title}</p>
-            <p className="text-[11px] leading-tight text-text-secondary">
+            <p className="text-xs leading-tight text-text-secondary">
               {f.description}
             </p>
           </div>
@@ -219,7 +219,7 @@ function HowItWorksBodyMobile() {
         <div key={step.title} className="flex items-start gap-2">
           <div className="relative flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white">
             <step.icon className="h-3.5 w-3.5" strokeWidth={1.5} />
-            <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-surface-primary border-2 border-brand-600 text-[8px] font-bold text-brand-600">
+            <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-surface-primary border-2 border-brand-600 text-2xs font-bold text-brand-600">
               {i + 1}
             </span>
           </div>
@@ -227,7 +227,7 @@ function HowItWorksBodyMobile() {
             <p className="text-xs font-medium text-text-primary">
               {step.title}
             </p>
-            <p className="text-[11px] leading-tight text-text-secondary">
+            <p className="text-xs leading-tight text-text-secondary">
               {step.description}
             </p>
           </div>
@@ -248,7 +248,7 @@ function HowItWorksBodyWeb() {
           >
             <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white">
               <step.icon className="h-4 w-4" strokeWidth={1.5} />
-              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-surface-primary border-2 border-brand-600 text-[9px] font-bold text-brand-600">
+              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-surface-primary border-2 border-brand-600 text-2xs font-bold text-brand-600">
                 {i + 1}
               </span>
             </div>
@@ -293,15 +293,11 @@ function PricingBody() {
           <th className="text-left py-1 pr-2 text-text-tertiary font-normal" />
           <th className="py-1 px-2 text-center">
             <p className="font-semibold text-text-primary">Free</p>
-            <p className="text-text-secondary font-normal text-[10px] sm:text-xs">
-              $0
-            </p>
+            <p className="text-text-secondary font-normal text-xs">$0</p>
           </th>
           <th className="py-1 px-2 text-center">
             <p className="font-semibold text-brand-500">Pro</p>
-            <p className="text-text-secondary font-normal text-[10px] sm:text-xs">
-              $20/yr
-            </p>
+            <p className="text-text-secondary font-normal text-xs">$20/yr</p>
           </th>
         </tr>
       </thead>
