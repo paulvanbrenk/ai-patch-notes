@@ -240,10 +240,10 @@ public static class ReleaseRoutes
                 {
                     logger.LogError(ex, "AI summarization failed for release {ReleaseId} during streaming", id);
                     var errorData = JsonSerializer.Serialize(new { type = "error", message = "AI summarization service is currently unavailable. Please try again later." });
-                    await httpContext.Response.WriteAsync($"id: {++eventId}\ndata: {errorData}\n\n");
+                    await httpContext.Response.WriteAsync($"id: {++eventId}\ndata: {errorData}\n\n", httpContext.RequestAborted);
                 }
 
-                await httpContext.Response.WriteAsync($"id: {++eventId}\ndata: [DONE]\n\n");
+                await httpContext.Response.WriteAsync($"id: {++eventId}\ndata: [DONE]\n\n", httpContext.RequestAborted);
 
                 return Results.Empty;
             }
