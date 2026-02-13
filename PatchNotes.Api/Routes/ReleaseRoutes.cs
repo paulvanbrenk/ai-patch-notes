@@ -189,6 +189,8 @@ public static class ReleaseRoutes
                 httpContext.Response.Headers.Connection = "keep-alive";
 
                 var fullSummary = new System.Text.StringBuilder();
+                // Sequential counter for event ordering and dropped-event detection.
+                // Does NOT enable SSE resumability (no Last-Event-ID handling).
                 var eventId = 0;
 
                 try
@@ -240,10 +242,10 @@ public static class ReleaseRoutes
                 {
                     logger.LogError(ex, "AI summarization failed for release {ReleaseId} during streaming", id);
                     var errorData = JsonSerializer.Serialize(new { type = "error", message = "AI summarization service is currently unavailable. Please try again later." });
-                    await httpContext.Response.WriteAsync($"id: {++eventId}\ndata: {errorData}\n\n");
+                    await httpContext.Response.WriteAsync($"id: {++eventId}\ndata: {errorData}\n\n", httpContext.RequestAborted);
                 }
 
-                await httpContext.Response.WriteAsync($"id: {++eventId}\ndata: [DONE]\n\n");
+                await httpContext.Response.WriteAsync($"id: {++eventId}\ndata: [DONE]\n\n", httpContext.RequestAborted);
 
                 return Results.Empty;
             }
