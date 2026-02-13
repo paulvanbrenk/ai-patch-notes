@@ -285,7 +285,7 @@ export function UserMenu() {
     return (
       <Link
         to="/login"
-        className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium
+        className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium cursor-default
           text-text-primary bg-surface-primary border border-border-default
           hover:border-border-default hover:bg-surface-tertiary
           transition-colors duration-150"
