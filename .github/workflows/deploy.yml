@@ -154,7 +154,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: production
-      url: https://app.mypkgupdate.com
+      url: https://app.myreleasenotes.ai
     steps:
       - uses: actions/checkout@v6
 

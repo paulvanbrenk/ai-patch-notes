@@ -1,4 +1,3 @@
-/* eslint-disable react-refresh/only-export-components */
 import { Link } from '@tanstack/react-router'
 import { Header, HeaderTitle, Container, Button } from '../components/ui'
 import { ThemeToggle } from '../components/theme'
@@ -34,10 +33,10 @@ export function Privacy() {
               collect, use, and protect your information when you use our
               service at{' '}
               <a
-                href="https://app.mypkgupdate.com"
+                href="https://app.myreleasenotes.ai"
                 className="text-brand-500 hover:underline"
               >
-                app.mypkgupdate.com
+                app.myreleasenotes.ai
               </a>
               .
             </p>

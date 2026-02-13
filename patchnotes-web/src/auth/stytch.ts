@@ -1,4 +1,4 @@
-import { StytchUIClient } from '@stytch/vanilla-js'
+import { createStytchClient } from '@stytch/react'
 import { Products } from '@stytch/vanilla-js'
 
 const publicToken = import.meta.env.VITE_STYTCH_PUBLIC_TOKEN
@@ -9,7 +9,7 @@ if (!publicToken) {
   )
 }
 
-export const stytchClient = new StytchUIClient(publicToken || '', {
+export const stytchClient = createStytchClient(publicToken || '', {
   cookieOptions: {
     domain: import.meta.env.PROD ? '.myreleasenotes.ai' : undefined,
   },
