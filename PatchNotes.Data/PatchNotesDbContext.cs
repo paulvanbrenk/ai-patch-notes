@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace PatchNotes.Data;
 
@@ -24,6 +25,24 @@ public DbSet<User> Users => Set<User>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        // SQL Server returns DateTime without DateTimeKind set, causing
+        // System.Text.Json to omit the 'Z' suffix. Force UTC kind so
+        // serialized values are valid ISO 8601 (required by Zod).
+        var utcConverter = new ValueConverter<DateTime, DateTime>(
+            v => v,
+            v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            foreach (var property in entityType.GetProperties())
+            {
+                if (property.ClrType == typeof(DateTime) || property.ClrType == typeof(DateTime?))
+                {
+                    property.SetValueConverter(utcConverter);
+                }
+            }
+        }
 
         modelBuilder.Entity<Package>(entity =>
         {
