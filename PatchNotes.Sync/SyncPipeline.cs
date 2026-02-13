@@ -86,8 +86,12 @@ public class SyncPipeline
                         _logger.LogDebug("Synced {Package}: no new releases", package.Name);
                     }
 
-                    // If this package has releases needing summaries, enqueue it
-                    if (packageResult.ReleasesNeedingSummary.Count > 0)
+                    // Enqueue if new releases need summaries or existing releases have stale summaries
+                    var hasStaleReleases = packageResult.ReleasesNeedingSummary.Count > 0
+                        || await db.Releases.AnyAsync(
+                            r => r.PackageId == package.Id && (r.Summary == null || r.SummaryStale), ct);
+
+                    if (hasStaleReleases)
                     {
                         await writer.WriteAsync(package.Id, ct);
                     }
