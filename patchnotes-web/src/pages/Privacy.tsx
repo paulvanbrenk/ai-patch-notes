@@ -1,4 +1,3 @@
-/* eslint-disable react-refresh/only-export-components */
 import { Link } from '@tanstack/react-router'
 import { Header, HeaderTitle, Container, Button } from '../components/ui'
 import { ThemeToggle } from '../components/theme'

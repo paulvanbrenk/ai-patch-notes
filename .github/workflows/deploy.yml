@@ -127,7 +127,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: production
-      url: https://api-mypkgupdate-com.azurewebsites.net
+      url: https://api.myreleasenotes.ai
     steps:
       - name: Download API artifact
         uses: actions/download-artifact@v7
@@ -145,7 +145,7 @@ jobs:
       - name: Deploy to Azure App Service
         uses: azure/webapps-deploy@v3
         with:
-          app-name: api-mypkgupdate-com
+          app-name: api-myreleasenotes-ai
           package: ./api
 
   deploy-frontend:
