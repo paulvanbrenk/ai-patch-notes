@@ -59,11 +59,13 @@ describe('HomePage', () => {
       expect(screen.getByText('lodash')).toBeInTheDocument()
     })
 
-    it('sees "Sign in to customize your feed" banner', async () => {
+    it('sees the hero card', async () => {
       render(<HomePage />)
 
       await waitFor(() => {
-        expect(screen.getByText(/to customize your feed/)).toBeInTheDocument()
+        expect(
+          screen.getByText(/Never miss a release that matters/)
+        ).toBeInTheDocument()
       })
     })
 
@@ -71,7 +73,9 @@ describe('HomePage', () => {
       render(<HomePage />)
 
       await waitFor(() => {
-        expect(screen.getByText(/to customize your feed/)).toBeInTheDocument()
+        expect(
+          screen.getByText(/Never miss a release that matters/)
+        ).toBeInTheDocument()
       })
       expect(
         screen.queryByText(/Add packages to your watchlist/)
@@ -112,7 +116,7 @@ describe('HomePage', () => {
       expect(screen.queryByText('v4.x')).not.toBeInTheDocument()
     })
 
-    it('does not show sign-in banner', async () => {
+    it('does not show hero card', async () => {
       server.use(
         http.get('/api/watchlist', () => {
           return HttpResponse.json(['pkg-react-test-id'])
@@ -124,7 +128,9 @@ describe('HomePage', () => {
       await waitFor(() => {
         expect(screen.getByText('react')).toBeInTheDocument()
       })
-      expect(screen.queryByText('Sign in')).not.toBeInTheDocument()
+      expect(
+        screen.queryByText(/Never miss a release that matters/)
+      ).not.toBeInTheDocument()
     })
   })
 
@@ -148,7 +154,7 @@ describe('HomePage', () => {
       })
     })
 
-    it('does not show sign-in banner', async () => {
+    it('does not show hero card', async () => {
       render(<HomePage />)
 
       await waitFor(() => {
@@ -156,7 +162,9 @@ describe('HomePage', () => {
           screen.getByText(/Add packages to your watchlist/)
         ).toBeInTheDocument()
       })
-      expect(screen.queryByText('Sign in')).not.toBeInTheDocument()
+      expect(
+        screen.queryByText(/Never miss a release that matters/)
+      ).not.toBeInTheDocument()
     })
   })
 })

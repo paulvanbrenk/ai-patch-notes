@@ -19,6 +19,7 @@ import {
 import { ThemeToggle } from '../components/theme'
 import { UserMenu } from '../components/auth'
 import { PackagePicker } from '../components/package-picker/PackagePicker'
+import { HeroCard } from '../components/landing/HeroCard'
 import { useFilterStore } from '../stores/filterStore'
 import { useSubscriptionStore } from '../stores/subscriptionStore'
 import {
@@ -428,9 +429,11 @@ export function HomePage() {
     showPrerelease,
     sortBy,
     groupByPackage,
+    heroDismissed,
     togglePrerelease,
     setSortBy,
     toggleGroupByPackage,
+    dismissHero,
   } = useFilterStore()
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
 
@@ -607,20 +610,8 @@ export function HomePage() {
             </div>
           </div>
 
-          {/* Watchlist Banners */}
-          {!user && (
-            <div className="mb-6 rounded-lg border border-border-default bg-surface-primary p-4 text-center">
-              <p className="text-sm text-text-secondary">
-                <a
-                  href="/login"
-                  className="font-medium text-brand-600 hover:text-brand-700"
-                >
-                  Sign in
-                </a>{' '}
-                to customize your feed
-              </p>
-            </div>
-          )}
+          {/* Hero Card for logged-out users */}
+          {!user && !heroDismissed && <HeroCard onDismiss={dismissHero} />}
           {user && watchlist && watchlist.length === 0 && !watchlistLoading && (
             <div className="mb-6 rounded-lg border border-border-default bg-surface-primary p-4 text-center">
               <p className="text-sm text-text-secondary">
