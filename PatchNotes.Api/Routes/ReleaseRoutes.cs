@@ -59,33 +59,21 @@ public static class ReleaseRoutes
                 .Include(r => r.Package)
                 .Where(r => r.PublishedAt >= cutoffDate);
 
+            if (watchlist == true && !string.IsNullOrEmpty(packages))
+            {
+                return Results.Json(new { error = "Cannot specify both 'watchlist' and 'packages' parameters" }, statusCode: 400);
+            }
+
             if (watchlist == true)
             {
                 // Explicit watchlist filter — require authentication
-                var sessionToken = httpContext.Request.Cookies["stytch_session"];
-                if (string.IsNullOrEmpty(sessionToken))
+                var userWatchlistIds = await GetAuthenticatedUserWatchlistIds(httpContext, db, stytchClient);
+                if (userWatchlistIds == null)
                 {
                     return Results.Json(new { error = "Authentication required for watchlist filter" }, statusCode: 401);
                 }
 
-                var session = await stytchClient.AuthenticateSessionAsync(sessionToken, httpContext.RequestAborted);
-                if (session == null)
-                {
-                    return Results.Json(new { error = "Authentication required for watchlist filter" }, statusCode: 401);
-                }
-
-                var user = await db.Users.FirstOrDefaultAsync(u => u.StytchUserId == session.UserId);
-                if (user == null)
-                {
-                    return Results.Json(new { error = "Authentication required for watchlist filter" }, statusCode: 401);
-                }
-
-                var watchlistIds = await db.Watchlists
-                    .Where(w => w.UserId == user.Id)
-                    .Select(w => w.PackageId)
-                    .ToListAsync();
-
-                query = query.Where(r => watchlistIds.Contains(r.PackageId));
+                query = query.Where(r => userWatchlistIds.Contains(r.PackageId));
             }
             else if (!string.IsNullOrEmpty(packages))
             {
@@ -102,12 +90,15 @@ public static class ReleaseRoutes
             else
             {
                 // No explicit packages filter — use watchlist
-                var watchlistIds = await ResolveWatchlistPackageIds(
+                var (watchlistIds, hasWatchlistConfig) = await ResolveWatchlistPackageIds(
                     httpContext, db, stytchClient, watchlistOptions.Value);
-                if (watchlistIds.Count > 0)
+
+                if (hasWatchlistConfig)
                 {
+                    // Watchlist is configured — filter to it (empty watchlist = empty results)
                     query = query.Where(r => watchlistIds.Contains(r.PackageId));
                 }
+                // else: no watchlist configured at all — show all releases
             }
 
             // Filter using denormalized version fields at DB level
@@ -325,54 +316,63 @@ public static class ReleaseRoutes
     }
 
     /// <summary>
+    /// Attempts to authenticate the user and return their watchlist package IDs.
+    /// Returns null if the user is not authenticated; returns an empty list if authenticated but no watchlist.
+    /// </summary>
+    private static async Task<List<string>?> GetAuthenticatedUserWatchlistIds(
+        HttpContext httpContext, PatchNotesDbContext db, IStytchClient stytchClient)
+    {
+        var sessionToken = httpContext.Request.Cookies["stytch_session"];
+        if (string.IsNullOrEmpty(sessionToken))
+            return null;
+
+        var session = await stytchClient.AuthenticateSessionAsync(sessionToken, httpContext.RequestAborted);
+        if (session == null)
+            return null;
+
+        var user = await db.Users.FirstOrDefaultAsync(u => u.StytchUserId == session.UserId);
+        if (user == null)
+            return null;
+
+        return await db.Watchlists
+            .Where(w => w.UserId == user.Id)
+            .Select(w => w.PackageId)
+            .ToListAsync();
+    }
+
+    /// <summary>
     /// Resolves package IDs to filter by: user's watchlist if authenticated with a non-empty
     /// watchlist, otherwise the default watchlist from config.
+    /// Returns (packageIds, hasWatchlistConfig) where hasWatchlistConfig indicates whether
+    /// any watchlist source was available (user watchlist or default config).
     /// </summary>
-    private static async Task<List<string>> ResolveWatchlistPackageIds(
+    private static async Task<(List<string> ids, bool hasWatchlistConfig)> ResolveWatchlistPackageIds(
         HttpContext httpContext, PatchNotesDbContext db,
         IStytchClient stytchClient, DefaultWatchlistOptions defaultWatchlist)
     {
-        // Try optional auth — don't require it
-        var sessionToken = httpContext.Request.Cookies["stytch_session"];
-        if (!string.IsNullOrEmpty(sessionToken))
+        var userWatchlistIds = await GetAuthenticatedUserWatchlistIds(httpContext, db, stytchClient);
+        if (userWatchlistIds is { Count: > 0 })
         {
-            var session = await stytchClient.AuthenticateSessionAsync(sessionToken, httpContext.RequestAborted);
-            if (session != null)
-            {
-                var user = await db.Users.FirstOrDefaultAsync(u => u.StytchUserId == session.UserId);
-                if (user != null)
-                {
-                    var watchlistIds = await db.Watchlists
-                        .Where(w => w.UserId == user.Id)
-                        .Select(w => w.PackageId)
-                        .ToListAsync();
-
-                    if (watchlistIds.Count > 0)
-                    {
-                        return watchlistIds;
-                    }
-                }
-            }
+            return (userWatchlistIds, true);
         }
 
         // Fall back to default watchlist
         if (defaultWatchlist.Packages.Length == 0)
         {
-            return [];
+            return ([], false);
         }
 
-        // Build separate owner/repo lists and use string concatenation for EF Core translation
         var ownerRepoPairs = defaultWatchlist.Packages
             .Select(p => p.Split('/'))
             .Where(parts => parts.Length == 2)
             .Select(parts => parts[0] + "/" + parts[1])
             .ToList();
 
-        var defaultIds = await db.Packages
+        var ids = await db.Packages
             .Where(p => ownerRepoPairs.Contains(p.GithubOwner + "/" + p.GithubRepo))
             .Select(p => p.Id)
             .ToListAsync();
 
-        return defaultIds;
+        return (ids, true);
     }
 }

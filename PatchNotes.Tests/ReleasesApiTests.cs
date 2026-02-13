@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using PatchNotes.Data;
@@ -17,6 +16,11 @@ public class ReleasesApiTests : IAsyncLifetime
     public async Task InitializeAsync()
     {
         _fixture = new PatchNotesApiFixture();
+        // Clear default watchlist so these tests aren't affected by watchlist filtering
+        _fixture.ConfigureServices(services =>
+        {
+            services.Configure<DefaultWatchlistOptions>(o => o.Packages = []);
+        });
         await _fixture.InitializeAsync();
         _client = _fixture.CreateClient();
     }
@@ -401,10 +405,10 @@ public class ReleasesWatchlistFilterTests : IAsyncLifetime
         // Act - default watchlist resolves to empty (no matching packages in DB)
         var response = await _client.GetAsync("/api/releases");
 
-        // Assert - no default watchlist packages found → no filter → returns all
+        // Assert - empty default watchlist means empty results, not all releases
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var releases = await response.Content.ReadFromJsonAsync<JsonElement>();
-        releases.GetArrayLength().Should().Be(1);
+        releases.GetArrayLength().Should().Be(0);
     }
 
     [Fact]
@@ -437,6 +441,81 @@ public class ReleasesWatchlistFilterTests : IAsyncLifetime
         var releases = await response.Content.ReadFromJsonAsync<JsonElement>();
         releases.GetArrayLength().Should().Be(1);
         releases[0].GetProperty("tag").GetString().Should().Be("v2.0.0");
+    }
+
+    [Fact]
+    public async Task GetReleases_WatchlistTrue_Authenticated_FiltersToUserWatchlist()
+    {
+        // Arrange
+        using var scope = _fixture.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
+
+        var user = await db.Users.FirstAsync(u => u.StytchUserId == PatchNotesApiFixture.TestUserId);
+        var watchedPkg = new Package { Name = "watched-pkg", Url = "https://github.com/watched/repo", GithubOwner = "watched", GithubRepo = "repo", CreatedAt = DateTime.UtcNow };
+        var otherPkg = new Package { Name = "other-pkg", Url = "https://github.com/other/repo", GithubOwner = "other", GithubRepo = "repo", CreatedAt = DateTime.UtcNow };
+        db.Packages.AddRange(watchedPkg, otherPkg);
+        await db.SaveChangesAsync();
+
+        db.Watchlists.Add(new Watchlist { UserId = user.Id, PackageId = watchedPkg.Id, CreatedAt = DateTime.UtcNow });
+        await db.SaveChangesAsync();
+
+        db.Releases.AddRange(
+            new Release { PackageId = watchedPkg.Id, Tag = "v1.0.0", PublishedAt = DateTime.UtcNow.AddDays(-1), FetchedAt = DateTime.UtcNow },
+            new Release { PackageId = otherPkg.Id, Tag = "v2.0.0", PublishedAt = DateTime.UtcNow.AddDays(-1), FetchedAt = DateTime.UtcNow }
+        );
+        await db.SaveChangesAsync();
+
+        // Act
+        var response = await _authClient.GetAsync("/api/releases?watchlist=true");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var releases = await response.Content.ReadFromJsonAsync<JsonElement>();
+        releases.GetArrayLength().Should().Be(1);
+        releases[0].GetProperty("tag").GetString().Should().Be("v1.0.0");
+    }
+
+    [Fact]
+    public async Task GetReleases_WatchlistTrue_Unauthenticated_Returns401()
+    {
+        // Act
+        var response = await _client.GetAsync("/api/releases?watchlist=true");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task GetReleases_WatchlistTrue_EmptyWatchlist_ReturnsEmpty()
+    {
+        // Arrange - user exists but has no watchlist entries
+        using var scope = _fixture.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
+
+        var otherPkg = new Package { Name = "other-pkg", Url = "https://github.com/other/repo", GithubOwner = "other", GithubRepo = "repo", CreatedAt = DateTime.UtcNow };
+        db.Packages.Add(otherPkg);
+        await db.SaveChangesAsync();
+
+        db.Releases.Add(new Release { PackageId = otherPkg.Id, Tag = "v1.0.0", PublishedAt = DateTime.UtcNow.AddDays(-1), FetchedAt = DateTime.UtcNow });
+        await db.SaveChangesAsync();
+
+        // Act
+        var response = await _authClient.GetAsync("/api/releases?watchlist=true");
+
+        // Assert - authenticated but empty watchlist returns empty, not all
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var releases = await response.Content.ReadFromJsonAsync<JsonElement>();
+        releases.GetArrayLength().Should().Be(0);
+    }
+
+    [Fact]
+    public async Task GetReleases_WatchlistTrueAndPackages_Returns400()
+    {
+        // Act - both params should be rejected
+        var response = await _authClient.GetAsync("/api/releases?watchlist=true&packages=some-id");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact]

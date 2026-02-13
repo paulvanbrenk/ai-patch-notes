@@ -21,6 +21,7 @@ public class PatchNotesApiFixture : WebApplicationFactory<Program>, IAsyncLifeti
     private readonly string _dbName = $"test_{Guid.NewGuid():N}";
     private SqliteConnection? _connection;
     private Action<IWebHostBuilder>? _additionalConfig;
+    private Action<IServiceCollection>? _additionalServices;
 
     public MockNpmHandler NpmHandler => _npmHandler;
 
@@ -31,6 +32,15 @@ public class PatchNotesApiFixture : WebApplicationFactory<Program>, IAsyncLifeti
     public void ConfigureSettings(Action<IWebHostBuilder> configure)
     {
         _additionalConfig = configure;
+    }
+
+    /// <summary>
+    /// Register additional service configuration to be applied during WebHost setup.
+    /// Must be called before accessing Services or CreateClient().
+    /// </summary>
+    public void ConfigureServices(Action<IServiceCollection> configure)
+    {
+        _additionalServices = configure;
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -63,6 +73,8 @@ public class PatchNotesApiFixture : WebApplicationFactory<Program>, IAsyncLifeti
             // Remove existing Stytch client and add mock
             services.RemoveAll<IStytchClient>();
             services.AddSingleton<IStytchClient>(new MockStytchClient(TestSessionToken, TestUserId));
+
+            _additionalServices?.Invoke(services);
         });
 
         builder.UseSetting("GitHub:Token", "test-github-token");
