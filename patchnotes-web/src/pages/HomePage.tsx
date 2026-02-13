@@ -15,6 +15,7 @@ import {
   Button,
   Badge,
   Card,
+  Tooltip,
 } from '../components/ui'
 import { ThemeToggle } from '../components/theme'
 import { UserMenu } from '../components/auth'
@@ -395,29 +396,33 @@ function SummaryCard({
 function FilterButton({
   active,
   onClick,
+  tooltip,
+  className = '',
   children,
-  title,
 }: {
   active: boolean
   onClick: () => void
+  tooltip: string
+  className?: string
   children: React.ReactNode
-  title?: string
 }) {
   return (
-    <button
-      onClick={onClick}
-      title={title}
-      className={`
-        flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-all
-        ${
-          active
-            ? 'bg-surface-primary text-text-primary shadow-sm ring-1 ring-border-default'
-            : 'text-text-secondary hover:text-text-primary hover:bg-surface-primary/50'
-        }
-      `}
-    >
-      {children}
-    </button>
+    <Tooltip label={tooltip}>
+      <button
+        onClick={onClick}
+        className={`
+          flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-all
+          ${
+            active
+              ? 'bg-surface-primary text-text-primary shadow-sm'
+              : 'text-text-secondary hover:text-text-primary hover:bg-surface-primary/50'
+          }
+          ${className}
+        `}
+      >
+        {children}
+      </button>
+    </Tooltip>
   )
 }
 
@@ -573,7 +578,10 @@ export function HomePage() {
             <FilterButton
               active={showPrerelease}
               onClick={togglePrerelease}
-              title={showPrerelease ? 'Hide pre-releases' : 'Show pre-releases'}
+              tooltip={
+                showPrerelease ? 'Hide pre-releases' : 'Show pre-releases'
+              }
+              className="rounded-lg"
             >
               {showPrerelease ? (
                 <FlaskConical className="w-4 h-4" />
@@ -584,36 +592,27 @@ export function HomePage() {
             <FilterButton
               active={groupByPackage}
               onClick={toggleGroupByPackage}
-              title={groupByPackage ? 'Disable grouping' : 'Group by package'}
+              tooltip={groupByPackage ? 'Disable grouping' : 'Group by package'}
+              className="rounded-lg"
             >
               <Group className="w-4 h-4" />
             </FilterButton>
-            <div className="flex items-center rounded-lg border border-border-default overflow-hidden">
-              <button
+            <div className="flex items-center rounded-lg border border-border-default">
+              <FilterButton
+                active={sortBy === 'name'}
                 onClick={() => setSortBy('name')}
-                title="Sort by name"
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors
-                  ${
-                    sortBy === 'name'
-                      ? 'bg-surface-primary text-text-primary'
-                      : 'bg-transparent text-text-secondary hover:text-text-primary hover:bg-surface-tertiary/50'
-                  }`}
+                tooltip="Sort by name"
               >
                 <ArrowDownAZ className="w-4 h-4" />
-              </button>
+              </FilterButton>
               <div className="w-px h-5 bg-border-default" />
-              <button
+              <FilterButton
+                active={sortBy === 'date'}
                 onClick={() => setSortBy('date')}
-                title="Sort by date"
-                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors
-                  ${
-                    sortBy === 'date'
-                      ? 'bg-surface-primary text-text-primary'
-                      : 'bg-transparent text-text-secondary hover:text-text-primary hover:bg-surface-tertiary/50'
-                  }`}
+                tooltip="Sort by date"
               >
                 <CalendarArrowDown className="w-4 h-4" />
-              </button>
+              </FilterButton>
             </div>
           </div>
           {user && watchlist && watchlist.length === 0 && !watchlistLoading && (
