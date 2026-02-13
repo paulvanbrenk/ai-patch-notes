@@ -7,8 +7,8 @@ public class Release
     public required string Tag { get; set; }
     public string? Title { get; set; }
     public string? Body { get; set; }
-    public DateTime PublishedAt { get; set; }
-    public DateTime FetchedAt { get; set; }
+    public DateTimeOffset PublishedAt { get; set; }
+    public DateTimeOffset FetchedAt { get; set; }
 
     /// <summary>
     /// Parsed major version from Tag. -1 for non-semver tags (unversioned).
@@ -38,7 +38,7 @@ public class Release
     /// <summary>
     /// When the summary was generated. Null if no summary exists.
     /// </summary>
-    public DateTime? SummaryGeneratedAt { get; set; }
+    public DateTimeOffset? SummaryGeneratedAt { get; set; }
 
     /// <summary>
     /// Indicates the existing summary is stale and needs regeneration.

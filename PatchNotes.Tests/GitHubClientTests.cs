@@ -41,8 +41,8 @@ public class GitHubClientTests : IDisposable
         // Arrange
         var releases = new[]
         {
-            new { id = 1, tag_name = "v1.0.0", name = "Release 1", body = "Body 1", draft = false, prerelease = false, published_at = DateTime.UtcNow },
-            new { id = 2, tag_name = "v1.1.0", name = "Release 2", body = "Body 2", draft = false, prerelease = true, published_at = DateTime.UtcNow }
+            new { id = 1, tag_name = "v1.0.0", name = "Release 1", body = "Body 1", draft = false, prerelease = false, published_at = DateTimeOffset.UtcNow },
+            new { id = 2, tag_name = "v1.1.0", name = "Release 2", body = "Body 2", draft = false, prerelease = true, published_at = DateTimeOffset.UtcNow }
         };
         _mockHandler.SetupResponse("repos/owner/repo/releases?per_page=30&page=1", releases);
 
@@ -109,7 +109,7 @@ public class GitHubClientTests : IDisposable
     {
         // Arrange
         var releases = Enumerable.Range(1, 10)
-            .Select(i => new { id = (long)i, tag_name = $"v{i}.0.0", draft = false, published_at = DateTime.UtcNow })
+            .Select(i => new { id = (long)i, tag_name = $"v{i}.0.0", draft = false, published_at = DateTimeOffset.UtcNow })
             .ToArray();
         _mockHandler.SetupResponse("repos/owner/repo/releases?per_page=100&page=1", releases);
 
@@ -129,10 +129,10 @@ public class GitHubClientTests : IDisposable
     {
         // Arrange
         var page1 = Enumerable.Range(1, 100)
-            .Select(i => new { id = (long)i, tag_name = $"v{i}.0.0", draft = false, published_at = DateTime.UtcNow })
+            .Select(i => new { id = (long)i, tag_name = $"v{i}.0.0", draft = false, published_at = DateTimeOffset.UtcNow })
             .ToArray();
         var page2 = Enumerable.Range(101, 50)
-            .Select(i => new { id = (long)i, tag_name = $"v{i}.0.0", draft = false, published_at = DateTime.UtcNow })
+            .Select(i => new { id = (long)i, tag_name = $"v{i}.0.0", draft = false, published_at = DateTimeOffset.UtcNow })
             .ToArray();
 
         _mockHandler.SetupResponse("repos/owner/repo/releases?per_page=100&page=1", page1);
@@ -155,7 +155,7 @@ public class GitHubClientTests : IDisposable
     {
         // Arrange
         var page1 = Enumerable.Range(1, 100)
-            .Select(i => new { id = (long)i, tag_name = $"v{i}.0.0", draft = false, published_at = DateTime.UtcNow })
+            .Select(i => new { id = (long)i, tag_name = $"v{i}.0.0", draft = false, published_at = DateTimeOffset.UtcNow })
             .ToArray();
         _mockHandler.SetupResponse("repos/owner/repo/releases?per_page=100&page=1", page1);
         _mockHandler.SetupResponse("repos/owner/repo/releases?per_page=100&page=2", Array.Empty<object>());
@@ -177,7 +177,7 @@ public class GitHubClientTests : IDisposable
     {
         // Arrange
         var page1 = Enumerable.Range(1, 100)
-            .Select(i => new { id = (long)i, tag_name = $"v{i}.0.0", draft = false, published_at = DateTime.UtcNow })
+            .Select(i => new { id = (long)i, tag_name = $"v{i}.0.0", draft = false, published_at = DateTimeOffset.UtcNow })
             .ToArray();
         _mockHandler.SetupResponse("repos/owner/repo/releases?per_page=100&page=1", page1);
         _mockHandler.SetupResponse("repos/owner/repo/releases?per_page=100&page=2", page1);

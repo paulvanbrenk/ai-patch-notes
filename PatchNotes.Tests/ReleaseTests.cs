@@ -10,8 +10,8 @@ public class ReleaseTests
         var release = new Release
         {
             Tag = "v1.0.0",
-            PublishedAt = DateTime.UtcNow,
-            FetchedAt = DateTime.UtcNow
+            PublishedAt = DateTimeOffset.UtcNow,
+            FetchedAt = DateTimeOffset.UtcNow
         };
 
         Assert.Null(release.Title);
@@ -26,8 +26,8 @@ public class ReleaseTests
             Tag = "v1.0.0",
             Title = "Initial Release",
             Body = "This is the first release",
-            PublishedAt = DateTime.UtcNow,
-            FetchedAt = DateTime.UtcNow
+            PublishedAt = DateTimeOffset.UtcNow,
+            FetchedAt = DateTimeOffset.UtcNow
         };
 
         Assert.Equal("Initial Release", release.Title);
@@ -40,8 +40,8 @@ public class ReleaseTests
         var release = new Release
         {
             Tag = "v2.0.0",
-            PublishedAt = DateTime.UtcNow,
-            FetchedAt = DateTime.UtcNow
+            PublishedAt = DateTimeOffset.UtcNow,
+            FetchedAt = DateTimeOffset.UtcNow
         };
 
         Assert.Equal("v2.0.0", release.Tag);
@@ -53,8 +53,8 @@ public class ReleaseTests
         var release = new Release
         {
             Tag = "v1.0.0",
-            PublishedAt = DateTime.UtcNow,
-            FetchedAt = DateTime.UtcNow,
+            PublishedAt = DateTimeOffset.UtcNow,
+            FetchedAt = DateTimeOffset.UtcNow,
             Summary = null,
             SummaryStale = false
         };
@@ -68,8 +68,8 @@ public class ReleaseTests
         var release = new Release
         {
             Tag = "v1.0.0",
-            PublishedAt = DateTime.UtcNow,
-            FetchedAt = DateTime.UtcNow,
+            PublishedAt = DateTimeOffset.UtcNow,
+            FetchedAt = DateTimeOffset.UtcNow,
             Summary = null,
             SummaryStale = true
         };
@@ -83,8 +83,8 @@ public class ReleaseTests
         var release = new Release
         {
             Tag = "v1.0.0",
-            PublishedAt = DateTime.UtcNow,
-            FetchedAt = DateTime.UtcNow,
+            PublishedAt = DateTimeOffset.UtcNow,
+            FetchedAt = DateTimeOffset.UtcNow,
             Summary = "A summary",
             SummaryStale = true
         };
@@ -98,8 +98,8 @@ public class ReleaseTests
         var release = new Release
         {
             Tag = "v1.0.0",
-            PublishedAt = DateTime.UtcNow,
-            FetchedAt = DateTime.UtcNow,
+            PublishedAt = DateTimeOffset.UtcNow,
+            FetchedAt = DateTimeOffset.UtcNow,
             Summary = "A summary",
             SummaryStale = false
         };
@@ -113,8 +113,8 @@ public class ReleaseTests
         var release = new Release
         {
             Tag = "v1.0.0",
-            PublishedAt = DateTime.UtcNow,
-            FetchedAt = DateTime.UtcNow
+            PublishedAt = DateTimeOffset.UtcNow,
+            FetchedAt = DateTimeOffset.UtcNow
         };
 
         Assert.True(release.SummaryStale);

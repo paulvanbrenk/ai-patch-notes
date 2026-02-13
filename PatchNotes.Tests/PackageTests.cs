@@ -35,8 +35,8 @@ public class PackageTests
         var release = new Release
         {
             Tag = "v1.0.0",
-            PublishedAt = DateTime.UtcNow,
-            FetchedAt = DateTime.UtcNow,
+            PublishedAt = DateTimeOffset.UtcNow,
+            FetchedAt = DateTimeOffset.UtcNow,
             Package = package
         };
 

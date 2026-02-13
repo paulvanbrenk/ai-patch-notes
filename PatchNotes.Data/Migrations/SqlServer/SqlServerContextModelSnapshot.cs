@@ -17,7 +17,7 @@ namespace PatchNotes.Data.Migrations.SqlServer
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.2")
+                .HasAnnotation("ProductVersion", "10.0.3")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -28,8 +28,8 @@ namespace PatchNotes.Data.Migrations.SqlServer
                         .HasMaxLength(21)
                         .HasColumnType("nvarchar(21)");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("GithubOwner")
                         .IsRequired()
@@ -41,8 +41,8 @@ namespace PatchNotes.Data.Migrations.SqlServer
                         .HasMaxLength(128)
                         .HasColumnType("nvarchar(128)");
 
-                    b.Property<DateTime?>("LastFetchedAt")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset?>("LastFetchedAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -75,8 +75,8 @@ namespace PatchNotes.Data.Migrations.SqlServer
                         .HasMaxLength(128)
                         .HasColumnType("nvarchar(128)");
 
-                    b.Property<DateTime>("ProcessedAt")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("ProcessedAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.HasKey("EventId");
 
@@ -92,8 +92,8 @@ namespace PatchNotes.Data.Migrations.SqlServer
                     b.Property<string>("Body")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("FetchedAt")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("FetchedAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<bool>("IsPrerelease")
                         .HasColumnType("bit");
@@ -112,14 +112,14 @@ namespace PatchNotes.Data.Migrations.SqlServer
                     b.Property<int>("PatchVersion")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("PublishedAt")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("PublishedAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("Summary")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("SummaryGeneratedAt")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset?>("SummaryGeneratedAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<bool>("SummaryStale")
                         .ValueGeneratedOnAdd()
@@ -157,8 +157,8 @@ namespace PatchNotes.Data.Migrations.SqlServer
                         .HasMaxLength(21)
                         .HasColumnType("nvarchar(21)");
 
-                    b.Property<DateTime>("GeneratedAt")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("GeneratedAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<bool>("IsPrerelease")
                         .HasColumnType("bit");
@@ -175,8 +175,8 @@ namespace PatchNotes.Data.Migrations.SqlServer
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.HasKey("Id");
 
@@ -192,15 +192,15 @@ namespace PatchNotes.Data.Migrations.SqlServer
                         .HasMaxLength(21)
                         .HasColumnType("nvarchar(21)");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
-                    b.Property<DateTime?>("LastLoginAt")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset?>("LastLoginAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("Name")
                         .HasMaxLength(256)
@@ -219,15 +219,15 @@ namespace PatchNotes.Data.Migrations.SqlServer
                         .HasMaxLength(128)
                         .HasColumnType("nvarchar(128)");
 
-                    b.Property<DateTime?>("SubscriptionExpiresAt")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset?>("SubscriptionExpiresAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("SubscriptionStatus")
                         .HasMaxLength(32)
                         .HasColumnType("nvarchar(32)");
 
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.HasKey("Id");
 
@@ -247,8 +247,8 @@ namespace PatchNotes.Data.Migrations.SqlServer
                         .HasMaxLength(21)
                         .HasColumnType("nvarchar(21)");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("PackageId")
                         .IsRequired()

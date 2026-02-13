@@ -120,6 +120,6 @@ public class ReleaseSummaryDto
     public int MajorVersion { get; set; }
     public bool IsPrerelease { get; set; }
     public string? Summary { get; set; }
-    public DateTime GeneratedAt { get; set; }
-    public DateTime? UpdatedAt { get; set; }
+    public DateTimeOffset GeneratedAt { get; set; }
+    public DateTimeOffset? UpdatedAt { get; set; }
 }

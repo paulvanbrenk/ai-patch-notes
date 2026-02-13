@@ -91,8 +91,6 @@ public static class StytchWebhook
                                     StytchUserId = stytchUser.UserId,
                                     Email = stytchUser.Email,
                                     Name = stytchUser.Name,
-                                    CreatedAt = DateTime.UtcNow,
-                                    UpdatedAt = DateTime.UtcNow
                                 };
                                 db.Users.Add(user);
                             }
@@ -100,7 +98,6 @@ public static class StytchWebhook
                             {
                                 user.Email = stytchUser.Email ?? user.Email;
                                 user.Name = stytchUser.Name ?? user.Name;
-                                user.UpdatedAt = DateTime.UtcNow;
                             }
 
                             await db.SaveChangesAsync();

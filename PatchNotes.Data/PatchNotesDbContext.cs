@@ -15,6 +15,25 @@ public class PatchNotesDbContext : DbContext
     {
     }
 
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        var now = DateTimeOffset.UtcNow;
+
+        foreach (var entry in ChangeTracker.Entries<IHasCreatedAt>())
+        {
+            if (entry.State == EntityState.Added)
+                entry.Entity.CreatedAt = now;
+        }
+
+        foreach (var entry in ChangeTracker.Entries<IHasUpdatedAt>())
+        {
+            if (entry.State is EntityState.Added or EntityState.Modified)
+                entry.Entity.UpdatedAt = now;
+        }
+
+        return base.SaveChangesAsync(cancellationToken);
+    }
+
     public DbSet<Package> Packages => Set<Package>();
     public DbSet<Release> Releases => Set<Release>();
 public DbSet<User> Users => Set<User>();
@@ -26,20 +45,22 @@ public DbSet<User> Users => Set<User>();
     {
         base.OnModelCreating(modelBuilder);
 
-        // SQL Server returns DateTime without DateTimeKind set, causing
-        // System.Text.Json to omit the 'Z' suffix. Force UTC kind so
-        // serialized values are valid ISO 8601 (required by Zod).
-        var utcConverter = new ValueConverter<DateTime, DateTime>(
-            v => v,
-            v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
-
-        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        // SQLite cannot translate DateTimeOffset comparisons. Store as DateTime (UTC)
+        // so queries like .Where(r => r.PublishedAt >= cutoff) work on both providers.
+        if (Database.ProviderName == "Microsoft.EntityFrameworkCore.Sqlite")
         {
-            foreach (var property in entityType.GetProperties())
+            var dtoConverter = new ValueConverter<DateTimeOffset, DateTime>(
+                v => v.UtcDateTime,
+                v => new DateTimeOffset(v, TimeSpan.Zero));
+
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
             {
-                if (property.ClrType == typeof(DateTime) || property.ClrType == typeof(DateTime?))
+                foreach (var property in entityType.GetProperties())
                 {
-                    property.SetValueConverter(utcConverter);
+                    if (property.ClrType == typeof(DateTimeOffset) || property.ClrType == typeof(DateTimeOffset?))
+                    {
+                        property.SetValueConverter(dtoConverter);
+                    }
                 }
             }
         }

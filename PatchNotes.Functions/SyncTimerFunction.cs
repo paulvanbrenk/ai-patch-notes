@@ -14,7 +14,7 @@ public class SyncTimerFunction(
         [TimerTrigger("0 0 */6 * * *")] TimerInfo timerInfo,
         CancellationToken cancellationToken)
     {
-        logger.LogInformation("Sync function triggered at {Time}", DateTime.UtcNow);
+        logger.LogInformation("Sync function triggered at {Time}", DateTimeOffset.UtcNow);
 
         var result = await pipeline.RunAsync(cancellationToken);
 

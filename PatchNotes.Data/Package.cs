@@ -1,6 +1,6 @@
 namespace PatchNotes.Data;
 
-public class Package
+public class Package : IHasCreatedAt
 {
     public string Id { get; set; } = IdGenerator.NewId();
     public required string Name { get; set; }
@@ -9,8 +9,8 @@ public class Package
     public required string GithubOwner { get; set; }
     public required string GithubRepo { get; set; }
     public string? TagPrefix { get; set; }
-    public DateTime? LastFetchedAt { get; set; }
-    public DateTime CreatedAt { get; set; }
+    public DateTimeOffset? LastFetchedAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 
     public ICollection<Release> Releases { get; set; } = [];
     public ICollection<ReleaseSummary> ReleaseSummaries { get; set; } = [];

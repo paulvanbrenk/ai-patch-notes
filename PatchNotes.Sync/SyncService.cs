@@ -109,7 +109,7 @@ public class SyncService
         }
 
         var since = package.LastFetchedAt;
-        var fetchedAt = DateTime.UtcNow;
+        var fetchedAt = DateTimeOffset.UtcNow;
         var releasesAdded = 0;
         var releasesNeedingSummary = new List<Release>();
 
@@ -261,7 +261,6 @@ public class SyncService
                 Url = $"https://github.com/{owner}/{repo}",
                 GithubOwner = owner,
                 GithubRepo = repo,
-                CreatedAt = DateTime.UtcNow
             };
             _db.Packages.Add(package);
             await _db.SaveChangesAsync(cancellationToken);
