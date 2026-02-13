@@ -1,4 +1,11 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'
+if (!import.meta.env.VITE_API_URL) {
+  throw new Error('VITE_API_URL environment variable is required')
+}
+
+/** Base URL without /api — used by custom-fetch where Orval URLs already include /api */
+export const API_ROOT = import.meta.env.VITE_API_URL as string
+
+const API_BASE_URL = `${API_ROOT}/api`
 
 export class ApiError extends Error {
   status: number
