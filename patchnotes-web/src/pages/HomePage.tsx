@@ -20,6 +20,7 @@ import { ThemeToggle } from '../components/theme'
 import { UserMenu } from '../components/auth'
 import { PackagePicker } from '../components/package-picker/PackagePicker'
 import { HeroCard } from '../components/landing/HeroCard'
+import { Logo } from '../components/landing/Logo'
 import { useFilterStore } from '../stores/filterStore'
 import { useSubscriptionStore } from '../stores/subscriptionStore'
 import {
@@ -541,7 +542,10 @@ export function HomePage() {
   return (
     <div className="min-h-screen bg-surface-secondary">
       <Header>
-        <HeaderTitle>Patch Notes</HeaderTitle>
+        <div className="flex items-center gap-2.5">
+          <Logo size={28} />
+          <HeaderTitle>Patch Notes</HeaderTitle>
+        </div>
         <div className="flex items-center gap-2">
           {user && !isPro && (
             <Button
@@ -561,6 +565,9 @@ export function HomePage() {
 
       <main className="py-8">
         <Container>
+          {/* Hero Card for logged-out users */}
+          {!user && !heroDismissed && <HeroCard onDismiss={dismissHero} />}
+
           {/* Filters */}
           <div className="flex items-center justify-end gap-2 mb-6">
             <FilterButton
@@ -609,9 +616,6 @@ export function HomePage() {
               </button>
             </div>
           </div>
-
-          {/* Hero Card for logged-out users */}
-          {!user && !heroDismissed && <HeroCard onDismiss={dismissHero} />}
           {user && watchlist && watchlist.length === 0 && !watchlistLoading && (
             <div className="mb-6 rounded-lg border border-border-default bg-surface-primary p-4 text-center">
               <p className="text-sm text-text-secondary">
