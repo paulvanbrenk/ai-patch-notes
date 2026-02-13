@@ -36,13 +36,17 @@ export function Authenticate() {
           await stytch.magicLinks.authenticate(token, {
             session_duration_minutes: 60,
           })
-
-          // Sync user to backend database
-          await api.post('/users/login')
+        } else if (tokenType === 'oauth') {
+          await stytch.oauth.authenticate(token, {
+            session_duration_minutes: 60,
+          })
         } else {
           setError(`Unknown token type: ${tokenType}`)
           return
         }
+
+        // Sync user to backend database
+        await api.post('/users/login')
         navigate({ to: '/' })
       } catch (err) {
         console.error('Authentication failed:', err)
