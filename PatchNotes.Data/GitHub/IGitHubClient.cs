@@ -36,6 +36,20 @@ public interface IGitHubClient
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Gets a single release by tag name.
+    /// </summary>
+    /// <param name="owner">The repository owner.</param>
+    /// <param name="repo">The repository name.</param>
+    /// <param name="tag">The tag name.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The release, or null if not found.</returns>
+    Task<GitHubRelease?> GetReleaseByTagAsync(
+        string owner,
+        string repo,
+        string tag,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Gets the raw content of a file from a GitHub repository.
     /// </summary>
     /// <param name="owner">The repository owner.</param>

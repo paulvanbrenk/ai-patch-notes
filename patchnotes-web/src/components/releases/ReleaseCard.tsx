@@ -47,6 +47,45 @@ function formatRelativeTime(dateString: string): string {
   return `${years} year${years > 1 ? 's' : ''} ago`
 }
 
+const MARKDOWN_LINK_RE = /^\s*\[([^\]]+)\]\((\S+)\)\s*$/
+const BARE_URL_RE = /^\s*(https?:\/\/\S+)\s*$/
+
+function ReleaseBody({ body }: { body: string }) {
+  // Markdown link like [Release](https://...)
+  const mdMatch = body.match(MARKDOWN_LINK_RE)
+  if (mdMatch) {
+    return (
+      <a
+        href={mdMatch[2]}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-brand-500 hover:underline"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {mdMatch[1]}
+      </a>
+    )
+  }
+
+  // Bare URL
+  const urlMatch = body.match(BARE_URL_RE)
+  if (urlMatch) {
+    return (
+      <a
+        href={urlMatch[1]}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-brand-500 hover:underline"
+        onClick={(e) => e.stopPropagation()}
+      >
+        View release notes
+      </a>
+    )
+  }
+
+  return <>{body}</>
+}
+
 export function ReleaseCard({
   tag,
   title,
@@ -97,7 +136,9 @@ export function ReleaseCard({
 
       {body && (
         <CardContent>
-          <div className="prose-release text-sm">{body}</div>
+          <div className="prose-release text-sm">
+            <ReleaseBody body={body} />
+          </div>
         </CardContent>
       )}
     </Card>

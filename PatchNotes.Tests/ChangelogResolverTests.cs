@@ -466,4 +466,103 @@ public class ChangelogResolverTests
     }
 
     #endregion
+
+    #region ExtractGitHubReleaseLink Tests
+
+    [Theory]
+    [InlineData("[Release](https://github.com/dotnet/core/releases/tag/v11.0.0-preview.1)", "dotnet", "core", "v11.0.0-preview.1")]
+    [InlineData("https://github.com/dotnet/dotnet/releases/tag/v11.0.100-preview.1.26104.118", "dotnet", "dotnet", "v11.0.100-preview.1.26104.118")]
+    [InlineData("[What's New](https://github.com/owner/repo/releases/tag/v2.0.0)", "owner", "repo", "v2.0.0")]
+    public void ExtractGitHubReleaseLink_ExtractsComponents(string body, string owner, string repo, string tag)
+    {
+        var result = ChangelogResolver.ExtractGitHubReleaseLink(body);
+        result.Should().NotBeNull();
+        result!.Value.owner.Should().Be(owner);
+        result!.Value.repo.Should().Be(repo);
+        result!.Value.tag.Should().Be(tag);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("Bug fixes and improvements")]
+    [InlineData("This is a long body with a link https://github.com/owner/repo/releases/tag/v1.0.0 but it has lots of surrounding context that makes it real content not just a redirect")]
+    public void ExtractGitHubReleaseLink_ReturnsNull_ForNonLinkBodies(string? body)
+    {
+        ChangelogResolver.ExtractGitHubReleaseLink(body).Should().BeNull();
+    }
+
+    #endregion
+
+    #region FollowReleaseLinksAsync Tests
+
+    [Fact]
+    public async Task FollowReleaseLinksAsync_FollowsChainOfLinks()
+    {
+        var body1 = "[Release](https://github.com/dotnet/core/releases/tag/v11.0.0-preview.1)";
+        var body2 = "https://github.com/dotnet/dotnet/releases/tag/v11.0.100-preview.1";
+        var body3 = "Actual release notes content here with details.";
+
+        _mockGitHub
+            .Setup(x => x.GetReleaseByTagAsync("dotnet", "core", "v11.0.0-preview.1", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PatchNotes.Data.GitHub.Models.GitHubRelease { TagName = "v11.0.0-preview.1", Body = body2 });
+        _mockGitHub
+            .Setup(x => x.GetReleaseByTagAsync("dotnet", "dotnet", "v11.0.100-preview.1", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PatchNotes.Data.GitHub.Models.GitHubRelease { TagName = "v11.0.100-preview.1", Body = body3 });
+
+        var result = await _resolver.FollowReleaseLinksAsync(body1);
+
+        result.Should().Be(body3);
+    }
+
+    [Fact]
+    public async Task FollowReleaseLinksAsync_StopsAtMaxHops()
+    {
+        // Create a chain: repo0 → repo1 → repo2 → repo3 → ...
+        _mockGitHub
+            .Setup(x => x.GetReleaseByTagAsync("owner", "repo0", "v1.0.0", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PatchNotes.Data.GitHub.Models.GitHubRelease { TagName = "v1.0.0", Body = "https://github.com/owner/repo1/releases/tag/v1.0.0" });
+        _mockGitHub
+            .Setup(x => x.GetReleaseByTagAsync("owner", "repo1", "v1.0.0", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PatchNotes.Data.GitHub.Models.GitHubRelease { TagName = "v1.0.0", Body = "https://github.com/owner/repo2/releases/tag/v1.0.0" });
+        _mockGitHub
+            .Setup(x => x.GetReleaseByTagAsync("owner", "repo2", "v1.0.0", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PatchNotes.Data.GitHub.Models.GitHubRelease { TagName = "v1.0.0", Body = "https://github.com/owner/repo3/releases/tag/v1.0.0" });
+        _mockGitHub
+            .Setup(x => x.GetReleaseByTagAsync("owner", "repo3", "v1.0.0", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PatchNotes.Data.GitHub.Models.GitHubRelease { TagName = "v1.0.0", Body = "https://github.com/owner/repo4/releases/tag/v1.0.0" });
+
+        var result = await _resolver.FollowReleaseLinksAsync(
+            "https://github.com/owner/repo0/releases/tag/v1.0.0", maxHops: 3);
+
+        // Should have followed 3 hops (repo0→repo1→repo2→repo3) and stopped
+        result.Should().Be("https://github.com/owner/repo3/releases/tag/v1.0.0");
+    }
+
+    [Fact]
+    public async Task FollowReleaseLinksAsync_DetectsCircularLinks()
+    {
+        var body = "[Release](https://github.com/owner/repo/releases/tag/v1.0.0)";
+
+        _mockGitHub
+            .Setup(x => x.GetReleaseByTagAsync("owner", "repo", "v1.0.0", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new PatchNotes.Data.GitHub.Models.GitHubRelease { TagName = "v1.0.0", Body = body });
+
+        var result = await _resolver.FollowReleaseLinksAsync(body);
+
+        // Should stop after detecting the circular reference
+        result.Should().Be(body);
+    }
+
+    [Fact]
+    public async Task FollowReleaseLinksAsync_ReturnsOriginal_WhenNotALink()
+    {
+        var body = "Real release notes content.";
+
+        var result = await _resolver.FollowReleaseLinksAsync(body);
+
+        result.Should().Be(body);
+    }
+
+    #endregion
 }

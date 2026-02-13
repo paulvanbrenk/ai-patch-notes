@@ -76,6 +76,31 @@ public class GitHubClient : IGitHubClient
         }
     }
 
+    public async Task<GitHubRelease?> GetReleaseByTagAsync(
+        string owner,
+        string repo,
+        string tag,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(owner);
+        ArgumentException.ThrowIfNullOrWhiteSpace(repo);
+        ArgumentException.ThrowIfNullOrWhiteSpace(tag);
+
+        var url = $"repos/{Uri.EscapeDataString(owner)}/{Uri.EscapeDataString(repo)}/releases/tags/{Uri.EscapeDataString(tag)}";
+
+        using var response = await _httpClient.GetAsync(url, cancellationToken);
+
+        if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            return null;
+
+        response.EnsureSuccessStatusCode();
+
+        var rateLimitInfo = RateLimitHelper.ParseHeaders(response.Headers);
+        RateLimitHelper.LogStatus(_logger, rateLimitInfo, $"{owner}/{repo}");
+
+        return await response.Content.ReadFromJsonAsync<GitHubRelease>(cancellationToken);
+    }
+
     public async Task<string?> GetFileContentAsync(
         string owner,
         string repo,

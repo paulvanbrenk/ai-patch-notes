@@ -36,13 +36,17 @@ public class ChangelogResolver
         RegexOptions.Compiled);
 
     private static readonly string[] ChangelogLinkTitles =
-        ["changelog", "changes", "history", "release notes", "what's changed"];
+        ["changelog", "changes", "history", "release notes", "release", "what's changed"];
 
     private static readonly string[] ChangelogUrlKeywords =
         ["changelog", "changes.md", "history.md", "release-notes"];
 
     private static readonly Regex GitHubBlobUrlPattern = new(
         @"https://github\.com/[^/]+/[^/]+/blob/[^/]+/(?<path>[^#?)]+)",
+        RegexOptions.Compiled);
+
+    private static readonly Regex GitHubReleaseUrlPattern = new(
+        @"https://github\.com/(?<owner>[^/]+)/(?<repo>[^/]+)/releases/tag/(?<tag>[^)\s#]+)",
         RegexOptions.Compiled);
 
     // Matches headings like: ## [1.2.3], ## 1.2.3, # v1.2.3, ### 1.2.3 (2024-01-15)
@@ -54,6 +58,80 @@ public class ChangelogResolver
     {
         _github = github;
         _logger = logger;
+    }
+
+    /// <summary>
+    /// Checks if a release body is essentially just a link to another GitHub release.
+    /// </summary>
+    public static (string owner, string repo, string tag)? ExtractGitHubReleaseLink(string? body)
+    {
+        if (string.IsNullOrWhiteSpace(body) || body.Length >= 300)
+            return null;
+
+        var match = GitHubReleaseUrlPattern.Match(body);
+        if (!match.Success)
+            return null;
+
+        // Only treat as a release link if the body is basically just that link
+        // (with optional markdown wrapper or minimal surrounding text)
+        var stripped = body.Trim();
+        var urlStart = match.Index;
+        var urlEnd = match.Index + match.Length;
+        var beforeUrl = stripped[..urlStart].TrimEnd('[', ' ', '\n', '\r');
+        var afterUrl = stripped[urlEnd..].TrimStart(')', ' ', '\n', '\r');
+
+        if (beforeUrl.Length > 30 || afterUrl.Length > 30)
+            return null;
+
+        return (match.Groups["owner"].Value, match.Groups["repo"].Value, match.Groups["tag"].Value);
+    }
+
+    /// <summary>
+    /// Follows cross-repo GitHub release links up to maxHops times.
+    /// Returns the final body if it has real content, otherwise the last body encountered.
+    /// </summary>
+    public async Task<string?> FollowReleaseLinksAsync(
+        string? body,
+        int maxHops = 5,
+        CancellationToken cancellationToken = default)
+    {
+        var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        for (var hop = 0; hop < maxHops; hop++)
+        {
+            var link = ExtractGitHubReleaseLink(body);
+            if (link == null)
+                break;
+
+            var key = $"{link.Value.owner}/{link.Value.repo}/{link.Value.tag}";
+            if (!visited.Add(key))
+            {
+                _logger.LogDebug("Circular release link detected at {Key}", key);
+                break;
+            }
+
+            try
+            {
+                var release = await _github.GetReleaseByTagAsync(
+                    link.Value.owner, link.Value.repo, link.Value.tag, cancellationToken);
+
+                if (release == null || string.IsNullOrWhiteSpace(release.Body))
+                {
+                    _logger.LogDebug("Release {Key} not found or has empty body", key);
+                    break;
+                }
+
+                _logger.LogDebug("Followed release link to {Key} (hop {Hop})", key, hop + 1);
+                body = release.Body;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to follow release link to {Key}", key);
+                break;
+            }
+        }
+
+        return body;
     }
 
     /// <summary>

@@ -148,6 +148,28 @@ public class SyncService
 
             var body = ghRelease.Body;
 
+            // Follow cross-repo release links (e.g. dotnet/runtime → dotnet/core → dotnet/dotnet)
+            if (_changelogResolver != null && ChangelogResolver.ExtractGitHubReleaseLink(body) != null)
+            {
+                try
+                {
+                    var followed = await _changelogResolver.FollowReleaseLinksAsync(body, cancellationToken: cancellationToken);
+                    if (followed != null && followed != body)
+                    {
+                        _logger.LogInformation(
+                            "Followed release links for {Package} {Tag}",
+                            package.Name, ghRelease.TagName);
+                        body = followed;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex,
+                        "Failed to follow release links for {Package} {Tag}, keeping original body",
+                        package.Name, ghRelease.TagName);
+                }
+            }
+
             // Resolve external changelog references
             if (_changelogResolver != null && ChangelogResolver.IsChangelogReference(body))
             {
