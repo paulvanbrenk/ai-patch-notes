@@ -30,7 +30,7 @@ export const Footer = forwardRef<HTMLElement, FooterProps>(
               </span>
               <Anvil className="w-4 h-4 text-text-tertiary" strokeWidth={1.5} />
             </div>
-            <p className="text-[10px] text-text-tertiary text-center">
+            <p className="text-xs text-text-tertiary text-center">
               GitHub is a trademark of GitHub, Inc. This site is not affiliated
               with GitHub, Inc.
             </p>
