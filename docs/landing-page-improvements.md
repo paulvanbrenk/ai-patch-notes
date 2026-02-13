@@ -148,7 +148,7 @@ Added to `index.html`:
 
 **Goal:** Improve clarity, content readability, and navigation.
 
-### 3.1 Fix the toolbar UX
+### 3.1 Fix the toolbar UX ✅ DONE
 
 Current state: 4 icon-only buttons with no labels or tooltips.
 
@@ -191,31 +191,24 @@ AFTER:
 (with #14897 and @tiangolo as clickable links)
 ```
 
-### 3.3 Improve the footer
+### 3.3 Improve the footer ✅ DONE
 
-**Partial — GitHub trademark disclaimer added ✅**
+Full footer redesign completed:
+- Left: "**My Release Notes** by [Tiny Tools](https://www.yourtinytools.com)" (inline)
+- Right: Navigation links (Home, Pricing, About, Privacy)
+- Bottom: "Forged in Gas Town · © 2026 My Release Notes · A Tiny Tools product" (single line)
+- Below: GitHub trademark disclaimer (left-aligned)
+- Responsive: stacks vertically on mobile
+- Compact spacing, non-sticky header
 
-Added a disclaimer below "Forged in Gas Town":
-> GitHub is a trademark of GitHub, Inc. This site is not affiliated with GitHub, Inc.
+New files created:
+- `src/pages/About.tsx` — About page with brand info, Gas Town story, Tiny Tools attribution
+- `src/routes/about.tsx` — TanStack Router file route for `/about`
 
-**Remaining:** Full footer redesign with navigation links.
-
-```
-Suggested layout:
-+--------------------------------------------------+
-|  Patch Notes          Home | Pricing | Privacy   |
-|  Track GitHub          GitHub | Twitter/X        |
-|  releases.                                       |
-|                       Forged in Gas Town          |
-|  GitHub is a trademark of GitHub, Inc. ...        |
-+--------------------------------------------------+
-```
-
-- Left: Brand name + one-line description
-- Right: Navigation links (Home, Pricing, Privacy, Sign In)
-- Right: Social links (GitHub repo if public, Twitter/X)
-- Bottom center: "Forged in Gas Town" as a subtle tag
-- Add copyright: "2026 Patch Notes"
+Additional changes:
+- Header changed from sticky to relative (scrolls with content)
+- "by Tiny Tools" subtitle added under header title on home page
+- Pricing card buttons pinned to bottom with `flex-col` + `mt-auto`
 
 ### 3.4 Add search/filter functionality
 
@@ -235,18 +228,16 @@ Current state: No way for users to search for or filter packages in the feed.
 
 **Goal:** Resolve naming confusion and establish visual identity.
 
-### 4.1 Resolve brand naming
+### 4.1 Resolve brand naming ✅ DONE
 
-Current conflict:
-- Domain: `myreleasenotes.ai`
-- Page title / H1: "Patch Notes"
-- API domain: `api-mypkgupdate-com`
-
-**Recommendation:** Keep "Patch Notes" as the product name (it's snappier and more memorable). The domain can differ. But be consistent everywhere:
-- Page title: "Patch Notes"
-- Header H1: "Patch Notes"
-- Meta tags: "Patch Notes - Track GitHub Releases"
-- Login page: "Patch Notes"
+Rebranded from "Patch Notes" → "My Release Notes" with "by Tiny Tools" attribution:
+- `index.html`: title, og:title, twitter:title, JSON-LD name
+- `HomePage.tsx`: HeaderTitle + "by Tiny Tools" subtitle
+- `subscription-canceled.tsx`: HeaderTitle
+- `subscription-success.tsx`: HeaderTitle + "Welcome to My Release Notes Pro!"
+- `Privacy.tsx`: Entity name → "My Release Notes ... operated by Tiny Tools LLC"
+- Footer: brand name + Tiny Tools links throughout
+- Internal identifiers (localStorage keys, package name, API codegen) left unchanged
 
 ### 4.2 Design a logo
 
@@ -344,9 +335,9 @@ The app already has `apple-mobile-web-app-capable` meta tags. Complete the PWA s
 | ✅ | Add SEO meta tags to `index.html` | Low | Very High | 2.1 |
 | ✅ | Replace vite.svg favicon | Low | High | 2.2 |
 | P1 | Fix release note markdown rendering | Low | High | 3.2 |
-| P1 | Add toolbar tooltips | Low | Medium | 3.1 |
-| P1 | Resolve brand naming consistency | Low | Medium | 4.1 |
-| P2 | Improve footer with navigation | Low | Medium | 3.3 |
+| ✅ | Add toolbar tooltips | Low | Medium | 3.1 |
+| ✅ | Resolve brand naming consistency | Low | Medium | 4.1 |
+| ✅ | Improve footer with navigation | Low | Medium | 3.3 |
 | P2 | Add search/filter for packages | Medium | High | 3.4 |
 | P2 | Add social proof / stats | Low | Medium | 5.1 |
 | ✅ | Add structured data (JSON-LD) | Low | Medium | 2.3 |
@@ -372,7 +363,14 @@ The app already has `apple-mobile-web-app-capable` meta tags. Complete the PWA s
 | `patchnotes-web/index.html` | ✅ Modified | SEO meta tags (og:*, twitter:*, canonical), JSON-LD structured data, favicon |
 | `patchnotes-web/public/favicon.svg` | ✅ Created | Branded notepad+box logo matching header |
 | `patchnotes-web/public/vite.svg` | ❌ Deleted | Default Vite favicon removed |
-| `patchnotes-web/src/components/ui/Footer.tsx` | ✅ Modified | Added GitHub trademark disclaimer below "Forged in Gas Town" |
+| `patchnotes-web/src/components/ui/Footer.tsx` | ✅ Modified | Full redesign: brand + nav links, tagline + copyright, trademark disclaimer |
+| `patchnotes-web/src/components/ui/Header.tsx` | ✅ Modified | Changed from sticky to relative positioning |
+| `patchnotes-web/src/pages/About.tsx` | ✅ Created | About page with brand info, Gas Town link, Tiny Tools attribution |
+| `patchnotes-web/src/routes/about.tsx` | ✅ Created | TanStack Router file route for /about |
+| `patchnotes-web/src/pages/Pricing.tsx` | ✅ Modified | Buttons pinned to bottom of cards with flex-col + mt-auto |
+| `patchnotes-web/src/pages/Privacy.tsx` | ✅ Modified | Entity → "My Release Notes ... operated by Tiny Tools LLC" |
+| `patchnotes-web/src/routes/subscription-canceled.tsx` | ✅ Modified | HeaderTitle → "My Release Notes" |
+| `patchnotes-web/src/routes/subscription-success.tsx` | ✅ Modified | HeaderTitle + "Welcome to My Release Notes Pro!" |
 | `patchnotes-web/src/index.css` | ✅ Modified | Added `--font-size-2xs: 0.625rem` to `@theme` for `text-2xs` utility |
 | `patchnotes-web/src/components/landing/HeroSection.tsx` | ❌ Deleted | Replaced by HeroCard carousel |
 | `patchnotes-web/src/components/landing/FeaturesSection.tsx` | ❌ Deleted | Replaced by HeroCard carousel |
@@ -385,7 +383,7 @@ The app already has `apple-mobile-web-app-capable` meta tags. Complete the PWA s
 
 | File | Purpose | Phase |
 |------|---------|-------|
-| `patchnotes-web/src/components/ui/Footer.tsx` | Navigation links, social links, copyright (disclaimer already added) | 3.3 |
+| ~~`patchnotes-web/src/components/ui/Footer.tsx`~~ | ~~Navigation links, copyright~~ | ~~3.3~~ ✅ |
 | `patchnotes-web/src/components/landing/SocialProof.tsx` | Stats bar / testimonials | 5.1 |
 | `patchnotes-web/src/components/ui/Tooltip.tsx` | Reusable tooltip component | 3.1 |
 | `patchnotes-web/src/components/ui/Skeleton.tsx` | Loading skeleton primitive | 6.1 |

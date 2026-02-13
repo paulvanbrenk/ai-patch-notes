@@ -28,10 +28,10 @@ export function Privacy() {
             </p>
 
             <p className="text-text-secondary leading-relaxed">
-              MyPkgUpdate (&quot;we&quot;, &quot;us&quot;, or &quot;our&quot;)
-              is operated by Tiny Tools LLC. This policy describes how we
-              collect, use, and protect your information when you use our
-              service at{' '}
+              Tiny Tools LLC (&quot;we&quot;, &quot;us&quot;, or
+              &quot;our&quot;) is operated by Tiny Tools LLC. This policy
+              describes how we collect, use, and protect your information when
+              you use our service at{' '}
               <a
                 href="https://app.myreleasenotes.ai"
                 className="text-brand-500 hover:underline"

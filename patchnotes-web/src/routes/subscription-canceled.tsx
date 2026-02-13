@@ -9,7 +9,7 @@ function SubscriptionCanceled() {
   return (
     <div className="min-h-screen bg-surface-secondary">
       <Header>
-        <HeaderTitle>Patch Notes</HeaderTitle>
+        <HeaderTitle>My Release Notes</HeaderTitle>
         <div className="flex items-center gap-2">
           <ThemeToggle />
           <UserMenu />
