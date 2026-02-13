@@ -24,6 +24,13 @@ export default defineConfig({
       target: 'src/api/generated',
       client: 'zod',
       fileExtension: '.zod.ts',
+      override: {
+        zod: {
+          dateTimeOptions: {
+            offset: true,
+          },
+        },
+      },
     },
     input: {
       target: './openapi.json',

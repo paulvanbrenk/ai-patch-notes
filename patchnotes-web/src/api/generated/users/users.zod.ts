@@ -12,8 +12,8 @@ export const GetCurrentUserResponse = zod.object({
   "stytchUserId": zod.string(),
   "email": zod.string().nullish(),
   "name": zod.string().nullish(),
-  "createdAt": zod.iso.datetime({}).optional(),
-  "lastLoginAt": zod.iso.datetime({}).nullish()
+  "createdAt": zod.iso.datetime({"offset":true}).optional(),
+  "lastLoginAt": zod.iso.datetime({"offset":true}).nullish()
 })
 
 export const LoginUserResponse = zod.object({
@@ -21,7 +21,7 @@ export const LoginUserResponse = zod.object({
   "stytchUserId": zod.string(),
   "email": zod.string().nullish(),
   "name": zod.string().nullish(),
-  "createdAt": zod.iso.datetime({}).optional(),
-  "lastLoginAt": zod.iso.datetime({}).nullish()
+  "createdAt": zod.iso.datetime({"offset":true}).optional(),
+  "lastLoginAt": zod.iso.datetime({"offset":true}).nullish()
 })
 
