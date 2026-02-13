@@ -6,9 +6,6 @@
   "engines": {
     "node": ">=22"
   },
-  "overrides": {
-    "zod-validation-error": "^5.0.0"
-  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
