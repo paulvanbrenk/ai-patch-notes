@@ -1,2 +1,2 @@
 cd patchnotes-web
-npx lint-staged
+pnpm exec lint-staged
