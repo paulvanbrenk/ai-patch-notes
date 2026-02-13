@@ -17,7 +17,7 @@ interface PackagePickerProps {
   packages: Package[]
   isLoading?: boolean
   onSelectionChange?: (selectedIds: string[]) => void
-  onAddPackage?: (npmName: string) => void
+  onAddPackage?: (npmName: string) => Promise<void>
   storageKey?: string
   isPro?: boolean
   packageLimit?: number
@@ -59,8 +59,8 @@ export function PackagePicker({
     try {
       const stored = localStorage.getItem(fullStorageKey)
       if (stored) {
-        const parsed = JSON.parse(stored)
-        return new Set(Array.isArray(parsed) ? parsed : [])
+        const parsed = JSON.parse(stored) as unknown
+        if (Array.isArray(parsed)) return new Set(parsed as string[])
       }
     } catch {
       // Ignore storage errors
@@ -70,13 +70,6 @@ export function PackagePicker({
 
   const [newPackageName, setNewPackageName] = useState('')
   const [isAdding, setIsAdding] = useState(false)
-
-  // Sync from watchlistIds prop when it changes
-  useEffect(() => {
-    if (useWatchlist) {
-      setLocalSelectedIds(new Set(watchlistIds))
-    }
-  }, [useWatchlist, watchlistIds])
 
   const selectedIds = useMemo(
     () => (useWatchlist ? new Set(watchlistIds) : localSelectedIds),
@@ -139,12 +132,9 @@ export function PackagePicker({
     if (!newPackageName.trim() || !onAddPackage) return
 
     setIsAdding(true)
-    try {
-      await onAddPackage(newPackageName.trim())
-      setNewPackageName('')
-    } finally {
-      setIsAdding(false)
-    }
+    await onAddPackage(newPackageName.trim())
+      .then(() => setNewPackageName(''))
+      .finally(() => setIsAdding(false))
   }, [newPackageName, onAddPackage])
 
   const handleKeyDown = useCallback(

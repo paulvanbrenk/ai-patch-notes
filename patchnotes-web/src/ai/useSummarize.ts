@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'
 
@@ -18,12 +18,90 @@ interface UseSummarizeOptions {
   onError?: (error: Error) => void
 }
 
+async function fetchSummary(
+  releaseId: string,
+  signal: AbortSignal,
+  onChunk: (fullSummary: string) => void
+): Promise<SummarizeResult> {
+  const response = await fetch(
+    `${API_BASE_URL}/releases/${releaseId}/summarize`,
+    {
+      method: 'POST',
+      headers: {
+        Accept: 'text/event-stream',
+      },
+      credentials: 'include',
+      signal,
+    }
+  )
+
+  if (!response.ok) {
+    return Promise.reject(
+      new Error(`Failed to summarize: ${response.statusText}`)
+    )
+  }
+
+  const contentType = response.headers.get('content-type')
+
+  // Handle JSON response (non-streaming fallback)
+  if (!contentType?.includes('text/event-stream')) {
+    const data = (await response.json()) as SummarizeResult
+    onChunk(data.summary)
+    return data
+  }
+
+  // Handle SSE streaming response
+  const reader = response.body?.getReader()
+  if (!reader) {
+    return Promise.reject(new Error('No response body'))
+  }
+
+  const decoder = new TextDecoder()
+  let fullSummary = ''
+  let result: SummarizeResult | null = null
+
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+
+    const chunk = decoder.decode(value, { stream: true })
+    const lines = chunk.split('\n')
+
+    for (const line of lines) {
+      if (line.startsWith('data: ')) {
+        const data = line.slice(6)
+        if (data === '[DONE]') continue
+
+        try {
+          const parsed = JSON.parse(data)
+          if (parsed.type === 'chunk') {
+            fullSummary += parsed.content
+            onChunk(fullSummary)
+          } else if (parsed.type === 'complete') {
+            result = parsed.result
+          }
+        } catch {
+          // Ignore parse errors for partial data
+        }
+      }
+    }
+  }
+
+  if (!result) {
+    return Promise.reject(new Error('No result received from stream'))
+  }
+
+  return result
+}
+
 export function useSummarize(options: UseSummarizeOptions = {}) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
   const [summary, setSummary] = useState<string | null>(null)
   const optionsRef = useRef(options)
-  optionsRef.current = options
+  useEffect(() => {
+    optionsRef.current = options
+  })
   const abortControllerRef = useRef<AbortController | null>(null)
 
   const summarize = useCallback(async (releaseId: string) => {
@@ -36,84 +114,22 @@ export function useSummarize(options: UseSummarizeOptions = {}) {
     setError(null)
     setSummary(null)
 
-    try {
-      const response = await fetch(
-        `${API_BASE_URL}/releases/${releaseId}/summarize`,
-        {
-          method: 'POST',
-          headers: {
-            Accept: 'text/event-stream',
-          },
-          credentials: 'include',
-          signal: controller.signal,
-        }
-      )
-
-      if (!response.ok) {
-        throw new Error(`Failed to summarize: ${response.statusText}`)
-      }
-
-      const contentType = response.headers.get('content-type')
-
-      // Handle SSE streaming response
-      if (contentType?.includes('text/event-stream')) {
-        const reader = response.body?.getReader()
-        if (!reader) {
-          throw new Error('No response body')
-        }
-
-        const decoder = new TextDecoder()
-        let fullSummary = ''
-        let result: SummarizeResult | null = null
-
-        while (true) {
-          const { done, value } = await reader.read()
-          if (done) break
-
-          const chunk = decoder.decode(value, { stream: true })
-          const lines = chunk.split('\n')
-
-          for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              const data = line.slice(6)
-              if (data === '[DONE]') continue
-
-              try {
-                const parsed = JSON.parse(data)
-                if (parsed.type === 'chunk') {
-                  fullSummary += parsed.content
-                  setSummary(fullSummary)
-                } else if (parsed.type === 'complete') {
-                  result = parsed.result
-                }
-              } catch {
-                // Ignore parse errors for partial data
-              }
-            }
-          }
-        }
-
-        if (result) {
+    await fetchSummary(releaseId, controller.signal, setSummary).then(
+      (result) => {
+        if (!controller.signal.aborted) {
           optionsRef.current.onSuccess?.(result)
+          setIsLoading(false)
         }
-      } else {
-        // Handle JSON response (non-streaming fallback)
-        const data = (await response.json()) as SummarizeResult
-        setSummary(data.summary)
-        optionsRef.current.onSuccess?.(data)
-      }
-    } catch (err) {
-      // Don't update state if the request was aborted
-      if (controller.signal.aborted) return
+      },
+      (err) => {
+        if (controller.signal.aborted) return
 
-      const error = err instanceof Error ? err : new Error('Unknown error')
-      setError(error)
-      optionsRef.current.onError?.(error)
-    } finally {
-      if (!controller.signal.aborted) {
+        const error = err instanceof Error ? err : new Error('Unknown error')
+        setError(error)
+        optionsRef.current.onError?.(error)
         setIsLoading(false)
       }
-    }
+    )
   }, [])
 
   const cancel = useCallback(() => {
