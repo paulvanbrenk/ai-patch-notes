@@ -34,6 +34,8 @@ import type {
 import { customFetch } from '../../custom-fetch';
 
 
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
 
 
 export type getPackagesResponse200 = {
@@ -78,16 +80,16 @@ export const getGetPackagesQueryKey = () => {
     }
 
     
-export const getGetPackagesQueryOptions = <TData = Awaited<ReturnType<typeof getPackages>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackages>>, TError, TData>>, }
+export const getGetPackagesQueryOptions = <TData = Awaited<ReturnType<typeof getPackages>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackages>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetPackagesQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPackages>>> = ({ signal }) => getPackages({ signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPackages>>> = ({ signal }) => getPackages({ signal, ...requestOptions });
 
       
 
@@ -107,7 +109,7 @@ export function useGetPackages<TData = Awaited<ReturnType<typeof getPackages>>, 
           TError,
           Awaited<ReturnType<typeof getPackages>>
         > , 'initialData'
-      >, }
+      >, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetPackages<TData = Awaited<ReturnType<typeof getPackages>>, TError = unknown>(
@@ -117,16 +119,16 @@ export function useGetPackages<TData = Awaited<ReturnType<typeof getPackages>>, 
           TError,
           Awaited<ReturnType<typeof getPackages>>
         > , 'initialData'
-      >, }
+      >, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetPackages<TData = Awaited<ReturnType<typeof getPackages>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackages>>, TError, TData>>, }
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackages>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
 export function useGetPackages<TData = Awaited<ReturnType<typeof getPackages>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackages>>, TError, TData>>, }
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackages>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
@@ -193,15 +195,15 @@ export const createPackage = async (addPackageRequest: AddPackageRequest, option
 
 
 export const getCreatePackageMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPackage>>, TError,{data: AddPackageRequest}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPackage>>, TError,{data: AddPackageRequest}, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof createPackage>>, TError,{data: AddPackageRequest}, TContext> => {
 
 const mutationKey = ['createPackage'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
       
 
@@ -209,7 +211,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPackage>>, {data: AddPackageRequest}> = (props) => {
           const {data} = props ?? {};
 
-          return  createPackage(data,)
+          return  createPackage(data,requestOptions)
         }
 
 
@@ -224,7 +226,7 @@ const {mutation: mutationOptions} = options ?
     export type CreatePackageMutationError = void
 
     export const useCreatePackage = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPackage>>, TError,{data: AddPackageRequest}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPackage>>, TError,{data: AddPackageRequest}, TContext>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof createPackage>>,
         TError,
@@ -282,16 +284,16 @@ export const getGetPackageQueryKey = (id: string,) => {
     }
 
     
-export const getGetPackageQueryOptions = <TData = Awaited<ReturnType<typeof getPackage>>, TError = void>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackage>>, TError, TData>>, }
+export const getGetPackageQueryOptions = <TData = Awaited<ReturnType<typeof getPackage>>, TError = void>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackage>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetPackageQueryKey(id);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPackage>>> = ({ signal }) => getPackage(id, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPackage>>> = ({ signal }) => getPackage(id, { signal, ...requestOptions });
 
       
 
@@ -311,7 +313,7 @@ export function useGetPackage<TData = Awaited<ReturnType<typeof getPackage>>, TE
           TError,
           Awaited<ReturnType<typeof getPackage>>
         > , 'initialData'
-      >, }
+      >, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetPackage<TData = Awaited<ReturnType<typeof getPackage>>, TError = void>(
@@ -321,16 +323,16 @@ export function useGetPackage<TData = Awaited<ReturnType<typeof getPackage>>, TE
           TError,
           Awaited<ReturnType<typeof getPackage>>
         > , 'initialData'
-      >, }
+      >, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetPackage<TData = Awaited<ReturnType<typeof getPackage>>, TError = void>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackage>>, TError, TData>>, }
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackage>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
 export function useGetPackage<TData = Awaited<ReturnType<typeof getPackage>>, TError = void>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackage>>, TError, TData>>, }
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackage>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
@@ -388,15 +390,15 @@ export const updatePackage = async (id: string,
 
 
 export const getUpdatePackageMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updatePackage>>, TError,{id: string;data: UpdatePackageRequest}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updatePackage>>, TError,{id: string;data: UpdatePackageRequest}, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof updatePackage>>, TError,{id: string;data: UpdatePackageRequest}, TContext> => {
 
 const mutationKey = ['updatePackage'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
       
 
@@ -404,7 +406,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof updatePackage>>, {id: string;data: UpdatePackageRequest}> = (props) => {
           const {id,data} = props ?? {};
 
-          return  updatePackage(id,data,)
+          return  updatePackage(id,data,requestOptions)
         }
 
 
@@ -419,7 +421,7 @@ const {mutation: mutationOptions} = options ?
     export type UpdatePackageMutationError = void
 
     export const useUpdatePackage = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updatePackage>>, TError,{id: string;data: UpdatePackageRequest}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updatePackage>>, TError,{id: string;data: UpdatePackageRequest}, TContext>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof updatePackage>>,
         TError,
@@ -470,15 +472,15 @@ export const deletePackage = async (id: string, options?: RequestInit): Promise<
 
 
 export const getDeletePackageMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deletePackage>>, TError,{id: string}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deletePackage>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deletePackage>>, TError,{id: string}, TContext> => {
 
 const mutationKey = ['deletePackage'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
       
 
@@ -486,7 +488,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof deletePackage>>, {id: string}> = (props) => {
           const {id} = props ?? {};
 
-          return  deletePackage(id,)
+          return  deletePackage(id,requestOptions)
         }
 
 
@@ -501,7 +503,7 @@ const {mutation: mutationOptions} = options ?
     export type DeletePackageMutationError = void
 
     export const useDeletePackage = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deletePackage>>, TError,{id: string}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deletePackage>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof deletePackage>>,
         TError,
@@ -559,16 +561,16 @@ export const getGetPackageReleasesQueryKey = (id: string,) => {
     }
 
     
-export const getGetPackageReleasesQueryOptions = <TData = Awaited<ReturnType<typeof getPackageReleases>>, TError = void>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackageReleases>>, TError, TData>>, }
+export const getGetPackageReleasesQueryOptions = <TData = Awaited<ReturnType<typeof getPackageReleases>>, TError = void>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackageReleases>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetPackageReleasesQueryKey(id);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPackageReleases>>> = ({ signal }) => getPackageReleases(id, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPackageReleases>>> = ({ signal }) => getPackageReleases(id, { signal, ...requestOptions });
 
       
 
@@ -588,7 +590,7 @@ export function useGetPackageReleases<TData = Awaited<ReturnType<typeof getPacka
           TError,
           Awaited<ReturnType<typeof getPackageReleases>>
         > , 'initialData'
-      >, }
+      >, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetPackageReleases<TData = Awaited<ReturnType<typeof getPackageReleases>>, TError = void>(
@@ -598,16 +600,16 @@ export function useGetPackageReleases<TData = Awaited<ReturnType<typeof getPacka
           TError,
           Awaited<ReturnType<typeof getPackageReleases>>
         > , 'initialData'
-      >, }
+      >, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetPackageReleases<TData = Awaited<ReturnType<typeof getPackageReleases>>, TError = void>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackageReleases>>, TError, TData>>, }
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackageReleases>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
 export function useGetPackageReleases<TData = Awaited<ReturnType<typeof getPackageReleases>>, TError = void>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackageReleases>>, TError, TData>>, }
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackageReleases>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 

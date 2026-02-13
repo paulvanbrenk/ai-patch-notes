@@ -6,7 +6,7 @@
   },
   "servers": [
     {
-      "url": "http://localhost:2101/"
+      "url": "http://localhost:5099/"
     }
   ],
   "paths": {
@@ -279,11 +279,7 @@
             "name": "days",
             "in": "query",
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -298,11 +294,7 @@
             "name": "majorVersion",
             "in": "query",
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           },
@@ -608,11 +600,7 @@
             "name": "majorVersion",
             "in": "query",
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -662,11 +650,7 @@
             "name": "limit",
             "in": "query",
             "schema": {
-              "pattern": "^-?(?:0|[1-9]\\d*)$",
-              "type": [
-                "integer",
-                "string"
-              ],
+              "type": "integer",
               "format": "int32"
             }
           }
@@ -718,11 +702,7 @@
         "type": "object",
         "properties": {
           "releaseCount": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "id": {
@@ -1019,11 +999,7 @@
             "type": "string"
           },
           "majorVersion": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "integer",
-              "string"
-            ],
+            "type": "integer",
             "format": "int32"
           },
           "isPrerelease": {

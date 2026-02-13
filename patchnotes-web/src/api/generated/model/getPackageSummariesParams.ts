@@ -7,8 +7,5 @@
 
 export type GetPackageSummariesParams = {
 includePrerelease?: boolean;
-/**
- * @pattern ^-?(?:0|[1-9]\d*)$
- */
-majorVersion?: number | string;
+majorVersion?: number;
 };

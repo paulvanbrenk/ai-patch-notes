@@ -32,6 +32,8 @@ import type {
 import { customFetch } from '../../custom-fetch';
 
 
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
 
 
 export type getReleaseResponse200 = {
@@ -83,16 +85,16 @@ export const getGetReleaseQueryKey = (id: string,) => {
     }
 
     
-export const getGetReleaseQueryOptions = <TData = Awaited<ReturnType<typeof getRelease>>, TError = void>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRelease>>, TError, TData>>, }
+export const getGetReleaseQueryOptions = <TData = Awaited<ReturnType<typeof getRelease>>, TError = void>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRelease>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetReleaseQueryKey(id);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRelease>>> = ({ signal }) => getRelease(id, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getRelease>>> = ({ signal }) => getRelease(id, { signal, ...requestOptions });
 
       
 
@@ -112,7 +114,7 @@ export function useGetRelease<TData = Awaited<ReturnType<typeof getRelease>>, TE
           TError,
           Awaited<ReturnType<typeof getRelease>>
         > , 'initialData'
-      >, }
+      >, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetRelease<TData = Awaited<ReturnType<typeof getRelease>>, TError = void>(
@@ -122,16 +124,16 @@ export function useGetRelease<TData = Awaited<ReturnType<typeof getRelease>>, TE
           TError,
           Awaited<ReturnType<typeof getRelease>>
         > , 'initialData'
-      >, }
+      >, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetRelease<TData = Awaited<ReturnType<typeof getRelease>>, TError = void>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRelease>>, TError, TData>>, }
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRelease>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
 export function useGetRelease<TData = Awaited<ReturnType<typeof getRelease>>, TError = void>(
- id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRelease>>, TError, TData>>, }
+ id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getRelease>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
@@ -194,16 +196,16 @@ export const getGetReleasesQueryKey = (params?: GetReleasesParams,) => {
     }
 
     
-export const getGetReleasesQueryOptions = <TData = Awaited<ReturnType<typeof getReleases>>, TError = unknown>(params?: GetReleasesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReleases>>, TError, TData>>, }
+export const getGetReleasesQueryOptions = <TData = Awaited<ReturnType<typeof getReleases>>, TError = unknown>(params?: GetReleasesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReleases>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetReleasesQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReleases>>> = ({ signal }) => getReleases(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReleases>>> = ({ signal }) => getReleases(params, { signal, ...requestOptions });
 
       
 
@@ -223,7 +225,7 @@ export function useGetReleases<TData = Awaited<ReturnType<typeof getReleases>>, 
           TError,
           Awaited<ReturnType<typeof getReleases>>
         > , 'initialData'
-      >, }
+      >, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetReleases<TData = Awaited<ReturnType<typeof getReleases>>, TError = unknown>(
@@ -233,16 +235,16 @@ export function useGetReleases<TData = Awaited<ReturnType<typeof getReleases>>, 
           TError,
           Awaited<ReturnType<typeof getReleases>>
         > , 'initialData'
-      >, }
+      >, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetReleases<TData = Awaited<ReturnType<typeof getReleases>>, TError = unknown>(
- params?: GetReleasesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReleases>>, TError, TData>>, }
+ params?: GetReleasesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReleases>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
 export function useGetReleases<TData = Awaited<ReturnType<typeof getReleases>>, TError = unknown>(
- params?: GetReleasesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReleases>>, TError, TData>>, }
+ params?: GetReleasesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getReleases>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
@@ -298,15 +300,15 @@ export const summarizeRelease = async (id: string, options?: RequestInit): Promi
 
 
 export const getSummarizeReleaseMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof summarizeRelease>>, TError,{id: string}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof summarizeRelease>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof summarizeRelease>>, TError,{id: string}, TContext> => {
 
 const mutationKey = ['summarizeRelease'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
       
 
@@ -314,7 +316,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof summarizeRelease>>, {id: string}> = (props) => {
           const {id} = props ?? {};
 
-          return  summarizeRelease(id,)
+          return  summarizeRelease(id,requestOptions)
         }
 
 
@@ -329,7 +331,7 @@ const {mutation: mutationOptions} = options ?
     export type SummarizeReleaseMutationError = void
 
     export const useSummarizeRelease = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof summarizeRelease>>, TError,{id: string}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof summarizeRelease>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof summarizeRelease>>,
         TError,

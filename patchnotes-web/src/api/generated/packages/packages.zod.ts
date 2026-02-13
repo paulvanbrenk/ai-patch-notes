@@ -29,12 +29,8 @@ export const GetPackageParams = zod.object({
   "id": zod.string()
 })
 
-export const getPackageResponseReleaseCountRegExpOne = new RegExp('^-?(?:0|[1-9]\\d\*)$');
-export const getPackageResponseReleaseCountRegExpTwo = new RegExp('^-?(?:0|[1-9]\\d\*)$');
-
-
 export const GetPackageResponse = zod.object({
-  "releaseCount": zod.coerce.number().optional(),
+  "releaseCount": zod.number().optional(),
   "id": zod.string(),
   "name": zod.string(),
   "url": zod.string().nullish(),

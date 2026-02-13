@@ -8,8 +8,5 @@
 export type GetSummariesParams = {
 packages?: string;
 includePrerelease?: boolean;
-/**
- * @pattern ^-?(?:0|[1-9]\d*)$
- */
-limit?: number | string;
+limit?: number;
 };

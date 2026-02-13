@@ -30,6 +30,8 @@ import type {
 import { customFetch } from '../../custom-fetch';
 
 
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
 
 
 export type getWatchlistResponse200 = {
@@ -74,16 +76,16 @@ export const getGetWatchlistQueryKey = () => {
     }
 
     
-export const getGetWatchlistQueryOptions = <TData = Awaited<ReturnType<typeof getWatchlist>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getWatchlist>>, TError, TData>>, }
+export const getGetWatchlistQueryOptions = <TData = Awaited<ReturnType<typeof getWatchlist>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getWatchlist>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetWatchlistQueryKey();
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getWatchlist>>> = ({ signal }) => getWatchlist({ signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getWatchlist>>> = ({ signal }) => getWatchlist({ signal, ...requestOptions });
 
       
 
@@ -103,7 +105,7 @@ export function useGetWatchlist<TData = Awaited<ReturnType<typeof getWatchlist>>
           TError,
           Awaited<ReturnType<typeof getWatchlist>>
         > , 'initialData'
-      >, }
+      >, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetWatchlist<TData = Awaited<ReturnType<typeof getWatchlist>>, TError = unknown>(
@@ -113,16 +115,16 @@ export function useGetWatchlist<TData = Awaited<ReturnType<typeof getWatchlist>>
           TError,
           Awaited<ReturnType<typeof getWatchlist>>
         > , 'initialData'
-      >, }
+      >, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetWatchlist<TData = Awaited<ReturnType<typeof getWatchlist>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getWatchlist>>, TError, TData>>, }
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getWatchlist>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
 export function useGetWatchlist<TData = Awaited<ReturnType<typeof getWatchlist>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getWatchlist>>, TError, TData>>, }
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getWatchlist>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
@@ -184,15 +186,15 @@ export const setWatchlist = async (setWatchlistRequest: SetWatchlistRequest, opt
 
 
 export const getSetWatchlistMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setWatchlist>>, TError,{data: SetWatchlistRequest}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setWatchlist>>, TError,{data: SetWatchlistRequest}, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof setWatchlist>>, TError,{data: SetWatchlistRequest}, TContext> => {
 
 const mutationKey = ['setWatchlist'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
       
 
@@ -200,7 +202,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof setWatchlist>>, {data: SetWatchlistRequest}> = (props) => {
           const {data} = props ?? {};
 
-          return  setWatchlist(data,)
+          return  setWatchlist(data,requestOptions)
         }
 
 
@@ -215,7 +217,7 @@ const {mutation: mutationOptions} = options ?
     export type SetWatchlistMutationError = void
 
     export const useSetWatchlist = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setWatchlist>>, TError,{data: SetWatchlistRequest}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setWatchlist>>, TError,{data: SetWatchlistRequest}, TContext>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof setWatchlist>>,
         TError,
@@ -271,15 +273,15 @@ export const addToWatchlist = async (packageId: string, options?: RequestInit): 
 
 
 export const getAddToWatchlistMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addToWatchlist>>, TError,{packageId: string}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addToWatchlist>>, TError,{packageId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof addToWatchlist>>, TError,{packageId: string}, TContext> => {
 
 const mutationKey = ['addToWatchlist'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
       
 
@@ -287,7 +289,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof addToWatchlist>>, {packageId: string}> = (props) => {
           const {packageId} = props ?? {};
 
-          return  addToWatchlist(packageId,)
+          return  addToWatchlist(packageId,requestOptions)
         }
 
 
@@ -302,7 +304,7 @@ const {mutation: mutationOptions} = options ?
     export type AddToWatchlistMutationError = void
 
     export const useAddToWatchlist = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addToWatchlist>>, TError,{packageId: string}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addToWatchlist>>, TError,{packageId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof addToWatchlist>>,
         TError,
@@ -346,15 +348,15 @@ export const removeFromWatchlist = async (packageId: string, options?: RequestIn
 
 
 export const getRemoveFromWatchlistMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeFromWatchlist>>, TError,{packageId: string}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeFromWatchlist>>, TError,{packageId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof removeFromWatchlist>>, TError,{packageId: string}, TContext> => {
 
 const mutationKey = ['removeFromWatchlist'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
       
 
@@ -362,7 +364,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof removeFromWatchlist>>, {packageId: string}> = (props) => {
           const {packageId} = props ?? {};
 
-          return  removeFromWatchlist(packageId,)
+          return  removeFromWatchlist(packageId,requestOptions)
         }
 
 
@@ -377,7 +379,7 @@ const {mutation: mutationOptions} = options ?
     export type RemoveFromWatchlistMutationError = unknown
 
     export const useRemoveFromWatchlist = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeFromWatchlist>>, TError,{packageId: string}, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeFromWatchlist>>, TError,{packageId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof removeFromWatchlist>>,
         TError,

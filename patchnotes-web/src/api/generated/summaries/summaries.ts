@@ -28,6 +28,8 @@ import type {
 import { customFetch } from '../../custom-fetch';
 
 
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
 
 
 export type getPackageSummariesResponse200 = {
@@ -90,16 +92,16 @@ export const getGetPackageSummariesQueryKey = (id: string,
 
     
 export const getGetPackageSummariesQueryOptions = <TData = Awaited<ReturnType<typeof getPackageSummaries>>, TError = void>(id: string,
-    params?: GetPackageSummariesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackageSummaries>>, TError, TData>>, }
+    params?: GetPackageSummariesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackageSummaries>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetPackageSummariesQueryKey(id,params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPackageSummaries>>> = ({ signal }) => getPackageSummaries(id,params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPackageSummaries>>> = ({ signal }) => getPackageSummaries(id,params, { signal, ...requestOptions });
 
       
 
@@ -120,7 +122,7 @@ export function useGetPackageSummaries<TData = Awaited<ReturnType<typeof getPack
           TError,
           Awaited<ReturnType<typeof getPackageSummaries>>
         > , 'initialData'
-      >, }
+      >, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetPackageSummaries<TData = Awaited<ReturnType<typeof getPackageSummaries>>, TError = void>(
@@ -131,18 +133,18 @@ export function useGetPackageSummaries<TData = Awaited<ReturnType<typeof getPack
           TError,
           Awaited<ReturnType<typeof getPackageSummaries>>
         > , 'initialData'
-      >, }
+      >, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetPackageSummaries<TData = Awaited<ReturnType<typeof getPackageSummaries>>, TError = void>(
  id: string,
-    params?: GetPackageSummariesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackageSummaries>>, TError, TData>>, }
+    params?: GetPackageSummariesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackageSummaries>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
 export function useGetPackageSummaries<TData = Awaited<ReturnType<typeof getPackageSummaries>>, TError = void>(
  id: string,
-    params?: GetPackageSummariesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackageSummaries>>, TError, TData>>, }
+    params?: GetPackageSummariesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackageSummaries>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
@@ -205,16 +207,16 @@ export const getGetSummariesQueryKey = (params?: GetSummariesParams,) => {
     }
 
     
-export const getGetSummariesQueryOptions = <TData = Awaited<ReturnType<typeof getSummaries>>, TError = unknown>(params?: GetSummariesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSummaries>>, TError, TData>>, }
+export const getGetSummariesQueryOptions = <TData = Awaited<ReturnType<typeof getSummaries>>, TError = unknown>(params?: GetSummariesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSummaries>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
-const {query: queryOptions} = options ?? {};
+const {query: queryOptions, request: requestOptions} = options ?? {};
 
   const queryKey =  queryOptions?.queryKey ?? getGetSummariesQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSummaries>>> = ({ signal }) => getSummaries(params, { signal });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSummaries>>> = ({ signal }) => getSummaries(params, { signal, ...requestOptions });
 
       
 
@@ -234,7 +236,7 @@ export function useGetSummaries<TData = Awaited<ReturnType<typeof getSummaries>>
           TError,
           Awaited<ReturnType<typeof getSummaries>>
         > , 'initialData'
-      >, }
+      >, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetSummaries<TData = Awaited<ReturnType<typeof getSummaries>>, TError = unknown>(
@@ -244,16 +246,16 @@ export function useGetSummaries<TData = Awaited<ReturnType<typeof getSummaries>>
           TError,
           Awaited<ReturnType<typeof getSummaries>>
         > , 'initialData'
-      >, }
+      >, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetSummaries<TData = Awaited<ReturnType<typeof getSummaries>>, TError = unknown>(
- params?: GetSummariesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSummaries>>, TError, TData>>, }
+ params?: GetSummariesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSummaries>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
 export function useGetSummaries<TData = Awaited<ReturnType<typeof getSummaries>>, TError = unknown>(
- params?: GetSummariesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSummaries>>, TError, TData>>, }
+ params?: GetSummariesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getSummaries>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 

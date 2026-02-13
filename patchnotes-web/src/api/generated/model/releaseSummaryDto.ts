@@ -9,8 +9,7 @@ export interface ReleaseSummaryDto {
   id: string;
   packageId: string;
   packageName: string;
-  /** @pattern ^-?(?:0|[1-9]\d*)$ */
-  majorVersion?: number | string;
+  majorVersion?: number;
   isPrerelease?: boolean;
   /** @nullable */
   summary?: string | null;

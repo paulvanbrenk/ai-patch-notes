@@ -17,6 +17,8 @@ import type {
 import { customFetch } from '../../custom-fetch';
 
 
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
 
 
 export type postWebhooksStytchResponse200 = {
@@ -54,15 +56,15 @@ export const postWebhooksStytch = async ( options?: RequestInit): Promise<postWe
 
 
 export const getPostWebhooksStytchMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postWebhooksStytch>>, TError,void, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postWebhooksStytch>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof postWebhooksStytch>>, TError,void, TContext> => {
 
 const mutationKey = ['postWebhooksStytch'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
       
 
@@ -70,7 +72,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof postWebhooksStytch>>, void> = () => {
           
 
-          return  postWebhooksStytch()
+          return  postWebhooksStytch(requestOptions)
         }
 
 
@@ -85,7 +87,7 @@ const {mutation: mutationOptions} = options ?
     export type PostWebhooksStytchMutationError = unknown
 
     export const usePostWebhooksStytch = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postWebhooksStytch>>, TError,void, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postWebhooksStytch>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof postWebhooksStytch>>,
         TError,
@@ -129,15 +131,15 @@ export const postWebhooksStripe = async ( options?: RequestInit): Promise<postWe
 
 
 export const getPostWebhooksStripeMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postWebhooksStripe>>, TError,void, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postWebhooksStripe>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof postWebhooksStripe>>, TError,void, TContext> => {
 
 const mutationKey = ['postWebhooksStripe'];
-const {mutation: mutationOptions} = options ?
+const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
       : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }};
+      : {mutation: { mutationKey, }, request: undefined};
 
       
 
@@ -145,7 +147,7 @@ const {mutation: mutationOptions} = options ?
       const mutationFn: MutationFunction<Awaited<ReturnType<typeof postWebhooksStripe>>, void> = () => {
           
 
-          return  postWebhooksStripe()
+          return  postWebhooksStripe(requestOptions)
         }
 
 
@@ -160,7 +162,7 @@ const {mutation: mutationOptions} = options ?
     export type PostWebhooksStripeMutationError = unknown
 
     export const usePostWebhooksStripe = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postWebhooksStripe>>, TError,void, TContext>, }
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postWebhooksStripe>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof postWebhooksStripe>>,
         TError,
