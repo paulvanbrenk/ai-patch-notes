@@ -26,7 +26,7 @@ public class GitHubRelease
     public bool Prerelease { get; set; }
 
     [JsonPropertyName("published_at")]
-    public DateTime? PublishedAt { get; set; }
+    public DateTimeOffset? PublishedAt { get; set; }
 
     [JsonPropertyName("html_url")]
     public string? HtmlUrl { get; set; }

@@ -14,7 +14,7 @@ public static class DbSeeder
             return; // Already seeded
         }
 
-        var now = DateTime.UtcNow;
+        var now = DateTimeOffset.UtcNow;
         var packages = await LoadSeedDataAsync(now);
 
         context.Packages.AddRange(packages);
@@ -39,7 +39,7 @@ public static class DbSeeder
             .Select(p => $"{p.GithubOwner}/{p.GithubRepo}".ToLowerInvariant())
             .ToHashSet();
 
-        var now = DateTime.UtcNow;
+        var now = DateTimeOffset.UtcNow;
         var added = 0;
 
         foreach (var sp in seedPackages)
@@ -79,7 +79,7 @@ public static class DbSeeder
         return await JsonSerializer.DeserializeAsync<List<SeedPackage>>(stream) ?? [];
     }
 
-    private static async Task<List<Package>> LoadSeedDataAsync(DateTime now)
+    private static async Task<List<Package>> LoadSeedDataAsync(DateTimeOffset now)
     {
         var assembly = Assembly.GetExecutingAssembly();
         var resourceName = "PatchNotes.Data.SeedData.packages.json";

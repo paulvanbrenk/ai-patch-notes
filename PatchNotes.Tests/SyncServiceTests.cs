@@ -57,11 +57,11 @@ public class SyncServiceTests : IDisposable
         await _db.SaveChangesAsync();
 
         SetupGitHubReleases("owner1", "repo1", [
-            CreateRelease("v1.0.0", DateTime.UtcNow)
+            CreateRelease("v1.0.0", DateTimeOffset.UtcNow)
         ]);
         SetupGitHubReleases("owner2", "repo2", [
-            CreateRelease("v2.0.0", DateTime.UtcNow),
-            CreateRelease("v2.1.0", DateTime.UtcNow)
+            CreateRelease("v2.0.0", DateTimeOffset.UtcNow),
+            CreateRelease("v2.1.0", DateTimeOffset.UtcNow)
         ]);
 
         // Act
@@ -86,7 +86,7 @@ public class SyncServiceTests : IDisposable
             .Setup(x => x.GetAllReleasesAsync("owner1", "repo1", It.IsAny<CancellationToken>()))
             .Returns(ThrowingAsyncEnumerable<GitHubRelease>("API Error"));
 
-        SetupGitHubReleases("owner2", "repo2", [CreateRelease("v1.0.0", DateTime.UtcNow)]);
+        SetupGitHubReleases("owner2", "repo2", [CreateRelease("v1.0.0", DateTimeOffset.UtcNow)]);
 
         // Act
         var result = await _syncService.SyncAllAsync();
@@ -115,7 +115,7 @@ public class SyncServiceTests : IDisposable
             .Returns<string, string, CancellationToken>((owner, repo, ct) =>
             {
                 capturedToken = ct;
-                return ToAsyncEnumerable([CreateRelease("v1.0.0", DateTime.UtcNow)]);
+                return ToAsyncEnumerable([CreateRelease("v1.0.0", DateTimeOffset.UtcNow)]);
             });
 
         // Act
@@ -153,7 +153,7 @@ public class SyncServiceTests : IDisposable
         _db.Packages.Add(package);
         await _db.SaveChangesAsync();
 
-        var publishedAt = DateTime.UtcNow;
+        var publishedAt = DateTimeOffset.UtcNow;
         SetupGitHubReleases("owner", "repo", [
             CreateRelease("v1.0.0", publishedAt, "Release 1", "Body 1"),
             CreateRelease("v1.1.0", publishedAt, "Release 2", "Body 2")
@@ -180,8 +180,8 @@ public class SyncServiceTests : IDisposable
         await _db.SaveChangesAsync();
 
         SetupGitHubReleases("owner", "repo", [
-            CreateRelease("v1.0.0", DateTime.UtcNow, draft: true),
-            CreateRelease("v1.1.0", DateTime.UtcNow, draft: false)
+            CreateRelease("v1.0.0", DateTimeOffset.UtcNow, draft: true),
+            CreateRelease("v1.1.0", DateTimeOffset.UtcNow, draft: false)
         ]);
 
         // Act
@@ -204,7 +204,7 @@ public class SyncServiceTests : IDisposable
 
         SetupGitHubReleases("owner", "repo", [
             new GitHubRelease { TagName = "v1.0.0", PublishedAt = null },
-            CreateRelease("v1.1.0", DateTime.UtcNow)
+            CreateRelease("v1.1.0", DateTimeOffset.UtcNow)
         ]);
 
         // Act
@@ -227,14 +227,14 @@ public class SyncServiceTests : IDisposable
         {
             PackageId = package.Id,
             Tag = "v1.0.0",
-            PublishedAt = DateTime.UtcNow.AddDays(-1),
-            FetchedAt = DateTime.UtcNow.AddDays(-1)
+            PublishedAt = DateTimeOffset.UtcNow.AddDays(-1),
+            FetchedAt = DateTimeOffset.UtcNow.AddDays(-1)
         });
         await _db.SaveChangesAsync();
 
         SetupGitHubReleases("owner", "repo", [
-            CreateRelease("v1.0.0", DateTime.UtcNow),
-            CreateRelease("v1.1.0", DateTime.UtcNow)
+            CreateRelease("v1.0.0", DateTimeOffset.UtcNow),
+            CreateRelease("v1.1.0", DateTimeOffset.UtcNow)
         ]);
 
         // Act
@@ -251,7 +251,7 @@ public class SyncServiceTests : IDisposable
     public async Task SyncPackageAsync_StopsAtOlderReleases_WhenLastFetchedAtIsSet()
     {
         // Arrange
-        var lastFetched = DateTime.UtcNow.AddDays(-1);
+        var lastFetched = DateTimeOffset.UtcNow.AddDays(-1);
         var package = new Package
         {
             Name = "pkg",
@@ -265,7 +265,7 @@ public class SyncServiceTests : IDisposable
         await _db.SaveChangesAsync();
 
         SetupGitHubReleases("owner", "repo", [
-            CreateRelease("v1.2.0", DateTime.UtcNow),
+            CreateRelease("v1.2.0", DateTimeOffset.UtcNow),
             CreateRelease("v1.1.0", lastFetched.AddHours(-1)) // Older than lastFetched - should stop here
         ]);
 
@@ -287,7 +287,7 @@ public class SyncServiceTests : IDisposable
         _db.Packages.Add(package);
         await _db.SaveChangesAsync();
 
-        var beforeSync = DateTime.UtcNow;
+        var beforeSync = DateTimeOffset.UtcNow;
         SetupGitHubReleases("owner", "repo", []);
 
         // Act
@@ -306,7 +306,7 @@ public class SyncServiceTests : IDisposable
         _db.Packages.Add(package);
         await _db.SaveChangesAsync();
 
-        var publishedAt = DateTime.UtcNow;
+        var publishedAt = DateTimeOffset.UtcNow;
         SetupGitHubReleases("owner", "repo", [
             CreateRelease("v1.0.0", publishedAt, "Release 1", "Body 1"),
             CreateRelease("v1.1.0", publishedAt, "Release 2", "Body 2")
@@ -334,8 +334,8 @@ public class SyncServiceTests : IDisposable
         {
             PackageId = package.Id,
             Tag = "v0.9.0",
-            PublishedAt = DateTime.UtcNow.AddDays(-10),
-            FetchedAt = DateTime.UtcNow.AddDays(-10),
+            PublishedAt = DateTimeOffset.UtcNow.AddDays(-10),
+            FetchedAt = DateTimeOffset.UtcNow.AddDays(-10),
             Summary = null
         });
         // Add existing release with summary
@@ -343,15 +343,15 @@ public class SyncServiceTests : IDisposable
         {
             PackageId = package.Id,
             Tag = "v0.8.0",
-            PublishedAt = DateTime.UtcNow.AddDays(-20),
-            FetchedAt = DateTime.UtcNow.AddDays(-20),
+            PublishedAt = DateTimeOffset.UtcNow.AddDays(-20),
+            FetchedAt = DateTimeOffset.UtcNow.AddDays(-20),
             Summary = "This is a summary",
-            SummaryGeneratedAt = DateTime.UtcNow.AddDays(-19),
+            SummaryGeneratedAt = DateTimeOffset.UtcNow.AddDays(-19),
             SummaryStale = false
         });
         await _db.SaveChangesAsync();
 
-        var publishedAt = DateTime.UtcNow;
+        var publishedAt = DateTimeOffset.UtcNow;
         SetupGitHubReleases("owner", "repo", [
             CreateRelease("v1.0.0", publishedAt, "Release 1", "Body 1")
         ]);
@@ -377,10 +377,10 @@ public class SyncServiceTests : IDisposable
         _db.Packages.AddRange(package1, package2);
         await _db.SaveChangesAsync();
 
-        SetupGitHubReleases("owner1", "repo1", [CreateRelease("v1.0.0", DateTime.UtcNow)]);
+        SetupGitHubReleases("owner1", "repo1", [CreateRelease("v1.0.0", DateTimeOffset.UtcNow)]);
         SetupGitHubReleases("owner2", "repo2", [
-            CreateRelease("v2.0.0", DateTime.UtcNow),
-            CreateRelease("v2.1.0", DateTime.UtcNow)
+            CreateRelease("v2.0.0", DateTimeOffset.UtcNow),
+            CreateRelease("v2.1.0", DateTimeOffset.UtcNow)
         ]);
 
         // Act
@@ -409,11 +409,11 @@ public class SyncServiceTests : IDisposable
         await _db.SaveChangesAsync();
 
         SetupGitHubReleases("vitejs", "vite", [
-            CreateRelease("v7.3.1", DateTime.UtcNow, "Vite 7.3.1"),
-            CreateRelease("v8.0.0-beta.13", DateTime.UtcNow, "Vite 8.0.0-beta.13"),
-            CreateRelease("create-vite@8.0.0", DateTime.UtcNow, "create-vite 8.0.0"),
-            CreateRelease("plugin-react@2.0.0", DateTime.UtcNow, "plugin-react 2.0.0"),
-            CreateRelease("plugin-legacy@8.0.0-beta.3", DateTime.UtcNow, "plugin-legacy 8.0.0-beta.3")
+            CreateRelease("v7.3.1", DateTimeOffset.UtcNow, "Vite 7.3.1"),
+            CreateRelease("v8.0.0-beta.13", DateTimeOffset.UtcNow, "Vite 8.0.0-beta.13"),
+            CreateRelease("create-vite@8.0.0", DateTimeOffset.UtcNow, "create-vite 8.0.0"),
+            CreateRelease("plugin-react@2.0.0", DateTimeOffset.UtcNow, "plugin-react 2.0.0"),
+            CreateRelease("plugin-legacy@8.0.0-beta.3", DateTimeOffset.UtcNow, "plugin-legacy 8.0.0-beta.3")
         ]);
 
         // Act
@@ -446,10 +446,10 @@ public class SyncServiceTests : IDisposable
         await _db.SaveChangesAsync();
 
         SetupGitHubReleases("vitejs", "vite", [
-            CreateRelease("v7.3.1", DateTime.UtcNow, "Vite 7.3.1"),
-            CreateRelease("create-vite@8.0.0", DateTime.UtcNow, "create-vite 8.0.0"),
-            CreateRelease("create-vite@7.0.0", DateTime.UtcNow, "create-vite 7.0.0"),
-            CreateRelease("plugin-react@2.0.0", DateTime.UtcNow, "plugin-react 2.0.0")
+            CreateRelease("v7.3.1", DateTimeOffset.UtcNow, "Vite 7.3.1"),
+            CreateRelease("create-vite@8.0.0", DateTimeOffset.UtcNow, "create-vite 8.0.0"),
+            CreateRelease("create-vite@7.0.0", DateTimeOffset.UtcNow, "create-vite 7.0.0"),
+            CreateRelease("plugin-react@2.0.0", DateTimeOffset.UtcNow, "plugin-react 2.0.0")
         ]);
 
         // Act
@@ -481,9 +481,9 @@ public class SyncServiceTests : IDisposable
         await _db.SaveChangesAsync();
 
         SetupGitHubReleases("owner", "repo", [
-            CreateRelease("v1.0.0", DateTime.UtcNow),
-            CreateRelease("some-other-tag", DateTime.UtcNow),
-            CreateRelease("anything@1.0.0", DateTime.UtcNow)
+            CreateRelease("v1.0.0", DateTimeOffset.UtcNow),
+            CreateRelease("some-other-tag", DateTimeOffset.UtcNow),
+            CreateRelease("anything@1.0.0", DateTimeOffset.UtcNow)
         ]);
 
         // Act
@@ -510,8 +510,8 @@ public class SyncServiceTests : IDisposable
         await _db.SaveChangesAsync();
 
         SetupGitHubReleases("owner", "repo", [
-            CreateRelease("v1.0.0", DateTime.UtcNow),
-            CreateRelease("other@1.0.0", DateTime.UtcNow)
+            CreateRelease("v1.0.0", DateTimeOffset.UtcNow),
+            CreateRelease("other@1.0.0", DateTimeOffset.UtcNow)
         ]);
 
         // Act
@@ -534,9 +534,9 @@ public class SyncServiceTests : IDisposable
         await _db.SaveChangesAsync();
 
         _db.Releases.AddRange(
-            new Release { PackageId = package.Id, Tag = "v1.0.0", PublishedAt = DateTime.UtcNow.AddDays(-3), FetchedAt = DateTime.UtcNow.AddDays(-3), Summary = null },
-            new Release { PackageId = package.Id, Tag = "v1.1.0", PublishedAt = DateTime.UtcNow.AddDays(-2), FetchedAt = DateTime.UtcNow.AddDays(-2), Summary = "Has summary", SummaryGeneratedAt = DateTime.UtcNow.AddDays(-1), SummaryStale = false },
-            new Release { PackageId = package.Id, Tag = "v1.2.0", PublishedAt = DateTime.UtcNow.AddDays(-1), FetchedAt = DateTime.UtcNow.AddDays(-1), Summary = null }
+            new Release { PackageId = package.Id, Tag = "v1.0.0", PublishedAt = DateTimeOffset.UtcNow.AddDays(-3), FetchedAt = DateTimeOffset.UtcNow.AddDays(-3), Summary = null },
+            new Release { PackageId = package.Id, Tag = "v1.1.0", PublishedAt = DateTimeOffset.UtcNow.AddDays(-2), FetchedAt = DateTimeOffset.UtcNow.AddDays(-2), Summary = "Has summary", SummaryGeneratedAt = DateTimeOffset.UtcNow.AddDays(-1), SummaryStale = false },
+            new Release { PackageId = package.Id, Tag = "v1.2.0", PublishedAt = DateTimeOffset.UtcNow.AddDays(-1), FetchedAt = DateTimeOffset.UtcNow.AddDays(-1), Summary = null }
         );
         await _db.SaveChangesAsync();
 
@@ -559,9 +559,9 @@ public class SyncServiceTests : IDisposable
         await _db.SaveChangesAsync();
 
         _db.Releases.AddRange(
-            new Release { PackageId = package.Id, Tag = "v1.0.0", PublishedAt = DateTime.UtcNow.AddDays(-3), FetchedAt = DateTime.UtcNow },
-            new Release { PackageId = package.Id, Tag = "v1.1.0", PublishedAt = DateTime.UtcNow.AddDays(-1), FetchedAt = DateTime.UtcNow },
-            new Release { PackageId = package.Id, Tag = "v1.2.0", PublishedAt = DateTime.UtcNow.AddDays(-2), FetchedAt = DateTime.UtcNow }
+            new Release { PackageId = package.Id, Tag = "v1.0.0", PublishedAt = DateTimeOffset.UtcNow.AddDays(-3), FetchedAt = DateTimeOffset.UtcNow },
+            new Release { PackageId = package.Id, Tag = "v1.1.0", PublishedAt = DateTimeOffset.UtcNow.AddDays(-1), FetchedAt = DateTimeOffset.UtcNow },
+            new Release { PackageId = package.Id, Tag = "v1.2.0", PublishedAt = DateTimeOffset.UtcNow.AddDays(-2), FetchedAt = DateTimeOffset.UtcNow }
         );
         await _db.SaveChangesAsync();
 
@@ -584,9 +584,9 @@ public class SyncServiceTests : IDisposable
         await _db.SaveChangesAsync();
 
         _db.Releases.AddRange(
-            new Release { PackageId = package.Id, Tag = "v1.0.0", PublishedAt = DateTime.UtcNow.AddDays(-3), FetchedAt = DateTime.UtcNow.AddDays(-3), Summary = null },
-            new Release { PackageId = package.Id, Tag = "v1.1.0", PublishedAt = DateTime.UtcNow.AddDays(-2), FetchedAt = DateTime.UtcNow.AddDays(-2), Summary = "Has summary", SummaryGeneratedAt = DateTime.UtcNow.AddDays(-1), SummaryStale = false },
-            new Release { PackageId = package.Id, Tag = "v1.2.0", PublishedAt = DateTime.UtcNow.AddDays(-1), FetchedAt = DateTime.UtcNow.AddDays(-1), Summary = "Stale summary", SummaryGeneratedAt = DateTime.UtcNow.AddDays(-1), SummaryStale = true }
+            new Release { PackageId = package.Id, Tag = "v1.0.0", PublishedAt = DateTimeOffset.UtcNow.AddDays(-3), FetchedAt = DateTimeOffset.UtcNow.AddDays(-3), Summary = null },
+            new Release { PackageId = package.Id, Tag = "v1.1.0", PublishedAt = DateTimeOffset.UtcNow.AddDays(-2), FetchedAt = DateTimeOffset.UtcNow.AddDays(-2), Summary = "Has summary", SummaryGeneratedAt = DateTimeOffset.UtcNow.AddDays(-1), SummaryStale = false },
+            new Release { PackageId = package.Id, Tag = "v1.2.0", PublishedAt = DateTimeOffset.UtcNow.AddDays(-1), FetchedAt = DateTimeOffset.UtcNow.AddDays(-1), Summary = "Stale summary", SummaryGeneratedAt = DateTimeOffset.UtcNow.AddDays(-1), SummaryStale = true }
         );
         await _db.SaveChangesAsync();
 
@@ -609,8 +609,8 @@ public class SyncServiceTests : IDisposable
         await _db.SaveChangesAsync();
 
         _db.Releases.AddRange(
-            new Release { PackageId = package.Id, Tag = "v1.0.0", PublishedAt = DateTime.UtcNow.AddDays(-2), FetchedAt = DateTime.UtcNow.AddDays(-2), Summary = "Stale summary", SummaryGeneratedAt = DateTime.UtcNow.AddDays(-1), SummaryStale = true },
-            new Release { PackageId = package.Id, Tag = "v1.1.0", PublishedAt = DateTime.UtcNow.AddDays(-1), FetchedAt = DateTime.UtcNow.AddDays(-1), Summary = "Fresh summary", SummaryGeneratedAt = DateTime.UtcNow.AddDays(-1), SummaryStale = false }
+            new Release { PackageId = package.Id, Tag = "v1.0.0", PublishedAt = DateTimeOffset.UtcNow.AddDays(-2), FetchedAt = DateTimeOffset.UtcNow.AddDays(-2), Summary = "Stale summary", SummaryGeneratedAt = DateTimeOffset.UtcNow.AddDays(-1), SummaryStale = true },
+            new Release { PackageId = package.Id, Tag = "v1.1.0", PublishedAt = DateTimeOffset.UtcNow.AddDays(-1), FetchedAt = DateTimeOffset.UtcNow.AddDays(-1), Summary = "Fresh summary", SummaryGeneratedAt = DateTimeOffset.UtcNow.AddDays(-1), SummaryStale = false }
         );
         await _db.SaveChangesAsync();
 
@@ -632,9 +632,9 @@ public class SyncServiceTests : IDisposable
         await _db.SaveChangesAsync();
 
         _db.Releases.AddRange(
-            new Release { PackageId = package1.Id, Tag = "v1.0.0", PublishedAt = DateTime.UtcNow, FetchedAt = DateTime.UtcNow },
-            new Release { PackageId = package1.Id, Tag = "v1.1.0", PublishedAt = DateTime.UtcNow, FetchedAt = DateTime.UtcNow },
-            new Release { PackageId = package2.Id, Tag = "v2.0.0", PublishedAt = DateTime.UtcNow, FetchedAt = DateTime.UtcNow }
+            new Release { PackageId = package1.Id, Tag = "v1.0.0", PublishedAt = DateTimeOffset.UtcNow, FetchedAt = DateTimeOffset.UtcNow },
+            new Release { PackageId = package1.Id, Tag = "v1.1.0", PublishedAt = DateTimeOffset.UtcNow, FetchedAt = DateTimeOffset.UtcNow },
+            new Release { PackageId = package2.Id, Tag = "v2.0.0", PublishedAt = DateTimeOffset.UtcNow, FetchedAt = DateTimeOffset.UtcNow }
         );
         await _db.SaveChangesAsync();
 
@@ -655,8 +655,8 @@ public class SyncServiceTests : IDisposable
     {
         // Arrange
         SetupGitHubReleases("prettier", "prettier", [
-            CreateRelease("v3.0.0", DateTime.UtcNow, body: "Release notes"),
-            CreateRelease("v2.9.0", DateTime.UtcNow.AddDays(-1))
+            CreateRelease("v3.0.0", DateTimeOffset.UtcNow, body: "Release notes"),
+            CreateRelease("v2.9.0", DateTimeOffset.UtcNow.AddDays(-1))
         ]);
 
         // Act
@@ -690,7 +690,7 @@ public class SyncServiceTests : IDisposable
         await _db.SaveChangesAsync();
 
         SetupGitHubReleases("prettier", "prettier", [
-            CreateRelease("v3.0.0", DateTime.UtcNow)
+            CreateRelease("v3.0.0", DateTimeOffset.UtcNow)
         ]);
 
         // Act
@@ -777,8 +777,8 @@ public class SyncServiceTests : IDisposable
         var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", GithubOwner = "owner", GithubRepo = "repo" };
         _db.Packages.Add(package);
         _db.Releases.AddRange(
-            new Release { PackageId = package.Id, Tag = "v1.2.3", PublishedAt = DateTime.UtcNow, FetchedAt = DateTime.UtcNow },
-            new Release { PackageId = package.Id, Tag = "v10.0.1", PublishedAt = DateTime.UtcNow, FetchedAt = DateTime.UtcNow }
+            new Release { PackageId = package.Id, Tag = "v1.2.3", PublishedAt = DateTimeOffset.UtcNow, FetchedAt = DateTimeOffset.UtcNow },
+            new Release { PackageId = package.Id, Tag = "v10.0.1", PublishedAt = DateTimeOffset.UtcNow, FetchedAt = DateTimeOffset.UtcNow }
         );
         await _db.SaveChangesAsync();
 
@@ -809,8 +809,8 @@ public class SyncServiceTests : IDisposable
         var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", GithubOwner = "owner", GithubRepo = "repo" };
         _db.Packages.Add(package);
         _db.Releases.AddRange(
-            new Release { PackageId = package.Id, Tag = "v2.0.0-beta.1", PublishedAt = DateTime.UtcNow, FetchedAt = DateTime.UtcNow },
-            new Release { PackageId = package.Id, Tag = "v3.0.0-rc.2", PublishedAt = DateTime.UtcNow, FetchedAt = DateTime.UtcNow }
+            new Release { PackageId = package.Id, Tag = "v2.0.0-beta.1", PublishedAt = DateTimeOffset.UtcNow, FetchedAt = DateTimeOffset.UtcNow },
+            new Release { PackageId = package.Id, Tag = "v3.0.0-rc.2", PublishedAt = DateTimeOffset.UtcNow, FetchedAt = DateTimeOffset.UtcNow }
         );
         await _db.SaveChangesAsync();
 
@@ -837,7 +837,7 @@ public class SyncServiceTests : IDisposable
         var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", GithubOwner = "owner", GithubRepo = "repo" };
         _db.Packages.Add(package);
         _db.Releases.Add(
-            new Release { PackageId = package.Id, Tag = "create-vite@8.0.0", PublishedAt = DateTime.UtcNow, FetchedAt = DateTime.UtcNow }
+            new Release { PackageId = package.Id, Tag = "create-vite@8.0.0", PublishedAt = DateTimeOffset.UtcNow, FetchedAt = DateTimeOffset.UtcNow }
         );
         await _db.SaveChangesAsync();
 
@@ -860,7 +860,7 @@ public class SyncServiceTests : IDisposable
         var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", GithubOwner = "owner", GithubRepo = "repo" };
         _db.Packages.Add(package);
         _db.Releases.Add(
-            new Release { PackageId = package.Id, Tag = "nightly-2025-01-15", PublishedAt = DateTime.UtcNow, FetchedAt = DateTime.UtcNow }
+            new Release { PackageId = package.Id, Tag = "nightly-2025-01-15", PublishedAt = DateTimeOffset.UtcNow, FetchedAt = DateTimeOffset.UtcNow }
         );
         await _db.SaveChangesAsync();
 
@@ -883,9 +883,9 @@ public class SyncServiceTests : IDisposable
         var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", GithubOwner = "owner", GithubRepo = "repo" };
         _db.Packages.Add(package);
         _db.Releases.AddRange(
-            new Release { PackageId = package.Id, Tag = "v1.0.0", PublishedAt = DateTime.UtcNow, FetchedAt = DateTime.UtcNow },
-            new Release { PackageId = package.Id, Tag = "v2.0.0-alpha.1", PublishedAt = DateTime.UtcNow, FetchedAt = DateTime.UtcNow },
-            new Release { PackageId = package.Id, Tag = "not-a-version", PublishedAt = DateTime.UtcNow, FetchedAt = DateTime.UtcNow }
+            new Release { PackageId = package.Id, Tag = "v1.0.0", PublishedAt = DateTimeOffset.UtcNow, FetchedAt = DateTimeOffset.UtcNow },
+            new Release { PackageId = package.Id, Tag = "v2.0.0-alpha.1", PublishedAt = DateTimeOffset.UtcNow, FetchedAt = DateTimeOffset.UtcNow },
+            new Release { PackageId = package.Id, Tag = "not-a-version", PublishedAt = DateTimeOffset.UtcNow, FetchedAt = DateTimeOffset.UtcNow }
         );
         await _db.SaveChangesAsync();
 
@@ -917,8 +917,8 @@ public class SyncServiceTests : IDisposable
         {
             PackageId = package.Id,
             Tag = "v5.3.1",
-            PublishedAt = DateTime.UtcNow,
-            FetchedAt = DateTime.UtcNow,
+            PublishedAt = DateTimeOffset.UtcNow,
+            FetchedAt = DateTimeOffset.UtcNow,
             MajorVersion = 5,
             MinorVersion = 3,
             PatchVersion = 1,
@@ -940,10 +940,10 @@ public class SyncServiceTests : IDisposable
         var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", GithubOwner = "owner", GithubRepo = "repo" };
         _db.Packages.Add(package);
         _db.Releases.AddRange(
-            new Release { PackageId = package.Id, Tag = "v1.0.0", PublishedAt = DateTime.UtcNow, FetchedAt = DateTime.UtcNow },
-            new Release { PackageId = package.Id, Tag = "v2.1.0-beta.3", PublishedAt = DateTime.UtcNow, FetchedAt = DateTime.UtcNow },
-            new Release { PackageId = package.Id, Tag = "@scope/pkg@3.0.0", PublishedAt = DateTime.UtcNow, FetchedAt = DateTime.UtcNow },
-            new Release { PackageId = package.Id, Tag = "random-tag", PublishedAt = DateTime.UtcNow, FetchedAt = DateTime.UtcNow }
+            new Release { PackageId = package.Id, Tag = "v1.0.0", PublishedAt = DateTimeOffset.UtcNow, FetchedAt = DateTimeOffset.UtcNow },
+            new Release { PackageId = package.Id, Tag = "v2.1.0-beta.3", PublishedAt = DateTimeOffset.UtcNow, FetchedAt = DateTimeOffset.UtcNow },
+            new Release { PackageId = package.Id, Tag = "@scope/pkg@3.0.0", PublishedAt = DateTimeOffset.UtcNow, FetchedAt = DateTimeOffset.UtcNow },
+            new Release { PackageId = package.Id, Tag = "random-tag", PublishedAt = DateTimeOffset.UtcNow, FetchedAt = DateTimeOffset.UtcNow }
         );
         await _db.SaveChangesAsync();
 
@@ -989,12 +989,12 @@ public class SyncServiceTests : IDisposable
         _db.Releases.AddRange(
             new Release
             {
-                PackageId = package.Id, Tag = "v1.0.0", PublishedAt = DateTime.UtcNow, FetchedAt = DateTime.UtcNow,
+                PackageId = package.Id, Tag = "v1.0.0", PublishedAt = DateTimeOffset.UtcNow, FetchedAt = DateTimeOffset.UtcNow,
                 MajorVersion = 1, MinorVersion = 0, PatchVersion = 0, IsPrerelease = false // already correct
             },
             new Release
             {
-                PackageId = package.Id, Tag = "v2.0.0", PublishedAt = DateTime.UtcNow, FetchedAt = DateTime.UtcNow,
+                PackageId = package.Id, Tag = "v2.0.0", PublishedAt = DateTimeOffset.UtcNow, FetchedAt = DateTimeOffset.UtcNow,
                 MajorVersion = 0, MinorVersion = 0, PatchVersion = 0, IsPrerelease = false // needs update
             }
         );
@@ -1038,7 +1038,7 @@ public class SyncServiceTests : IDisposable
 
         var referenceBody = "Please refer to [CHANGELOG.md](https://github.com/vitejs/vite/blob/v7.3.1/packages/vite/CHANGELOG.md) for details.";
         SetupGitHubReleases("vitejs", "vite", [
-            CreateRelease("v7.3.1", DateTime.UtcNow, "Vite 7.3.1", referenceBody)
+            CreateRelease("v7.3.1", DateTimeOffset.UtcNow, "Vite 7.3.1", referenceBody)
         ]);
 
         var changelog = """
@@ -1080,7 +1080,7 @@ public class SyncServiceTests : IDisposable
 
         var referenceBody = "See CHANGELOG.md for details";
         SetupGitHubReleases("owner", "repo", [
-            CreateRelease("v1.0.0", DateTime.UtcNow, body: referenceBody)
+            CreateRelease("v1.0.0", DateTimeOffset.UtcNow, body: referenceBody)
         ]);
 
         // All changelog file lookups return null (file not found)
@@ -1111,7 +1111,7 @@ public class SyncServiceTests : IDisposable
 
         var referenceBody = "See CHANGELOG.md for full details";
         SetupGitHubReleases("owner", "repo", [
-            CreateRelease("v1.0.0", DateTime.UtcNow, body: referenceBody)
+            CreateRelease("v1.0.0", DateTimeOffset.UtcNow, body: referenceBody)
         ]);
 
         // Changelog fetch throws
@@ -1142,7 +1142,7 @@ public class SyncServiceTests : IDisposable
 
         var realBody = "## Bug Fixes\n\n- Fixed authentication issue\n- Fixed memory leak in worker pool\n\n## Features\n\n- Added dark mode support";
         SetupGitHubReleases("owner", "repo", [
-            CreateRelease("v1.0.0", DateTime.UtcNow, body: realBody)
+            CreateRelease("v1.0.0", DateTimeOffset.UtcNow, body: realBody)
         ]);
 
         // Act
@@ -1171,7 +1171,7 @@ public class SyncServiceTests : IDisposable
 
         var referenceBody = "See CHANGELOG.md for details";
         SetupGitHubReleases("owner", "repo", [
-            CreateRelease("v2.0.0", DateTime.UtcNow, body: referenceBody)
+            CreateRelease("v2.0.0", DateTimeOffset.UtcNow, body: referenceBody)
         ]);
 
         var changelog = """
@@ -1207,7 +1207,7 @@ public class SyncServiceTests : IDisposable
 
         var referenceBody = "See CHANGELOG.md for details";
         SetupGitHubReleases("owner", "repo", [
-            CreateRelease("v1.0.0", DateTime.UtcNow, body: referenceBody)
+            CreateRelease("v1.0.0", DateTimeOffset.UtcNow, body: referenceBody)
         ]);
 
         // Act
@@ -1235,7 +1235,7 @@ public class SyncServiceTests : IDisposable
 
     private static GitHubRelease CreateRelease(
         string tag,
-        DateTime publishedAt,
+        DateTimeOffset publishedAt,
         string? name = null,
         string? body = null,
         bool draft = false)

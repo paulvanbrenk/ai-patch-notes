@@ -58,7 +58,7 @@ public static class ReleaseRoutes
             IOptions<DefaultWatchlistOptions> watchlistOptions) =>
         {
             var daysToQuery = days ?? 7;
-            var cutoffDate = DateTime.UtcNow.AddDays(-daysToQuery);
+            var cutoffDate = DateTimeOffset.UtcNow.AddDays(-daysToQuery);
 
             IQueryable<Release> query = db.Releases
                 .Include(r => r.Package)
@@ -205,7 +205,7 @@ public static class ReleaseRoutes
 
                     // Persist the generated summary with optimistic concurrency
                     release.Summary = fullSummary.ToString();
-                    release.SummaryGeneratedAt = DateTime.UtcNow;
+                    release.SummaryGeneratedAt = DateTimeOffset.UtcNow;
                     release.SummaryStale = false;
                     release.SummaryVersion = IdGenerator.NewId();
                     try
@@ -266,7 +266,7 @@ public static class ReleaseRoutes
 
             // Persist the generated summary with optimistic concurrency
             release.Summary = summary;
-            release.SummaryGeneratedAt = DateTime.UtcNow;
+            release.SummaryGeneratedAt = DateTimeOffset.UtcNow;
             release.SummaryStale = false;
             release.SummaryVersion = IdGenerator.NewId();
             try
@@ -405,9 +405,9 @@ public class ReleaseDto
     public string? Title { get; set; }
     public string? Body { get; set; }
     public string? Summary { get; set; }
-    public DateTime? SummaryGeneratedAt { get; set; }
-    public DateTime PublishedAt { get; set; }
-    public DateTime FetchedAt { get; set; }
+    public DateTimeOffset? SummaryGeneratedAt { get; set; }
+    public DateTimeOffset PublishedAt { get; set; }
+    public DateTimeOffset FetchedAt { get; set; }
     public required ReleasePackageDto Package { get; set; }
 }
 

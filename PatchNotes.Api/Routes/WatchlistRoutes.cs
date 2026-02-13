@@ -86,7 +86,7 @@ public static class WatchlistRoutes
                 {
                     UserId = user.Id,
                     PackageId = packageId,
-                    CreatedAt = DateTime.UtcNow,
+                    CreatedAt = DateTimeOffset.UtcNow,
                 });
             }
 
@@ -147,7 +147,7 @@ public static class WatchlistRoutes
             {
                 UserId = user.Id,
                 PackageId = packageId,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTimeOffset.UtcNow,
             });
             await db.SaveChangesAsync();
 

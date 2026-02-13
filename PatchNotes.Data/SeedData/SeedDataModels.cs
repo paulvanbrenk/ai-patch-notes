@@ -35,5 +35,5 @@ public class SeedRelease
     public required string Body { get; set; }
 
     [JsonPropertyName("publishedAt")]
-    public DateTime PublishedAt { get; set; }
+    public DateTimeOffset PublishedAt { get; set; }
 }

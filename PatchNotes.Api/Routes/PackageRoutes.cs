@@ -199,7 +199,7 @@ public static class PackageRoutes
                 GithubOwner = owner,
                 GithubRepo = repoName,
                 TagPrefix = request.TagPrefix,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTimeOffset.UtcNow
             };
 
             db.Packages.Add(package);
@@ -303,8 +303,8 @@ public class PackageDto
     public required string GithubOwner { get; set; }
     public required string GithubRepo { get; set; }
     public string? TagPrefix { get; set; }
-    public DateTime? LastFetchedAt { get; set; }
-    public DateTime CreatedAt { get; set; }
+    public DateTimeOffset? LastFetchedAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 }
 
 public class PackageDetailDto : PackageDto
@@ -319,9 +319,9 @@ public class PackageReleaseDto
     public string? Title { get; set; }
     public string? Body { get; set; }
     public string? Summary { get; set; }
-    public DateTime? SummaryGeneratedAt { get; set; }
-    public DateTime PublishedAt { get; set; }
-    public DateTime FetchedAt { get; set; }
+    public DateTimeOffset? SummaryGeneratedAt { get; set; }
+    public DateTimeOffset PublishedAt { get; set; }
+    public DateTimeOffset FetchedAt { get; set; }
     public required PackageReleasePackageDto Package { get; set; }
 }
 

@@ -48,8 +48,8 @@ public class PackagesApiTests : IAsyncLifetime
         using var scope = _fixture.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
         db.Packages.AddRange(
-            new Package { Name = "react", Url = "https://github.com/facebook/react", NpmName = "react", GithubOwner = "facebook", GithubRepo = "react", CreatedAt = DateTime.UtcNow },
-            new Package { Name = "vue", Url = "https://github.com/vuejs/core", NpmName = "vue", GithubOwner = "vuejs", GithubRepo = "core", CreatedAt = DateTime.UtcNow }
+            new Package { Name = "react", Url = "https://github.com/facebook/react", NpmName = "react", GithubOwner = "facebook", GithubRepo = "react", CreatedAt = DateTimeOffset.UtcNow },
+            new Package { Name = "vue", Url = "https://github.com/vuejs/core", NpmName = "vue", GithubOwner = "vuejs", GithubRepo = "core", CreatedAt = DateTimeOffset.UtcNow }
         );
         await db.SaveChangesAsync();
 
@@ -68,7 +68,7 @@ public class PackagesApiTests : IAsyncLifetime
         // Arrange
         using var scope = _fixture.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
-        var createdAt = DateTime.UtcNow;
+        var createdAt = DateTimeOffset.UtcNow;
         db.Packages.Add(new Package
         {
             Name = "lodash",
@@ -171,7 +171,7 @@ public class PackagesApiTests : IAsyncLifetime
             NpmName = "duplicate-pkg",
             GithubOwner = "owner",
             GithubRepo = "repo",
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTimeOffset.UtcNow
         });
         await db.SaveChangesAsync();
 
@@ -218,7 +218,7 @@ public class PackagesApiTests : IAsyncLifetime
             NpmName = "to-delete",
             GithubOwner = "owner",
             GithubRepo = "repo",
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTimeOffset.UtcNow
         };
         db.Packages.Add(pkg);
         await db.SaveChangesAsync();

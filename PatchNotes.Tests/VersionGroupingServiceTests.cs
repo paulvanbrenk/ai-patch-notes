@@ -15,8 +15,8 @@ public class VersionGroupingServiceTests
         {
             Tag = tag,
             PackageId = packageId,
-            PublishedAt = DateTime.UtcNow,
-            FetchedAt = DateTime.UtcNow,
+            PublishedAt = DateTimeOffset.UtcNow,
+            FetchedAt = DateTimeOffset.UtcNow,
             MajorVersion = parsed.MajorVersion,
             MinorVersion = parsed.MinorVersion,
             PatchVersion = parsed.PatchVersion,

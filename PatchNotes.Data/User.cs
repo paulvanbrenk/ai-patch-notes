@@ -22,17 +22,17 @@ public class User
     /// <summary>
     /// When the user first authenticated (created in our system)
     /// </summary>
-    public DateTime CreatedAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 
     /// <summary>
     /// When the user record was last updated from Stytch
     /// </summary>
-    public DateTime UpdatedAt { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
 
     /// <summary>
     /// Last time the user logged in
     /// </summary>
-    public DateTime? LastLoginAt { get; set; }
+    public DateTimeOffset? LastLoginAt { get; set; }
 
     /// <summary>
     /// Stripe customer ID for subscription management
@@ -52,7 +52,7 @@ public class User
     /// <summary>
     /// When the current subscription period expires
     /// </summary>
-    public DateTime? SubscriptionExpiresAt { get; set; }
+    public DateTimeOffset? SubscriptionExpiresAt { get; set; }
 
     /// <summary>
     /// Whether the user has an active Pro subscription
@@ -61,7 +61,7 @@ public class User
         SubscriptionStatus == "active" ||
         SubscriptionStatus == "trialing" ||
         SubscriptionStatus == "past_due" ||
-        (SubscriptionStatus == "canceled" && SubscriptionExpiresAt > DateTime.UtcNow);
+        (SubscriptionStatus == "canceled" && SubscriptionExpiresAt > DateTimeOffset.UtcNow);
 
     public ICollection<Watchlist> Watchlists { get; set; } = [];
 }

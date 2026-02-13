@@ -39,7 +39,7 @@ public class SummarizeConcurrencyTests
             {
                 Name = "test-pkg", Url = "https://github.com/o/r",
                 NpmName = "test-pkg", GithubOwner = "o", GithubRepo = "r",
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTimeOffset.UtcNow
             };
             db.Packages.Add(package);
             await db.SaveChangesAsync();
@@ -48,8 +48,8 @@ public class SummarizeConcurrencyTests
             {
                 PackageId = package.Id,
                 Tag = "v1.0.0",
-                PublishedAt = DateTime.UtcNow,
-                FetchedAt = DateTime.UtcNow
+                PublishedAt = DateTimeOffset.UtcNow,
+                FetchedAt = DateTimeOffset.UtcNow
             });
             await db.SaveChangesAsync();
         }
@@ -63,14 +63,14 @@ public class SummarizeConcurrencyTests
 
         // First "request" saves successfully
         release1.Summary = "Summary from request 1";
-        release1.SummaryGeneratedAt = DateTime.UtcNow;
+        release1.SummaryGeneratedAt = DateTimeOffset.UtcNow;
         release1.SummaryStale = false;
         release1.SummaryVersion = IdGenerator.NewId();
         await ctx1.SaveChangesAsync();
 
         // Second "request" tries to save with stale SummaryVersion - should fail
         release2.Summary = "Summary from request 2";
-        release2.SummaryGeneratedAt = DateTime.UtcNow;
+        release2.SummaryGeneratedAt = DateTimeOffset.UtcNow;
         release2.SummaryStale = false;
         release2.SummaryVersion = IdGenerator.NewId();
 
@@ -253,7 +253,7 @@ internal class SummarizeTestFixture : PatchNotesApiFixture
             NpmName = "concurrency-test-pkg",
             GithubOwner = "owner",
             GithubRepo = "repo",
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTimeOffset.UtcNow
         };
         db.Packages.Add(package);
         await db.SaveChangesAsync();
@@ -264,8 +264,8 @@ internal class SummarizeTestFixture : PatchNotesApiFixture
             Tag = "v1.0.0",
             Title = "Test Release",
             Body = "Some release notes",
-            PublishedAt = DateTime.UtcNow,
-            FetchedAt = DateTime.UtcNow,
+            PublishedAt = DateTimeOffset.UtcNow,
+            FetchedAt = DateTimeOffset.UtcNow,
             // SummaryStale defaults to true, so NeedsSummary is true
         };
         db.Releases.Add(release);

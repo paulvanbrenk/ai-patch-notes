@@ -96,7 +96,7 @@ public class SummaryGenerationService
                 if (existingSummaries.TryGetValue(key, out var existing))
                 {
                     existing.Summary = summary;
-                    existing.UpdatedAt = DateTime.UtcNow;
+                    existing.UpdatedAt = DateTimeOffset.UtcNow;
                 }
                 else
                 {
@@ -106,7 +106,7 @@ public class SummaryGenerationService
                         MajorVersion = group.MajorVersion,
                         IsPrerelease = group.IsPrerelease,
                         Summary = summary,
-                        GeneratedAt = DateTime.UtcNow
+                        GeneratedAt = DateTimeOffset.UtcNow
                     };
                     _db.ReleaseSummaries.Add(releaseSummary);
                     existingSummaries[key] = releaseSummary;
@@ -175,7 +175,7 @@ public class SummaryGenerationService
         ReleaseVersionGroup group,
         CancellationToken cancellationToken)
     {
-        var cutoff = DateTime.UtcNow - SummaryWindow;
+        var cutoff = DateTimeOffset.UtcNow - SummaryWindow;
         var ordered = group.Releases
             .OrderByDescending(r => r.PublishedAt)
             .ToList();

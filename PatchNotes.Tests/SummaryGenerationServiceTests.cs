@@ -75,7 +75,7 @@ public class SummaryGenerationServiceTests : IDisposable
         summaries[0].MajorVersion.Should().Be(1);
         summaries[0].IsPrerelease.Should().BeFalse();
         summaries[0].Summary.Should().Be("Generated summary for the version group.");
-        summaries[0].GeneratedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+        summaries[0].GeneratedAt.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(5));
     }
 
     [Fact]
@@ -109,7 +109,7 @@ public class SummaryGenerationServiceTests : IDisposable
     public async Task GenerateGroupSummariesAsync_UpdatesExistingSummary()
     {
         var package = await CreatePackage();
-        var generatedAt = DateTime.UtcNow.AddDays(-5);
+        var generatedAt = DateTimeOffset.UtcNow.AddDays(-5);
 
         _db.ReleaseSummaries.Add(new ReleaseSummary
         {
@@ -135,7 +135,7 @@ public class SummaryGenerationServiceTests : IDisposable
         summaries[0].Summary.Should().Be("Generated summary for the version group.");
         summaries[0].GeneratedAt.Should().Be(generatedAt); // Original time preserved
         summaries[0].UpdatedAt.Should().NotBeNull();
-        summaries[0].UpdatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+        summaries[0].UpdatedAt.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(5));
     }
 
     [Fact]
@@ -150,10 +150,10 @@ public class SummaryGenerationServiceTests : IDisposable
             Tag = "v1.0.0",
             Title = "Release 1",
             Body = "Features",
-            PublishedAt = DateTime.UtcNow.AddDays(-5),
-            FetchedAt = DateTime.UtcNow.AddDays(-5),
+            PublishedAt = DateTimeOffset.UtcNow.AddDays(-5),
+            FetchedAt = DateTimeOffset.UtcNow.AddDays(-5),
             Summary = "Existing summary",
-            SummaryGeneratedAt = DateTime.UtcNow.AddDays(-4),
+            SummaryGeneratedAt = DateTimeOffset.UtcNow.AddDays(-4),
             SummaryStale = false,
             MajorVersion = 1,
             MinorVersion = 0,
@@ -296,10 +296,10 @@ public class SummaryGenerationServiceTests : IDisposable
             Tag = "v2.0.0",
             Title = "Release 2",
             Body = "Features 2",
-            PublishedAt = DateTime.UtcNow,
-            FetchedAt = DateTime.UtcNow,
+            PublishedAt = DateTimeOffset.UtcNow,
+            FetchedAt = DateTimeOffset.UtcNow,
             Summary = "Has summary",
-            SummaryGeneratedAt = DateTime.UtcNow,
+            SummaryGeneratedAt = DateTimeOffset.UtcNow,
             SummaryStale = false,
             MajorVersion = 2,
             MinorVersion = 0,
@@ -355,8 +355,8 @@ public class SummaryGenerationServiceTests : IDisposable
             Tag = tag,
             Title = title,
             Body = body,
-            PublishedAt = DateTime.UtcNow,
-            FetchedAt = DateTime.UtcNow,
+            PublishedAt = DateTimeOffset.UtcNow,
+            FetchedAt = DateTimeOffset.UtcNow,
             SummaryStale = true,
             MajorVersion = parsed.MajorVersion,
             MinorVersion = parsed.MinorVersion,
