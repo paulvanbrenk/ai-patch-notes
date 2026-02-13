@@ -18,7 +18,7 @@ function SubscriptionSuccess() {
   return (
     <div className="min-h-screen bg-surface-secondary">
       <Header>
-        <HeaderTitle>Patch Notes</HeaderTitle>
+        <HeaderTitle>My Release Notes</HeaderTitle>
         <div className="flex items-center gap-2">
           <ThemeToggle />
           <UserMenu />
@@ -33,7 +33,7 @@ function SubscriptionSuccess() {
             </div>
 
             <h1 className="text-2xl font-bold text-text-primary mb-3">
-              Welcome to PatchNotes Pro!
+              Welcome to My Release Notes Pro!
             </h1>
 
             <p className="text-text-secondary mb-8">

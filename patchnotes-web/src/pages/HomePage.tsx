@@ -549,7 +549,7 @@ export function HomePage() {
       <Header>
         <div className="flex items-center gap-2.5">
           <Logo size={28} />
-          <HeaderTitle>Patch Notes</HeaderTitle>
+          <HeaderTitle>My Release Notes</HeaderTitle>
         </div>
         <div className="flex items-center gap-2">
           {user && !isPro && (
