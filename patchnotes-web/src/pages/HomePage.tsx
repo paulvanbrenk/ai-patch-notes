@@ -548,8 +548,13 @@ export function HomePage() {
     <div className="min-h-screen bg-surface-secondary">
       <Header>
         <div className="flex items-center gap-2.5">
-          <Logo size={28} />
-          <HeaderTitle>My Release Notes</HeaderTitle>
+          <Logo size={36} />
+          <div>
+            <HeaderTitle>My Release Notes</HeaderTitle>
+            <p className="text-2xs text-text-tertiary leading-tight">
+              by Tiny Tools
+            </p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           {user && !isPro && (

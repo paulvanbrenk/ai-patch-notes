@@ -5,15 +5,15 @@ export function Footer() {
   return (
     <footer className="mt-auto bg-surface-primary/80 backdrop-blur-md border-t border-border-default">
       <Container>
-        <div className="py-6 flex flex-col gap-6">
+        <div className="pt-1.5 pb-3 flex flex-col gap-0.5">
           {/* Top: Brand + Nav */}
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-0.5">
             {/* Left: Brand */}
-            <div>
-              <p className="text-sm font-semibold text-text-primary">
+            <p className="text-sm">
+              <span className="font-semibold text-text-primary">
                 My Release Notes
-              </p>
-              <p className="text-xs text-text-tertiary">
+              </span>{' '}
+              <span className="text-xs text-text-tertiary">
                 by{' '}
                 <a
                   href="https://www.yourtinytools.com"
@@ -23,8 +23,8 @@ export function Footer() {
                 >
                   Tiny Tools
                 </a>
-              </p>
-            </div>
+              </span>
+            </p>
 
             {/* Right: Nav links */}
             <nav className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-text-secondary">
@@ -52,9 +52,9 @@ export function Footer() {
             </nav>
           </div>
 
-          {/* Bottom: Tagline + Copyright */}
-          <div className="flex flex-col items-center gap-1.5 border-t border-border-muted pt-4">
-            <div className="flex items-center gap-1.5">
+          {/* Bottom: Tagline + Copyright + Trademark */}
+          <div className="border-t border-border-muted pt-2 flex flex-col gap-0.5">
+            <div className="flex items-center justify-center gap-1.5">
               <Hammer
                 className="w-4 h-4 text-text-tertiary"
                 strokeWidth={1.5}
@@ -63,20 +63,20 @@ export function Footer() {
                 Forged in Gas Town
               </span>
               <Anvil className="w-4 h-4 text-text-tertiary" strokeWidth={1.5} />
+              <span className="text-xs text-text-tertiary">
+                &middot; &copy; 2026 My Release Notes &middot; A{' '}
+                <a
+                  href="https://www.yourtinytools.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-text-secondary transition-colors"
+                >
+                  Tiny Tools
+                </a>{' '}
+                product
+              </span>
             </div>
-            <p className="text-xs text-text-tertiary text-center">
-              &copy; 2026 My Release Notes &middot; A{' '}
-              <a
-                href="https://www.yourtinytools.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-text-secondary transition-colors"
-              >
-                Tiny Tools
-              </a>{' '}
-              product
-            </p>
-            <p className="text-xs text-text-tertiary text-center">
+            <p className="text-xs text-text-tertiary">
               GitHub is a trademark of GitHub, Inc. This site is not affiliated
               with GitHub, Inc.
             </p>

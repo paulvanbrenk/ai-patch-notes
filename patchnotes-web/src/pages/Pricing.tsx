@@ -68,7 +68,7 @@ export function Pricing() {
 
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {/* Free Tier */}
-            <Card className="relative">
+            <Card className="relative flex flex-col">
               <div className="mb-6">
                 <h2 className="text-xl font-semibold text-text-primary mb-2">
                   Free
@@ -90,35 +90,37 @@ export function Pricing() {
                 ))}
               </ul>
 
-              {!isInitialized ? (
-                <Button
-                  variant="secondary"
-                  size="lg"
-                  className="w-full"
-                  disabled
-                >
-                  Loading...
-                </Button>
-              ) : !user ? (
-                <Link to="/login" className="block">
-                  <Button variant="secondary" size="lg" className="w-full">
-                    Get Started
+              <div className="mt-auto">
+                {!isInitialized ? (
+                  <Button
+                    variant="secondary"
+                    size="lg"
+                    className="w-full"
+                    disabled
+                  >
+                    Loading...
                   </Button>
-                </Link>
-              ) : (
-                <Button
-                  variant="secondary"
-                  size="lg"
-                  className="w-full"
-                  disabled
-                >
-                  Current Plan
-                </Button>
-              )}
+                ) : !user ? (
+                  <Link to="/login" className="block">
+                    <Button variant="secondary" size="lg" className="w-full">
+                      Get Started
+                    </Button>
+                  </Link>
+                ) : (
+                  <Button
+                    variant="secondary"
+                    size="lg"
+                    className="w-full"
+                    disabled
+                  >
+                    Current Plan
+                  </Button>
+                )}
+              </div>
             </Card>
 
             {/* Pro Tier */}
-            <Card className="relative border-brand-500 dark:border-brand-400 border-2">
+            <Card className="relative flex flex-col border-brand-500 dark:border-brand-400 border-2">
               <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold bg-brand-500 text-white rounded-full">
                   <Sparkles className="w-3.5 h-3.5" />
@@ -150,30 +152,32 @@ export function Pricing() {
                 ))}
               </ul>
 
-              {!isInitialized ? (
-                <Button size="lg" className="w-full" disabled>
-                  Loading...
-                </Button>
-              ) : isPro ? (
-                <Button
-                  variant="secondary"
-                  size="lg"
-                  className="w-full"
-                  onClick={handleManageSubscription}
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'Loading...' : 'Manage Subscription'}
-                </Button>
-              ) : (
-                <Button
-                  size="lg"
-                  className="w-full"
-                  onClick={handleUpgrade}
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'Loading...' : 'Upgrade to Pro'}
-                </Button>
-              )}
+              <div className="mt-auto">
+                {!isInitialized ? (
+                  <Button size="lg" className="w-full" disabled>
+                    Loading...
+                  </Button>
+                ) : isPro ? (
+                  <Button
+                    variant="secondary"
+                    size="lg"
+                    className="w-full"
+                    onClick={handleManageSubscription}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? 'Loading...' : 'Manage Subscription'}
+                  </Button>
+                ) : (
+                  <Button
+                    size="lg"
+                    className="w-full"
+                    onClick={handleUpgrade}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? 'Loading...' : 'Upgrade to Pro'}
+                  </Button>
+                )}
+              </div>
             </Card>
           </div>
 

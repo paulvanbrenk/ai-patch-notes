@@ -47,9 +47,9 @@ export function About() {
                 >
                   Tiny Tools
                 </a>
-                , a small studio focused on crafting simple, sharp developer
-                utilities. We believe the best tools do one thing well and stay
-                out of your way.
+                , a small studio focused on crafting simple, sharp utilities. We
+                believe the best tools do one thing well and stay out of your
+                way.
               </p>
             </section>
 
@@ -82,11 +82,19 @@ export function About() {
                 Forged in Gas Town
               </h2>
               <p className="text-text-secondary leading-relaxed">
-                Every piece of My Release Notes is forged in Gas Town — our way
-                of saying it's built with grit, heat, and a little bit of chaos.
-                Good tools come from real problems, and this one was born out of
-                our own frustration with missing important releases buried in
-                noisy GitHub feeds.
+                My Release Notes was forged in{' '}
+                <a
+                  href="https://github.com/steveyegge/gastown"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-brand-500 hover:underline"
+                >
+                  Gas Town
+                </a>
+                , a multi-agent workspace manager. Good tools come from real
+                problems, and My Release Notes was born out of our own
+                frustration with missing important releases buried in noisy
+                GitHub feeds.
               </p>
             </section>
           </div>
