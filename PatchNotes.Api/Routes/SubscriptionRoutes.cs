@@ -56,8 +56,10 @@ public static class SubscriptionRoutes
     {
         var requireAuth = RouteUtils.CreateAuthFilter();
 
+        var group = app.MapGroup("/api/subscription").WithTags("Subscription");
+
         // POST /api/subscription/checkout - Create Stripe Checkout session
-        app.MapPost("/api/subscription/checkout", async (HttpContext httpContext, PatchNotesDbContext db, IConfiguration configuration) =>
+        group.MapPost("/checkout", async (HttpContext httpContext, PatchNotesDbContext db, IConfiguration configuration) =>
         {
             var stytchUserId = httpContext.Items["StytchUserId"] as string;
             if (string.IsNullOrEmpty(stytchUserId))
@@ -117,10 +119,14 @@ public static class SubscriptionRoutes
             }
 
             return SeeOtherRedirect(httpContext, session.Url);
-        }).AddEndpointFilterFactory(requireAuth);
+        })
+        .AddEndpointFilterFactory(requireAuth)
+        .Produces(StatusCodes.Status303SeeOther)
+        .Produces(StatusCodes.Status404NotFound)
+        .WithName("CreateCheckoutSession");
 
         // POST /api/subscription/portal - Create Stripe Customer Portal session
-        app.MapPost("/api/subscription/portal", async (HttpContext httpContext, PatchNotesDbContext db) =>
+        group.MapPost("/portal", async (HttpContext httpContext, PatchNotesDbContext db) =>
         {
             var stytchUserId = httpContext.Items["StytchUserId"] as string;
             if (string.IsNullOrEmpty(stytchUserId))
@@ -156,10 +162,15 @@ public static class SubscriptionRoutes
             }
 
             return SeeOtherRedirect(httpContext, session.Url);
-        }).AddEndpointFilterFactory(requireAuth);
+        })
+        .AddEndpointFilterFactory(requireAuth)
+        .Produces(StatusCodes.Status303SeeOther)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status404NotFound)
+        .WithName("CreatePortalSession");
 
         // GET /api/subscription/status - Get current subscription status
-        app.MapGet("/api/subscription/status", async (HttpContext httpContext, PatchNotesDbContext db) =>
+        group.MapGet("/status", async (HttpContext httpContext, PatchNotesDbContext db) =>
         {
             var stytchUserId = httpContext.Items["StytchUserId"] as string;
             if (string.IsNullOrEmpty(stytchUserId))
@@ -173,14 +184,25 @@ public static class SubscriptionRoutes
                 return Results.NotFound(new { error = "User not found" });
             }
 
-            return Results.Ok(new
+            return Results.Ok(new SubscriptionStatusDto
             {
-                isPro = user.IsPro,
-                status = user.SubscriptionStatus,
-                expiresAt = user.SubscriptionExpiresAt?.ToString("o"),
+                IsPro = user.IsPro,
+                Status = user.SubscriptionStatus,
+                ExpiresAt = user.SubscriptionExpiresAt?.ToString("o"),
             });
-        }).AddEndpointFilterFactory(requireAuth);
+        })
+        .AddEndpointFilterFactory(requireAuth)
+        .Produces<SubscriptionStatusDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound)
+        .WithName("GetSubscriptionStatus");
 
         return app;
     }
+}
+
+public class SubscriptionStatusDto
+{
+    public required bool IsPro { get; set; }
+    public string? Status { get; set; }
+    public string? ExpiresAt { get; set; }
 }

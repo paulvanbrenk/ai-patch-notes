@@ -12,8 +12,10 @@ public static class WatchlistRoutes
     {
         var requireAuth = RouteUtils.CreateAuthFilter();
 
+        var group = app.MapGroup("/api/watchlist").WithTags("Watchlist");
+
         // GET /api/watchlist — return list of package IDs the current user is watching
-        app.MapGet("/api/watchlist", async (HttpContext httpContext, PatchNotesDbContext db) =>
+        group.MapGet("/", async (HttpContext httpContext, PatchNotesDbContext db) =>
         {
             var stytchUserId = httpContext.Items["StytchUserId"] as string;
             if (stytchUserId == null)
@@ -33,10 +35,13 @@ public static class WatchlistRoutes
                 .ToArrayAsync();
 
             return Results.Ok(packageIds);
-        }).AddEndpointFilterFactory(requireAuth);
+        })
+        .AddEndpointFilterFactory(requireAuth)
+        .Produces<string[]>(StatusCodes.Status200OK)
+        .WithName("GetWatchlist");
 
         // PUT /api/watchlist — replace the entire watchlist (bulk set)
-        app.MapPut("/api/watchlist", async (SetWatchlistRequest request, HttpContext httpContext, PatchNotesDbContext db) =>
+        group.MapPut("/", async (SetWatchlistRequest request, HttpContext httpContext, PatchNotesDbContext db) =>
         {
             var stytchUserId = httpContext.Items["StytchUserId"] as string;
             if (stytchUserId == null)
@@ -93,10 +98,15 @@ public static class WatchlistRoutes
                 .ToArrayAsync();
 
             return Results.Ok(resultIds);
-        }).AddEndpointFilterFactory(requireAuth);
+        })
+        .AddEndpointFilterFactory(requireAuth)
+        .Produces<string[]>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status404NotFound)
+        .WithName("SetWatchlist");
 
         // POST /api/watchlist/{packageId} — add a single package to watchlist
-        app.MapPost("/api/watchlist/{packageId}", async (string packageId, HttpContext httpContext, PatchNotesDbContext db) =>
+        group.MapPost("/{packageId}", async (string packageId, HttpContext httpContext, PatchNotesDbContext db) =>
         {
             var stytchUserId = httpContext.Items["StytchUserId"] as string;
             if (stytchUserId == null)
@@ -142,10 +152,15 @@ public static class WatchlistRoutes
             await db.SaveChangesAsync();
 
             return Results.Created($"/api/watchlist/{packageId}", packageId);
-        }).AddEndpointFilterFactory(requireAuth);
+        })
+        .AddEndpointFilterFactory(requireAuth)
+        .Produces<string>(StatusCodes.Status201Created)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status409Conflict)
+        .WithName("AddToWatchlist");
 
         // DELETE /api/watchlist/{packageId} — remove a single package from watchlist
-        app.MapDelete("/api/watchlist/{packageId}", async (string packageId, HttpContext httpContext, PatchNotesDbContext db) =>
+        group.MapDelete("/{packageId}", async (string packageId, HttpContext httpContext, PatchNotesDbContext db) =>
         {
             var stytchUserId = httpContext.Items["StytchUserId"] as string;
             if (stytchUserId == null)
@@ -168,7 +183,10 @@ public static class WatchlistRoutes
             }
 
             return Results.NoContent();
-        }).AddEndpointFilterFactory(requireAuth);
+        })
+        .AddEndpointFilterFactory(requireAuth)
+        .Produces(StatusCodes.Status204NoContent)
+        .WithName("RemoveFromWatchlist");
 
         return app;
     }

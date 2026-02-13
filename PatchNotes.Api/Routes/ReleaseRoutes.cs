@@ -13,28 +13,30 @@ public static class ReleaseRoutes
     {
         var requireAuth = RouteUtils.CreateAuthFilter();
 
+        var group = app.MapGroup("/api/releases").WithTags("Releases");
+
         // GET /api/releases/{id} - Get single release details
-        app.MapGet("/api/releases/{id}", async (string id, PatchNotesDbContext db) =>
+        group.MapGet("/{id}", async (string id, PatchNotesDbContext db) =>
         {
             var release = await db.Releases
                 .Include(r => r.Package)
                 .Where(r => r.Id == id)
-                .Select(r => new
+                .Select(r => new ReleaseDto
                 {
-                    r.Id,
-                    r.Tag,
-                    r.Title,
-                    r.Body,
-                    r.Summary,
-                    r.SummaryGeneratedAt,
-                    r.PublishedAt,
-                    r.FetchedAt,
-                    Package = new
+                    Id = r.Id,
+                    Tag = r.Tag,
+                    Title = r.Title,
+                    Body = r.Body,
+                    Summary = r.Summary,
+                    SummaryGeneratedAt = r.SummaryGeneratedAt,
+                    PublishedAt = r.PublishedAt,
+                    FetchedAt = r.FetchedAt,
+                    Package = new ReleasePackageDto
                     {
-                        r.Package.Id,
-                        r.Package.NpmName,
-                        r.Package.GithubOwner,
-                        r.Package.GithubRepo
+                        Id = r.Package.Id,
+                        NpmName = r.Package.NpmName,
+                        GithubOwner = r.Package.GithubOwner,
+                        GithubRepo = r.Package.GithubRepo
                     }
                 })
                 .FirstOrDefaultAsync();
@@ -45,10 +47,13 @@ public static class ReleaseRoutes
             }
 
             return Results.Ok(release);
-        });
+        })
+        .Produces<ReleaseDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound)
+        .WithName("GetRelease");
 
         // GET /api/releases - Query releases for selected packages
-        app.MapGet("/api/releases", async (string? packages, int? days, bool? excludePrerelease, int? majorVersion,
+        group.MapGet("/", async (string? packages, int? days, bool? excludePrerelease, int? majorVersion,
             bool? watchlist, HttpContext httpContext, PatchNotesDbContext db, IStytchClient stytchClient,
             IOptions<DefaultWatchlistOptions> watchlistOptions) =>
         {
@@ -114,31 +119,33 @@ public static class ReleaseRoutes
 
             var releases = await query
                 .OrderByDescending(r => r.PublishedAt)
-                .Select(r => new
+                .Select(r => new ReleaseDto
                 {
-                    r.Id,
-                    r.Tag,
-                    r.Title,
-                    r.Body,
-                    r.Summary,
-                    r.SummaryGeneratedAt,
-                    r.PublishedAt,
-                    r.FetchedAt,
-                    Package = new
+                    Id = r.Id,
+                    Tag = r.Tag,
+                    Title = r.Title,
+                    Body = r.Body,
+                    Summary = r.Summary,
+                    SummaryGeneratedAt = r.SummaryGeneratedAt,
+                    PublishedAt = r.PublishedAt,
+                    FetchedAt = r.FetchedAt,
+                    Package = new ReleasePackageDto
                     {
-                        r.Package.Id,
-                        r.Package.NpmName,
-                        r.Package.GithubOwner,
-                        r.Package.GithubRepo
+                        Id = r.Package.Id,
+                        NpmName = r.Package.NpmName,
+                        GithubOwner = r.Package.GithubOwner,
+                        GithubRepo = r.Package.GithubRepo
                     }
                 })
                 .ToListAsync();
 
             return Results.Ok(releases);
-        });
+        })
+        .Produces<List<ReleaseDto>>(StatusCodes.Status200OK)
+        .WithName("GetReleases");
 
         // POST /api/releases/{id}/summarize - Generate AI summary for a release
-        app.MapPost("/api/releases/{id}/summarize", async (string id, HttpContext httpContext, PatchNotesDbContext db, IAiClient aiClient, ILoggerFactory loggerFactory) =>
+        group.MapPost("/{id}/summarize", async (string id, HttpContext httpContext, PatchNotesDbContext db, IAiClient aiClient, ILoggerFactory loggerFactory) =>
         {
             var logger = loggerFactory.CreateLogger("PatchNotes.Api.Routes.ReleaseRoutes");
 
@@ -154,16 +161,16 @@ public static class ReleaseRoutes
             // Return cached summary if it exists and isn't stale
             if (!release.NeedsSummary)
             {
-                return Results.Ok(new
+                return Results.Ok(new SummarizeResultDto
                 {
-                    release.Id,
-                    release.Tag,
-                    release.Title,
-                    summary = release.Summary,
-                    Package = new
+                    Id = release.Id,
+                    Tag = release.Tag,
+                    Title = release.Title,
+                    Summary = release.Summary,
+                    Package = new ReleasePackageSummaryDto
                     {
-                        release.Package.Id,
-                        release.Package.NpmName
+                        Id = release.Package.Id,
+                        NpmName = release.Package.NpmName
                     }
                 });
             }
@@ -272,19 +279,23 @@ public static class ReleaseRoutes
                 logger.LogInformation("Concurrent summary persistence for release {ReleaseId} - returning locally generated summary", id);
             }
 
-            return Results.Ok(new
+            return Results.Ok(new SummarizeResultDto
             {
-                release.Id,
-                release.Tag,
-                release.Title,
-                summary = release.Summary,
-                Package = new
+                Id = release.Id,
+                Tag = release.Tag,
+                Title = release.Title,
+                Summary = release.Summary,
+                Package = new ReleasePackageSummaryDto
                 {
-                    release.Package.Id,
-                    release.Package.NpmName
+                    Id = release.Package.Id,
+                    NpmName = release.Package.NpmName
                 }
             });
-        }).AddEndpointFilterFactory(requireAuth);
+        })
+        .AddEndpointFilterFactory(requireAuth)
+        .Produces<SummarizeResultDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound)
+        .WithName("SummarizeRelease");
 
         return app;
     }
@@ -375,4 +386,40 @@ public static class ReleaseRoutes
 
         return (ids, true);
     }
+}
+
+public class ReleasePackageDto
+{
+    public required string Id { get; set; }
+    public string? NpmName { get; set; }
+    public required string GithubOwner { get; set; }
+    public required string GithubRepo { get; set; }
+}
+
+public class ReleaseDto
+{
+    public required string Id { get; set; }
+    public required string Tag { get; set; }
+    public string? Title { get; set; }
+    public string? Body { get; set; }
+    public string? Summary { get; set; }
+    public DateTime? SummaryGeneratedAt { get; set; }
+    public DateTime PublishedAt { get; set; }
+    public DateTime FetchedAt { get; set; }
+    public required ReleasePackageDto Package { get; set; }
+}
+
+public class SummarizeResultDto
+{
+    public required string Id { get; set; }
+    public required string Tag { get; set; }
+    public string? Title { get; set; }
+    public string? Summary { get; set; }
+    public required ReleasePackageSummaryDto Package { get; set; }
+}
+
+public class ReleasePackageSummaryDto
+{
+    public required string Id { get; set; }
+    public string? NpmName { get; set; }
 }
