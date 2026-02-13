@@ -65,6 +65,12 @@ public record VersionParseResult
 }
 
 /// <summary>
+/// Represents the denormalized version fields extracted from a tag for storage.
+/// Returns MajorVersion = -1 when the tag cannot be parsed (unversioned).
+/// </summary>
+public record ParsedTagValues(int MajorVersion, int MinorVersion, int PatchVersion, bool IsPrerelease);
+
+/// <summary>
 /// Consolidated parser for semantic versions from release tags.
 /// Supports standard semver, monorepo, release-style, simple (MAJOR.MINOR),
 /// and non-standard prerelease formats.
@@ -148,12 +154,12 @@ public static class VersionParser
     /// Parses a tag into denormalized version fields for storage.
     /// Returns -1 for MajorVersion when the tag cannot be parsed (unversioned).
     /// </summary>
-    public static (int MajorVersion, int MinorVersion, int PatchVersion, bool IsPrerelease) ParseTagValues(string tag)
+    public static ParsedTagValues ParseTagValues(string tag)
     {
         var result = Parse(tag);
         if (result.Success)
-            return (result.Version!.Major, result.Version.Minor, result.Version.Patch, result.Version.IsPrerelease);
-        return (-1, 0, 0, false);
+            return new ParsedTagValues(result.Version!.Major, result.Version.Minor, result.Version.Patch, result.Version.IsPrerelease);
+        return new ParsedTagValues(-1, 0, 0, false);
     }
 
     private static VersionParseResult ParseNonStandardPrereleaseMatch(Match match, string tag)
