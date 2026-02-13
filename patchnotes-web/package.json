@@ -30,7 +30,6 @@
   },
   "dependencies": {
     "@stytch/react": "^20.0.1",
-    "@stytch/vanilla-js": "^6.0.1",
     "@tanstack/react-query": "^5.90.21",
     "@tanstack/react-router": "^1.159.5",
     "lucide-react": "^0.563.0",
