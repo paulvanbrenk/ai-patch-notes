@@ -53,7 +53,20 @@ if (builder.Environment.IsProduction() || builder.Environment.IsStaging())
     builder.Services.AddApplicationInsightsTelemetry();
 }
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options =>
+{
+    // .NET emits ["integer", "string"] with a regex pattern for int/int? params.
+    // Orval generates invalid zod.number().regex() from this. Strip it.
+    options.AddSchemaTransformer((schema, context, ct) =>
+    {
+        if (schema.Type?.HasFlag(Microsoft.OpenApi.JsonSchemaType.Integer) == true && schema.Pattern is not null)
+        {
+            schema.Type = Microsoft.OpenApi.JsonSchemaType.Integer;
+            schema.Pattern = null;
+        }
+        return Task.CompletedTask;
+    });
+});
 builder.Services.AddPatchNotesDbContext(builder.Configuration);
 builder.Services.AddHttpClient();
 

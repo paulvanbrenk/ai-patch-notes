@@ -11,24 +11,16 @@ export const GetPackageSummariesParams = zod.object({
   "id": zod.string()
 })
 
-export const getPackageSummariesQueryMajorVersionRegExpOne = new RegExp('^-?(?:0|[1-9]\\d\*)$');
-export const getPackageSummariesQueryMajorVersionRegExpTwo = new RegExp('^-?(?:0|[1-9]\\d\*)$');
-
-
 export const GetPackageSummariesQueryParams = zod.object({
   "includePrerelease": zod.boolean().optional(),
-  "majorVersion": zod.coerce.number().optional()
+  "majorVersion": zod.number().optional()
 })
-
-export const getPackageSummariesResponseMajorVersionRegExpOne = new RegExp('^-?(?:0|[1-9]\\d\*)$');
-export const getPackageSummariesResponseMajorVersionRegExpTwo = new RegExp('^-?(?:0|[1-9]\\d\*)$');
-
 
 export const GetPackageSummariesResponseItem = zod.object({
   "id": zod.string(),
   "packageId": zod.string(),
   "packageName": zod.string(),
-  "majorVersion": zod.coerce.number().optional(),
+  "majorVersion": zod.number().optional(),
   "isPrerelease": zod.boolean().optional(),
   "summary": zod.string().nullish(),
   "generatedAt": zod.iso.datetime({}).optional(),
@@ -36,25 +28,17 @@ export const GetPackageSummariesResponseItem = zod.object({
 })
 export const GetPackageSummariesResponse = zod.array(GetPackageSummariesResponseItem)
 
-export const getSummariesQueryLimitRegExpOne = new RegExp('^-?(?:0|[1-9]\\d\*)$');
-export const getSummariesQueryLimitRegExpTwo = new RegExp('^-?(?:0|[1-9]\\d\*)$');
-
-
 export const GetSummariesQueryParams = zod.object({
   "packages": zod.string().optional(),
   "includePrerelease": zod.boolean().optional(),
-  "limit": zod.coerce.number().optional()
+  "limit": zod.number().optional()
 })
-
-export const getSummariesResponseMajorVersionRegExpOne = new RegExp('^-?(?:0|[1-9]\\d\*)$');
-export const getSummariesResponseMajorVersionRegExpTwo = new RegExp('^-?(?:0|[1-9]\\d\*)$');
-
 
 export const GetSummariesResponseItem = zod.object({
   "id": zod.string(),
   "packageId": zod.string(),
   "packageName": zod.string(),
-  "majorVersion": zod.coerce.number().optional(),
+  "majorVersion": zod.number().optional(),
   "isPrerelease": zod.boolean().optional(),
   "summary": zod.string().nullish(),
   "generatedAt": zod.iso.datetime({}).optional(),

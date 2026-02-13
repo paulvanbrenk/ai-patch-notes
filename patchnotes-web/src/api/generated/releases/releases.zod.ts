@@ -28,17 +28,11 @@ export const GetReleaseResponse = zod.object({
 })
 })
 
-export const getReleasesQueryDaysRegExpOne = new RegExp('^-?(?:0|[1-9]\\d\*)$');
-export const getReleasesQueryDaysRegExpTwo = new RegExp('^-?(?:0|[1-9]\\d\*)$');
-export const getReleasesQueryMajorVersionRegExpOne = new RegExp('^-?(?:0|[1-9]\\d\*)$');
-export const getReleasesQueryMajorVersionRegExpTwo = new RegExp('^-?(?:0|[1-9]\\d\*)$');
-
-
 export const GetReleasesQueryParams = zod.object({
   "packages": zod.string().optional(),
-  "days": zod.coerce.number().optional(),
+  "days": zod.number().optional(),
   "excludePrerelease": zod.boolean().optional(),
-  "majorVersion": zod.coerce.number().optional(),
+  "majorVersion": zod.number().optional(),
   "watchlist": zod.boolean().optional()
 })
 

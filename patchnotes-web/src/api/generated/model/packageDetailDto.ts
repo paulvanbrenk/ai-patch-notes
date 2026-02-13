@@ -6,8 +6,7 @@
  */
 
 export interface PackageDetailDto {
-  /** @pattern ^-?(?:0|[1-9]\d*)$ */
-  releaseCount?: number | string;
+  releaseCount?: number;
   id: string;
   name: string;
   /** @nullable */

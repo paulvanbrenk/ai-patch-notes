@@ -7,14 +7,8 @@
 
 export type GetReleasesParams = {
 packages?: string;
-/**
- * @pattern ^-?(?:0|[1-9]\d*)$
- */
-days?: number | string;
+days?: number;
 excludePrerelease?: boolean;
-/**
- * @pattern ^-?(?:0|[1-9]\d*)$
- */
-majorVersion?: number | string;
+majorVersion?: number;
 watchlist?: boolean;
 };
