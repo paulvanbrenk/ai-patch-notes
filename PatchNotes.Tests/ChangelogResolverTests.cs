@@ -1,7 +1,7 @@
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
-using PatchNotes.Data.GitHub;
+using PatchNotes.Sync.GitHub;
 using PatchNotes.Sync;
 
 namespace PatchNotes.Tests;
@@ -505,10 +505,10 @@ public class ChangelogResolverTests
 
         _mockGitHub
             .Setup(x => x.GetReleaseByTagAsync("dotnet", "core", "v11.0.0-preview.1", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new PatchNotes.Data.GitHub.Models.GitHubRelease { TagName = "v11.0.0-preview.1", Body = body2 });
+            .ReturnsAsync(new PatchNotes.Sync.GitHub.Models.GitHubRelease { TagName = "v11.0.0-preview.1", Body = body2 });
         _mockGitHub
             .Setup(x => x.GetReleaseByTagAsync("dotnet", "dotnet", "v11.0.100-preview.1", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new PatchNotes.Data.GitHub.Models.GitHubRelease { TagName = "v11.0.100-preview.1", Body = body3 });
+            .ReturnsAsync(new PatchNotes.Sync.GitHub.Models.GitHubRelease { TagName = "v11.0.100-preview.1", Body = body3 });
 
         var result = await _resolver.FollowReleaseLinksAsync(body1);
 
@@ -521,16 +521,16 @@ public class ChangelogResolverTests
         // Create a chain: repo0 → repo1 → repo2 → repo3 → ...
         _mockGitHub
             .Setup(x => x.GetReleaseByTagAsync("owner", "repo0", "v1.0.0", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new PatchNotes.Data.GitHub.Models.GitHubRelease { TagName = "v1.0.0", Body = "https://github.com/owner/repo1/releases/tag/v1.0.0" });
+            .ReturnsAsync(new PatchNotes.Sync.GitHub.Models.GitHubRelease { TagName = "v1.0.0", Body = "https://github.com/owner/repo1/releases/tag/v1.0.0" });
         _mockGitHub
             .Setup(x => x.GetReleaseByTagAsync("owner", "repo1", "v1.0.0", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new PatchNotes.Data.GitHub.Models.GitHubRelease { TagName = "v1.0.0", Body = "https://github.com/owner/repo2/releases/tag/v1.0.0" });
+            .ReturnsAsync(new PatchNotes.Sync.GitHub.Models.GitHubRelease { TagName = "v1.0.0", Body = "https://github.com/owner/repo2/releases/tag/v1.0.0" });
         _mockGitHub
             .Setup(x => x.GetReleaseByTagAsync("owner", "repo2", "v1.0.0", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new PatchNotes.Data.GitHub.Models.GitHubRelease { TagName = "v1.0.0", Body = "https://github.com/owner/repo3/releases/tag/v1.0.0" });
+            .ReturnsAsync(new PatchNotes.Sync.GitHub.Models.GitHubRelease { TagName = "v1.0.0", Body = "https://github.com/owner/repo3/releases/tag/v1.0.0" });
         _mockGitHub
             .Setup(x => x.GetReleaseByTagAsync("owner", "repo3", "v1.0.0", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new PatchNotes.Data.GitHub.Models.GitHubRelease { TagName = "v1.0.0", Body = "https://github.com/owner/repo4/releases/tag/v1.0.0" });
+            .ReturnsAsync(new PatchNotes.Sync.GitHub.Models.GitHubRelease { TagName = "v1.0.0", Body = "https://github.com/owner/repo4/releases/tag/v1.0.0" });
 
         var result = await _resolver.FollowReleaseLinksAsync(
             "https://github.com/owner/repo0/releases/tag/v1.0.0", maxHops: 3);
@@ -546,7 +546,7 @@ public class ChangelogResolverTests
 
         _mockGitHub
             .Setup(x => x.GetReleaseByTagAsync("owner", "repo", "v1.0.0", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new PatchNotes.Data.GitHub.Models.GitHubRelease { TagName = "v1.0.0", Body = body });
+            .ReturnsAsync(new PatchNotes.Sync.GitHub.Models.GitHubRelease { TagName = "v1.0.0", Body = body });
 
         var result = await _resolver.FollowReleaseLinksAsync(body);
 

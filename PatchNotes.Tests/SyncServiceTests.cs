@@ -3,8 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
 using PatchNotes.Data;
-using PatchNotes.Data.GitHub;
-using PatchNotes.Data.GitHub.Models;
+using PatchNotes.Sync.GitHub;
+using PatchNotes.Sync.GitHub.Models;
 using PatchNotes.Sync;
 
 namespace PatchNotes.Tests;

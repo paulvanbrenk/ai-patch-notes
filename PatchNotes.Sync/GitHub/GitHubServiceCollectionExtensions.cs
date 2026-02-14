@@ -2,7 +2,7 @@ using System.Net.Http.Headers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace PatchNotes.Data.GitHub;
+namespace PatchNotes.Sync.GitHub;
 
 /// <summary>
 /// Extension methods for registering GitHub client services.

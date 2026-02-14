@@ -1,9 +1,9 @@
 using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
-using PatchNotes.Data.GitHub.Models;
+using PatchNotes.Sync.GitHub.Models;
 
-namespace PatchNotes.Data.GitHub;
+namespace PatchNotes.Sync.GitHub;
 
 /// <summary>
 /// Client for interacting with the GitHub API.

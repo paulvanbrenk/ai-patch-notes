@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using PatchNotes.Data;
-using PatchNotes.Data.GitHub;
+using PatchNotes.Sync.GitHub;
 
 namespace PatchNotes.Sync;
 

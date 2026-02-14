@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
-using PatchNotes.Data.GitHub;
+using PatchNotes.Sync.GitHub;
 
 namespace PatchNotes.Sync;
 

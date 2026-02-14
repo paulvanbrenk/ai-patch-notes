@@ -1,6 +1,6 @@
-using PatchNotes.Data.GitHub.Models;
+using PatchNotes.Sync.GitHub.Models;
 
-namespace PatchNotes.Data.GitHub;
+namespace PatchNotes.Sync.GitHub;
 
 /// <summary>
 /// Client for interacting with the GitHub API.
