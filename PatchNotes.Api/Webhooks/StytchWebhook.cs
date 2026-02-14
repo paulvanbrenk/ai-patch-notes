@@ -57,77 +57,126 @@ public static class StytchWebhook
                 }
             }
 
+            // Step 1: Deserialize the webhook payload
+            StytchWebhookEvent? stytchEvent;
             try
             {
-                var stytchEvent = JsonSerializer.Deserialize<StytchWebhookEvent>(body);
+                stytchEvent = JsonSerializer.Deserialize<StytchWebhookEvent>(body);
+            }
+            catch (JsonException ex)
+            {
+                Console.WriteLine($"Stytch webhook JSON parse error: {ex.Message}");
+                return Results.BadRequest(new { error = "JSON deserialization failed", detail = ex.Message, bodyPreview = body.Length > 500 ? body[..500] : body });
+            }
 
-                if (stytchEvent == null)
-                {
-                    return Results.BadRequest(new { error = "Invalid webhook payload" });
-                }
+            if (stytchEvent == null)
+            {
+                return Results.BadRequest(new { error = "Deserialized event was null", bodyPreview = body.Length > 500 ? body[..500] : body });
+            }
 
-                // Handle different Stytch webhook events based on object_type and action
-                // IMPORTANT: Don't trust data in the webhook payload - fetch fresh data from Stytch API
-                switch (stytchEvent)
-                {
-                    case { object_type: "user", action: "CREATE" or "UPDATE" }:
+            Console.WriteLine($"Stytch webhook received: object_type={stytchEvent.object_type}, action={stytchEvent.action}, id={stytchEvent.id}");
+
+            // Handle different Stytch webhook events based on object_type and action
+            // IMPORTANT: Don't trust data in the webhook payload - fetch fresh data from Stytch API
+            switch (stytchEvent)
+            {
+                case { object_type: "user", action: "CREATE" or "UPDATE" }:
+                    {
+                        // Step 2: Fetch fresh user data from Stytch API
+                        StytchUser? stytchUser;
+                        try
                         {
-                            // Fetch fresh user data from Stytch API (webhook data may be stale)
-                            var stytchUser = await stytchClient.GetUserAsync(stytchEvent.id);
-
-                            if (stytchUser == null)
-                            {
-                                Console.WriteLine($"Failed to fetch user {stytchEvent.id} from Stytch API");
-                                // Return OK to acknowledge receipt - Stytch will retry if we fail
-                                return Results.Ok(new { received = true, warning = "Could not fetch user data" });
-                            }
-
-                            var user = await db.Users.FirstOrDefaultAsync(u => u.StytchUserId == stytchEvent.id);
-
-                            if (user == null)
-                            {
-                                user = new User
-                                {
-                                    StytchUserId = stytchUser.UserId,
-                                    Email = stytchUser.Email,
-                                    Name = stytchUser.Name,
-                                };
-                                db.Users.Add(user);
-                            }
-                            else
-                            {
-                                user.Email = stytchUser.Email ?? user.Email;
-                                user.Name = stytchUser.Name ?? user.Name;
-                            }
-
-                            await db.SaveChangesAsync();
-                            break;
+                            stytchUser = await stytchClient.GetUserAsync(stytchEvent.id);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Stytch API call failed for user {stytchEvent.id}: {ex.Message}");
+                            return Results.Json(new { error = "Stytch API call failed", stytchUserId = stytchEvent.id, detail = ex.Message }, statusCode: 502);
                         }
 
-                    case { object_type: "user", action: "DELETE" }:
+                        if (stytchUser == null)
+                        {
+                            Console.WriteLine($"Stytch API returned null for user {stytchEvent.id}");
+                            return Results.Json(new { error = "Stytch API returned null user", stytchUserId = stytchEvent.id }, statusCode: 502);
+                        }
+
+                        Console.WriteLine($"Stytch user fetched: userId={stytchUser.UserId}, email={stytchUser.Email}, name={stytchUser.Name}");
+
+                        // Step 3: Find or create user in DB
+                        User? user;
+                        try
+                        {
+                            user = await db.Users.FirstOrDefaultAsync(u => u.StytchUserId == stytchEvent.id);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"DB query failed for StytchUserId={stytchEvent.id}: {ex.Message}");
+                            return Results.Json(new { error = "DB query failed", stytchUserId = stytchEvent.id, detail = ex.Message, innerException = ex.InnerException?.Message }, statusCode: 500);
+                        }
+
+                        if (user == null)
+                        {
+                            Console.WriteLine($"Creating new user for StytchUserId={stytchEvent.id}");
+                            user = new User
+                            {
+                                StytchUserId = stytchUser.UserId,
+                                Email = stytchUser.Email,
+                                Name = stytchUser.Name,
+                            };
+                            db.Users.Add(user);
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Updating existing user {user.Id} for StytchUserId={stytchEvent.id}");
+                            user.Email = stytchUser.Email ?? user.Email;
+                            user.Name = stytchUser.Name ?? user.Name;
+                        }
+
+                        // Step 4: Save to DB
+                        try
+                        {
+                            await db.SaveChangesAsync();
+                            Console.WriteLine($"DB save succeeded for StytchUserId={stytchEvent.id}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"DB save failed for StytchUserId={stytchEvent.id}: {ex.Message} | Inner: {ex.InnerException?.Message}");
+                            return Results.Json(new { error = "DB save failed", stytchUserId = stytchEvent.id, detail = ex.Message, innerException = ex.InnerException?.Message }, statusCode: 500);
+                        }
+
+                        break;
+                    }
+
+                case { object_type: "user", action: "DELETE" }:
+                    {
+                        try
                         {
                             var user = await db.Users.FirstOrDefaultAsync(u => u.StytchUserId == stytchEvent.id);
                             if (user != null)
                             {
                                 db.Users.Remove(user);
                                 await db.SaveChangesAsync();
+                                Console.WriteLine($"Deleted user for StytchUserId={stytchEvent.id}");
                             }
-                            break;
+                            else
+                            {
+                                Console.WriteLine($"Delete webhook: no user found for StytchUserId={stytchEvent.id}");
+                            }
                         }
-
-                    default:
-                        // Log unknown event types but don't fail
-                        Console.WriteLine($"Received Stytch webhook: object_type={stytchEvent.object_type}, action={stytchEvent.action}");
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Delete user failed for StytchUserId={stytchEvent.id}: {ex.Message}");
+                            return Results.Json(new { error = "Delete user failed", stytchUserId = stytchEvent.id, detail = ex.Message }, statusCode: 500);
+                        }
                         break;
-                }
+                    }
 
-                return Results.Ok(new { received = true });
+                default:
+                    Console.WriteLine($"Unhandled Stytch webhook: object_type={stytchEvent.object_type}, action={stytchEvent.action}");
+                    break;
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Stytch webhook error: {ex.Message}");
-                return Results.BadRequest(new { error = "Invalid webhook payload" });
-            }
+
+            return Results.Ok(new { received = true });
         });
 
         return app;
