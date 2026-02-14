@@ -323,6 +323,63 @@ public class SummaryGenerationServiceTests : IDisposable
 
     #endregion
 
+    #region Summary Window Anchoring Tests
+
+    [Fact]
+    public async Task GenerateGroupSummaryAsync_AnchorsWindowFromLatestRelease_NotUtcNow()
+    {
+        // Arrange: all releases are 30 days old but within 7 days of each other
+        var package = await CreatePackage();
+        var latestDate = DateTimeOffset.UtcNow.AddDays(-30);
+        await AddRelease(package.Id, "v1.0.0", "Old release 1", "Features A", latestDate.AddDays(-5));
+        await AddRelease(package.Id, "v1.1.0", "Old release 2", "Features B", latestDate.AddDays(-3));
+        await AddRelease(package.Id, "v1.2.0", "Old release 3", "Features C", latestDate);
+
+        IReadOnlyList<ReleaseInput>? capturedReleases = null;
+        _mockAiClient
+            .Setup(x => x.SummarizeReleaseNotesAsync(
+                It.IsAny<string>(), It.IsAny<IReadOnlyList<ReleaseInput>>(), It.IsAny<CancellationToken>()))
+            .Callback<string, IReadOnlyList<ReleaseInput>, CancellationToken>((_, releases, _) =>
+                capturedReleases = releases)
+            .ReturnsAsync("Summary");
+
+        // Act
+        await _service.GenerateGroupSummariesAsync(package.Id);
+
+        // Assert: all 3 releases should be included (within 7 days of latest)
+        // If window were anchored from UtcNow, none would be included (all >7 days old)
+        capturedReleases.Should().NotBeNull();
+        capturedReleases.Should().HaveCount(3);
+    }
+
+    [Fact]
+    public async Task GenerateGroupSummaryAsync_ExcludesReleasesOutsideWindowOfLatest()
+    {
+        // Arrange: latest is 1 day old, one release is 20 days old (outside 7-day window of latest)
+        var package = await CreatePackage();
+        var latestDate = DateTimeOffset.UtcNow.AddDays(-1);
+        await AddRelease(package.Id, "v1.0.0", "Very old", "Old features", latestDate.AddDays(-20));
+        await AddRelease(package.Id, "v1.1.0", "Recent", "New features", latestDate);
+
+        IReadOnlyList<ReleaseInput>? capturedReleases = null;
+        _mockAiClient
+            .Setup(x => x.SummarizeReleaseNotesAsync(
+                It.IsAny<string>(), It.IsAny<IReadOnlyList<ReleaseInput>>(), It.IsAny<CancellationToken>()))
+            .Callback<string, IReadOnlyList<ReleaseInput>, CancellationToken>((_, releases, _) =>
+                capturedReleases = releases)
+            .ReturnsAsync("Summary");
+
+        // Act
+        await _service.GenerateGroupSummariesAsync(package.Id);
+
+        // Assert: only the recent release should be included
+        capturedReleases.Should().NotBeNull();
+        capturedReleases.Should().ContainSingle();
+        capturedReleases![0].Tag.Should().Be("v1.1.0");
+    }
+
+    #endregion
+
     #region Helper Methods
 
     private async Task<Package> CreatePackage(string name = "test-pkg")
@@ -341,7 +398,8 @@ public class SummaryGenerationServiceTests : IDisposable
     }
 
     private async Task<Release> AddRelease(
-        string packageId, string tag, string? title = null, string? body = null)
+        string packageId, string tag, string? title = null, string? body = null,
+        DateTimeOffset? publishedAt = null)
     {
         var parsed = VersionParser.ParseTagValues(tag);
         var release = new Release
@@ -350,7 +408,7 @@ public class SummaryGenerationServiceTests : IDisposable
             Tag = tag,
             Title = title,
             Body = body,
-            PublishedAt = DateTimeOffset.UtcNow,
+            PublishedAt = publishedAt ?? DateTimeOffset.UtcNow,
             FetchedAt = DateTimeOffset.UtcNow,
             SummaryStale = true,
             MajorVersion = parsed.MajorVersion,
