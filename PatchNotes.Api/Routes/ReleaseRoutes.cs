@@ -142,7 +142,6 @@ public static class ReleaseRoutes
     }
 
     /// <summary>
-<<<<<<< HEAD
     /// Attempts to authenticate the user and return their watchlist package IDs.
     /// Returns null if the user is not authenticated; returns an empty list if authenticated but no watchlist.
     /// </summary>
