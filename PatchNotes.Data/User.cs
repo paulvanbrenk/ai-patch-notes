@@ -55,6 +55,21 @@ public class User : IHasCreatedAt, IHasUpdatedAt
     public DateTimeOffset? SubscriptionExpiresAt { get; set; }
 
     /// <summary>
+    /// Whether the user wants to receive weekly digest emails
+    /// </summary>
+    public bool EmailDigestEnabled { get; set; } = true;
+
+    /// <summary>
+    /// Whether the user wants to receive per-release notification emails
+    /// </summary>
+    public bool EmailReleaseEnabled { get; set; } = true;
+
+    /// <summary>
+    /// Whether the welcome email has been sent to this user
+    /// </summary>
+    public bool EmailWelcomeSent { get; set; }
+
+    /// <summary>
     /// Whether the user has an active Pro subscription
     /// </summary>
     public bool IsPro =>
