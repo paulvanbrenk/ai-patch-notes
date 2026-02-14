@@ -1,4 +1,4 @@
-namespace PatchNotes.Data.AI;
+namespace PatchNotes.Sync.AI;
 
 /// <summary>
 /// Represents a single release to be summarized by the AI client.

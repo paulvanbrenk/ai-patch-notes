@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using PatchNotes.Data;
-using PatchNotes.Data.AI;
+using PatchNotes.Sync.AI;
 using PatchNotes.Sync.GitHub;
 using PatchNotes.Sync;
 

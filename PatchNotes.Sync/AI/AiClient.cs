@@ -5,9 +5,9 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using PatchNotes.Data.AI.Models;
+using PatchNotes.Sync.AI.Models;
 
-namespace PatchNotes.Data.AI;
+namespace PatchNotes.Sync.AI;
 
 /// <summary>
 /// Client for interacting with OpenAI-compatible APIs.
@@ -122,7 +122,7 @@ public class AiClient : IAiClient
     private static string LoadEmbeddedPrompt()
     {
         var assembly = Assembly.GetExecutingAssembly();
-        var resourceName = "PatchNotes.Data.AI.Prompts.changelog-summary.txt";
+        var resourceName = "PatchNotes.Sync.AI.Prompts.changelog-summary.txt";
 
         using var stream = assembly.GetManifestResourceStream(resourceName);
         if (stream == null)
