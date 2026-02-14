@@ -83,7 +83,7 @@ public class SummaryGenerationService
             cancellationToken.ThrowIfCancellationRequested();
 
             // Regenerate if the group has stale releases or had a previously failed summary
-            var hasStaleReleases = group.Releases.Any(r => r.NeedsSummary);
+            var hasStaleReleases = group.Releases.Any(r => r.SummaryStale);
             if (!hasStaleReleases && !orphanedKeys.Contains((group.MajorVersion, group.IsPrerelease)))
             {
                 result.GroupsSkipped++;
@@ -121,7 +121,7 @@ public class SummaryGenerationService
                 }
 
                 // Mark releases in this group as no longer stale
-                foreach (var release in group.Releases.Where(r => r.NeedsSummary))
+                foreach (var release in group.Releases.Where(r => r.SummaryStale))
                 {
                     release.SummaryStale = false;
                 }
@@ -157,7 +157,7 @@ public class SummaryGenerationService
 
         // Find all packages that have at least one stale release or a failed summary
         var staleReleasePackageIds = _db.Releases
-            .Where(r => r.Summary == null || r.SummaryStale)
+            .Where(r => r.SummaryStale)
             .Select(r => r.PackageId);
 
         var orphanedSummaryPackageIds = _db.ReleaseSummaries
