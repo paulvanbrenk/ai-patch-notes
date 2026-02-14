@@ -397,6 +397,60 @@
         }
       }
     },
+    "/api/users/me/email-preferences": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "GetEmailPreferences",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailPreferencesDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Users"
+        ],
+        "operationId": "UpdateEmailPreferences",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEmailPreferencesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailPreferencesDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
     "/api/watchlist": {
       "get": {
         "tags": [
@@ -716,6 +770,20 @@
               "null",
               "string"
             ]
+          }
+        }
+      },
+      "EmailPreferencesDto": {
+        "type": "object",
+        "properties": {
+          "emailDigestEnabled": {
+            "type": "boolean"
+          },
+          "emailReleaseEnabled": {
+            "type": "boolean"
+          },
+          "emailWelcomeSent": {
+            "type": "boolean"
           }
         }
       },
@@ -1141,6 +1209,27 @@
             "type": [
               "null",
               "string"
+            ]
+          }
+        }
+      },
+      "UpdateEmailPreferencesRequest": {
+        "required": [
+          "emailDigestEnabled",
+          "emailReleaseEnabled"
+        ],
+        "type": "object",
+        "properties": {
+          "emailDigestEnabled": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          },
+          "emailReleaseEnabled": {
+            "type": [
+              "null",
+              "boolean"
             ]
           }
         }

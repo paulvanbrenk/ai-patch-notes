@@ -24,6 +24,8 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  EmailPreferencesDto,
+  UpdateEmailPreferencesRequest,
   UpdateUserRequest,
   UserDto
 } from '.././model';
@@ -303,5 +305,199 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         TContext
       > => {
       return useMutation(getLoginUserMutationOptions(options), queryClient);
+    }
+    export type getEmailPreferencesResponse200 = {
+  data: EmailPreferencesDto
+  status: 200
+}
+
+export type getEmailPreferencesResponse404 = {
+  data: void
+  status: 404
+}
+    
+export type getEmailPreferencesResponseSuccess = (getEmailPreferencesResponse200) & {
+  headers: Headers;
+};
+export type getEmailPreferencesResponseError = (getEmailPreferencesResponse404) & {
+  headers: Headers;
+};
+
+export type getEmailPreferencesResponse = (getEmailPreferencesResponseSuccess | getEmailPreferencesResponseError)
+
+export const getGetEmailPreferencesUrl = () => {
+
+
+  
+
+  return `/api/users/me/email-preferences`
+}
+
+export const getEmailPreferences = async ( options?: RequestInit): Promise<getEmailPreferencesResponse> => {
+  
+  return customFetch<getEmailPreferencesResponse>(getGetEmailPreferencesUrl(),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+
+
+
+
+
+export const getGetEmailPreferencesQueryKey = () => {
+    return [
+    `/api/users/me/email-preferences`
+    ] as const;
+    }
+
+    
+export const getGetEmailPreferencesQueryOptions = <TData = Awaited<ReturnType<typeof getEmailPreferences>>, TError = void>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getEmailPreferences>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetEmailPreferencesQueryKey();
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getEmailPreferences>>> = ({ signal }) => getEmailPreferences({ signal, ...requestOptions });
+
+      
+
+      
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getEmailPreferences>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetEmailPreferencesQueryResult = NonNullable<Awaited<ReturnType<typeof getEmailPreferences>>>
+export type GetEmailPreferencesQueryError = void
+
+
+export function useGetEmailPreferences<TData = Awaited<ReturnType<typeof getEmailPreferences>>, TError = void>(
+  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getEmailPreferences>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getEmailPreferences>>,
+          TError,
+          Awaited<ReturnType<typeof getEmailPreferences>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetEmailPreferences<TData = Awaited<ReturnType<typeof getEmailPreferences>>, TError = void>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getEmailPreferences>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getEmailPreferences>>,
+          TError,
+          Awaited<ReturnType<typeof getEmailPreferences>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetEmailPreferences<TData = Awaited<ReturnType<typeof getEmailPreferences>>, TError = void>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getEmailPreferences>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+
+export function useGetEmailPreferences<TData = Awaited<ReturnType<typeof getEmailPreferences>>, TError = void>(
+  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getEmailPreferences>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetEmailPreferencesQueryOptions(options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+export type updateEmailPreferencesResponse200 = {
+  data: EmailPreferencesDto
+  status: 200
+}
+
+export type updateEmailPreferencesResponse404 = {
+  data: void
+  status: 404
+}
+    
+export type updateEmailPreferencesResponseSuccess = (updateEmailPreferencesResponse200) & {
+  headers: Headers;
+};
+export type updateEmailPreferencesResponseError = (updateEmailPreferencesResponse404) & {
+  headers: Headers;
+};
+
+export type updateEmailPreferencesResponse = (updateEmailPreferencesResponseSuccess | updateEmailPreferencesResponseError)
+
+export const getUpdateEmailPreferencesUrl = () => {
+
+
+  
+
+  return `/api/users/me/email-preferences`
+}
+
+export const updateEmailPreferences = async (updateEmailPreferencesRequest: UpdateEmailPreferencesRequest, options?: RequestInit): Promise<updateEmailPreferencesResponse> => {
+  
+  return customFetch<updateEmailPreferencesResponse>(getUpdateEmailPreferencesUrl(),
+  {      
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      updateEmailPreferencesRequest,)
+  }
+);}
+
+
+
+
+export const getUpdateEmailPreferencesMutationOptions = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateEmailPreferences>>, TError,{data: UpdateEmailPreferencesRequest}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateEmailPreferences>>, TError,{data: UpdateEmailPreferencesRequest}, TContext> => {
+
+const mutationKey = ['updateEmailPreferences'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateEmailPreferences>>, {data: UpdateEmailPreferencesRequest}> = (props) => {
+          const {data} = props ?? {};
+
+          return  updateEmailPreferences(data,requestOptions)
+        }
+
+
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateEmailPreferencesMutationResult = NonNullable<Awaited<ReturnType<typeof updateEmailPreferences>>>
+    export type UpdateEmailPreferencesMutationBody = UpdateEmailPreferencesRequest
+    export type UpdateEmailPreferencesMutationError = void
+
+    export const useUpdateEmailPreferences = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateEmailPreferences>>, TError,{data: UpdateEmailPreferencesRequest}, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof updateEmailPreferences>>,
+        TError,
+        {data: UpdateEmailPreferencesRequest},
+        TContext
+      > => {
+      return useMutation(getUpdateEmailPreferencesMutationOptions(options), queryClient);
     }
     

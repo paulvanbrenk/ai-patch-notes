@@ -179,6 +179,65 @@ public static class UserRoutes
         .Produces(StatusCodes.Status404NotFound)
         .WithName("UpdateCurrentUser");
 
+        // GET /api/users/me/email-preferences - Get current email preferences
+        group.MapGet("/me/email-preferences", async (HttpContext httpContext, PatchNotesDbContext db) =>
+        {
+            var stytchUserId = httpContext.Items["StytchUserId"] as string;
+
+            var prefs = await db.Users
+                .Where(u => u.StytchUserId == stytchUserId)
+                .Select(u => new EmailPreferencesDto
+                {
+                    EmailDigestEnabled = u.EmailDigestEnabled,
+                    EmailReleaseEnabled = u.EmailReleaseEnabled,
+                    EmailWelcomeSent = u.EmailWelcomeSent
+                })
+                .FirstOrDefaultAsync();
+
+            if (prefs == null)
+            {
+                return Results.NotFound(new { error = "User not found" });
+            }
+
+            return Results.Ok(prefs);
+        })
+        .AddEndpointFilterFactory(RouteUtils.CreateAuthFilter())
+        .Produces<EmailPreferencesDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound)
+        .WithName("GetEmailPreferences");
+
+        // PATCH /api/users/me/email-preferences - Update email preferences
+        group.MapPatch("/me/email-preferences", async (HttpContext httpContext, UpdateEmailPreferencesRequest request, PatchNotesDbContext db) =>
+        {
+            var stytchUserId = httpContext.Items["StytchUserId"] as string;
+
+            var user = await db.Users.FirstOrDefaultAsync(u => u.StytchUserId == stytchUserId);
+            if (user == null)
+            {
+                return Results.NotFound(new { error = "User not found" });
+            }
+
+            if (request.EmailDigestEnabled.HasValue)
+                user.EmailDigestEnabled = request.EmailDigestEnabled.Value;
+
+            if (request.EmailReleaseEnabled.HasValue)
+                user.EmailReleaseEnabled = request.EmailReleaseEnabled.Value;
+
+            await db.SaveChangesAsync();
+
+            return Results.Ok(new EmailPreferencesDto
+            {
+                EmailDigestEnabled = user.EmailDigestEnabled,
+                EmailReleaseEnabled = user.EmailReleaseEnabled,
+                EmailWelcomeSent = user.EmailWelcomeSent
+            });
+        })
+        .AddEndpointFilterFactory(RouteUtils.CreateAuthFilter())
+        .Accepts<UpdateEmailPreferencesRequest>("application/json")
+        .Produces<EmailPreferencesDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound)
+        .WithName("UpdateEmailPreferences");
+
         return app;
     }
 }
@@ -194,3 +253,12 @@ public class UserDto
 }
 
 public record UpdateUserRequest(string? Name);
+
+public class EmailPreferencesDto
+{
+    public bool EmailDigestEnabled { get; set; }
+    public bool EmailReleaseEnabled { get; set; }
+    public bool EmailWelcomeSent { get; set; }
+}
+
+public record UpdateEmailPreferencesRequest(bool? EmailDigestEnabled, bool? EmailReleaseEnabled);
