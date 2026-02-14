@@ -86,7 +86,8 @@ export const mockFeedGroups: FeedGroupDto[] = [
     majorVersion: 19,
     isPrerelease: false,
     versionRange: 'v19.x',
-    summary: null,
+    summary:
+      '## TL;DR\nReact 19 introduces a new compiler for automatic memoization.\n\n## Breaking\n- Removed legacy context API\n\n## New\n- React Compiler for automatic optimizations',
     releaseCount: 1,
     lastUpdated: '2026-01-10T00:00:00Z',
     releases: [
