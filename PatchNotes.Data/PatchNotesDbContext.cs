@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace PatchNotes.Data;
 
@@ -44,26 +43,6 @@ public DbSet<User> Users => Set<User>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-
-        // SQLite cannot translate DateTimeOffset comparisons. Store as DateTime (UTC)
-        // so queries like .Where(r => r.PublishedAt >= cutoff) work on both providers.
-        if (Database.ProviderName == "Microsoft.EntityFrameworkCore.Sqlite")
-        {
-            var dtoConverter = new ValueConverter<DateTimeOffset, DateTime>(
-                v => v.UtcDateTime,
-                v => new DateTimeOffset(v, TimeSpan.Zero));
-
-            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
-            {
-                foreach (var property in entityType.GetProperties())
-                {
-                    if (property.ClrType == typeof(DateTimeOffset) || property.ClrType == typeof(DateTimeOffset?))
-                    {
-                        property.SetValueConverter(dtoConverter);
-                    }
-                }
-            }
-        }
 
         modelBuilder.Entity<Package>(entity =>
         {

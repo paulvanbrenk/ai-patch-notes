@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace PatchNotes.Data;
 
@@ -10,6 +11,27 @@ namespace PatchNotes.Data;
 public class SqliteContext : PatchNotesDbContext
 {
     public SqliteContext(DbContextOptions<SqliteContext> options) : base(options) { }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        // SQLite doesn't have a native DateTimeOffset type, so convert to/from DateTime (UTC).
+        var dtoConverter = new ValueConverter<DateTimeOffset, DateTime>(
+            v => v.UtcDateTime,
+            v => new DateTimeOffset(v, TimeSpan.Zero));
+
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            foreach (var property in entityType.GetProperties())
+            {
+                if (property.ClrType == typeof(DateTimeOffset) || property.ClrType == typeof(DateTimeOffset?))
+                {
+                    property.SetValueConverter(dtoConverter);
+                }
+            }
+        }
+    }
 }
 
 /// <summary>
