@@ -91,6 +91,178 @@ public class FeedApiTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task GetFeed_FiltersToCurrentStableAndFuturePrereleases()
+    {
+        // Arrange: .NET-like scenario: stable v9, prereleases v10+v11, old v8/v7
+        using var scope = _fixture.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
+
+        var package = new Package
+        {
+            Name = "dotnet-runtime",
+            Url = "https://github.com/dotnet/runtime",
+            GithubOwner = "dotnet",
+            GithubRepo = "runtime"
+        };
+        db.Packages.Add(package);
+        await db.SaveChangesAsync();
+
+        var now = DateTimeOffset.UtcNow;
+
+        // Old stable versions (should be hidden)
+        db.Releases.Add(new Release
+        {
+            PackageId = package.Id, Tag = "v7.0.0", Title = "v7 stable",
+            PublishedAt = now.AddDays(-1), FetchedAt = now,
+            MajorVersion = 7, MinorVersion = 0, PatchVersion = 0
+        });
+        db.Releases.Add(new Release
+        {
+            PackageId = package.Id, Tag = "v8.0.0", Title = "v8 stable",
+            PublishedAt = now.AddDays(-1), FetchedAt = now,
+            MajorVersion = 8, MinorVersion = 0, PatchVersion = 0
+        });
+        // Current stable (should be shown)
+        db.Releases.Add(new Release
+        {
+            PackageId = package.Id, Tag = "v9.0.0", Title = "v9 stable",
+            PublishedAt = now, FetchedAt = now,
+            MajorVersion = 9, MinorVersion = 0, PatchVersion = 0
+        });
+        // Future prereleases (should be shown)
+        db.Releases.Add(new Release
+        {
+            PackageId = package.Id, Tag = "v10.0.0-preview.1", Title = "v10 preview",
+            PublishedAt = now, FetchedAt = now,
+            MajorVersion = 10, MinorVersion = 0, PatchVersion = 0, IsPrerelease = true
+        });
+        db.Releases.Add(new Release
+        {
+            PackageId = package.Id, Tag = "v11.0.0-preview.1", Title = "v11 preview",
+            PublishedAt = now, FetchedAt = now,
+            MajorVersion = 11, MinorVersion = 0, PatchVersion = 0, IsPrerelease = true
+        });
+        await db.SaveChangesAsync();
+
+        // Act
+        var response = await _client.GetAsync("/api/feed");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var feed = await response.Content.ReadFromJsonAsync<FeedResponseDto>();
+        feed.Should().NotBeNull();
+
+        var groupVersions = feed!.Groups
+            .Select(g => (g.MajorVersion, g.IsPrerelease))
+            .ToList();
+
+        // Should show: v9 stable, v10 prerelease, v11 prerelease
+        groupVersions.Should().Contain((9, false));
+        groupVersions.Should().Contain((10, true));
+        groupVersions.Should().Contain((11, true));
+        // Should NOT show: v7 or v8
+        groupVersions.Should().NotContain((7, false));
+        groupVersions.Should().NotContain((8, false));
+    }
+
+    [Fact]
+    public async Task GetFeed_HidesOldPrereleases()
+    {
+        // Arrange: prereleases at same major version as stable should be hidden
+        using var scope = _fixture.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
+
+        var package = new Package
+        {
+            Name = "pkg-with-old-pre",
+            Url = "https://github.com/owner/pkg-with-old-pre",
+            GithubOwner = "owner",
+            GithubRepo = "pkg-with-old-pre"
+        };
+        db.Packages.Add(package);
+        await db.SaveChangesAsync();
+
+        var now = DateTimeOffset.UtcNow;
+
+        // v0 stable
+        db.Releases.Add(new Release
+        {
+            PackageId = package.Id, Tag = "v0.100.0", Title = "v0 stable",
+            PublishedAt = now, FetchedAt = now,
+            MajorVersion = 0, MinorVersion = 100, PatchVersion = 0
+        });
+        // v0 prerelease (same major as stable - should be hidden)
+        db.Releases.Add(new Release
+        {
+            PackageId = package.Id, Tag = "v0.99.0-beta.1", Title = "v0 beta",
+            PublishedAt = now.AddDays(-1), FetchedAt = now,
+            MajorVersion = 0, MinorVersion = 99, PatchVersion = 0, IsPrerelease = true
+        });
+        await db.SaveChangesAsync();
+
+        // Act
+        var response = await _client.GetAsync("/api/feed");
+
+        // Assert
+        var feed = await response.Content.ReadFromJsonAsync<FeedResponseDto>();
+        feed.Should().NotBeNull();
+
+        var packageGroups = feed!.Groups.Where(g => g.PackageId == package.Id).ToList();
+        // Only the stable v0 group, not the prerelease v0 group
+        packageGroups.Should().ContainSingle();
+        packageGroups[0].IsPrerelease.Should().BeFalse();
+        packageGroups[0].MajorVersion.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task GetFeed_ShowsHighestPrereleaseGroup_WhenNoStableExists()
+    {
+        // Arrange: package with only prereleases
+        using var scope = _fixture.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
+
+        var package = new Package
+        {
+            Name = "prerelease-only",
+            Url = "https://github.com/owner/prerelease-only",
+            GithubOwner = "owner",
+            GithubRepo = "prerelease-only"
+        };
+        db.Packages.Add(package);
+        await db.SaveChangesAsync();
+
+        var now = DateTimeOffset.UtcNow;
+
+        // v1 prerelease (old, should be hidden)
+        db.Releases.Add(new Release
+        {
+            PackageId = package.Id, Tag = "v1.0.0-alpha.1", Title = "v1 alpha",
+            PublishedAt = now.AddDays(-1), FetchedAt = now,
+            MajorVersion = 1, MinorVersion = 0, PatchVersion = 0, IsPrerelease = true
+        });
+        // v2 prerelease (highest, should be shown)
+        db.Releases.Add(new Release
+        {
+            PackageId = package.Id, Tag = "v2.0.0-alpha.1", Title = "v2 alpha",
+            PublishedAt = now, FetchedAt = now,
+            MajorVersion = 2, MinorVersion = 0, PatchVersion = 0, IsPrerelease = true
+        });
+        await db.SaveChangesAsync();
+
+        // Act
+        var response = await _client.GetAsync("/api/feed");
+
+        // Assert
+        var feed = await response.Content.ReadFromJsonAsync<FeedResponseDto>();
+        feed.Should().NotBeNull();
+
+        var packageGroups = feed!.Groups.Where(g => g.PackageId == package.Id).ToList();
+        packageGroups.Should().ContainSingle();
+        packageGroups[0].MajorVersion.Should().Be(2);
+        packageGroups[0].IsPrerelease.Should().BeTrue();
+    }
+
+    [Fact]
     public async Task GetFeed_FallsBackToLatestRelease_WhenWindowEmpty()
     {
         // Arrange: create releases where all are very old and >7 days apart
