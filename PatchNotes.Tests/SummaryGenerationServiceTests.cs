@@ -3,9 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
 using PatchNotes.Data;
-using PatchNotes.Data.AI;
 using PatchNotes.Sync;
-using ReleaseInput = PatchNotes.Data.AI.ReleaseInput;
+using PatchNotes.Sync.AI;
 
 namespace PatchNotes.Tests;
 

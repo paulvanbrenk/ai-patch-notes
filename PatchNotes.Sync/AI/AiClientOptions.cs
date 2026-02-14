@@ -1,4 +1,4 @@
-namespace PatchNotes.Data.AI;
+namespace PatchNotes.Sync.AI;
 
 /// <summary>
 /// Options for configuring the AI client.

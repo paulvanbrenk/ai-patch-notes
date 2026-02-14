@@ -1,5 +1,4 @@
 using PatchNotes.Data;
-using PatchNotes.Data.AI;
 using PatchNotes.Api.Stytch;
 using PatchNotes.Api.Routes;
 using PatchNotes.Api.Webhooks;
@@ -69,21 +68,6 @@ builder.Services.AddOpenApi(options =>
 });
 builder.Services.AddPatchNotesDbContext(builder.Configuration);
 builder.Services.AddHttpClient();
-
-builder.Services.AddAiClient(options =>
-{
-    options.ApiKey = builder.Configuration["AI:ApiKey"];
-    var baseUrl = builder.Configuration["AI:BaseUrl"];
-    if (!string.IsNullOrEmpty(baseUrl))
-    {
-        options.BaseUrl = baseUrl;
-    }
-    var model = builder.Configuration["AI:Model"];
-    if (!string.IsNullOrEmpty(model))
-    {
-        options.Model = model;
-    }
-});
 
 builder.Services.AddSingleton<IStytchClient, StytchClient>();
 
