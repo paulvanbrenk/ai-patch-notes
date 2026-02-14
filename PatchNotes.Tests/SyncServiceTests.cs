@@ -318,7 +318,7 @@ public class SyncServiceTests : IDisposable
         // Assert
         result.ReleasesAdded.Should().Be(2);
         result.ReleasesNeedingSummary.Should().HaveCount(2);
-        result.ReleasesNeedingSummary.Should().AllSatisfy(r => r.NeedsSummary.Should().BeTrue());
+        result.ReleasesNeedingSummary.Should().AllSatisfy(r => r.SummaryStale.Should().BeTrue());
     }
 
     [Fact]
@@ -329,24 +329,22 @@ public class SyncServiceTests : IDisposable
         _db.Packages.Add(package);
         await _db.SaveChangesAsync();
 
-        // Add existing release without summary
+        // Add existing release needing summary (stale)
         _db.Releases.Add(new Release
         {
             PackageId = package.Id,
             Tag = "v0.9.0",
             PublishedAt = DateTimeOffset.UtcNow.AddDays(-10),
             FetchedAt = DateTimeOffset.UtcNow.AddDays(-10),
-            Summary = null
+            SummaryStale = true
         });
-        // Add existing release with summary
+        // Add existing release with summary (not stale)
         _db.Releases.Add(new Release
         {
             PackageId = package.Id,
             Tag = "v0.8.0",
             PublishedAt = DateTimeOffset.UtcNow.AddDays(-20),
             FetchedAt = DateTimeOffset.UtcNow.AddDays(-20),
-            Summary = "This is a summary",
-            SummaryGeneratedAt = DateTimeOffset.UtcNow.AddDays(-19),
             SummaryStale = false
         });
         await _db.SaveChangesAsync();
@@ -534,9 +532,9 @@ public class SyncServiceTests : IDisposable
         await _db.SaveChangesAsync();
 
         _db.Releases.AddRange(
-            new Release { PackageId = package.Id, Tag = "v1.0.0", PublishedAt = DateTimeOffset.UtcNow.AddDays(-3), FetchedAt = DateTimeOffset.UtcNow.AddDays(-3), Summary = null },
-            new Release { PackageId = package.Id, Tag = "v1.1.0", PublishedAt = DateTimeOffset.UtcNow.AddDays(-2), FetchedAt = DateTimeOffset.UtcNow.AddDays(-2), Summary = "Has summary", SummaryGeneratedAt = DateTimeOffset.UtcNow.AddDays(-1), SummaryStale = false },
-            new Release { PackageId = package.Id, Tag = "v1.2.0", PublishedAt = DateTimeOffset.UtcNow.AddDays(-1), FetchedAt = DateTimeOffset.UtcNow.AddDays(-1), Summary = null }
+            new Release { PackageId = package.Id, Tag = "v1.0.0", PublishedAt = DateTimeOffset.UtcNow.AddDays(-3), FetchedAt = DateTimeOffset.UtcNow.AddDays(-3), SummaryStale = true },
+            new Release { PackageId = package.Id, Tag = "v1.1.0", PublishedAt = DateTimeOffset.UtcNow.AddDays(-2), FetchedAt = DateTimeOffset.UtcNow.AddDays(-2), SummaryStale = false },
+            new Release { PackageId = package.Id, Tag = "v1.2.0", PublishedAt = DateTimeOffset.UtcNow.AddDays(-1), FetchedAt = DateTimeOffset.UtcNow.AddDays(-1), SummaryStale = true }
         );
         await _db.SaveChangesAsync();
 
@@ -584,9 +582,9 @@ public class SyncServiceTests : IDisposable
         await _db.SaveChangesAsync();
 
         _db.Releases.AddRange(
-            new Release { PackageId = package.Id, Tag = "v1.0.0", PublishedAt = DateTimeOffset.UtcNow.AddDays(-3), FetchedAt = DateTimeOffset.UtcNow.AddDays(-3), Summary = null },
-            new Release { PackageId = package.Id, Tag = "v1.1.0", PublishedAt = DateTimeOffset.UtcNow.AddDays(-2), FetchedAt = DateTimeOffset.UtcNow.AddDays(-2), Summary = "Has summary", SummaryGeneratedAt = DateTimeOffset.UtcNow.AddDays(-1), SummaryStale = false },
-            new Release { PackageId = package.Id, Tag = "v1.2.0", PublishedAt = DateTimeOffset.UtcNow.AddDays(-1), FetchedAt = DateTimeOffset.UtcNow.AddDays(-1), Summary = "Stale summary", SummaryGeneratedAt = DateTimeOffset.UtcNow.AddDays(-1), SummaryStale = true }
+            new Release { PackageId = package.Id, Tag = "v1.0.0", PublishedAt = DateTimeOffset.UtcNow.AddDays(-3), FetchedAt = DateTimeOffset.UtcNow.AddDays(-3), SummaryStale = true },
+            new Release { PackageId = package.Id, Tag = "v1.1.0", PublishedAt = DateTimeOffset.UtcNow.AddDays(-2), FetchedAt = DateTimeOffset.UtcNow.AddDays(-2), SummaryStale = false },
+            new Release { PackageId = package.Id, Tag = "v1.2.0", PublishedAt = DateTimeOffset.UtcNow.AddDays(-1), FetchedAt = DateTimeOffset.UtcNow.AddDays(-1), SummaryStale = true }
         );
         await _db.SaveChangesAsync();
 
@@ -595,9 +593,9 @@ public class SyncServiceTests : IDisposable
 
         // Assert
         result.Should().HaveCount(2);
-        result.Should().Contain(r => r.Tag == "v1.0.0");  // No summary
-        result.Should().Contain(r => r.Tag == "v1.2.0");  // Stale summary
-        result.Should().NotContain(r => r.Tag == "v1.1.0"); // Fresh summary
+        result.Should().Contain(r => r.Tag == "v1.0.0");  // Stale
+        result.Should().Contain(r => r.Tag == "v1.2.0");  // Stale
+        result.Should().NotContain(r => r.Tag == "v1.1.0"); // Not stale
     }
 
     [Fact]
@@ -609,8 +607,8 @@ public class SyncServiceTests : IDisposable
         await _db.SaveChangesAsync();
 
         _db.Releases.AddRange(
-            new Release { PackageId = package.Id, Tag = "v1.0.0", PublishedAt = DateTimeOffset.UtcNow.AddDays(-2), FetchedAt = DateTimeOffset.UtcNow.AddDays(-2), Summary = "Stale summary", SummaryGeneratedAt = DateTimeOffset.UtcNow.AddDays(-1), SummaryStale = true },
-            new Release { PackageId = package.Id, Tag = "v1.1.0", PublishedAt = DateTimeOffset.UtcNow.AddDays(-1), FetchedAt = DateTimeOffset.UtcNow.AddDays(-1), Summary = "Fresh summary", SummaryGeneratedAt = DateTimeOffset.UtcNow.AddDays(-1), SummaryStale = false }
+            new Release { PackageId = package.Id, Tag = "v1.0.0", PublishedAt = DateTimeOffset.UtcNow.AddDays(-2), FetchedAt = DateTimeOffset.UtcNow.AddDays(-2), SummaryStale = true },
+            new Release { PackageId = package.Id, Tag = "v1.1.0", PublishedAt = DateTimeOffset.UtcNow.AddDays(-1), FetchedAt = DateTimeOffset.UtcNow.AddDays(-1), SummaryStale = false }
         );
         await _db.SaveChangesAsync();
 

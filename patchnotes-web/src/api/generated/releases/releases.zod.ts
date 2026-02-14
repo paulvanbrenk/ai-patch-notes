@@ -16,8 +16,6 @@ export const GetReleaseResponse = zod.object({
   "tag": zod.string(),
   "title": zod.string().nullish(),
   "body": zod.string().nullish(),
-  "summary": zod.string().nullish(),
-  "summaryGeneratedAt": zod.iso.datetime({"offset":true}).nullish(),
   "publishedAt": zod.iso.datetime({"offset":true}).optional(),
   "fetchedAt": zod.iso.datetime({"offset":true}).optional(),
   "package": zod.object({
@@ -41,8 +39,6 @@ export const GetReleasesResponseItem = zod.object({
   "tag": zod.string(),
   "title": zod.string().nullish(),
   "body": zod.string().nullish(),
-  "summary": zod.string().nullish(),
-  "summaryGeneratedAt": zod.iso.datetime({"offset":true}).nullish(),
   "publishedAt": zod.iso.datetime({"offset":true}).optional(),
   "fetchedAt": zod.iso.datetime({"offset":true}).optional(),
   "package": zod.object({
@@ -53,19 +49,4 @@ export const GetReleasesResponseItem = zod.object({
 })
 })
 export const GetReleasesResponse = zod.array(GetReleasesResponseItem)
-
-export const SummarizeReleaseParams = zod.object({
-  "id": zod.string()
-})
-
-export const SummarizeReleaseResponse = zod.object({
-  "id": zod.string(),
-  "tag": zod.string(),
-  "title": zod.string().nullish(),
-  "summary": zod.string().nullish(),
-  "package": zod.object({
-  "id": zod.string(),
-  "npmName": zod.string().nullish()
-})
-})
 

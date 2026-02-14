@@ -225,7 +225,7 @@ public class SyncService
         if (includeExistingWithoutSummary)
         {
             var existingWithoutSummary = await _db.Releases
-                .Where(r => r.PackageId == package.Id && (r.Summary == null || r.SummaryStale))
+                .Where(r => r.PackageId == package.Id && (r.SummaryStale))
                 .Where(r => !releasesNeedingSummary.Select(x => x.Id).Contains(r.Id))
                 .ToListAsync(cancellationToken);
 
@@ -289,7 +289,7 @@ public class SyncService
     {
         return await _db.Releases
             .Include(r => r.Package)
-            .Where(r => r.Summary == null || r.SummaryStale)
+            .Where(r => r.SummaryStale)
             .OrderByDescending(r => r.PublishedAt)
             .ToListAsync(cancellationToken);
     }
@@ -305,7 +305,7 @@ public class SyncService
         CancellationToken cancellationToken = default)
     {
         return await _db.Releases
-            .Where(r => r.PackageId == packageId && (r.Summary == null || r.SummaryStale))
+            .Where(r => r.PackageId == packageId && (r.SummaryStale))
             .OrderByDescending(r => r.PublishedAt)
             .ToListAsync(cancellationToken);
     }

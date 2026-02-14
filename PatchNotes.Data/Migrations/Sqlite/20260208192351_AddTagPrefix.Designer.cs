@@ -175,21 +175,10 @@ namespace PatchNotes.Data.Migrations.Sqlite
                     b.Property<DateTime>("PublishedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Summary")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("SummaryGeneratedAt")
-                        .HasColumnType("TEXT");
-
                     b.Property<bool>("SummaryStale")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER")
                         .HasDefaultValue(true);
-
-                    b.Property<string>("SummaryVersion")
-                        .IsConcurrencyToken()
-                        .HasMaxLength(21)
-                        .HasColumnType("TEXT");
 
                     b.Property<string>("Tag")
                         .IsRequired()
