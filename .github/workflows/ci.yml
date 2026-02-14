@@ -105,8 +105,7 @@ jobs:
           cache-dependency-path: pnpm-lock.yaml
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-        working-directory: .
+        run: pnpm install --frozen-lockfile --dir ${{ github.workspace }}
 
       - name: Check generated API types are up to date
         run: |
@@ -126,4 +125,30 @@ jobs:
         run: pnpm test:run
 
       - name: Type check and build
+        run: pnpm build
+
+  email-function:
+    name: Email Function (Node.js)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: patchnotes-email
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --dir ${{ github.workspace }}
+
+      - name: Build
         run: pnpm build
