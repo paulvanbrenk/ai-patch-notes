@@ -17,19 +17,19 @@ The app runs on `http://localhost:5173` by default.
 
 ## Scripts
 
-| Command | Description |
-|---------|-------------|
-| `pnpm dev` | Start development server |
-| `pnpm build` | Build for production |
-| `pnpm preview` | Preview production build |
-| `pnpm test` | Run tests in watch mode |
-| `pnpm test:run` | Run tests once |
-| `pnpm test:coverage` | Run tests with coverage |
-| `pnpm lint` | Run ESLint |
-| `pnpm format` | Format code with Prettier |
-| `pnpm format:check` | Check formatting |
-| `pnpm generate:api` | Regenerate Orval API client from OpenAPI spec |
-| `pnpm knip` | Check for unused exports and dependencies |
+| Command              | Description                                   |
+| -------------------- | --------------------------------------------- |
+| `pnpm dev`           | Start development server                      |
+| `pnpm build`         | Build for production                          |
+| `pnpm preview`       | Preview production build                      |
+| `pnpm test`          | Run tests in watch mode                       |
+| `pnpm test:run`      | Run tests once                                |
+| `pnpm test:coverage` | Run tests with coverage                       |
+| `pnpm lint`          | Run ESLint                                    |
+| `pnpm format`        | Format code with Prettier                     |
+| `pnpm format:check`  | Check formatting                              |
+| `pnpm generate:api`  | Regenerate Orval API client from OpenAPI spec |
+| `pnpm knip`          | Check for unused exports and dependencies     |
 
 ## Tech Stack
 
