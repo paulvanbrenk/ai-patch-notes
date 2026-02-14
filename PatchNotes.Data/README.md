@@ -1,17 +1,18 @@
 # PatchNotes.Data
 
-Data layer for the PatchNotes application, providing Entity Framework Core models, database context, and external API clients.
+Data layer for the PatchNotes application, providing Entity Framework Core models, database context, and shared utilities.
 
 ## Overview
 
 This project contains:
 
-- **Entity Models** - `Package`, `Release`, `Notification`, `User`
+- **Entity Models** - `Package`, `Release`, `ReleaseSummary`, `User`, `Watchlist`, `ProcessedWebhookEvent`
 - **Database Context** - `PatchNotesDbContext` with SQLite/SQL Server support
-- **EF Core Migrations** - Database schema versioning
-- **GitHub Client** - Fetches releases from GitHub repositories
-- **AI Client** - Generates release note summaries via LLM API (Groq-compatible)
-- **Stytch Client** - User authentication via Stytch
+- **EF Core Migrations** - Database schema versioning (Sqlite + SqlServer)
+- **Version Parsing** - `VersionParser` for semver extraction from release tags
+- **Summary Constants** - Shared constants for AI summary generation
+- **Database Seeding** - `DbSeeder` and default watchlist configuration
+- **ID Generation** - Nanoid-based 21-character unique IDs
 
 ## Database
 
@@ -60,39 +61,31 @@ dotnet ef database update --context SqlServerContext --startup-project ../PatchN
 Register services in your host:
 
 ```csharp
-// Database context
+// Database context (auto-detects SQLite vs SQL Server from config)
 builder.Services.AddPatchNotesDbContext(configuration);
-
-// GitHub client
-builder.Services.AddGitHubClient(options => {
-    options.Token = configuration["GitHub:Token"];
-});
-
-// AI client
-builder.Services.AddAiClient(options => {
-    options.ApiKey = configuration["AI:ApiKey"];
-});
-
-// Stytch client
-builder.Services.AddStytchClient(options => {
-    options.ProjectId = configuration["Stytch:ProjectId"];
-    options.Secret = configuration["Stytch:Secret"];
-});
 ```
 
 ## Directory Structure
 
 ```
 PatchNotes.Data/
-├── Migrations/           # EF Core migrations
-├── GitHub/               # GitHub API client
-├── AI/                   # AI/LLM client for summaries
-├── Stytch/               # Stytch authentication client
-├── Package.cs            # Package entity
-├── Release.cs            # Release entity
-├── Notification.cs       # Notification entity
-├── User.cs               # User entity
-├── PatchNotesDbContext.cs
-├── DbSeeder.cs           # Database seeding
-└── DatabaseProviderFactory.cs
+├── Migrations/
+│   ├── Sqlite/               # SQLite migrations (4 migrations)
+│   └── SqlServer/            # SQL Server migrations (15 migrations)
+├── SeedData/
+│   ├── packages.json         # Package catalog
+│   └── SeedDataModels.cs     # Seed data types
+├── Package.cs                # Package entity
+├── Release.cs                # Release entity
+├── ReleaseSummary.cs         # AI summary entity
+├── User.cs                   # User entity (Stytch + Stripe + email prefs)
+├── Watchlist.cs              # User watchlist entity
+├── ProcessedWebhookEvent.cs  # Webhook deduplication
+├── PatchNotesDbContext.cs    # DbContext (SqliteContext, SqlServerContext)
+├── DbSeeder.cs               # Database seeding
+├── DefaultWatchlistOptions.cs # Default watchlist configuration
+├── IdGenerator.cs            # Nanoid ID generation (21-char)
+├── VersionParser.cs          # Semver parsing from tags
+├── SummaryConstants.cs       # AI summary constants
+└── IHasTimestamps.cs         # Timestamp interface
 ```
