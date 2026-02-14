@@ -1,4 +1,4 @@
-namespace PatchNotes.Data.GitHub;
+namespace PatchNotes.Sync.GitHub;
 
 /// <summary>
 /// Options for configuring the GitHub client.

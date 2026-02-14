@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PatchNotes.Data;
 using PatchNotes.Data.AI;
-using PatchNotes.Data.GitHub;
+using PatchNotes.Sync.GitHub;
 using PatchNotes.Sync;
 
 var builder = FunctionsApplication.CreateBuilder(args);

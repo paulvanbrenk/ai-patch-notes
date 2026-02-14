@@ -5,7 +5,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using PatchNotes.Data;
 using PatchNotes.Data.AI;
-using PatchNotes.Data.GitHub;
+using PatchNotes.Sync.GitHub;
 using PatchNotes.Sync;
 
 // Exit codes for cron monitoring
