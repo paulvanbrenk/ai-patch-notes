@@ -1,6 +1,6 @@
 using PatchNotes.Data;
 using PatchNotes.Data.AI;
-using PatchNotes.Data.Stytch;
+using PatchNotes.Api.Stytch;
 using PatchNotes.Api.Routes;
 using PatchNotes.Api.Webhooks;
 using Stripe;

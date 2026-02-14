@@ -4,7 +4,7 @@ using Stytch.net.Clients;
 using Stytch.net.Models;
 using Stytch.net.Models.Consumer;
 
-namespace PatchNotes.Data.Stytch;
+namespace PatchNotes.Api.Stytch;
 
 /// <summary>
 /// Client for interacting with the Stytch API using the official SDK.

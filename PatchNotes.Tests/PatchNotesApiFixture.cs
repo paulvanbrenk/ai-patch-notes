@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using PatchNotes.Data;
-using PatchNotes.Data.Stytch;
+using PatchNotes.Api.Stytch;
 
 namespace PatchNotes.Tests;
 

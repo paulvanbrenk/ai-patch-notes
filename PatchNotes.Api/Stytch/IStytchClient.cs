@@ -1,4 +1,4 @@
-namespace PatchNotes.Data.Stytch;
+namespace PatchNotes.Api.Stytch;
 
 /// <summary>
 /// Interface for Stytch API operations.

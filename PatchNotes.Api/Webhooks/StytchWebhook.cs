@@ -2,7 +2,7 @@ using System.Net;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using PatchNotes.Data;
-using PatchNotes.Data.Stytch;
+using PatchNotes.Api.Stytch;
 
 namespace PatchNotes.Api.Webhooks;
 
