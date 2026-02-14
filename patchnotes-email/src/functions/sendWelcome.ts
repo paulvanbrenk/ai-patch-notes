@@ -1,5 +1,5 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
-import { resend, FROM_ADDRESS, escapeHtml } from "../lib/resend";
+import { resend, FROM_ADDRESS, escapeHtml, emailFooter } from "../lib/resend";
 
 interface WelcomeRequest {
     email: string;
@@ -30,6 +30,7 @@ export async function sendWelcome(
             <h1>Welcome to PatchNotes, ${name}!</h1>
             <p>You're all set to receive release notifications for the packages you care about.</p>
             <p>Head to your dashboard to start watching packages.</p>
+            ${emailFooter()}
         `;
 
         const { error } = await resend.emails.send({

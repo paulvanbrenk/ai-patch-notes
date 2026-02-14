@@ -1,5 +1,5 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
-import { resend, FROM_ADDRESS, escapeHtml } from "../lib/resend";
+import { resend, FROM_ADDRESS, escapeHtml, emailFooter } from "../lib/resend";
 
 interface ReleaseRequest {
     email: string;
@@ -33,6 +33,7 @@ export async function sendRelease(
             <h1>New Release: ${pkg} ${ver}</h1>
             <p>${escapeHtml(body.summary)}</p>
             <p><a href="https://patchnotes.dev">View on PatchNotes</a></p>
+            ${emailFooter()}
         `;
 
         const { error } = await resend.emails.send({

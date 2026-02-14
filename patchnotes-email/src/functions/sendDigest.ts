@@ -1,5 +1,5 @@
 import { app, InvocationContext, Timer } from "@azure/functions";
-import { resend, FROM_ADDRESS, escapeHtml } from "../lib/resend";
+import { resend, FROM_ADDRESS, escapeHtml, emailFooter } from "../lib/resend";
 
 interface UserDigest {
     email: string;
@@ -56,6 +56,7 @@ export async function sendDigest(
             <p>Hi ${escapeHtml(user.name)}, here's what happened this week with the packages you're watching:</p>
             <ul>${releaseList}</ul>
             <p><a href="${apiUrl}">View all updates on PatchNotes</a></p>
+            ${emailFooter()}
         `;
 
         try {
