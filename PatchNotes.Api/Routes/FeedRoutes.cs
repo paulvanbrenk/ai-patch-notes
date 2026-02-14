@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using PatchNotes.Data;
 using PatchNotes.Api.Stytch;
+using static PatchNotes.Data.SummaryConstants;
 
 namespace PatchNotes.Api.Routes;
 
@@ -78,6 +79,15 @@ public static class FeedRoutes
             var feedGroups = groups.Select(g =>
             {
                 summaryLookup.TryGetValue((g.PackageId, g.MajorVersion, g.IsPrerelease), out var summary);
+
+                // Limit displayed releases to the same window used for summary generation
+                var cutoff = g.LastUpdated - SummaryWindow;
+                var windowedReleases = g.Releases
+                    .Where(r => r.PublishedAt >= cutoff)
+                    .ToList();
+                if (windowedReleases.Count == 0)
+                    windowedReleases = g.Releases.Take(1).ToList();
+
                 return new FeedGroupDto
                 {
                     PackageId = g.PackageId,
@@ -91,7 +101,7 @@ public static class FeedRoutes
                     Summary = summary,
                     ReleaseCount = g.ReleaseCount,
                     LastUpdated = g.LastUpdated,
-                    Releases = g.Releases,
+                    Releases = windowedReleases,
                 };
             }).ToList();
 
