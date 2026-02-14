@@ -70,9 +70,7 @@ describe('HomePage', () => {
       expect(screen.getByText('TL;DR')).toBeInTheDocument()
       expect(screen.getByText('Breaking')).toBeInTheDocument()
       // Bullet list items should be rendered
-      expect(
-        screen.getByText('Removed legacy context API')
-      ).toBeInTheDocument()
+      expect(screen.getByText('Removed legacy context API')).toBeInTheDocument()
     })
 
     it('sees the hero card', async () => {
