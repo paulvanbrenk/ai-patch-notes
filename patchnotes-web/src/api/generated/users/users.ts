@@ -24,6 +24,7 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  UpdateUserRequest,
   UserDto
 } from '.././model';
 
@@ -145,7 +146,90 @@ export function useGetCurrentUser<TData = Awaited<ReturnType<typeof getCurrentUs
 
 
 
-export type loginUserResponse200 = {
+export type updateCurrentUserResponse200 = {
+  data: UserDto
+  status: 200
+}
+
+export type updateCurrentUserResponse404 = {
+  data: void
+  status: 404
+}
+    
+export type updateCurrentUserResponseSuccess = (updateCurrentUserResponse200) & {
+  headers: Headers;
+};
+export type updateCurrentUserResponseError = (updateCurrentUserResponse404) & {
+  headers: Headers;
+};
+
+export type updateCurrentUserResponse = (updateCurrentUserResponseSuccess | updateCurrentUserResponseError)
+
+export const getUpdateCurrentUserUrl = () => {
+
+
+  
+
+  return `/api/users/me`
+}
+
+export const updateCurrentUser = async (updateUserRequest: UpdateUserRequest, options?: RequestInit): Promise<updateCurrentUserResponse> => {
+  
+  return customFetch<updateCurrentUserResponse>(getUpdateCurrentUserUrl(),
+  {      
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      updateUserRequest,)
+  }
+);}
+
+
+
+
+export const getUpdateCurrentUserMutationOptions = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCurrentUser>>, TError,{data: UpdateUserRequest}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateCurrentUser>>, TError,{data: UpdateUserRequest}, TContext> => {
+
+const mutationKey = ['updateCurrentUser'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateCurrentUser>>, {data: UpdateUserRequest}> = (props) => {
+          const {data} = props ?? {};
+
+          return  updateCurrentUser(data,requestOptions)
+        }
+
+
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateCurrentUserMutationResult = NonNullable<Awaited<ReturnType<typeof updateCurrentUser>>>
+    export type UpdateCurrentUserMutationBody = UpdateUserRequest
+    export type UpdateCurrentUserMutationError = void
+
+    export const useUpdateCurrentUser = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCurrentUser>>, TError,{data: UpdateUserRequest}, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof updateCurrentUser>>,
+        TError,
+        {data: UpdateUserRequest},
+        TContext
+      > => {
+      return useMutation(getUpdateCurrentUserMutationOptions(options), queryClient);
+    }
+    export type loginUserResponse200 = {
   data: UserDto
   status: 200
 }

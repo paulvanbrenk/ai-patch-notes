@@ -23,4 +23,5 @@ export * from './releaseSummaryDto';
 export * from './setWatchlistRequest';
 export * from './subscriptionStatusDto';
 export * from './updatePackageRequest';
+export * from './updateUserRequest';
 export * from './userDto';
