@@ -60,6 +60,21 @@ describe('HomePage', () => {
       expect(screen.getByText('lodash')).toBeInTheDocument()
     })
 
+    it('renders AI summary as markdown with headings and lists', async () => {
+      render(<HomePage />)
+
+      await waitFor(() => {
+        expect(screen.getByText('react')).toBeInTheDocument()
+      })
+      // The markdown headings should be rendered (h2 → h4 in card)
+      expect(screen.getByText('TL;DR')).toBeInTheDocument()
+      expect(screen.getByText('Breaking')).toBeInTheDocument()
+      // Bullet list items should be rendered
+      expect(
+        screen.getByText('Removed legacy context API')
+      ).toBeInTheDocument()
+    })
+
     it('sees the hero card', async () => {
       render(<HomePage />)
 

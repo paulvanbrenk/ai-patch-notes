@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useStytchUser } from '@stytch/react'
+import Markdown from 'react-markdown'
 import {
   FlaskConical,
   FlaskConicalOff,
@@ -43,6 +44,7 @@ interface VersionGroup extends FeedGroupDto {
   displayName: string
   prereleaseType?: PrereleaseType
   displaySummary: string
+  hasSummary: boolean
 }
 
 // ============================================================================
@@ -66,6 +68,7 @@ function detectPrereleaseType(
 function buildDisplayGroups(groups: FeedGroupDto[]): VersionGroup[] {
   return groups.map((g) => {
     const displayName = g.npmName ?? `${g.githubOwner}/${g.githubRepo}`
+    const hasSummary = !!g.summary
     // Use AI summary if available, otherwise build a placeholder
     let displaySummary = g.summary ?? ''
     if (!displaySummary) {
@@ -85,6 +88,7 @@ function buildDisplayGroups(groups: FeedGroupDto[]): VersionGroup[] {
         ? detectPrereleaseType(g.releases)
         : undefined,
       displaySummary,
+      hasSummary,
     }
   })
 }
@@ -249,9 +253,34 @@ function SummaryCard({
         </div>
 
         {/* Summary */}
-        <p className="text-sm text-text-secondary leading-relaxed">
-          {group.displaySummary}
-        </p>
+        {group.hasSummary ? (
+          <div className="text-sm text-text-secondary leading-relaxed">
+            <Markdown
+              components={{
+                h2: ({ children }) => (
+                  <h4 className="text-xs font-semibold uppercase tracking-wide text-text-tertiary mt-3 first:mt-0 mb-1">
+                    {children}
+                  </h4>
+                ),
+                p: ({ children }) => (
+                  <p className="mb-2 last:mb-0">{children}</p>
+                ),
+                ul: ({ children }) => (
+                  <ul className="list-disc list-inside mb-2 last:mb-0 space-y-0.5">
+                    {children}
+                  </ul>
+                ),
+                li: ({ children }) => <li>{children}</li>,
+              }}
+            >
+              {group.displaySummary}
+            </Markdown>
+          </div>
+        ) : (
+          <p className="text-sm text-text-secondary leading-relaxed">
+            {group.displaySummary}
+          </p>
+        )}
 
         {/* Footer */}
         <div className="flex items-center justify-between mt-4 pt-4 border-t border-border-muted">
