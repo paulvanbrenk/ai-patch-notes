@@ -16,6 +16,19 @@ export const GetCurrentUserResponse = zod.object({
   "lastLoginAt": zod.iso.datetime({"offset":true}).nullish()
 })
 
+export const UpdateCurrentUserBody = zod.object({
+  "name": zod.string().nullable()
+})
+
+export const UpdateCurrentUserResponse = zod.object({
+  "id": zod.string(),
+  "stytchUserId": zod.string(),
+  "email": zod.string().nullish(),
+  "name": zod.string().nullish(),
+  "createdAt": zod.iso.datetime({"offset":true}).optional(),
+  "lastLoginAt": zod.iso.datetime({"offset":true}).nullish()
+})
+
 export const LoginUserResponse = zod.object({
   "id": zod.string(),
   "stytchUserId": zod.string(),

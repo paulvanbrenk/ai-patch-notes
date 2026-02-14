@@ -11,6 +11,7 @@ vi.mock('@tanstack/react-router', () => ({
       {children as React.ReactNode}
     </a>
   ),
+  useNavigate: () => vi.fn(),
 }))
 
 // Override the global @stytch/react mock so we can control auth state per-test

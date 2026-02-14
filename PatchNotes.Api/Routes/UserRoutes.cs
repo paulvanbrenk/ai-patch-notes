@@ -112,6 +112,36 @@ public static class UserRoutes
         .Produces<UserDto>(StatusCodes.Status200OK)
         .WithName("LoginUser");
 
+        // PUT /api/users/me - Update current user profile
+        group.MapPut("/me", async (HttpContext httpContext, UpdateUserRequest request, PatchNotesDbContext db) =>
+        {
+            var stytchUserId = httpContext.Items["StytchUserId"] as string;
+
+            var user = await db.Users.FirstOrDefaultAsync(u => u.StytchUserId == stytchUserId);
+            if (user == null)
+            {
+                return Results.NotFound(new { error = "User not found" });
+            }
+
+            user.Name = request.Name;
+            await db.SaveChangesAsync();
+
+            return Results.Ok(new UserDto
+            {
+                Id = user.Id,
+                StytchUserId = user.StytchUserId,
+                Email = user.Email,
+                Name = user.Name,
+                CreatedAt = user.CreatedAt,
+                LastLoginAt = user.LastLoginAt
+            });
+        })
+        .AddEndpointFilterFactory(RouteUtils.CreateAuthFilter())
+        .Accepts<UpdateUserRequest>("application/json")
+        .Produces<UserDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound)
+        .WithName("UpdateCurrentUser");
+
         return app;
     }
 }
@@ -125,3 +155,5 @@ public class UserDto
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset? LastLoginAt { get; set; }
 }
+
+public record UpdateUserRequest(string? Name);

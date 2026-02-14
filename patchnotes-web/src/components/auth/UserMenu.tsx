@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useStytch, useStytchUser } from '@stytch/react'
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import {
   Settings,
   HelpCircle,
@@ -92,6 +92,7 @@ function DropdownMenu({
   email,
   displayName,
   onLogout,
+  onSettings,
   isPro,
   onUpgrade,
   onManageSubscription,
@@ -101,6 +102,7 @@ function DropdownMenu({
   email?: string
   displayName: string
   onLogout: () => void
+  onSettings: () => void
   isPro: boolean
   onUpgrade: () => void
   onManageSubscription: () => void
@@ -182,7 +184,10 @@ function DropdownMenu({
 
       {/* Menu items */}
       <div className="py-1.5">
-        <MenuButton icon={<Settings className="w-4 h-4" />} onClick={() => {}}>
+        <MenuButton
+          icon={<Settings className="w-4 h-4" />}
+          onClick={onSettings}
+        >
           Settings
         </MenuButton>
         <MenuButton
@@ -250,6 +255,7 @@ export function UserMenu() {
   const stytch = useStytch()
   const { user, isInitialized } = useStytchUser()
   const [isOpen, setIsOpen] = useState(false)
+  const navigate = useNavigate()
   const { isPro, checkSubscription, startCheckout, openPortal } =
     useSubscriptionStore()
 
@@ -263,6 +269,11 @@ export function UserMenu() {
   const handleLogout = async () => {
     setIsOpen(false)
     await stytch.session.revoke()
+  }
+
+  const handleSettings = () => {
+    setIsOpen(false)
+    navigate({ to: '/settings' })
   }
 
   const handleUpgrade = () => {
@@ -319,6 +330,7 @@ export function UserMenu() {
         email={email}
         displayName={displayName}
         onLogout={handleLogout}
+        onSettings={handleSettings}
         isPro={isPro}
         onUpgrade={handleUpgrade}
         onManageSubscription={handleManageSubscription}
