@@ -106,6 +106,8 @@
             "in": "path",
             "required": true,
             "schema": {
+              "maxLength": 21,
+              "minLength": 21,
               "type": "string"
             }
           }
@@ -137,6 +139,8 @@
             "in": "path",
             "required": true,
             "schema": {
+              "maxLength": 21,
+              "minLength": 21,
               "type": "string"
             }
           }
@@ -178,6 +182,8 @@
             "in": "path",
             "required": true,
             "schema": {
+              "maxLength": 21,
+              "minLength": 21,
               "type": "string"
             }
           }
@@ -204,6 +210,8 @@
             "in": "path",
             "required": true,
             "schema": {
+              "maxLength": 21,
+              "minLength": 21,
               "type": "string"
             }
           }
@@ -218,6 +226,80 @@
                   "items": {
                     "$ref": "#/components/schemas/PackageReleaseDto"
                   }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/packages/{owner}": {
+      "get": {
+        "tags": [
+          "Packages"
+        ],
+        "operationId": "GetPackagesByOwner",
+        "parameters": [
+          {
+            "name": "owner",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OwnerPackageDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/packages/{owner}/{repo}": {
+      "get": {
+        "tags": [
+          "Packages"
+        ],
+        "operationId": "GetPackageByOwnerRepo",
+        "parameters": [
+          {
+            "name": "owner",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "repo",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackageDetailResponseDto"
                 }
               }
             }
@@ -887,6 +969,48 @@
           }
         }
       },
+      "OwnerPackageDto": {
+        "required": [
+          "id",
+          "name",
+          "githubOwner",
+          "githubRepo"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "npmName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "githubOwner": {
+            "type": "string"
+          },
+          "githubRepo": {
+            "type": "string"
+          },
+          "latestVersion": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "lastUpdated": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          }
+        }
+      },
       "PackageDetailDto": {
         "required": [
           "id",
@@ -940,6 +1064,123 @@
           "createdAt": {
             "type": "string",
             "format": "date-time"
+          }
+        }
+      },
+      "PackageDetailGroupDto": {
+        "required": [
+          "versionRange",
+          "releases"
+        ],
+        "type": "object",
+        "properties": {
+          "majorVersion": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "isPrerelease": {
+            "type": "boolean"
+          },
+          "versionRange": {
+            "type": "string"
+          },
+          "summary": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "releaseCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "lastUpdated": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "releases": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PackageDetailReleaseDto"
+            }
+          }
+        }
+      },
+      "PackageDetailInfoDto": {
+        "required": [
+          "id",
+          "name",
+          "githubOwner",
+          "githubRepo"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "githubOwner": {
+            "type": "string"
+          },
+          "githubRepo": {
+            "type": "string"
+          },
+          "npmName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "PackageDetailReleaseDto": {
+        "required": [
+          "id",
+          "tag"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "tag": {
+            "type": "string"
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "body": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PackageDetailResponseDto": {
+        "required": [
+          "package",
+          "groups"
+        ],
+        "type": "object",
+        "properties": {
+          "package": {
+            "$ref": "#/components/schemas/PackageDetailInfoDto"
+          },
+          "groups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PackageDetailGroupDto"
+            }
           }
         }
       },

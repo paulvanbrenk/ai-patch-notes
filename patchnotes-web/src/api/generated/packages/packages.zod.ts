@@ -25,8 +25,13 @@ export const CreatePackageBody = zod.object({
   "tagPrefix": zod.string().nullish()
 })
 
+export const getPackagePathIdMin = 21;
+export const getPackagePathIdMax = 21;
+
+
+
 export const GetPackageParams = zod.object({
-  "id": zod.string()
+  "id": zod.string().min(getPackagePathIdMin).max(getPackagePathIdMax)
 })
 
 export const GetPackageResponse = zod.object({
@@ -42,8 +47,13 @@ export const GetPackageResponse = zod.object({
   "createdAt": zod.iso.datetime({"offset":true}).optional()
 })
 
+export const updatePackagePathIdMin = 21;
+export const updatePackagePathIdMax = 21;
+
+
+
 export const UpdatePackageParams = zod.object({
-  "id": zod.string()
+  "id": zod.string().min(updatePackagePathIdMin).max(updatePackagePathIdMax)
 })
 
 export const UpdatePackageBody = zod.object({
@@ -64,12 +74,22 @@ export const UpdatePackageResponse = zod.object({
   "createdAt": zod.iso.datetime({"offset":true}).optional()
 })
 
+export const deletePackagePathIdMin = 21;
+export const deletePackagePathIdMax = 21;
+
+
+
 export const DeletePackageParams = zod.object({
-  "id": zod.string()
+  "id": zod.string().min(deletePackagePathIdMin).max(deletePackagePathIdMax)
 })
 
+export const getPackageReleasesPathIdMin = 21;
+export const getPackageReleasesPathIdMax = 21;
+
+
+
 export const GetPackageReleasesParams = zod.object({
-  "id": zod.string()
+  "id": zod.string().min(getPackageReleasesPathIdMin).max(getPackageReleasesPathIdMax)
 })
 
 export const GetPackageReleasesResponseItem = zod.object({
@@ -89,4 +109,49 @@ export const GetPackageReleasesResponseItem = zod.object({
 })
 })
 export const GetPackageReleasesResponse = zod.array(GetPackageReleasesResponseItem)
+
+export const GetPackagesByOwnerParams = zod.object({
+  "owner": zod.string()
+})
+
+export const GetPackagesByOwnerResponseItem = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "npmName": zod.string().nullish(),
+  "githubOwner": zod.string(),
+  "githubRepo": zod.string(),
+  "latestVersion": zod.string().nullish(),
+  "lastUpdated": zod.iso.datetime({"offset":true}).nullish()
+})
+export const GetPackagesByOwnerResponse = zod.array(GetPackagesByOwnerResponseItem)
+
+export const GetPackageByOwnerRepoParams = zod.object({
+  "owner": zod.string(),
+  "repo": zod.string()
+})
+
+export const GetPackageByOwnerRepoResponse = zod.object({
+  "package": zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "githubOwner": zod.string(),
+  "githubRepo": zod.string(),
+  "npmName": zod.string().nullish()
+}),
+  "groups": zod.array(zod.object({
+  "majorVersion": zod.number().optional(),
+  "isPrerelease": zod.boolean().optional(),
+  "versionRange": zod.string(),
+  "summary": zod.string().nullish(),
+  "releaseCount": zod.number().optional(),
+  "lastUpdated": zod.iso.datetime({"offset":true}).optional(),
+  "releases": zod.array(zod.object({
+  "id": zod.string(),
+  "tag": zod.string(),
+  "title": zod.string().nullish(),
+  "body": zod.string().nullish(),
+  "publishedAt": zod.iso.datetime({"offset":true}).optional()
+}))
+}))
+})
 
