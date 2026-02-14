@@ -53,6 +53,47 @@ jobs:
           path: ./publish/functions
           include-hidden-files: true
 
+  build-email-function:
+    name: Build Email Function
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: patchnotes-email
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --dir ${{ github.workspace }}
+
+      - name: Build
+        run: pnpm build
+
+      - name: Prepare deployment package
+        working-directory: ${{ github.workspace }}
+        run: |
+          mkdir -p publish/email-function
+          cp -r patchnotes-email/dist publish/email-function/
+          cp patchnotes-email/host.json publish/email-function/
+          cp patchnotes-email/package.json publish/email-function/
+          cd publish/email-function
+          npm install --omit=dev
+
+      - name: Upload Email Function artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: email-function
+          path: publish/email-function
+
   build-frontend:
     name: Build Frontend
     runs-on: ubuntu-latest
@@ -203,3 +244,29 @@ jobs:
         with:
           app-name: fn-patchnotes-sync
           package: ./functions
+
+  deploy-email-function:
+    name: Deploy Email Function
+    needs: build-email-function
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+    steps:
+      - name: Download Email Function artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: email-function
+          path: ./email-function
+
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy to Azure Functions
+        uses: azure/functions-action@v1
+        with:
+          app-name: fn-patchnotes-email
+          package: ./email-function
