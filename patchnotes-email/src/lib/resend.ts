@@ -16,3 +16,15 @@ export function escapeHtml(str: string): string {
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;");
 }
+
+export const SETTINGS_URL = "https://myreleasenotes.ai/settings";
+
+export function emailFooter(): string {
+    return `
+        <hr style="border: none; border-top: 1px solid #e5e5e5; margin: 32px 0 16px;" />
+        <p style="font-size: 12px; color: #666;">
+            You're receiving this email because you signed up for PatchNotes.
+            <a href="${SETTINGS_URL}">Manage email preferences</a>
+        </p>
+    `;
+}
