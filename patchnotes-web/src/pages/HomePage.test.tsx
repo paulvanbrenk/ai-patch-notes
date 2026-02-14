@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from '../test/utils'
 import { http, HttpResponse } from 'msw'
 import { server } from '../test/mocks/server'
-import { mockReleases } from '../test/mocks/handlers'
+import { mockFeedGroups } from '../test/mocks/handlers'
 import { HomePage } from './HomePage'
 
 // Mock @tanstack/react-router Link to avoid RouterProvider requirement
@@ -89,27 +89,25 @@ describe('HomePage', () => {
     })
 
     it('sees releases filtered by watchlist', async () => {
-      // Watchlist contains only React
+      // Watchlist contains only React — feed endpoint handles filtering server-side
       server.use(
         http.get('/api/watchlist', () => {
           return HttpResponse.json(['pkg-react-test-id'])
         }),
-        http.get('/api/releases', ({ request }) => {
-          const url = new URL(request.url)
-          const packages = url.searchParams.get('packages')
-          if (packages === 'pkg-react-test-id') {
-            return HttpResponse.json(
-              mockReleases.filter((r) => r.package.id === 'pkg-react-test-id')
-            )
-          }
-          return HttpResponse.json(mockReleases)
+        http.get('/api/feed', () => {
+          // Server returns only React groups for this user's watchlist
+          return HttpResponse.json({
+            groups: mockFeedGroups.filter(
+              (g) => g.packageId === 'pkg-react-test-id'
+            ),
+          })
         })
       )
 
       render(<HomePage />)
 
       await waitFor(() => {
-        expect(screen.getByText('react')).toBeInTheDocument()
+        expect(screen.getAllByText('react').length).toBeGreaterThan(0)
       })
       // Lodash releases should not appear since it's not in the watchlist
       // (lodash still appears in the PackagePicker sidebar)
@@ -126,7 +124,7 @@ describe('HomePage', () => {
       render(<HomePage />)
 
       await waitFor(() => {
-        expect(screen.getByText('react')).toBeInTheDocument()
+        expect(screen.getAllByText('react').length).toBeGreaterThan(0)
       })
       expect(
         screen.queryByText(/Never miss a release that matters/)

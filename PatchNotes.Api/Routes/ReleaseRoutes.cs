@@ -68,7 +68,7 @@ public static class ReleaseRoutes
             if (watchlist == true)
             {
                 // Explicit watchlist filter — require authentication
-                var userWatchlistIds = await GetAuthenticatedUserWatchlistIds(httpContext, db, stytchClient);
+                var userWatchlistIds = await RouteUtils.GetAuthenticatedUserWatchlistIds(httpContext, db, stytchClient);
                 if (userWatchlistIds == null)
                 {
                     return Results.Json(new { error = "Authentication required for watchlist filter" }, statusCode: 401);
@@ -91,7 +91,7 @@ public static class ReleaseRoutes
             else
             {
                 // No explicit packages filter — use watchlist
-                var (watchlistIds, hasWatchlistConfig) = await ResolveWatchlistPackageIds(
+                var (watchlistIds, hasWatchlistConfig) = await RouteUtils.ResolveWatchlistPackageIds(
                     httpContext, db, stytchClient, watchlistOptions.Value);
 
                 if (hasWatchlistConfig)

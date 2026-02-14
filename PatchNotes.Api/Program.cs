@@ -146,6 +146,7 @@ app.MapUserRoutes();
 app.MapWatchlistRoutes();
 app.MapSubscriptionRoutes();
 app.MapSummaryRoutes();
+app.MapFeedRoutes();
 app.MapStytchWebhook();
 app.MapStripeWebhook();
 
