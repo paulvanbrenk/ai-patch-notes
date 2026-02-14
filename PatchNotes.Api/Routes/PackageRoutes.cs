@@ -35,8 +35,8 @@ public static class PackageRoutes
         .Produces<List<PackageDto>>(StatusCodes.Status200OK)
         .WithName("GetPackages");
 
-        // GET /api/packages/{id} - Get single package details
-        group.MapGet("/{id}", async (string id, PatchNotesDbContext db) =>
+        // GET /api/packages/{id} - Get single package details (by nanoid)
+        group.MapGet("/{id:length(21)}", async (string id, PatchNotesDbContext db) =>
         {
             var package = await db.Packages
                 .Where(p => p.Id == id)
@@ -66,8 +66,8 @@ public static class PackageRoutes
         .Produces(StatusCodes.Status404NotFound)
         .WithName("GetPackage");
 
-        // GET /api/packages/{id}/releases - Get all releases for a package
-        group.MapGet("/{id}/releases", async (string id, PatchNotesDbContext db) =>
+        // GET /api/packages/{id}/releases - Get all releases for a package (by nanoid)
+        group.MapGet("/{id:length(21)}/releases", async (string id, PatchNotesDbContext db) =>
         {
             var packageExists = await db.Packages.AnyAsync(p => p.Id == id);
             if (!packageExists)
@@ -103,6 +103,111 @@ public static class PackageRoutes
         .Produces<List<PackageReleaseDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status404NotFound)
         .WithName("GetPackageReleases");
+
+        // GET /api/packages/{owner} - List packages by GitHub owner
+        group.MapGet("/{owner}", async (string owner, PatchNotesDbContext db) =>
+        {
+            var packages = await db.Packages
+                .Where(p => p.GithubOwner == owner)
+                .Select(p => new OwnerPackageDto
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    NpmName = p.NpmName,
+                    GithubOwner = p.GithubOwner,
+                    GithubRepo = p.GithubRepo,
+                    LatestVersion = p.Releases
+                        .OrderByDescending(r => r.PublishedAt)
+                        .Select(r => r.Tag)
+                        .FirstOrDefault(),
+                    LastUpdated = p.Releases
+                        .Max(r => (DateTimeOffset?)r.PublishedAt)
+                })
+                .ToListAsync();
+
+            return Results.Ok(packages);
+        })
+        .Produces<List<OwnerPackageDto>>(StatusCodes.Status200OK)
+        .WithName("GetPackagesByOwner");
+
+        // GET /api/packages/{owner}/{repo} - Package detail with all version groups and releases
+        group.MapGet("/{owner}/{repo}", async (string owner, string repo, PatchNotesDbContext db) =>
+        {
+            var package = await db.Packages
+                .Where(p => p.GithubOwner == owner && p.GithubRepo == repo)
+                .Select(p => new { p.Id, p.Name, p.GithubOwner, p.GithubRepo, p.NpmName })
+                .FirstOrDefaultAsync();
+
+            if (package == null)
+            {
+                return Results.NotFound(new { error = "Package not found" });
+            }
+
+            // Get all releases grouped by (majorVersion, isPrerelease) — no filtering
+            var groups = await db.Releases
+                .Where(r => r.PackageId == package.Id)
+                .GroupBy(r => new { r.MajorVersion, r.IsPrerelease })
+                .Select(g => new
+                {
+                    g.Key.MajorVersion,
+                    g.Key.IsPrerelease,
+                    ReleaseCount = g.Count(),
+                    LastUpdated = g.Max(r => r.PublishedAt),
+                    Releases = g.OrderByDescending(r => r.PublishedAt)
+                        .Select(r => new PackageDetailReleaseDto
+                        {
+                            Id = r.Id,
+                            Tag = r.Tag,
+                            Title = r.Title,
+                            Body = r.Body,
+                            PublishedAt = r.PublishedAt,
+                        })
+                        .ToList(),
+                })
+                .OrderByDescending(g => g.LastUpdated)
+                .ToListAsync();
+
+            // Left-join ReleaseSummary for AI summaries per group
+            var summaries = await db.ReleaseSummaries
+                .Where(s => s.PackageId == package.Id)
+                .ToListAsync();
+
+            var summaryLookup = summaries.ToDictionary(
+                s => (s.MajorVersion, s.IsPrerelease),
+                s => s.Summary);
+
+            var groupDtos = groups.Select(g =>
+            {
+                summaryLookup.TryGetValue((g.MajorVersion, g.IsPrerelease), out var summary);
+
+                return new PackageDetailGroupDto
+                {
+                    MajorVersion = g.MajorVersion,
+                    IsPrerelease = g.IsPrerelease,
+                    VersionRange = $"v{g.MajorVersion}.x",
+                    Summary = summary,
+                    ReleaseCount = g.ReleaseCount,
+                    LastUpdated = g.LastUpdated,
+                    Releases = g.Releases,
+                };
+            }).ToList();
+
+            return Results.Ok(new PackageDetailResponseDto
+            {
+                Package = new PackageDetailInfoDto
+                {
+                    Id = package.Id,
+                    Name = package.Name,
+                    GithubOwner = package.GithubOwner,
+                    GithubRepo = package.GithubRepo,
+                    NpmName = package.NpmName,
+                },
+                Groups = groupDtos,
+            });
+        })
+        .Produces<PackageDetailResponseDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound)
+        .WithName("GetPackageByOwnerRepo");
 
         // POST /api/packages - Add package to track
         group.MapPost("/", async (AddPackageRequest request, HttpContext httpContext, PatchNotesDbContext db, IHttpClientFactory httpClientFactory) =>
@@ -222,8 +327,8 @@ public static class PackageRoutes
         .Produces(StatusCodes.Status409Conflict)
         .WithName("CreatePackage");
 
-        // PATCH /api/packages/{id} - Update package GitHub mapping
-        group.MapPatch("/{id}", async (string id, UpdatePackageRequest request, PatchNotesDbContext db) =>
+        // PATCH /api/packages/{id} - Update package GitHub mapping (by nanoid)
+        group.MapPatch("/{id:length(21)}", async (string id, UpdatePackageRequest request, PatchNotesDbContext db) =>
         {
             var package = await db.Packages.FindAsync(id);
             if (package == null)
@@ -267,8 +372,8 @@ public static class PackageRoutes
         .Produces(StatusCodes.Status404NotFound)
         .WithName("UpdatePackage");
 
-        // DELETE /api/packages/{id} - Remove package from tracking
-        group.MapDelete("/{id}", async (string id, PatchNotesDbContext db) =>
+        // DELETE /api/packages/{id} - Remove package from tracking (by nanoid)
+        group.MapDelete("/{id:length(21)}", async (string id, PatchNotesDbContext db) =>
         {
             var package = await db.Packages.FindAsync(id);
             if (package == null)
@@ -328,4 +433,50 @@ public class PackageReleasePackageDto
     public string? NpmName { get; set; }
     public required string GithubOwner { get; set; }
     public required string GithubRepo { get; set; }
+}
+
+public class OwnerPackageDto
+{
+    public required string Id { get; set; }
+    public required string Name { get; set; }
+    public string? NpmName { get; set; }
+    public required string GithubOwner { get; set; }
+    public required string GithubRepo { get; set; }
+    public string? LatestVersion { get; set; }
+    public DateTimeOffset? LastUpdated { get; set; }
+}
+
+public class PackageDetailResponseDto
+{
+    public required PackageDetailInfoDto Package { get; set; }
+    public required List<PackageDetailGroupDto> Groups { get; set; }
+}
+
+public class PackageDetailInfoDto
+{
+    public required string Id { get; set; }
+    public required string Name { get; set; }
+    public required string GithubOwner { get; set; }
+    public required string GithubRepo { get; set; }
+    public string? NpmName { get; set; }
+}
+
+public class PackageDetailGroupDto
+{
+    public int MajorVersion { get; set; }
+    public bool IsPrerelease { get; set; }
+    public required string VersionRange { get; set; }
+    public string? Summary { get; set; }
+    public int ReleaseCount { get; set; }
+    public DateTimeOffset LastUpdated { get; set; }
+    public required List<PackageDetailReleaseDto> Releases { get; set; }
+}
+
+public class PackageDetailReleaseDto
+{
+    public required string Id { get; set; }
+    public required string Tag { get; set; }
+    public string? Title { get; set; }
+    public string? Body { get; set; }
+    public DateTimeOffset PublishedAt { get; set; }
 }
