@@ -1,4 +1,6 @@
 using System.Text.RegularExpressions;
+using Microsoft.EntityFrameworkCore;
+using PatchNotes.Data;
 using PatchNotes.Data.Stytch;
 
 namespace PatchNotes.Api.Routes;
@@ -99,6 +101,67 @@ public static class RouteUtils
 
             return await next(invocationContext);
         };
+    }
+
+    /// <summary>
+    /// Attempts to authenticate the user and return their watchlist package IDs.
+    /// Returns null if the user is not authenticated; returns an empty list if authenticated but no watchlist.
+    /// </summary>
+    public static async Task<List<string>?> GetAuthenticatedUserWatchlistIds(
+        HttpContext httpContext, PatchNotesDbContext db, IStytchClient stytchClient)
+    {
+        var sessionToken = httpContext.Request.Cookies["stytch_session"];
+        if (string.IsNullOrEmpty(sessionToken))
+            return null;
+
+        var session = await stytchClient.AuthenticateSessionAsync(sessionToken, httpContext.RequestAborted);
+        if (session == null)
+            return null;
+
+        var user = await db.Users.FirstOrDefaultAsync(u => u.StytchUserId == session.UserId);
+        if (user == null)
+            return null;
+
+        return await db.Watchlists
+            .Where(w => w.UserId == user.Id)
+            .Select(w => w.PackageId)
+            .ToListAsync();
+    }
+
+    /// <summary>
+    /// Resolves package IDs to filter by: user's watchlist if authenticated with a non-empty
+    /// watchlist, otherwise the default watchlist from config.
+    /// Returns (packageIds, hasWatchlistConfig) where hasWatchlistConfig indicates whether
+    /// any watchlist source was available (user watchlist or default config).
+    /// </summary>
+    public static async Task<(List<string> ids, bool hasWatchlistConfig)> ResolveWatchlistPackageIds(
+        HttpContext httpContext, PatchNotesDbContext db,
+        IStytchClient stytchClient, DefaultWatchlistOptions defaultWatchlist)
+    {
+        var userWatchlistIds = await GetAuthenticatedUserWatchlistIds(httpContext, db, stytchClient);
+        if (userWatchlistIds is { Count: > 0 })
+        {
+            return (userWatchlistIds, true);
+        }
+
+        // Fall back to default watchlist
+        if (defaultWatchlist.Packages.Length == 0)
+        {
+            return ([], false);
+        }
+
+        var ownerRepoPairs = defaultWatchlist.Packages
+            .Select(p => p.Split('/'))
+            .Where(parts => parts.Length == 2)
+            .Select(parts => parts[0] + "/" + parts[1])
+            .ToList();
+
+        var ids = await db.Packages
+            .Where(p => ownerRepoPairs.Contains(p.GithubOwner + "/" + p.GithubRepo))
+            .Select(p => p.Id)
+            .ToListAsync();
+
+        return (ids, true);
     }
 }
 
