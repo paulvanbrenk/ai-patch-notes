@@ -6,6 +6,7 @@
  */
 
 export * from './addPackageRequest';
+export * from './emailPreferencesDto';
 export * from './feedGroupDto';
 export * from './feedReleaseDto';
 export * from './feedResponseDto';
@@ -22,6 +23,7 @@ export * from './releasePackageDto';
 export * from './releaseSummaryDto';
 export * from './setWatchlistRequest';
 export * from './subscriptionStatusDto';
+export * from './updateEmailPreferencesRequest';
 export * from './updatePackageRequest';
 export * from './updateUserRequest';
 export * from './userDto';
