@@ -115,21 +115,10 @@ namespace PatchNotes.Data.Migrations.SqlServer
                     b.Property<DateTimeOffset>("PublishedAt")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<string>("Summary")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset?>("SummaryGeneratedAt")
-                        .HasColumnType("datetimeoffset");
-
                     b.Property<bool>("SummaryStale")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
                         .HasDefaultValue(true);
-
-                    b.Property<string>("SummaryVersion")
-                        .IsConcurrencyToken()
-                        .HasMaxLength(21)
-                        .HasColumnType("nvarchar(21)");
 
                     b.Property<string>("Tag")
                         .IsRequired()

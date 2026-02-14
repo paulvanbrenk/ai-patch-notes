@@ -77,10 +77,7 @@ namespace PatchNotes.Data.Migrations.Sqlite
                     MinorVersion = table.Column<int>(type: "INTEGER", nullable: false),
                     PatchVersion = table.Column<int>(type: "INTEGER", nullable: false),
                     IsPrerelease = table.Column<bool>(type: "INTEGER", nullable: false),
-                    Summary = table.Column<string>(type: "TEXT", nullable: true),
-                    SummaryGeneratedAt = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    SummaryStale = table.Column<bool>(type: "INTEGER", nullable: false, defaultValue: true),
-                    SummaryVersion = table.Column<string>(type: "TEXT", maxLength: 21, nullable: true)
+                    SummaryStale = table.Column<bool>(type: "INTEGER", nullable: false, defaultValue: true)
                 },
                 constraints: table =>
                 {

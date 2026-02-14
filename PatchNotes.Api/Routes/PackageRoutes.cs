@@ -84,8 +84,6 @@ public static class PackageRoutes
                     Tag = r.Tag,
                     Title = r.Title,
                     Body = r.Body,
-                    Summary = r.Summary,
-                    SummaryGeneratedAt = r.SummaryGeneratedAt,
                     PublishedAt = r.PublishedAt,
                     FetchedAt = r.FetchedAt,
                     Package = new PackageReleasePackageDto
@@ -317,8 +315,6 @@ public class PackageReleaseDto
     public required string Tag { get; set; }
     public string? Title { get; set; }
     public string? Body { get; set; }
-    public string? Summary { get; set; }
-    public DateTimeOffset? SummaryGeneratedAt { get; set; }
     public DateTimeOffset PublishedAt { get; set; }
     public DateTimeOffset FetchedAt { get; set; }
     public required PackageReleasePackageDto Package { get; set; }

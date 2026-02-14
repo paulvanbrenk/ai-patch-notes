@@ -5,28 +5,23 @@
  * OpenAPI spec version: 1.0.0
  */
 import {
-  useMutation,
   useQuery
 } from '@tanstack/react-query';
 import type {
   DataTag,
   DefinedInitialDataOptions,
   DefinedUseQueryResult,
-  MutationFunction,
   QueryClient,
   QueryFunction,
   QueryKey,
   UndefinedInitialDataOptions,
-  UseMutationOptions,
-  UseMutationResult,
   UseQueryOptions,
   UseQueryResult
 } from '@tanstack/react-query';
 
 import type {
   GetReleasesParams,
-  ReleaseDto,
-  SummarizeResultDto
+  ReleaseDto
 } from '.././model';
 
 import { customFetch } from '../../custom-fetch';
@@ -254,90 +249,3 @@ export function useGetReleases<TData = Awaited<ReturnType<typeof getReleases>>, 
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
-
-
-
-
-export type summarizeReleaseResponse200 = {
-  data: SummarizeResultDto
-  status: 200
-}
-
-export type summarizeReleaseResponse404 = {
-  data: void
-  status: 404
-}
-    
-export type summarizeReleaseResponseSuccess = (summarizeReleaseResponse200) & {
-  headers: Headers;
-};
-export type summarizeReleaseResponseError = (summarizeReleaseResponse404) & {
-  headers: Headers;
-};
-
-export type summarizeReleaseResponse = (summarizeReleaseResponseSuccess | summarizeReleaseResponseError)
-
-export const getSummarizeReleaseUrl = (id: string,) => {
-
-
-  
-
-  return `/api/releases/${id}/summarize`
-}
-
-export const summarizeRelease = async (id: string, options?: RequestInit): Promise<summarizeReleaseResponse> => {
-  
-  return customFetch<summarizeReleaseResponse>(getSummarizeReleaseUrl(id),
-  {      
-    ...options,
-    method: 'POST'
-    
-    
-  }
-);}
-
-
-
-
-export const getSummarizeReleaseMutationOptions = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof summarizeRelease>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof summarizeRelease>>, TError,{id: string}, TContext> => {
-
-const mutationKey = ['summarizeRelease'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-      
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof summarizeRelease>>, {id: string}> = (props) => {
-          const {id} = props ?? {};
-
-          return  summarizeRelease(id,requestOptions)
-        }
-
-
-
-        
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type SummarizeReleaseMutationResult = NonNullable<Awaited<ReturnType<typeof summarizeRelease>>>
-    
-    export type SummarizeReleaseMutationError = void
-
-    export const useSummarizeRelease = <TError = void,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof summarizeRelease>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
- , queryClient?: QueryClient): UseMutationResult<
-        Awaited<ReturnType<typeof summarizeRelease>>,
-        TError,
-        {id: string},
-        TContext
-      > => {
-      return useMutation(getSummarizeReleaseMutationOptions(options), queryClient);
-    }
-    

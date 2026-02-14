@@ -1,8 +1,6 @@
-using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using PatchNotes.Data;
-using PatchNotes.Data.AI;
 using PatchNotes.Data.Stytch;
 
 namespace PatchNotes.Api.Routes;
@@ -27,8 +25,6 @@ public static class ReleaseRoutes
                     Tag = r.Tag,
                     Title = r.Title,
                     Body = r.Body,
-                    Summary = r.Summary,
-                    SummaryGeneratedAt = r.SummaryGeneratedAt,
                     PublishedAt = r.PublishedAt,
                     FetchedAt = r.FetchedAt,
                     Package = new ReleasePackageDto
@@ -125,8 +121,6 @@ public static class ReleaseRoutes
                     Tag = r.Tag,
                     Title = r.Title,
                     Body = r.Body,
-                    Summary = r.Summary,
-                    SummaryGeneratedAt = r.SummaryGeneratedAt,
                     PublishedAt = r.PublishedAt,
                     FetchedAt = r.FetchedAt,
                     Package = new ReleasePackageDto
@@ -144,188 +138,7 @@ public static class ReleaseRoutes
         .Produces<List<ReleaseDto>>(StatusCodes.Status200OK)
         .WithName("GetReleases");
 
-        // POST /api/releases/{id}/summarize - Generate AI summary for a release
-        group.MapPost("/{id}/summarize", async (string id, HttpContext httpContext, PatchNotesDbContext db, IAiClient aiClient, ILoggerFactory loggerFactory) =>
-        {
-            var logger = loggerFactory.CreateLogger("PatchNotes.Api.Routes.ReleaseRoutes");
-
-            var release = await db.Releases
-                .Include(r => r.Package)
-                .FirstOrDefaultAsync(r => r.Id == id);
-
-            if (release == null)
-            {
-                return Results.NotFound(new { error = "Release not found" });
-            }
-
-            // Return cached summary if it exists and isn't stale
-            if (!release.NeedsSummary)
-            {
-                return Results.Ok(new SummarizeResultDto
-                {
-                    Id = release.Id,
-                    Tag = release.Tag,
-                    Title = release.Title,
-                    Summary = release.Summary,
-                    Package = new ReleasePackageSummaryDto
-                    {
-                        Id = release.Package.Id,
-                        NpmName = release.Package.NpmName
-                    }
-                });
-            }
-
-            // Gather same-week siblings for richer context
-            var releaseInputs = await BuildReleaseInputs(db, release);
-            var packageName = release.Package.NpmName ?? release.Package.Name;
-
-            var acceptHeader = httpContext.Request.Headers.Accept.ToString();
-
-            // Support Server-Sent Events for streaming
-            if (acceptHeader.Contains("text/event-stream"))
-            {
-                httpContext.Response.ContentType = "text/event-stream";
-                httpContext.Response.Headers.CacheControl = "no-cache";
-                httpContext.Response.Headers.Connection = "keep-alive";
-
-                var fullSummary = new System.Text.StringBuilder();
-                // Sequential counter for event ordering and dropped-event detection.
-                // Does NOT enable SSE resumability (no Last-Event-ID handling).
-                var eventId = 0;
-
-                try
-                {
-                    await foreach (var chunk in aiClient.SummarizeReleaseNotesStreamAsync(packageName, releaseInputs, httpContext.RequestAborted))
-                    {
-                        fullSummary.Append(chunk);
-                        var chunkData = JsonSerializer.Serialize(new { type = "chunk", content = chunk });
-                        await httpContext.Response.WriteAsync($"id: {++eventId}\ndata: {chunkData}\n\n", httpContext.RequestAborted);
-                        await httpContext.Response.Body.FlushAsync(httpContext.RequestAborted);
-                    }
-
-                    // Persist the generated summary with optimistic concurrency
-                    release.Summary = fullSummary.ToString();
-                    release.SummaryGeneratedAt = DateTimeOffset.UtcNow;
-                    release.SummaryStale = false;
-                    release.SummaryVersion = IdGenerator.NewId();
-                    try
-                    {
-                        await db.SaveChangesAsync(httpContext.RequestAborted);
-                    }
-                    catch (DbUpdateConcurrencyException)
-                    {
-                        // Another request already persisted a summary - that's fine,
-                        // the streamed chunks were already sent to the client
-                        logger.LogInformation("Concurrent summary persistence for release {ReleaseId} - another request won the race", id);
-                    }
-
-                    var completeData = JsonSerializer.Serialize(new
-                    {
-                        type = "complete",
-                        result = new
-                        {
-                            releaseId = release.Id,
-                            release.Tag,
-                            release.Title,
-                            summary = release.Summary,
-                            package = new { release.Package.Id, release.Package.NpmName }
-                        }
-                    });
-                    await httpContext.Response.WriteAsync($"id: {++eventId}\ndata: {completeData}\n\n", httpContext.RequestAborted);
-                }
-                catch (OperationCanceledException)
-                {
-                    // Client disconnected - nothing to send
-                    return Results.Empty;
-                }
-                catch (Exception ex)
-                {
-                    logger.LogError(ex, "AI summarization failed for release {ReleaseId} during streaming", id);
-                    var errorData = JsonSerializer.Serialize(new { type = "error", message = "AI summarization service is currently unavailable. Please try again later." });
-                    await httpContext.Response.WriteAsync($"id: {++eventId}\ndata: {errorData}\n\n", httpContext.RequestAborted);
-                }
-
-                await httpContext.Response.WriteAsync($"id: {++eventId}\ndata: [DONE]\n\n", httpContext.RequestAborted);
-
-                return Results.Empty;
-            }
-
-            // Non-streaming JSON response
-            string summary;
-            try
-            {
-                summary = await aiClient.SummarizeReleaseNotesAsync(packageName, releaseInputs);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "AI summarization failed for release {ReleaseId}", id);
-                return Results.Problem(
-                    detail: "AI summarization service is currently unavailable. Please try again later.",
-                    statusCode: 503);
-            }
-
-            // Persist the generated summary with optimistic concurrency
-            release.Summary = summary;
-            release.SummaryGeneratedAt = DateTimeOffset.UtcNow;
-            release.SummaryStale = false;
-            release.SummaryVersion = IdGenerator.NewId();
-            try
-            {
-                await db.SaveChangesAsync(httpContext.RequestAborted);
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                // Another request already persisted a summary — use locally-generated one.
-                // ReloadAsync() is intentionally omitted: it can throw under SQLite concurrency
-                // and release.Summary already holds a valid summary from the local generation above.
-                logger.LogInformation("Concurrent summary persistence for release {ReleaseId} - returning locally generated summary", id);
-            }
-
-            return Results.Ok(new SummarizeResultDto
-            {
-                Id = release.Id,
-                Tag = release.Tag,
-                Title = release.Title,
-                Summary = release.Summary,
-                Package = new ReleasePackageSummaryDto
-                {
-                    Id = release.Package.Id,
-                    NpmName = release.Package.NpmName
-                }
-            });
-        })
-        .AddEndpointFilterFactory(requireAuth)
-        .Produces<SummarizeResultDto>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status404NotFound)
-        .WithName("SummarizeRelease");
-
         return app;
-    }
-
-    /// <summary>
-    /// Builds a list of ReleaseInputs for the target release plus any same-week siblings
-    /// from the same package, ordered by PublishedAt descending.
-    /// </summary>
-    private static async Task<List<ReleaseInput>> BuildReleaseInputs(PatchNotesDbContext db, Release release)
-    {
-        var weekStart = release.PublishedAt.Date.AddDays(-(int)release.PublishedAt.DayOfWeek);
-        var weekEnd = weekStart.AddDays(7);
-
-        var siblings = await db.Releases
-            .Where(r => r.PackageId == release.PackageId
-                        && r.Id != release.Id
-                        && r.PublishedAt >= weekStart
-                        && r.PublishedAt < weekEnd)
-            .OrderByDescending(r => r.PublishedAt)
-            .ToListAsync();
-
-        var allReleases = new List<Release> { release };
-        allReleases.AddRange(siblings);
-
-        return allReleases
-            .OrderByDescending(r => r.PublishedAt)
-            .Select(r => new ReleaseInput(r.Tag, r.Title, r.Body, r.PublishedAt))
-            .ToList();
     }
 
     /// <summary>
@@ -404,24 +217,7 @@ public class ReleaseDto
     public required string Tag { get; set; }
     public string? Title { get; set; }
     public string? Body { get; set; }
-    public string? Summary { get; set; }
-    public DateTimeOffset? SummaryGeneratedAt { get; set; }
     public DateTimeOffset PublishedAt { get; set; }
     public DateTimeOffset FetchedAt { get; set; }
     public required ReleasePackageDto Package { get; set; }
-}
-
-public class SummarizeResultDto
-{
-    public required string Id { get; set; }
-    public required string Tag { get; set; }
-    public string? Title { get; set; }
-    public string? Summary { get; set; }
-    public required ReleasePackageSummaryDto Package { get; set; }
-}
-
-public class ReleasePackageSummaryDto
-{
-    public required string Id { get; set; }
-    public string? NpmName { get; set; }
 }

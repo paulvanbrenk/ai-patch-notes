@@ -1,6 +1,5 @@
 using System.Net.Http.Json;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -86,85 +85,6 @@ public class AiClient : IAiClient
             result.Usage?.CompletionTokens ?? 0);
 
         return summary;
-    }
-
-    public async IAsyncEnumerable<string> SummarizeReleaseNotesStreamAsync(
-        string packageName,
-        IReadOnlyList<ReleaseInput> releases,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        if (releases.Count == 0 || releases.All(r =>
-                string.IsNullOrWhiteSpace(r.Body) && string.IsNullOrWhiteSpace(r.Title)))
-        {
-            yield return "No release notes content available to summarize.";
-            yield break;
-        }
-
-        var userMessage = FormatUserMessage(packageName, releases);
-
-        var request = new ChatCompletionRequest
-        {
-            Model = _options.Model,
-            Messages =
-            [
-                new ChatMessage { Role = "system", Content = SystemPrompt },
-                new ChatMessage { Role = "user", Content = userMessage }
-            ],
-            MaxTokens = 256,
-            Temperature = 0.3,
-            Stream = true
-        };
-
-        _logger.LogDebug("Sending streaming summarization request to AI API using model {Model}", _options.Model);
-
-        var requestContent = new StringContent(
-            JsonSerializer.Serialize(request, JsonOptions),
-            Encoding.UTF8,
-            "application/json");
-
-        var httpRequest = new HttpRequestMessage(HttpMethod.Post, "chat/completions")
-        {
-            Content = requestContent
-        };
-
-        var response = await _httpClient.SendAsync(
-            httpRequest,
-            HttpCompletionOption.ResponseHeadersRead,
-            cancellationToken);
-
-        response.EnsureSuccessStatusCode();
-
-        await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
-        using var reader = new StreamReader(stream);
-
-        string? line;
-        while ((line = await reader.ReadLineAsync(cancellationToken)) != null)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            if (string.IsNullOrEmpty(line)) continue;
-
-            if (!line.StartsWith("data: ")) continue;
-
-            var data = line[6..];
-            if (data == "[DONE]") break;
-
-            ChatCompletionChunk? chunk;
-            try
-            {
-                chunk = JsonSerializer.Deserialize<ChatCompletionChunk>(data, JsonOptions);
-            }
-            catch (JsonException)
-            {
-                continue;
-            }
-
-            var deltaContent = chunk?.Choices?.FirstOrDefault()?.Delta?.Content;
-            if (!string.IsNullOrEmpty(deltaContent))
-            {
-                yield return deltaContent;
-            }
-        }
     }
 
     internal static string FormatUserMessage(string packageName, IReadOnlyList<ReleaseInput> releases)

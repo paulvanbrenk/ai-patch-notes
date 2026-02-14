@@ -13,10 +13,6 @@ export interface PackageReleaseDto {
   title?: string | null;
   /** @nullable */
   body?: string | null;
-  /** @nullable */
-  summary?: string | null;
-  /** @nullable */
-  summaryGeneratedAt?: string | null;
   publishedAt?: string;
   fetchedAt?: string;
   package: PackageReleasePackageDto;

@@ -31,31 +31,10 @@ public class Release
     public bool IsPrerelease { get; set; }
 
     /// <summary>
-    /// AI-generated summary of this release. Null if not yet generated.
-    /// </summary>
-    public string? Summary { get; set; }
-
-    /// <summary>
-    /// When the summary was generated. Null if no summary exists.
-    /// </summary>
-    public DateTimeOffset? SummaryGeneratedAt { get; set; }
-
-    /// <summary>
     /// Indicates the existing summary is stale and needs regeneration.
     /// Defaults to true so new releases are picked up for summary generation.
     /// </summary>
     public bool SummaryStale { get; set; } = true;
 
-    /// <summary>
-    /// Concurrency token for summary persistence. Updated each time the summary
-    /// is saved, preventing race conditions from concurrent summarize requests.
-    /// </summary>
-    public string? SummaryVersion { get; set; }
-
     public Package Package { get; set; } = null!;
-
-    /// <summary>
-    /// Returns true if this release needs a summary generated.
-    /// </summary>
-    public bool NeedsSummary => Summary == null || SummaryStale;
 }

@@ -77,8 +77,6 @@ export const GetPackageReleasesResponseItem = zod.object({
   "tag": zod.string(),
   "title": zod.string().nullish(),
   "body": zod.string().nullish(),
-  "summary": zod.string().nullish(),
-  "summaryGeneratedAt": zod.iso.datetime({"offset":true}).nullish(),
   "publishedAt": zod.iso.datetime({"offset":true}).optional(),
   "fetchedAt": zod.iso.datetime({"offset":true}).optional(),
   "package": zod.object({

@@ -323,39 +323,6 @@
         }
       }
     },
-    "/api/releases/{id}/summarize": {
-      "post": {
-        "tags": [
-          "Releases"
-        ],
-        "operationId": "SummarizeRelease",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SummarizeResultDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        }
-      }
-    },
     "/api/users/me": {
       "get": {
         "tags": [
@@ -826,19 +793,6 @@
               "string"
             ]
           },
-          "summary": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "summaryGeneratedAt": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "format": "date-time"
-          },
           "publishedAt": {
             "type": "string",
             "format": "date-time"
@@ -913,19 +867,6 @@
               "string"
             ]
           },
-          "summary": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "summaryGeneratedAt": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "format": "date-time"
-          },
           "publishedAt": {
             "type": "string",
             "format": "date-time"
@@ -961,23 +902,6 @@
           },
           "githubRepo": {
             "type": "string"
-          }
-        }
-      },
-      "ReleasePackageSummaryDto": {
-        "required": [
-          "id"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "npmName": {
-            "type": [
-              "null",
-              "string"
-            ]
           }
         }
       },
@@ -1058,37 +982,6 @@
               "null",
               "string"
             ]
-          }
-        }
-      },
-      "SummarizeResultDto": {
-        "required": [
-          "id",
-          "tag",
-          "package"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "tag": {
-            "type": "string"
-          },
-          "title": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "summary": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "package": {
-            "$ref": "#/components/schemas/ReleasePackageSummaryDto"
           }
         }
       },
