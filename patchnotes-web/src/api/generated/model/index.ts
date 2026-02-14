@@ -6,6 +6,9 @@
  */
 
 export * from './addPackageRequest';
+export * from './bulkAddPackageItem';
+export * from './bulkAddPackageResult';
+export * from './bulkAddPackageResultItem';
 export * from './emailPreferencesDto';
 export * from './feedGroupDto';
 export * from './feedReleaseDto';
