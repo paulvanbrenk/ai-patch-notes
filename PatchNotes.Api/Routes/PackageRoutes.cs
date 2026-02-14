@@ -392,6 +392,83 @@ public static class PackageRoutes
         .Produces(StatusCodes.Status404NotFound)
         .WithName("DeletePackage");
 
+        // POST /api/packages/bulk - Bulk add packages (admin only)
+        group.MapPost("/bulk", async (List<BulkAddPackageItem> items, PatchNotesDbContext db) =>
+        {
+            if (items.Count == 0)
+            {
+                return Results.BadRequest(new { error = "At least one package is required" });
+            }
+
+            var results = new List<BulkAddPackageResultItem>();
+
+            foreach (var item in items)
+            {
+                if (string.IsNullOrWhiteSpace(item.GithubOwner) || string.IsNullOrWhiteSpace(item.GithubRepo))
+                {
+                    results.Add(new BulkAddPackageResultItem
+                    {
+                        Success = false,
+                        Error = "githubOwner and githubRepo are required",
+                        GithubOwner = item.GithubOwner,
+                        GithubRepo = item.GithubRepo,
+                    });
+                    continue;
+                }
+
+                var existing = await db.Packages.FirstOrDefaultAsync(
+                    p => p.GithubOwner == item.GithubOwner && p.GithubRepo == item.GithubRepo);
+                if (existing != null)
+                {
+                    results.Add(new BulkAddPackageResultItem
+                    {
+                        Success = false,
+                        Error = "Package already exists",
+                        GithubOwner = item.GithubOwner,
+                        GithubRepo = item.GithubRepo,
+                    });
+                    continue;
+                }
+
+                var name = item.Name ?? $"{item.GithubOwner}/{item.GithubRepo}";
+                var package = new Package
+                {
+                    Name = name,
+                    Url = $"https://github.com/{item.GithubOwner}/{item.GithubRepo}",
+                    NpmName = item.NpmName,
+                    GithubOwner = item.GithubOwner,
+                    GithubRepo = item.GithubRepo,
+                    TagPrefix = item.TagPrefix,
+                };
+
+                db.Packages.Add(package);
+                await db.SaveChangesAsync();
+
+                results.Add(new BulkAddPackageResultItem
+                {
+                    Success = true,
+                    Package = new PackageDto
+                    {
+                        Id = package.Id,
+                        Name = package.Name,
+                        Url = package.Url,
+                        NpmName = package.NpmName,
+                        GithubOwner = package.GithubOwner,
+                        GithubRepo = package.GithubRepo,
+                        TagPrefix = package.TagPrefix,
+                        CreatedAt = package.CreatedAt,
+                    },
+                });
+            }
+
+            return Results.Ok(new BulkAddPackageResult { Results = results });
+        })
+        .AddEndpointFilterFactory(requireAuth)
+        .AddEndpointFilterFactory(requireAdmin)
+        .Produces<BulkAddPackageResult>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .WithName("BulkCreatePackages");
+
         return app;
     }
 }
@@ -479,4 +556,25 @@ public class PackageDetailReleaseDto
     public string? Title { get; set; }
     public string? Body { get; set; }
     public DateTimeOffset PublishedAt { get; set; }
+}
+
+public record BulkAddPackageItem(
+    string GithubOwner,
+    string GithubRepo,
+    string? Name = null,
+    string? NpmName = null,
+    string? TagPrefix = null);
+
+public class BulkAddPackageResult
+{
+    public required List<BulkAddPackageResultItem> Results { get; set; }
+}
+
+public class BulkAddPackageResultItem
+{
+    public bool Success { get; set; }
+    public PackageDto? Package { get; set; }
+    public string? Error { get; set; }
+    public string? GithubOwner { get; set; }
+    public string? GithubRepo { get; set; }
 }
