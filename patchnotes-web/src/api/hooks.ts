@@ -12,6 +12,7 @@ import {
   createPackage,
   deletePackage,
   updatePackage,
+  bulkCreatePackages,
 } from './generated/packages/packages'
 import { useGetRelease, useGetReleases } from './generated/releases/releases'
 import {
@@ -135,15 +136,37 @@ export function useUpdatePackage() {
       id,
       githubOwner,
       githubRepo,
+      tagPrefix,
     }: {
       id: string
       githubOwner?: string
       githubRepo?: string
+      tagPrefix?: string
     }) =>
       updatePackage(id, {
         githubOwner: githubOwner ?? null,
         githubRepo: githubRepo ?? null,
+        tagPrefix: tagPrefix !== undefined ? tagPrefix : undefined,
       }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: getGetPackagesQueryKey() })
+    },
+  })
+}
+
+export function useBulkAddPackages() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (
+      items: {
+        githubOwner: string
+        githubRepo: string
+        name?: string
+        npmName?: string
+        tagPrefix?: string
+      }[]
+    ) => bulkCreatePackages(items),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: getGetPackagesQueryKey() })
     },
