@@ -105,7 +105,7 @@ function formatRelativeTime(dateString: string): string {
   if (diffDays === 1) return 'Yesterday'
   if (diffDays < 7) return `${diffDays}d ago`
   if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`
-  return `${Math.floor(diffDays / 30)}mo ago`
+  return formatDate(dateString)
 }
 
 function formatDate(dateString: string | undefined): string {
