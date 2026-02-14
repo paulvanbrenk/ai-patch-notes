@@ -20,7 +20,9 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ReleasesReleaseIdRouteImport } from './routes/releases.$releaseId'
-import { Route as PackagesPackageIdRouteImport } from './routes/packages.$packageId'
+import { Route as PackagesOwnerRouteImport } from './routes/packages.$owner'
+import { Route as PackagesOwnerIndexRouteImport } from './routes/packages.$owner.index'
+import { Route as PackagesOwnerRepoRouteImport } from './routes/packages.$owner.$repo'
 
 const SubscriptionSuccessRoute = SubscriptionSuccessRouteImport.update({
   id: '/subscription-success',
@@ -77,10 +79,20 @@ const ReleasesReleaseIdRoute = ReleasesReleaseIdRouteImport.update({
   path: '/releases/$releaseId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PackagesPackageIdRoute = PackagesPackageIdRouteImport.update({
-  id: '/packages/$packageId',
-  path: '/packages/$packageId',
+const PackagesOwnerRoute = PackagesOwnerRouteImport.update({
+  id: '/packages/$owner',
+  path: '/packages/$owner',
   getParentRoute: () => rootRouteImport,
+} as any)
+const PackagesOwnerIndexRoute = PackagesOwnerIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PackagesOwnerRoute,
+} as any)
+const PackagesOwnerRepoRoute = PackagesOwnerRepoRouteImport.update({
+  id: '/$repo',
+  path: '/$repo',
+  getParentRoute: () => PackagesOwnerRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -94,8 +106,10 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/subscription-canceled': typeof SubscriptionCanceledRoute
   '/subscription-success': typeof SubscriptionSuccessRoute
-  '/packages/$packageId': typeof PackagesPackageIdRoute
+  '/packages/$owner': typeof PackagesOwnerRouteWithChildren
   '/releases/$releaseId': typeof ReleasesReleaseIdRoute
+  '/packages/$owner/$repo': typeof PackagesOwnerRepoRoute
+  '/packages/$owner/': typeof PackagesOwnerIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -108,8 +122,9 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/subscription-canceled': typeof SubscriptionCanceledRoute
   '/subscription-success': typeof SubscriptionSuccessRoute
-  '/packages/$packageId': typeof PackagesPackageIdRoute
   '/releases/$releaseId': typeof ReleasesReleaseIdRoute
+  '/packages/$owner/$repo': typeof PackagesOwnerRepoRoute
+  '/packages/$owner': typeof PackagesOwnerIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -123,8 +138,10 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/subscription-canceled': typeof SubscriptionCanceledRoute
   '/subscription-success': typeof SubscriptionSuccessRoute
-  '/packages/$packageId': typeof PackagesPackageIdRoute
+  '/packages/$owner': typeof PackagesOwnerRouteWithChildren
   '/releases/$releaseId': typeof ReleasesReleaseIdRoute
+  '/packages/$owner/$repo': typeof PackagesOwnerRepoRoute
+  '/packages/$owner/': typeof PackagesOwnerIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -139,8 +156,10 @@ export interface FileRouteTypes {
     | '/settings'
     | '/subscription-canceled'
     | '/subscription-success'
-    | '/packages/$packageId'
+    | '/packages/$owner'
     | '/releases/$releaseId'
+    | '/packages/$owner/$repo'
+    | '/packages/$owner/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -153,8 +172,9 @@ export interface FileRouteTypes {
     | '/settings'
     | '/subscription-canceled'
     | '/subscription-success'
-    | '/packages/$packageId'
     | '/releases/$releaseId'
+    | '/packages/$owner/$repo'
+    | '/packages/$owner'
   id:
     | '__root__'
     | '/'
@@ -167,8 +187,10 @@ export interface FileRouteTypes {
     | '/settings'
     | '/subscription-canceled'
     | '/subscription-success'
-    | '/packages/$packageId'
+    | '/packages/$owner'
     | '/releases/$releaseId'
+    | '/packages/$owner/$repo'
+    | '/packages/$owner/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -182,7 +204,7 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   SubscriptionCanceledRoute: typeof SubscriptionCanceledRoute
   SubscriptionSuccessRoute: typeof SubscriptionSuccessRoute
-  PackagesPackageIdRoute: typeof PackagesPackageIdRoute
+  PackagesOwnerRoute: typeof PackagesOwnerRouteWithChildren
   ReleasesReleaseIdRoute: typeof ReleasesReleaseIdRoute
 }
 
@@ -265,15 +287,43 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReleasesReleaseIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/packages/$packageId': {
-      id: '/packages/$packageId'
-      path: '/packages/$packageId'
-      fullPath: '/packages/$packageId'
-      preLoaderRoute: typeof PackagesPackageIdRouteImport
+    '/packages/$owner': {
+      id: '/packages/$owner'
+      path: '/packages/$owner'
+      fullPath: '/packages/$owner'
+      preLoaderRoute: typeof PackagesOwnerRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/packages/$owner/': {
+      id: '/packages/$owner/'
+      path: '/'
+      fullPath: '/packages/$owner/'
+      preLoaderRoute: typeof PackagesOwnerIndexRouteImport
+      parentRoute: typeof PackagesOwnerRoute
+    }
+    '/packages/$owner/$repo': {
+      id: '/packages/$owner/$repo'
+      path: '/$repo'
+      fullPath: '/packages/$owner/$repo'
+      preLoaderRoute: typeof PackagesOwnerRepoRouteImport
+      parentRoute: typeof PackagesOwnerRoute
     }
   }
 }
+
+interface PackagesOwnerRouteChildren {
+  PackagesOwnerRepoRoute: typeof PackagesOwnerRepoRoute
+  PackagesOwnerIndexRoute: typeof PackagesOwnerIndexRoute
+}
+
+const PackagesOwnerRouteChildren: PackagesOwnerRouteChildren = {
+  PackagesOwnerRepoRoute: PackagesOwnerRepoRoute,
+  PackagesOwnerIndexRoute: PackagesOwnerIndexRoute,
+}
+
+const PackagesOwnerRouteWithChildren = PackagesOwnerRoute._addFileChildren(
+  PackagesOwnerRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -286,7 +336,7 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   SubscriptionCanceledRoute: SubscriptionCanceledRoute,
   SubscriptionSuccessRoute: SubscriptionSuccessRoute,
-  PackagesPackageIdRoute: PackagesPackageIdRoute,
+  PackagesOwnerRoute: PackagesOwnerRouteWithChildren,
   ReleasesReleaseIdRoute: ReleasesReleaseIdRoute,
 }
 export const routeTree = rootRouteImport

@@ -8,6 +8,8 @@ import {
   useGetPackages,
   useGetPackage,
   useGetPackageReleases,
+  useGetPackagesByOwner,
+  useGetPackageByOwnerRepo,
   getGetPackagesQueryKey,
   createPackage,
   deletePackage,
@@ -25,6 +27,8 @@ import {
   GetPackagesResponse,
   GetPackageResponse,
   GetPackageReleasesResponse,
+  GetPackagesByOwnerResponse,
+  GetPackageByOwnerRepoResponse,
 } from './generated/packages/packages.zod'
 import {
   GetReleaseResponse,
@@ -100,6 +104,24 @@ export function usePackageReleases(packageId: string) {
   return useGetPackageReleases(packageId, {
     query: {
       select: (res) => safeParse(GetPackageReleasesResponse, res.data),
+    },
+  })
+}
+
+// ── Owner/Repo Query Hooks ──────────────────────────────────
+
+export function usePackagesByOwner(owner: string) {
+  return useGetPackagesByOwner(owner, {
+    query: {
+      select: (res) => safeParse(GetPackagesByOwnerResponse, res.data),
+    },
+  })
+}
+
+export function usePackageByOwnerRepo(owner: string, repo: string) {
+  return useGetPackageByOwnerRepo(owner, repo, {
+    query: {
+      select: (res) => safeParse(GetPackageByOwnerRepoResponse, res.data),
     },
   })
 }

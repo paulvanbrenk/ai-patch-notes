@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
+import { Link } from '@tanstack/react-router'
 import { useStytchUser } from '@stytch/react'
 import Markdown from 'react-markdown'
 import {
@@ -230,9 +231,13 @@ function SummaryCard({
             <PackageIcon name={group.displayName} />
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-text-primary">
+                <Link
+                  to="/packages/$owner"
+                  params={{ owner: group.githubOwner }}
+                  className="font-semibold text-text-primary hover:text-brand-600 transition-colors"
+                >
                   {group.displayName}
-                </h3>
+                </Link>
                 <span className="text-sm font-mono text-text-secondary">
                   {group.versionRange}
                 </span>
@@ -353,12 +358,13 @@ function SummaryCard({
             ))}
           </div>
           <div className="px-5 py-3 bg-surface-tertiary/30">
-            <a
-              href="#"
+            <Link
+              to="/packages/$owner/$repo"
+              params={{ owner: group.githubOwner, repo: group.githubRepo }}
               className="text-sm text-brand-600 hover:text-brand-700 font-medium"
             >
               View all {group.releaseCount} releases →
-            </a>
+            </Link>
           </div>
         </div>
       )}
