@@ -37,7 +37,7 @@ import type { FeedGroupDto } from '../api/hooks'
 // Types
 // ============================================================================
 
-type PrereleaseType = 'canary' | 'beta' | 'alpha' | 'rc' | 'next'
+type PrereleaseType = 'canary' | 'beta' | 'alpha' | 'rc' | 'next' | 'preview'
 
 interface VersionGroup extends FeedGroupDto {
   id: string
@@ -57,6 +57,7 @@ function detectPrereleaseType(
   for (const r of releases) {
     const lower = r.tag.toLowerCase()
     if (lower.includes('canary')) return 'canary'
+    if (lower.includes('preview')) return 'preview'
     if (lower.includes('alpha')) return 'alpha'
     if (lower.includes('beta')) return 'beta'
     if (lower.includes('next')) return 'next'
@@ -194,6 +195,8 @@ function PrereleaseTag({ type }: { type?: string }) {
       'bg-purple-50 text-purple-800 ring-1 ring-inset ring-purple-600/20 dark:bg-purple-900/30 dark:text-purple-300 dark:ring-purple-500/30',
     rc: 'bg-emerald-50 text-emerald-800 ring-1 ring-inset ring-emerald-600/20 dark:bg-emerald-900/30 dark:text-emerald-300 dark:ring-emerald-500/30',
     next: 'bg-pink-50 text-pink-800 ring-1 ring-inset ring-pink-600/20 dark:bg-pink-900/30 dark:text-pink-300 dark:ring-pink-500/30',
+    preview:
+      'bg-amber-50 text-amber-800 ring-1 ring-inset ring-amber-600/20 dark:bg-amber-900/30 dark:text-amber-300 dark:ring-amber-500/30',
   }
 
   return (
