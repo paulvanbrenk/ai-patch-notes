@@ -4,7 +4,7 @@ ASP.NET Core Web API for the PatchNotes application.
 
 ## Overview
 
-This project provides the REST API for managing packages, releases, notifications, and user authentication via Stytch.
+This project provides the REST API for managing packages, releases, summaries, feed, watchlists, subscriptions, and user authentication via Stytch.
 
 ## Running
 
@@ -22,27 +22,32 @@ The API runs on `http://localhost:5031` by default.
 |--------|----------|-------------|------|
 | GET | `/api/packages` | List all tracked packages | No |
 | GET | `/api/packages/{id}` | Get package details | No |
+| GET | `/api/packages/{id}/releases` | Get releases for a package | No |
+| GET | `/api/packages/{owner}` | Get packages by GitHub owner | No |
+| GET | `/api/packages/{owner}/{repo}` | Get package by owner/repo | No |
 | POST | `/api/packages` | Add a new package | Yes |
 | PATCH | `/api/packages/{id}` | Update package GitHub mapping | Yes |
 | DELETE | `/api/packages/{id}` | Remove a package | Yes |
-| GET | `/api/packages/{id}/releases` | Get releases for a package | No |
 
 ### Releases
 
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
-| GET | `/api/releases` | Query releases (supports `packages` and `days` params) | No |
+| GET | `/api/releases` | Query releases (supports `packages`, `days`, `excludePrerelease`, `majorVersion` params) | No |
 | GET | `/api/releases/{id}` | Get release details | No |
-| POST | `/api/releases/{id}/summarize` | Generate AI summary (supports SSE streaming) | Yes |
 
-### Notifications
+### Summaries
 
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
-| GET | `/api/notifications` | Query notifications | Yes |
-| GET | `/api/notifications/unread-count` | Get unread count | Yes |
-| PATCH | `/api/notifications/{id}/read` | Mark as read | Yes |
-| DELETE | `/api/notifications/{id}` | Delete notification | Yes |
+| GET | `/api/packages/{id}/summaries` | Get summaries for a package | No |
+| GET | `/api/summaries` | Get all summaries (supports `includePrerelease`, `majorVersion` params) | No |
+
+### Feed
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/api/feed` | Combined feed with server-side grouping (supports `excludePrerelease`) | No |
 
 ### Users
 
@@ -50,12 +55,9 @@ The API runs on `http://localhost:5031` by default.
 |--------|----------|-------------|------|
 | GET | `/api/users/me` | Get current authenticated user | Yes |
 | POST | `/api/users/login` | Create/update user on login | Yes |
-
-### Webhooks
-
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| POST | `/webhooks/stytch` | Handle Stytch webhook events (Svix signature verified) | No |
+| PUT | `/api/users/me` | Update user profile | Yes |
+| GET | `/api/users/me/email-preferences` | Get email preferences | Yes |
+| PATCH | `/api/users/me/email-preferences` | Update email preferences | Yes |
 
 ### Watchlist
 
@@ -74,17 +76,60 @@ The API runs on `http://localhost:5031` by default.
 | POST | `/api/subscription/portal` | Create Stripe Customer Portal session | Yes |
 | GET | `/api/subscription/status` | Get current subscription status | Yes |
 
+### Webhooks
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| POST | `/webhooks/stytch` | Handle Stytch webhook events (Svix signature verified) | No |
+| POST | `/webhooks/stripe` | Handle Stripe webhook events | No |
+
+### Status
+
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/` | Status page | No |
+
 ## Configuration
 
 Configuration is loaded from `appsettings.json` and environment variables:
 
-- `AI:ApiKey` - API key for AI summarization (Groq)
-- `AI:BaseUrl` - Optional custom AI API base URL
-- `AI:Model` - Optional model override
+- `AI:BaseUrl` - AI provider base URL (default: `https://ollama.com/v1/`)
+- `AI:ApiKey` - AI provider API key
+- `AI:Model` - AI model name (default: `gemma3:27b`)
 - `Stytch:ProjectId` - Stytch project ID
 - `Stytch:Secret` - Stytch secret
 - `Stytch:WebhookSecret` - Secret for webhook signature verification
+- `Stripe:SecretKey` - Stripe secret key
+- `Stripe:WebhookSecret` - Stripe webhook secret
+- `Stripe:PriceId` - Stripe price ID for Pro subscription
+
+## Directory Structure
+
+```
+PatchNotes.Api/
+├── Routes/
+│   ├── PackageRoutes.cs      # Package CRUD + owner/repo endpoints
+│   ├── ReleaseRoutes.cs      # Release queries
+│   ├── SummaryRoutes.cs      # AI summary endpoints
+│   ├── FeedRoutes.cs         # Combined feed endpoint
+│   ├── UserRoutes.cs         # User profile + email preferences
+│   ├── WatchlistRoutes.cs    # Watchlist management
+│   ├── SubscriptionRoutes.cs # Stripe subscription endpoints
+│   ├── StatusPageRoutes.cs   # Status page
+│   └── RouteUtils.cs         # Shared utilities (auth, URL parsing)
+├── Stytch/
+│   ├── StytchClient.cs       # Stytch API client
+│   └── IStytchClient.cs      # Client interface
+├── Webhooks/
+│   ├── StytchWebhook.cs      # Stytch webhook handler
+│   └── StripeWebhook.cs      # Stripe webhook handler
+├── Program.cs                # Application entry point
+└── appsettings.json          # Configuration
+```
 
 ## Dependencies
 
-- **PatchNotes.Data** - Data layer and external clients
+- **PatchNotes.Data** - Data layer and entity models
+- **Stripe.net** - Stripe payments
+- **Stytch.net** - User authentication
+- **Svix** - Webhook signature verification

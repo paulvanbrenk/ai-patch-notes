@@ -8,9 +8,10 @@ A GitHub release viewer for npm packages. Track release notes across your favori
 
 | Environment | URL | Status |
 |-------------|-----|--------|
-| Frontend | https://app.mypkgupdate.com | Live |
-| API | https://api-mypkgupdate-com.azurewebsites.net | Live |
+| Frontend | https://myreleasenotes.ai | Live |
+| API | https://api.myreleasenotes.ai | Live |
 | Sync Function | fn-patchnotes-sync (Azure Functions) | Timer (every 6h) |
+| Email Functions | patchnotes-email (Azure Functions) | HTTP + Timer triggers |
 
 ## Project Status
 
@@ -21,7 +22,7 @@ A GitHub release viewer for npm packages. Track release notes across your favori
 | Architecture | ✅ .NET API + React SPA + Azure Functions |
 | Code Quality | ✅ Good |
 | CI/CD | ✅ GitHub Actions (build, test, deploy API + Function + frontend) |
-| Testing | ✅ 334 xUnit tests + 129 Vitest tests |
+| Testing | ✅ 368 xUnit tests + 118 Vitest tests |
 | Authentication | ✅ Stytch B2C |
 | Sync | ✅ Concurrent pipeline (Channel-based producer-consumer) |
 
@@ -29,23 +30,29 @@ A GitHub release viewer for npm packages. Track release notes across your favori
 
 - **Package Tracking** - Add npm packages to monitor their GitHub releases
 - **Release Timeline** - Mobile-first timeline view grouped by date
+- **Feed** - Combined feed with server-side grouping, filtering stable/pre-release
 - **Package Picker** - Filter releases by selected packages
 - **Sync Engine** - Fetch releases from GitHub with rate limit awareness
-- **AI Summaries** - Generate concise release note summaries using Groq LLM
+- **AI Summaries** - Generate concise release note summaries using Ollama Cloud (gemma3:27b)
+- **Watchlist** - Per-user package watchlists with default packages on signup
+- **Subscriptions** - Stripe-powered Pro subscriptions
+- **Email Notifications** - Welcome, release, and weekly digest emails via Resend
 - **Design System** - Consistent visual language across components
 
 ## Architecture
 
-- **PatchNotes.Data** - EF Core models, SQLite/SQL Server, GitHub API client, AI client
-- **PatchNotes.Api** - ASP.NET Core Web API (port 5031)
-- **PatchNotes.Sync** - CLI tool + SyncPipeline for concurrent sync & summary generation
+- **PatchNotes.Data** - EF Core models, SQLite/SQL Server, database seeding, version parsing
+- **PatchNotes.Api** - ASP.NET Core Web API (port 5031), Stytch authentication
+- **PatchNotes.Sync** - CLI tool + SyncPipeline for concurrent sync & summary generation, GitHub client, AI client
 - **PatchNotes.Functions** - Azure Functions timer trigger that runs the SyncPipeline every 6 hours
-- **patchnotes-web** - React frontend with TanStack Router & Query
+- **patchnotes-web** - React frontend with TanStack Router & Query, Orval-generated API client
+- **patchnotes-email** - Azure Functions (TypeScript) for email delivery via Resend
 
 ## Prerequisites
 
 - .NET 10 SDK
 - Node.js 22+
+- pnpm 10+
 - [direnv](https://direnv.net/) (recommended for secrets management)
 
 ## Configuration
@@ -59,14 +66,11 @@ APIKEY=your-api-key
 # Required for GitHub API (increases rate limit)
 GITHUB__TOKEN=your-github-token
 
-# Required for AI summaries
-GROQ__APIKEY=your-groq-api-key
-
-# Optional: customize the LLM model (default: llama-3.3-70b-versatile)
-# GROQ__MODEL=llama-3.3-70b-versatile
+# Required for AI summaries (Ollama Cloud)
+AI__APIKEY=your-ollama-api-key
+AI__BASEURL=https://ollama.com/v1/
+AI__MODEL=gemma3:27b
 ```
-
-Get a Groq API key at https://console.groq.com/keys
 
 ## Authentication
 
@@ -122,8 +126,8 @@ API available at: http://localhost:5031
 
 ```bash
 cd patchnotes-web
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 Frontend available at: http://localhost:5173
@@ -142,15 +146,20 @@ curl http://localhost:5031/api/releases
 # Get releases for specific packages
 curl "http://localhost:5031/api/releases?packages=react,vue&days=30"
 
+# Get combined feed
+curl http://localhost:5031/api/feed
+
+# Get packages by owner
+curl http://localhost:5031/api/packages/facebook
+
+# Get package by owner/repo
+curl http://localhost:5031/api/packages/facebook/react
+
 # Add a package
 curl -X POST http://localhost:5031/api/packages \
   -H "Content-Type: application/json" \
   -H "X-API-Key: your-api-key" \
   -d '{"npmName": "lodash"}'
-
-# Get AI summary of a release (requires auth)
-curl -X POST http://localhost:5031/api/releases/1/summarize \
-  -H "Cookie: stytch_session=your-session-token"
 ```
 
 ### Sync CLI
@@ -180,24 +189,28 @@ The default sync uses a **producer-consumer pipeline** (`SyncPipeline`) — as s
 
 ```
 PatchNotes/
-├── PatchNotes.Api/           # Web API
+├── PatchNotes.Api/           # Web API + Stytch auth
+│   ├── Routes/               # Minimal API route handlers
+│   ├── Stytch/               # Stytch authentication client
+│   └── Webhooks/             # Stytch + Stripe webhook handlers
 ├── PatchNotes.Data/          # Data layer
-│   ├── Migrations/           # EF Core migrations
-│   ├── GitHub/               # GitHub API client
-│   ├── AI/                   # AI client (OpenAI-compatible)
+│   ├── Migrations/           # EF Core migrations (Sqlite + SqlServer)
 │   └── SeedData/             # Package catalog (packages.json)
 ├── PatchNotes.Sync/          # Sync CLI + SyncPipeline
+│   ├── GitHub/               # GitHub API client
+│   └── AI/                   # AI client (OpenAI-compatible)
 ├── PatchNotes.Functions/     # Azure Functions (timer-triggered sync)
 ├── PatchNotes.Tests/         # xUnit tests
-└── patchnotes-web/           # React frontend
+├── patchnotes-web/           # React frontend
+│   └── src/
+│       ├── api/              # Orval-generated + custom hooks
+│       ├── components/       # UI components
+│       ├── pages/            # Route pages
+│       └── routes/           # TanStack Router config
+└── patchnotes-email/         # Azure Functions (email via Resend)
     └── src/
-        ├── components/
-        │   ├── package-picker/   # Package selection UI
-        │   ├── releases/         # Release timeline components
-        │   └── ui/               # Shared UI components
-        ├── pages/                # Route pages
-        ├── api/                  # TanStack Query hooks
-        └── routes/               # TanStack Router config
+        ├── functions/        # sendWelcome, sendRelease, sendDigest
+        └── lib/              # Resend client
 ```
 
 ## Tech Stack
@@ -207,13 +220,24 @@ PatchNotes/
 - Entity Framework Core (SQLite dev / SQL Server prod)
 - Azure Functions (isolated worker, timer trigger)
 - GitHub API integration
-- AI summaries (OpenAI-compatible API)
+- AI summaries via Ollama Cloud (gemma3:27b, OpenAI-compatible API)
+- Stytch B2C authentication
+- Stripe subscriptions
 
 **Frontend:**
-- React 18 + TypeScript
-- TanStack Router (type-safe routing)
+- React 19 + TypeScript
+- TanStack Router (type-safe file-based routing)
 - TanStack Query (data fetching)
-- Vite (build tool)
+- Tailwind CSS 4
+- Vite 7
+- Orval (OpenAPI client generation)
+
+**Email:**
+- Azure Functions (TypeScript)
+- Resend (email delivery)
+
+**Workspace:**
+- pnpm 10 workspace monorepo (`patchnotes-web`, `patchnotes-email`)
 
 ## Development
 
@@ -249,15 +273,15 @@ dotnet test PatchNotes.slnx
 **Frontend:**
 ```bash
 cd patchnotes-web
-npm test
+pnpm test
 ```
 
 ### Code Quality
 
 The project uses GitHub Actions for CI. All PRs must pass:
 - `dotnet build` and `dotnet test`
-- `npm run lint` and `npm run format:check`
-- `npm run build` (includes TypeScript type checking)
+- `pnpm lint` and `pnpm format:check`
+- `pnpm build` (includes TypeScript type checking)
 
 ## Contributing
 
