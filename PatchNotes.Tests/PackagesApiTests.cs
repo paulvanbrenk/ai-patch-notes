@@ -12,6 +12,7 @@ public class PackagesApiTests : IAsyncLifetime
     private PatchNotesApiFixture _fixture = null!;
     private HttpClient _client = null!;
     private HttpClient _authClient = null!;
+    private HttpClient _nonAdminClient = null!;
 
     public async Task InitializeAsync()
     {
@@ -19,12 +20,14 @@ public class PackagesApiTests : IAsyncLifetime
         await _fixture.InitializeAsync();
         _client = _fixture.CreateClient();
         _authClient = _fixture.CreateAuthenticatedClient();
+        _nonAdminClient = _fixture.CreateNonAdminClient();
     }
 
     public async Task DisposeAsync()
     {
         _client.Dispose();
         _authClient.Dispose();
+        _nonAdminClient.Dispose();
         await _fixture.DisposeAsync();
         _fixture.Dispose();
     }
@@ -295,6 +298,52 @@ public class PackagesApiTests : IAsyncLifetime
         p.TryGetProperty("lastUpdated", out _).Should().BeTrue();
     }
 
+    [Fact]
+    public async Task PostPackage_ReturnsForbidden_WhenNonAdmin()
+    {
+        _fixture.NpmHandler.SetupPackage("forbidden-pkg", "owner", "repo");
+
+        var response = await _nonAdminClient.PostAsJsonAsync("/api/packages", new { npmName = "forbidden-pkg" });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    #endregion
+
+    #region PATCH /api/packages/{id}
+
+    [Fact]
+    public async Task PatchPackage_ReturnsForbidden_WhenNonAdmin()
+    {
+        using var scope = _fixture.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
+        var pkg = new Package { Name = "test", Url = "https://github.com/o/r", NpmName = "test", GithubOwner = "o", GithubRepo = "r" };
+        db.Packages.Add(pkg);
+        await db.SaveChangesAsync();
+
+        var response = await _nonAdminClient.PatchAsJsonAsync($"/api/packages/{pkg.Id}", new { githubOwner = "new-owner" });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    #endregion
+
+    #region DELETE /api/packages/{id}
+
+    [Fact]
+    public async Task DeletePackage_ReturnsForbidden_WhenNonAdmin()
+    {
+        using var scope = _fixture.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
+        var pkg = new Package { Name = "nodelete", Url = "https://github.com/o/r", NpmName = "nodelete", GithubOwner = "o", GithubRepo = "r" };
+        db.Packages.Add(pkg);
+        await db.SaveChangesAsync();
+
+        var response = await _nonAdminClient.DeleteAsync($"/api/packages/{pkg.Id}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
     #endregion
 
     #region GET /api/packages/{owner}/{repo}
@@ -399,6 +448,122 @@ public class PackagesApiTests : IAsyncLifetime
         var result = await response.Content.ReadFromJsonAsync<JsonElement>();
         var group = result.GetProperty("groups")[0];
         group.GetProperty("summary").ValueKind.Should().Be(JsonValueKind.Null);
+    }
+
+    #endregion
+
+    #region POST /api/packages/bulk
+
+    [Fact]
+    public async Task BulkCreatePackages_RequiresAuthentication()
+    {
+        var response = await _client.PostAsJsonAsync("/api/packages/bulk", new[]
+        {
+            new { githubOwner = "facebook", githubRepo = "react" }
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task BulkCreatePackages_ReturnsForbidden_WhenNonAdmin()
+    {
+        var response = await _nonAdminClient.PostAsJsonAsync("/api/packages/bulk", new[]
+        {
+            new { githubOwner = "facebook", githubRepo = "react" }
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task BulkCreatePackages_ReturnsBadRequest_WhenEmptyArray()
+    {
+        var response = await _authClient.PostAsJsonAsync("/api/packages/bulk", Array.Empty<object>());
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var error = await response.Content.ReadFromJsonAsync<JsonElement>();
+        error.GetProperty("error").GetString().Should().Be("At least one package is required");
+    }
+
+    [Fact]
+    public async Task BulkCreatePackages_CreatesMultiplePackages()
+    {
+        var response = await _authClient.PostAsJsonAsync("/api/packages/bulk", new[]
+        {
+            new { githubOwner = "facebook", githubRepo = "react", name = "React", npmName = "react" },
+            new { githubOwner = "vuejs", githubRepo = "core", name = "Vue", npmName = "vue" },
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await response.Content.ReadFromJsonAsync<JsonElement>();
+        var results = result.GetProperty("results");
+        results.GetArrayLength().Should().Be(2);
+        results[0].GetProperty("success").GetBoolean().Should().BeTrue();
+        results[0].GetProperty("package").GetProperty("githubOwner").GetString().Should().Be("facebook");
+        results[1].GetProperty("success").GetBoolean().Should().BeTrue();
+        results[1].GetProperty("package").GetProperty("githubOwner").GetString().Should().Be("vuejs");
+    }
+
+    [Fact]
+    public async Task BulkCreatePackages_DefaultsNameToOwnerRepo()
+    {
+        var response = await _authClient.PostAsJsonAsync("/api/packages/bulk", new[]
+        {
+            new { githubOwner = "owner1", githubRepo = "repo1" },
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await response.Content.ReadFromJsonAsync<JsonElement>();
+        var pkg = result.GetProperty("results")[0].GetProperty("package");
+        pkg.GetProperty("name").GetString().Should().Be("owner1/repo1");
+    }
+
+    [Fact]
+    public async Task BulkCreatePackages_HandlesExistingPackages()
+    {
+        // Arrange - seed an existing package
+        using var scope = _fixture.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
+        db.Packages.Add(new Package { Name = "existing", Url = "https://github.com/exists/pkg", NpmName = "existing", GithubOwner = "exists", GithubRepo = "pkg" });
+        await db.SaveChangesAsync();
+
+        // Act
+        var response = await _authClient.PostAsJsonAsync("/api/packages/bulk", new[]
+        {
+            new { githubOwner = "exists", githubRepo = "pkg" },
+            new { githubOwner = "newowner", githubRepo = "newrepo" },
+        });
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await response.Content.ReadFromJsonAsync<JsonElement>();
+        var results = result.GetProperty("results");
+        results.GetArrayLength().Should().Be(2);
+
+        results[0].GetProperty("success").GetBoolean().Should().BeFalse();
+        results[0].GetProperty("error").GetString().Should().Be("Package already exists");
+
+        results[1].GetProperty("success").GetBoolean().Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task BulkCreatePackages_HandlesInvalidEntries()
+    {
+        var response = await _authClient.PostAsJsonAsync("/api/packages/bulk", new[]
+        {
+            new { githubOwner = "", githubRepo = "repo" },
+            new { githubOwner = "valid", githubRepo = "repo" },
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await response.Content.ReadFromJsonAsync<JsonElement>();
+        var results = result.GetProperty("results");
+
+        results[0].GetProperty("success").GetBoolean().Should().BeFalse();
+        results[0].GetProperty("error").GetString().Should().Be("githubOwner and githubRepo are required");
+
+        results[1].GetProperty("success").GetBoolean().Should().BeTrue();
     }
 
     #endregion

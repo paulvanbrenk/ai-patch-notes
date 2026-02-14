@@ -16,6 +16,8 @@ public class PatchNotesApiFixture : WebApplicationFactory<Program>, IAsyncLifeti
 {
     public const string TestSessionToken = "test-session-token-12345";
     public const string TestUserId = "test-user-id";
+    public const string NonAdminSessionToken = "non-admin-session-token";
+    public const string NonAdminUserId = "non-admin-user-id";
 
     private readonly MockNpmHandler _npmHandler = new();
     private readonly string _dbName = $"test_{Guid.NewGuid():N}";
@@ -72,7 +74,9 @@ public class PatchNotesApiFixture : WebApplicationFactory<Program>, IAsyncLifeti
 
             // Remove existing Stytch client and add mock
             services.RemoveAll<IStytchClient>();
-            services.AddSingleton<IStytchClient>(new MockStytchClient(TestSessionToken, TestUserId));
+            var mockStytch = new MockStytchClient(TestSessionToken, TestUserId);
+            mockStytch.RegisterSession(NonAdminSessionToken, NonAdminUserId, "nonadmin@example.com", []);
+            services.AddSingleton<IStytchClient>(mockStytch);
 
             _additionalServices?.Invoke(services);
         });
@@ -102,6 +106,16 @@ public class PatchNotesApiFixture : WebApplicationFactory<Program>, IAsyncLifeti
     public HttpClient CreateAuthenticatedClient()
     {
         var handler = new SessionCookieHandler(Server.CreateHandler(), TestSessionToken);
+        var client = new HttpClient(handler)
+        {
+            BaseAddress = Server.BaseAddress
+        };
+        return client;
+    }
+
+    public HttpClient CreateNonAdminClient()
+    {
+        var handler = new SessionCookieHandler(Server.CreateHandler(), NonAdminSessionToken);
         var client = new HttpClient(handler)
         {
             BaseAddress = Server.BaseAddress
@@ -221,45 +235,55 @@ public class MockNpmHandler : HttpMessageHandler
 
 public class MockStytchClient : IStytchClient
 {
-    private readonly string _validSessionToken;
-    private readonly string _userId;
+    private readonly Dictionary<string, StytchSessionResult> _sessions = new();
+    private readonly Dictionary<string, StytchUser> _users = new();
 
     public MockStytchClient(string validSessionToken, string userId)
     {
-        _validSessionToken = validSessionToken;
-        _userId = userId;
+        _sessions[validSessionToken] = new StytchSessionResult
+        {
+            UserId = userId,
+            SessionId = "test-session-id",
+            Email = "test@example.com",
+            Roles = ["patch_notes_admin"]
+        };
+        _users[userId] = new StytchUser
+        {
+            UserId = userId,
+            Email = "test@example.com",
+            Name = "Test User",
+            Status = "active"
+        };
+    }
+
+    public void RegisterSession(string sessionToken, string userId, string email, List<string> roles)
+    {
+        _sessions[sessionToken] = new StytchSessionResult
+        {
+            UserId = userId,
+            SessionId = $"session-{userId}",
+            Email = email,
+            Roles = roles,
+        };
+        _users[userId] = new StytchUser
+        {
+            UserId = userId,
+            Email = email,
+            Name = email,
+            Status = "active"
+        };
     }
 
     public Task<StytchSessionResult?> AuthenticateSessionAsync(string sessionToken, CancellationToken cancellationToken = default)
     {
-        if (sessionToken == _validSessionToken)
-        {
-            return Task.FromResult<StytchSessionResult?>(new StytchSessionResult
-            {
-                UserId = _userId,
-                SessionId = "test-session-id",
-                Email = "test@example.com",
-                Roles = ["patch_notes_admin"]
-            });
-        }
-
-        return Task.FromResult<StytchSessionResult?>(null);
+        _sessions.TryGetValue(sessionToken, out var session);
+        return Task.FromResult(session);
     }
 
     public Task<StytchUser?> GetUserAsync(string userId, CancellationToken cancellationToken = default)
     {
-        if (userId == _userId)
-        {
-            return Task.FromResult<StytchUser?>(new StytchUser
-            {
-                UserId = _userId,
-                Email = "test@example.com",
-                Name = "Test User",
-                Status = "active"
-            });
-        }
-
-        return Task.FromResult<StytchUser?>(null);
+        _users.TryGetValue(userId, out var user);
+        return Task.FromResult(user);
     }
 }
 

@@ -96,7 +96,7 @@ public static class RouteUtils
 
             if (session == null || !session.IsAdmin)
             {
-                return Results.Forbid();
+                return Results.Json(new { error = "Forbidden" }, statusCode: StatusCodes.Status403Forbidden);
             }
 
             return await next(invocationContext);
