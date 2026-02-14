@@ -1,0 +1,6 @@
+packages:
+  - patchnotes-web
+  - patchnotes-email
+onlyBuiltDependencies:
+  - esbuild
+  - msw

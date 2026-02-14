@@ -1,11 +1,4 @@
 {
-  "name": "patchnotes",
   "private": true,
-  "packageManager": "pnpm@10.28.0",
-  "scripts": {
-    "prepare": "husky"
-  },
-  "devDependencies": {
-    "husky": "^9.1.7"
-  }
+  "packageManager": "pnpm@10.28.0"
 }
