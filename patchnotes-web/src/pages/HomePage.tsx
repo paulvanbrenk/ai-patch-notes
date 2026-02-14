@@ -26,11 +26,11 @@ import { useFilterStore } from '../stores/filterStore'
 import { useSubscriptionStore } from '../stores/subscriptionStore'
 import {
   usePackages,
-  useReleases,
   useWatchlist,
   useSetWatchlist,
+  useFeed,
 } from '../api/hooks'
-import type { ReleaseDto } from '../api/generated/model'
+import type { FeedGroupDto } from '../api/hooks'
 
 // ============================================================================
 // Types
@@ -38,109 +38,52 @@ import type { ReleaseDto } from '../api/generated/model'
 
 type PrereleaseType = 'canary' | 'beta' | 'alpha' | 'rc' | 'next'
 
-interface VersionGroup {
+interface VersionGroup extends FeedGroupDto {
   id: string
-  packageName: string
-  packageId: string
-  versionRange: string
-  majorVersion: number
-  isPrerelease: boolean
+  displayName: string
   prereleaseType?: PrereleaseType
-  summary: string
-  releaseCount: number
-  lastUpdated: string
-  releases: ReleaseDto[]
+  displaySummary: string
 }
 
 // ============================================================================
 // Utility Functions
 // ============================================================================
 
-function parseMajorVersion(tag: string): number {
-  const match = tag.match(/^v?(\d+)/)
-  return match ? parseInt(match[1], 10) : 0
-}
-
-function detectPrereleaseType(tag: string): PrereleaseType | undefined {
-  const lower = tag.toLowerCase()
-  if (lower.includes('canary')) return 'canary'
-  if (lower.includes('alpha')) return 'alpha'
-  if (lower.includes('beta')) return 'beta'
-  if (lower.includes('next')) return 'next'
-  if (lower.includes('rc')) return 'rc'
+function detectPrereleaseType(releases: { tag: string }[]): PrereleaseType | undefined {
+  for (const r of releases) {
+    const lower = r.tag.toLowerCase()
+    if (lower.includes('canary')) return 'canary'
+    if (lower.includes('alpha')) return 'alpha'
+    if (lower.includes('beta')) return 'beta'
+    if (lower.includes('next')) return 'next'
+    if (lower.includes('rc')) return 'rc'
+  }
   return undefined
 }
 
-function isPrerelease(tag: string): boolean {
-  return /-(alpha|beta|rc|next|canary|dev|preview)/i.test(tag)
-}
-
-function buildVersionGroups(
-  releases: ReleaseDto[],
-  packageNames: Map<string, string>
-): VersionGroup[] {
-  const groupMap = new Map<string, VersionGroup>()
-
-  for (const release of releases) {
-    const packageId = release.package.id
-    const major = parseMajorVersion(release.tag)
-    const prerelease = isPrerelease(release.tag)
-    const key = `${packageId}-${major}-${prerelease}`
-    const publishedAt = release.publishedAt ?? ''
-
-    let group = groupMap.get(key)
-    if (!group) {
-      const packageName =
-        packageNames.get(packageId) ??
-        release.package.npmName ??
-        `${release.package.githubOwner}/${release.package.githubRepo}`
-      group = {
-        id: key,
-        packageName,
-        packageId,
-        versionRange: `v${major}.x`,
-        majorVersion: major,
-        isPrerelease: prerelease,
-        prereleaseType: prerelease
-          ? detectPrereleaseType(release.tag)
-          : undefined,
-        summary: '',
-        releaseCount: 0,
-        lastUpdated: publishedAt,
-        releases: [],
-      }
-      groupMap.set(key, group)
+function buildDisplayGroups(groups: FeedGroupDto[]): VersionGroup[] {
+  return groups.map((g) => {
+    const displayName = g.npmName ?? `${g.githubOwner}/${g.githubRepo}`
+    // Use AI summary if available, otherwise build a placeholder
+    let displaySummary = g.summary ?? ''
+    if (!displaySummary) {
+      const titles = g.releases
+        .slice(0, 3)
+        .map((r) => r.title || r.tag)
+        .join(', ')
+      const extra =
+        g.releaseCount > 3 ? ` and ${g.releaseCount - 3} more` : ''
+      displaySummary = `${g.releaseCount} release${g.releaseCount !== 1 ? 's' : ''} in this version: ${titles}${extra}.`
     }
 
-    group.releases.push(release)
-    group.releaseCount++
-
-    if (
-      new Date(publishedAt).getTime() > new Date(group.lastUpdated).getTime()
-    ) {
-      group.lastUpdated = publishedAt
+    return {
+      ...g,
+      id: `${g.packageId}-${g.majorVersion}-${g.isPrerelease}`,
+      displayName,
+      prereleaseType: g.isPrerelease ? detectPrereleaseType(g.releases) : undefined,
+      displaySummary,
     }
-  }
-
-  // Sort releases within each group by publishedAt descending and build summary
-  for (const group of groupMap.values()) {
-    group.releases.sort(
-      (a, b) =>
-        new Date(b.publishedAt ?? 0).getTime() -
-        new Date(a.publishedAt ?? 0).getTime()
-    )
-
-    // Build a placeholder summary from release titles
-    const titles = group.releases
-      .slice(0, 3)
-      .map((r) => r.title || r.tag)
-      .join(', ')
-    const extra =
-      group.releaseCount > 3 ? ` and ${group.releaseCount - 3} more` : ''
-    group.summary = `${group.releaseCount} release${group.releaseCount !== 1 ? 's' : ''} in this version: ${titles}${extra}.`
-  }
-
-  return Array.from(groupMap.values())
+  })
 }
 
 function formatRelativeTime(dateString: string): string {
@@ -274,11 +217,11 @@ function SummaryCard({
         {/* Header */}
         <div className="flex items-start justify-between gap-4 mb-3">
           <div className="flex items-center gap-3">
-            <PackageIcon name={group.packageName} />
+            <PackageIcon name={group.displayName} />
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="font-semibold text-text-primary">
-                  {group.packageName}
+                  {group.displayName}
                 </h3>
                 <span className="text-sm font-mono text-text-secondary">
                   {group.versionRange}
@@ -304,7 +247,7 @@ function SummaryCard({
 
         {/* Summary */}
         <p className="text-sm text-text-secondary leading-relaxed">
-          {group.summary}
+          {group.displaySummary}
         </p>
 
         {/* Footer */}
@@ -371,11 +314,6 @@ function SummaryCard({
                     {formatDate(release.publishedAt)}
                   </time>
                 </div>
-                {release.body && (
-                  <p className="mt-1.5 text-sm text-text-secondary pl-[calc(theme(spacing.3)+theme(spacing.2)+4ch)]">
-                    {release.body}
-                  </p>
-                )}
               </div>
             ))}
           </div>
@@ -446,54 +384,32 @@ export function HomePage() {
   const { user } = useStytchUser()
   const { isPro, checkSubscription, startCheckout } = useSubscriptionStore()
 
-  // Fetch real data
+  // Fetch packages (for watchlist sidebar) and watchlist
   const { data: packages, isLoading: packagesLoading } = usePackages()
   const { data: watchlist, isLoading: watchlistLoading } = useWatchlist()
-  const setWatchlist = useSetWatchlist()
+  const setWatchlistMutation = useSetWatchlist()
 
   const handleWatchlistChange = useCallback(
     (selectedIds: string[]) => {
-      setWatchlist.mutate(selectedIds)
+      setWatchlistMutation.mutate(selectedIds)
     },
-    [setWatchlist]
+    [setWatchlistMutation]
   )
 
-  // Build release query options based on auth state and watchlist
-  const releaseOptions = useMemo(() => {
-    const opts: Parameters<typeof useReleases>[0] = {}
-    if (!showPrerelease) {
-      opts.excludePrerelease = true
-    }
-    // Authenticated users with a non-empty watchlist: filter by watchlist
-    if (user && watchlist && watchlist.length > 0) {
-      opts.packages = watchlist
-    }
-    return opts
-  }, [showPrerelease, user, watchlist])
+  // Single combined feed call replaces usePackages + useReleases + buildVersionGroups
+  const feedOptions = useMemo(() => {
+    return showPrerelease ? undefined : { excludePrerelease: true }
+  }, [showPrerelease])
 
-  const { data: releases, isLoading: releasesLoading } = useReleases(
-    Object.keys(releaseOptions).length > 0 ? releaseOptions : undefined
-  )
+  const { data: feedData, isLoading: feedLoading } = useFeed(feedOptions)
 
   const isLoading =
-    packagesLoading || releasesLoading || (user ? watchlistLoading : false)
+    feedLoading || (user ? watchlistLoading : false)
 
-  // Build a packageId -> display name map from packages
-  const packageNames = useMemo(() => {
-    const map = new Map<string, string>()
-    if (packages) {
-      for (const pkg of packages) {
-        const name = pkg.npmName ?? `${pkg.githubOwner}/${pkg.githubRepo}`
-        map.set(pkg.id, name)
-      }
-    }
-    return map
-  }, [packages])
-
-  // Group releases into VersionGroup objects
+  // Transform feed groups into display-ready VersionGroups
   const versionGroups = useMemo(
-    () => buildVersionGroups(releases ?? [], packageNames),
-    [releases, packageNames]
+    () => buildDisplayGroups(feedData?.groups ?? []),
+    [feedData]
   )
 
   // Check subscription status when user is logged in
@@ -526,7 +442,7 @@ export function HomePage() {
   // Sort groups
   const sortedGroups = [...versionGroups].sort((a, b) => {
     if (sortBy === 'name') {
-      return a.packageName.localeCompare(b.packageName)
+      return a.displayName.localeCompare(b.displayName)
     }
     // Sort by date (most recent first)
     return new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime()
@@ -535,10 +451,10 @@ export function HomePage() {
   // Group by package for display
   const groupedByPackageMap = sortedGroups.reduce(
     (acc, group) => {
-      if (!acc[group.packageName]) {
-        acc[group.packageName] = []
+      if (!acc[group.displayName]) {
+        acc[group.displayName] = []
       }
-      acc[group.packageName].push(group)
+      acc[group.displayName].push(group)
       return acc
     },
     {} as Record<string, VersionGroup[]>

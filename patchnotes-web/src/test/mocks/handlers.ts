@@ -4,6 +4,7 @@ import type {
   PackageDetailDto,
   ReleaseDto,
 } from '../../api/generated/model'
+import type { FeedResponseDto, FeedGroupDto } from '../../api/hooks'
 
 const API_BASE = '/api'
 
@@ -75,7 +76,61 @@ export const mockPackageReleases = mockReleases.map((r) => ({
   },
 }))
 
+export const mockFeedGroups: FeedGroupDto[] = [
+  {
+    packageId: 'pkg-react-test-id',
+    packageName: 'react',
+    npmName: 'react',
+    githubOwner: 'facebook',
+    githubRepo: 'react',
+    majorVersion: 19,
+    isPrerelease: false,
+    versionRange: 'v19.x',
+    summary: null,
+    releaseCount: 1,
+    lastUpdated: '2026-01-10T00:00:00Z',
+    releases: [
+      {
+        id: 'rel-react-19-test-id',
+        tag: 'v19.0.0',
+        title: 'React 19',
+        publishedAt: '2026-01-10T00:00:00Z',
+      },
+    ],
+  },
+  {
+    packageId: 'pkg-lodash-test-id',
+    packageName: 'lodash',
+    npmName: 'lodash',
+    githubOwner: 'lodash',
+    githubRepo: 'lodash',
+    majorVersion: 4,
+    isPrerelease: false,
+    versionRange: 'v4.x',
+    summary: null,
+    releaseCount: 1,
+    lastUpdated: '2026-01-08T00:00:00Z',
+    releases: [
+      {
+        id: 'rel-lodash-418-test-id',
+        tag: 'v4.18.0',
+        title: 'Lodash 4.18.0',
+        publishedAt: '2026-01-08T00:00:00Z',
+      },
+    ],
+  },
+]
+
+export const mockFeedResponse: FeedResponseDto = {
+  groups: mockFeedGroups,
+}
+
 export const handlers = [
+  // GET /feed
+  http.get(`${API_BASE}/feed`, () => {
+    return HttpResponse.json(mockFeedResponse)
+  }),
+
   // GET /packages
   http.get(`${API_BASE}/packages`, () => {
     return HttpResponse.json(mockPackages)

@@ -1,7 +1,8 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useStytchUser } from '@stytch/react'
 import * as z from 'zod'
 import type { GetReleasesParams } from './generated/model'
+import { api } from './client'
 
 import {
   useGetPackages,
@@ -169,5 +170,53 @@ export function useSetWatchlist() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: getGetWatchlistQueryKey() })
     },
+  })
+}
+
+// ── Feed Types ──────────────────────────────────────────────
+
+export interface FeedReleaseDto {
+  id: string
+  tag: string
+  title?: string | null
+  publishedAt: string
+}
+
+export interface FeedGroupDto {
+  packageId: string
+  packageName: string
+  npmName?: string | null
+  githubOwner: string
+  githubRepo: string
+  majorVersion: number
+  isPrerelease: boolean
+  versionRange: string
+  summary?: string | null
+  releaseCount: number
+  lastUpdated: string
+  releases: FeedReleaseDto[]
+}
+
+export interface FeedResponseDto {
+  groups: FeedGroupDto[]
+}
+
+// ── Feed Hook ───────────────────────────────────────────────
+
+interface FeedOptions {
+  excludePrerelease?: boolean
+}
+
+export function useFeed(options?: FeedOptions) {
+  const params = new URLSearchParams()
+  if (options?.excludePrerelease) {
+    params.set('excludePrerelease', 'true')
+  }
+  const qs = params.toString()
+  const url = qs ? `/feed?${qs}` : '/feed'
+
+  return useQuery({
+    queryKey: ['/api/feed', options] as const,
+    queryFn: () => api.get<FeedResponseDto>(url),
   })
 }
