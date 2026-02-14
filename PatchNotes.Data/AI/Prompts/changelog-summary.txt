@@ -18,13 +18,13 @@ Format:
 [Answer: "What's the biggest change and why should I care?" in one sentence. Be specific - mention the main technology or feature by name.]
 
 ## Breaking
-[Bullet list with brief parenthetical explanations, or "None"]
+[Bullet list with brief parenthetical explanations. Omit this section entirely if there are no breaking changes.]
 
 ## New
-[2-3 most impactful features max - skip if already in TL;DR]
+[2-3 most impactful features max - skip if already in TL;DR. Omit if nothing new.]
 
 ## Fixes Worth Knowing
-[Only fixes affecting typical daily usage - skip if unsure]
+[Only fixes affecting typical daily usage. Omit if unsure or none.]
 
 ## Before You Upgrade
-[1-2 specific action steps, not vague warnings]
+[1-2 specific action steps, not vague warnings. Omit if no action needed.]
