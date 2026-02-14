@@ -6,6 +6,10 @@
  */
 
 export * from './addPackageRequest';
+export * from './feedGroupDto';
+export * from './feedReleaseDto';
+export * from './feedResponseDto';
+export * from './getFeedParams';
 export * from './getPackageSummariesParams';
 export * from './getReleasesParams';
 export * from './getSummariesParams';

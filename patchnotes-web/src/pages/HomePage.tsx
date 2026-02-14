@@ -49,7 +49,9 @@ interface VersionGroup extends FeedGroupDto {
 // Utility Functions
 // ============================================================================
 
-function detectPrereleaseType(releases: { tag: string }[]): PrereleaseType | undefined {
+function detectPrereleaseType(
+  releases: { tag: string }[]
+): PrereleaseType | undefined {
   for (const r of releases) {
     const lower = r.tag.toLowerCase()
     if (lower.includes('canary')) return 'canary'
@@ -71,8 +73,7 @@ function buildDisplayGroups(groups: FeedGroupDto[]): VersionGroup[] {
         .slice(0, 3)
         .map((r) => r.title || r.tag)
         .join(', ')
-      const extra =
-        g.releaseCount > 3 ? ` and ${g.releaseCount - 3} more` : ''
+      const extra = g.releaseCount > 3 ? ` and ${g.releaseCount - 3} more` : ''
       displaySummary = `${g.releaseCount} release${g.releaseCount !== 1 ? 's' : ''} in this version: ${titles}${extra}.`
     }
 
@@ -80,7 +81,9 @@ function buildDisplayGroups(groups: FeedGroupDto[]): VersionGroup[] {
       ...g,
       id: `${g.packageId}-${g.majorVersion}-${g.isPrerelease}`,
       displayName,
-      prereleaseType: g.isPrerelease ? detectPrereleaseType(g.releases) : undefined,
+      prereleaseType: g.isPrerelease
+        ? detectPrereleaseType(g.releases)
+        : undefined,
       displaySummary,
     }
   })
@@ -403,8 +406,7 @@ export function HomePage() {
 
   const { data: feedData, isLoading: feedLoading } = useFeed(feedOptions)
 
-  const isLoading =
-    feedLoading || (user ? watchlistLoading : false)
+  const isLoading = feedLoading || (user ? watchlistLoading : false)
 
   // Transform feed groups into display-ready VersionGroups
   const versionGroups = useMemo(
