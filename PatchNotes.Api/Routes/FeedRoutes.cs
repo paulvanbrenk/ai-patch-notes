@@ -65,8 +65,41 @@ public static class FeedRoutes
                 .OrderByDescending(g => g.LastUpdated)
                 .ToListAsync();
 
+            // Filter to current stable + future pre-releases per package
+            // For each package: keep the highest stable major version group,
+            // plus any pre-release groups with a higher major version.
+            // If no stable releases exist, keep the highest major pre-release group.
+            var maxStableByPackage = groups
+                .Where(g => !g.IsPrerelease)
+                .GroupBy(g => g.PackageId)
+                .ToDictionary(pg => pg.Key, pg => pg.Max(g => g.MajorVersion));
+
+            var filteredGroups = groups.Where(g =>
+            {
+                if (maxStableByPackage.TryGetValue(g.PackageId, out var maxStable))
+                {
+                    // Has stable releases: keep current stable + future prereleases
+                    return (!g.IsPrerelease && g.MajorVersion == maxStable)
+                        || (g.IsPrerelease && g.MajorVersion > maxStable);
+                }
+                // No stable releases: handled below
+                return false;
+            }).ToList();
+
+            // For packages with no stable releases, add highest major prerelease group
+            var packagesWithNoStable = groups
+                .Select(g => g.PackageId)
+                .Distinct()
+                .Where(pid => !maxStableByPackage.ContainsKey(pid));
+            foreach (var pid in packagesWithNoStable)
+            {
+                var packageGroups = groups.Where(g => g.PackageId == pid).ToList();
+                var maxMajor = packageGroups.Max(g => g.MajorVersion);
+                filteredGroups.AddRange(packageGroups.Where(g => g.MajorVersion == maxMajor));
+            }
+
             // Left-join ReleaseSummary to attach AI summaries per group
-            var groupKeys = groups.Select(g => new { g.PackageId, g.MajorVersion, g.IsPrerelease }).ToList();
+            var groupKeys = filteredGroups.Select(g => new { g.PackageId, g.MajorVersion, g.IsPrerelease }).ToList();
 
             var summaries = await db.ReleaseSummaries
                 .Where(s => groupKeys.Select(k => k.PackageId).Contains(s.PackageId))
@@ -76,7 +109,7 @@ public static class FeedRoutes
                 s => (s.PackageId, s.MajorVersion, s.IsPrerelease),
                 s => s.Summary);
 
-            var feedGroups = groups.Select(g =>
+            var feedGroups = filteredGroups.Select(g =>
             {
                 summaryLookup.TryGetValue((g.PackageId, g.MajorVersion, g.IsPrerelease), out var summary);
 
