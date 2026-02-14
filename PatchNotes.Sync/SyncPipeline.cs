@@ -89,7 +89,7 @@ public class SyncPipeline
                     // Enqueue if new releases need summaries or existing releases have stale summaries
                     var hasStaleReleases = packageResult.ReleasesNeedingSummary.Count > 0
                         || await db.Releases.AnyAsync(
-                            r => r.PackageId == package.Id && (r.Summary == null || r.SummaryStale), ct);
+                            r => r.PackageId == package.Id && r.SummaryStale, ct);
 
                     if (hasStaleReleases)
                     {
