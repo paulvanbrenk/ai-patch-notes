@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using PatchNotes.Data;
+using PatchNotes.Data.Stytch;
 
 namespace PatchNotes.Api.Routes;
 
@@ -113,18 +114,54 @@ public static class UserRoutes
         .WithName("LoginUser");
 
         // PUT /api/users/me - Update current user profile
-        group.MapPut("/me", async (HttpContext httpContext, UpdateUserRequest request, PatchNotesDbContext db) =>
+        // Mirrors the webhook path: fetches user from Stytch API, then updates DB
+        group.MapPut("/me", async (HttpContext httpContext, UpdateUserRequest request, PatchNotesDbContext db, IStytchClient stytchClient) =>
         {
             var stytchUserId = httpContext.Items["StytchUserId"] as string;
 
-            var user = await db.Users.FirstOrDefaultAsync(u => u.StytchUserId == stytchUserId);
+            // Step 1: Fetch fresh user data from Stytch (same as webhook)
+            StytchUser? stytchUser = null;
+            try
+            {
+                stytchUser = await stytchClient.GetUserAsync(stytchUserId!);
+            }
+            catch (Exception ex)
+            {
+                return Results.Json(new { error = "Stytch API call failed", detail = ex.Message }, statusCode: 502);
+            }
+
+            if (stytchUser == null)
+            {
+                return Results.Json(new { error = "Could not fetch user from Stytch", stytchUserId }, statusCode: 502);
+            }
+
+            // Step 2: Find user in DB (same as webhook)
+            User? user;
+            try
+            {
+                user = await db.Users.FirstOrDefaultAsync(u => u.StytchUserId == stytchUserId);
+            }
+            catch (Exception ex)
+            {
+                return Results.Json(new { error = "DB query failed", detail = ex.Message }, statusCode: 500);
+            }
+
             if (user == null)
             {
                 return Results.NotFound(new { error = "User not found" });
             }
 
-            user.Name = request.Name;
-            await db.SaveChangesAsync();
+            // Step 3: Update fields (same as webhook, plus the name from request)
+            try
+            {
+                user.Email = stytchUser.Email ?? user.Email;
+                user.Name = request.Name ?? stytchUser.Name ?? user.Name;
+                await db.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                return Results.Json(new { error = "DB save failed", detail = ex.Message, innerException = ex.InnerException?.Message }, statusCode: 500);
+            }
 
             return Results.Ok(new UserDto
             {

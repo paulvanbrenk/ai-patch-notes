@@ -17,17 +17,22 @@ export function Settings() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
-  const { data: currentUser } = useGetCurrentUser({
+  const { data: currentUser, isSuccess } = useGetCurrentUser({
     query: { enabled: !!user },
   })
   const updateUser = useUpdateCurrentUser()
 
-  const [editedName, setEditedName] = useState<string | null>(null)
-  const [saved, setSaved] = useState(false)
-
   const serverName =
     currentUser?.status === 200 ? (currentUser.data.name ?? '') : ''
-  const name = editedName ?? serverName
+  const [name, setName] = useState('')
+  const [initialized, setInitialized] = useState(false)
+  const [saved, setSaved] = useState(false)
+
+  // Sync server data into form once on load
+  if (isSuccess && !initialized) {
+    setName(serverName)
+    setInitialized(true)
+  }
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -43,7 +48,7 @@ export function Settings() {
       {
         onSuccess: () => {
           setSaved(true)
-          setEditedName(null)
+          setInitialized(false)
           queryClient.invalidateQueries({
             queryKey: getGetCurrentUserQueryKey(),
           })
@@ -90,7 +95,7 @@ export function Settings() {
                 type="text"
                 value={name}
                 onChange={(e) => {
-                  setEditedName(e.target.value)
+                  setName(e.target.value)
                   setSaved(false)
                 }}
                 placeholder="Your name"
