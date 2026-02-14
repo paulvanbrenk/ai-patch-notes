@@ -1,21 +1,25 @@
 import { Link } from '@tanstack/react-router'
-import { Header, HeaderTitle, Container, Button } from '../components/ui'
+import { Header, HeaderTitle, Container } from '../components/ui'
 import { ThemeToggle } from '../components/theme'
+import { Logo } from '../components/landing/Logo'
 
 export function About() {
   return (
     <div className="min-h-screen bg-surface-secondary">
       <Header>
-        <HeaderTitle>About</HeaderTitle>
-        <div className="flex items-center gap-2">
-          <Link to="/">
-            <Button variant="ghost" size="sm">
-              Back
-            </Button>
-          </Link>
-          <div className="w-px h-6 bg-border-muted mx-1" />
-          <ThemeToggle />
-        </div>
+        <Link
+          to="/"
+          className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
+        >
+          <Logo size={36} />
+          <div>
+            <HeaderTitle>My Release Notes - About</HeaderTitle>
+            <p className="text-2xs text-text-tertiary leading-tight">
+              by Tiny Tools
+            </p>
+          </div>
+        </Link>
+        <ThemeToggle />
       </Header>
 
       <main className="py-12">
