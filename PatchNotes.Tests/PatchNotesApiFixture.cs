@@ -60,7 +60,7 @@ public class PatchNotesApiFixture : WebApplicationFactory<Program>, IAsyncLifeti
             _connection = new SqliteConnection(connectionString);
             _connection.Open();
 
-            services.AddDbContext<PatchNotesDbContext>(options =>
+            services.AddDbContext<PatchNotesDbContext, SqliteContext>(options =>
             {
                 options.UseSqlite(connectionString);
                 options.AddInterceptors(new SqliteBusyTimeoutInterceptor());

@@ -36,13 +36,13 @@ public static class DatabaseProviderFactory
     {
         if (IsSqlServer(connectionString))
         {
-            // Note: EnableRetryOnFailure is intentionally NOT used here.
-            // EF Core's retry strategy buffers query results via BufferedDataReader,
-            // which calls SqlDataReader.GetDateTime() on datetimeoffset columns.
-            // Microsoft.Data.SqlClient v6 throws InvalidCastException for this.
-            // Azure SQL connection-level retry (ConnectRetryCount in connection string)
-            // handles transient connection failures without this issue.
-            options.UseSqlServer(connectionString);
+            options.UseSqlServer(connectionString, sqlOptions =>
+            {
+                sqlOptions.EnableRetryOnFailure(
+                    maxRetryCount: 5,
+                    maxRetryDelay: TimeSpan.FromSeconds(30),
+                    errorNumbersToAdd: null);
+            });
         }
         else
         {
