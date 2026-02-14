@@ -62,7 +62,11 @@ function EditPackageModal({ open, onClose, pkg }: EditPackageModalProps) {
   if (!open) return null
 
   return (
-    <Modal open={open} onClose={onClose} title={`Edit ${pkg?.name ?? pkg?.npmName}`}>
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={`Edit ${pkg?.name ?? pkg?.npmName}`}
+    >
       <div className="space-y-4">
         <Input
           label="GitHub Owner"
@@ -120,7 +124,9 @@ function DeleteConfirmModal({
         <p className="text-text-secondary">
           Are you sure you want to delete{' '}
           <span className="font-medium text-text-primary">
-            {pkg?.name ?? pkg?.npmName ?? `${pkg?.githubOwner}/${pkg?.githubRepo}`}
+            {pkg?.name ??
+              pkg?.npmName ??
+              `${pkg?.githubOwner}/${pkg?.githubRepo}`}
           </span>
           ? This action cannot be undone.
         </p>
@@ -265,7 +271,13 @@ function BulkAddForm({ onClose }: BulkAddFormProps) {
   const [text, setText] = useState('')
   const bulkAdd = useBulkAddPackages()
   const [results, setResults] = useState<
-    { githubOwner?: string | null; githubRepo?: string | null; success?: boolean; error?: string | null }[] | null
+    | {
+        githubOwner?: string | null
+        githubRepo?: string | null
+        success?: boolean
+        error?: string | null
+      }[]
+    | null
   >(null)
 
   const lines = text
@@ -345,7 +357,7 @@ function BulkAddForm({ onClose }: BulkAddFormProps) {
               className={`text-xs ${r.success ? 'text-minor' : 'text-major'}`}
             >
               {r.githubOwner}/{r.githubRepo}:{' '}
-              {r.success ? 'Added' : r.error ?? 'Failed'}
+              {r.success ? 'Added' : (r.error ?? 'Failed')}
             </div>
           ))}
         </div>
@@ -421,7 +433,9 @@ export function Admin() {
   const [showAddForm, setShowAddForm] = useState(false)
   const [showBulkAdd, setShowBulkAdd] = useState(false)
   const [editingPackage, setEditingPackage] = useState<PackageDto | null>(null)
-  const [deletingPackage, setDeletingPackage] = useState<PackageDto | null>(null)
+  const [deletingPackage, setDeletingPackage] = useState<PackageDto | null>(
+    null
+  )
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
   // Auth gate: redirect non-admins
@@ -486,15 +500,11 @@ export function Admin() {
         <Container>
           {/* Add Package Form */}
           {showAddForm && (
-            <AddPackageForm
-              onClose={() => setShowAddForm(false)}
-            />
+            <AddPackageForm onClose={() => setShowAddForm(false)} />
           )}
 
           {/* Bulk Add Form */}
-          {showBulkAdd && (
-            <BulkAddForm onClose={() => setShowBulkAdd(false)} />
-          )}
+          {showBulkAdd && <BulkAddForm onClose={() => setShowBulkAdd(false)} />}
 
           {/* Packages Table */}
           <Card padding="none">
@@ -510,9 +520,7 @@ export function Admin() {
             </div>
 
             {isLoading ? (
-              <div className="p-6 text-text-secondary">
-                Loading packages...
-              </div>
+              <div className="p-6 text-text-secondary">Loading packages...</div>
             ) : packages?.length === 0 ? (
               <div className="p-6 text-text-secondary">
                 No packages tracked yet. Click &ldquo;Add Package&rdquo; to get
