@@ -7,7 +7,7 @@
     "build": "tsc",
     "watch": "tsc -w",
     "clean": "rimraf dist",
-    "prestart": "npm run clean && npm run build",
+    "prestart": "pnpm clean && pnpm build",
     "start": "func start",
     "test": "echo \"No tests yet...\""
   },
