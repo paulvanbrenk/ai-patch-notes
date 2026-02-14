@@ -93,7 +93,10 @@ export function ReleaseDetail({ releaseId }: ReleaseDetailProps) {
         <div className="flex items-center gap-2">
           <Link
             to="/packages/$owner/$repo"
-            params={{ owner: release.package.githubOwner, repo: release.package.githubRepo }}
+            params={{
+              owner: release.package.githubOwner,
+              repo: release.package.githubRepo,
+            }}
           >
             <Button variant="secondary" size="sm">
               {release.package.npmName}
@@ -148,7 +151,10 @@ export function ReleaseDetail({ releaseId }: ReleaseDetailProps) {
                 </a>
                 <Link
                   to="/packages/$owner/$repo"
-                  params={{ owner: release.package.githubOwner, repo: release.package.githubRepo }}
+                  params={{
+                    owner: release.package.githubOwner,
+                    repo: release.package.githubRepo,
+                  }}
                   className="inline-flex items-center gap-2 text-text-secondary hover:text-brand-600 transition-colors"
                 >
                   <svg
