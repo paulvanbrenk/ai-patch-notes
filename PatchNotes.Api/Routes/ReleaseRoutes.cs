@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using PatchNotes.Data;
-using PatchNotes.Data.Stytch;
+using PatchNotes.Api.Stytch;
 
 namespace PatchNotes.Api.Routes;
 

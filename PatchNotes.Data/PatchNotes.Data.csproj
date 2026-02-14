@@ -16,7 +16,6 @@
     <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.3" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.3" />
     <PackageReference Include="Nanoid" Version="3.1.0" />
-    <PackageReference Include="Stytch.net" Version="3.1.0" />
   </ItemGroup>
 
   <ItemGroup>
