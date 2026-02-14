@@ -39,7 +39,7 @@ export function Settings() {
   const handleSave = () => {
     setSaved(false)
     updateUser.mutate(
-      { data: { name: name || undefined } },
+      { data: { name: name || null } },
       {
         onSuccess: () => {
           setSaved(true)
