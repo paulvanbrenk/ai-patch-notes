@@ -4,21 +4,28 @@
   "description": "",
   "main": "dist/src/functions/*.js",
   "scripts": {
-    "build": "tsc",
+    "build": "prisma generate && tsc",
     "watch": "tsc -w",
     "clean": "rimraf dist",
     "prestart": "pnpm clean && pnpm build",
     "start": "func start",
-    "test": "echo \"No tests yet...\""
+    "test": "echo \"No tests yet...\"",
+    "db:pull": "prisma db pull",
+    "db:generate": "prisma generate",
+    "db:smoke-test": "npx tsx scripts/prisma-smoke-test.ts"
   },
   "dependencies": {
     "@azure/functions": "^4.0.0",
+    "@prisma/adapter-mssql": "^7.4.0",
+    "@prisma/client": "^7.4.0",
     "resend": "^4.0.0"
   },
   "devDependencies": {
-    "azure-functions-core-tools": "^4.x",
     "@types/node": "18.x",
-    "typescript": "^5.0.0",
-    "rimraf": "^5.0.0"
+    "azure-functions-core-tools": "^4.x",
+    "dotenv": "^17.3.1",
+    "prisma": "^7.4.0",
+    "rimraf": "^5.0.0",
+    "typescript": "^5.0.0"
   }
 }

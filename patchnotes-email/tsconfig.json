@@ -7,5 +7,9 @@
     "sourceMap": true,
     "strict": false,
     "esModuleInterop": true
-  }
+  },
+  "exclude": [
+    "scripts",
+    "prisma.config.ts"
+  ]
 }
