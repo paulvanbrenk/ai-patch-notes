@@ -21,6 +21,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ReleasesReleaseIdRouteImport } from './routes/releases.$releaseId'
 import { Route as PackagesOwnerRouteImport } from './routes/packages.$owner'
+import { Route as AdminEmailsRouteImport } from './routes/admin_.emails'
 import { Route as PackagesOwnerIndexRouteImport } from './routes/packages.$owner.index'
 import { Route as PackagesOwnerRepoRouteImport } from './routes/packages.$owner.$repo'
 
@@ -84,6 +85,11 @@ const PackagesOwnerRoute = PackagesOwnerRouteImport.update({
   path: '/packages/$owner',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminEmailsRoute = AdminEmailsRouteImport.update({
+  id: '/admin_/emails',
+  path: '/admin/emails',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PackagesOwnerIndexRoute = PackagesOwnerIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -106,6 +112,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/subscription-canceled': typeof SubscriptionCanceledRoute
   '/subscription-success': typeof SubscriptionSuccessRoute
+  '/admin/emails': typeof AdminEmailsRoute
   '/packages/$owner': typeof PackagesOwnerRouteWithChildren
   '/releases/$releaseId': typeof ReleasesReleaseIdRoute
   '/packages/$owner/$repo': typeof PackagesOwnerRepoRoute
@@ -122,6 +129,7 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/subscription-canceled': typeof SubscriptionCanceledRoute
   '/subscription-success': typeof SubscriptionSuccessRoute
+  '/admin/emails': typeof AdminEmailsRoute
   '/releases/$releaseId': typeof ReleasesReleaseIdRoute
   '/packages/$owner/$repo': typeof PackagesOwnerRepoRoute
   '/packages/$owner': typeof PackagesOwnerIndexRoute
@@ -138,6 +146,7 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/subscription-canceled': typeof SubscriptionCanceledRoute
   '/subscription-success': typeof SubscriptionSuccessRoute
+  '/admin_/emails': typeof AdminEmailsRoute
   '/packages/$owner': typeof PackagesOwnerRouteWithChildren
   '/releases/$releaseId': typeof ReleasesReleaseIdRoute
   '/packages/$owner/$repo': typeof PackagesOwnerRepoRoute
@@ -156,6 +165,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/subscription-canceled'
     | '/subscription-success'
+    | '/admin/emails'
     | '/packages/$owner'
     | '/releases/$releaseId'
     | '/packages/$owner/$repo'
@@ -172,6 +182,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/subscription-canceled'
     | '/subscription-success'
+    | '/admin/emails'
     | '/releases/$releaseId'
     | '/packages/$owner/$repo'
     | '/packages/$owner'
@@ -187,6 +198,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/subscription-canceled'
     | '/subscription-success'
+    | '/admin_/emails'
     | '/packages/$owner'
     | '/releases/$releaseId'
     | '/packages/$owner/$repo'
@@ -204,6 +216,7 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   SubscriptionCanceledRoute: typeof SubscriptionCanceledRoute
   SubscriptionSuccessRoute: typeof SubscriptionSuccessRoute
+  AdminEmailsRoute: typeof AdminEmailsRoute
   PackagesOwnerRoute: typeof PackagesOwnerRouteWithChildren
   ReleasesReleaseIdRoute: typeof ReleasesReleaseIdRoute
 }
@@ -294,6 +307,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PackagesOwnerRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin_/emails': {
+      id: '/admin_/emails'
+      path: '/admin/emails'
+      fullPath: '/admin/emails'
+      preLoaderRoute: typeof AdminEmailsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/packages/$owner/': {
       id: '/packages/$owner/'
       path: '/'
@@ -336,6 +356,7 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   SubscriptionCanceledRoute: SubscriptionCanceledRoute,
   SubscriptionSuccessRoute: SubscriptionSuccessRoute,
+  AdminEmailsRoute: AdminEmailsRoute,
   PackagesOwnerRoute: PackagesOwnerRouteWithChildren,
   ReleasesReleaseIdRoute: ReleasesReleaseIdRoute,
 }

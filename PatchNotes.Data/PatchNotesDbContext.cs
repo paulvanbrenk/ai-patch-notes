@@ -39,6 +39,7 @@ public DbSet<User> Users => Set<User>();
     public DbSet<Watchlist> Watchlists => Set<Watchlist>();
     public DbSet<ProcessedWebhookEvent> ProcessedWebhookEvents => Set<ProcessedWebhookEvent>();
     public DbSet<ReleaseSummary> ReleaseSummaries => Set<ReleaseSummary>();
+    public DbSet<EmailTemplate> EmailTemplates => Set<EmailTemplate>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -100,6 +101,14 @@ public DbSet<User> Users => Set<User>();
                 .WithMany(p => p.ReleaseSummaries)
                 .HasForeignKey(e => e.PackageId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<EmailTemplate>(entity =>
+        {
+            entity.Property(e => e.Id).HasMaxLength(128);
+            entity.Property(e => e.Name).HasMaxLength(128);
+            entity.Property(e => e.Subject).HasMaxLength(512);
+            entity.HasIndex(e => e.Name).IsUnique();
         });
 
         modelBuilder.Entity<Watchlist>(entity =>

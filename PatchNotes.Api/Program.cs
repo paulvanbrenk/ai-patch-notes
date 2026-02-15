@@ -133,6 +133,7 @@ app.MapSummaryRoutes();
 app.MapFeedRoutes();
 app.MapStytchWebhook();
 app.MapStripeWebhook();
+app.MapEmailTemplateRoutes();
 
 app.Run();
 

@@ -6,7 +6,7 @@
   },
   "servers": [
     {
-      "url": "http://localhost:5199/"
+      "url": "http://localhost:5000/"
     }
   ],
   "paths": {
@@ -870,6 +870,103 @@
           }
         }
       }
+    },
+    "/api/admin/email-templates": {
+      "get": {
+        "tags": [
+          "EmailTemplates"
+        ],
+        "operationId": "GetEmailTemplates",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EmailTemplateDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/email-templates/{name}": {
+      "get": {
+        "tags": [
+          "EmailTemplates"
+        ],
+        "operationId": "GetEmailTemplate",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailTemplateDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "EmailTemplates"
+        ],
+        "operationId": "UpdateEmailTemplate",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEmailTemplateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmailTemplateDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -985,6 +1082,33 @@
           },
           "emailWelcomeSent": {
             "type": "boolean"
+          }
+        }
+      },
+      "EmailTemplateDto": {
+        "required": [
+          "id",
+          "name",
+          "subject",
+          "jsxSource"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "jsxSource": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       },
@@ -1594,6 +1718,27 @@
           }
         }
       },
+      "UpdateEmailTemplateRequest": {
+        "required": [
+          "subject",
+          "jsxSource"
+        ],
+        "type": "object",
+        "properties": {
+          "subject": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "jsxSource": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
       "UpdatePackageRequest": {
         "required": [
           "githubOwner",
@@ -1699,6 +1844,9 @@
     },
     {
       "name": "Feed"
+    },
+    {
+      "name": "EmailTemplates"
     }
   ]
 }
