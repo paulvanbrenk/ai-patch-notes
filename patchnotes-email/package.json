@@ -12,7 +12,7 @@
     "test": "echo \"No tests yet...\"",
     "db:pull": "prisma db pull",
     "db:generate": "prisma generate",
-    "db:smoke-test": "npx tsx scripts/prisma-smoke-test.ts"
+    "db:smoke-test": "pnpm tsx scripts/prisma-smoke-test.ts"
   },
   "dependencies": {
     "@azure/functions": "^4.0.0",
@@ -20,6 +20,7 @@
     "@prisma/client": "^7.4.0",
     "resend": "^6.9.2"
   },
+  "packageManager": "pnpm@10.28.0",
   "devDependencies": {
     "@types/node": "25.x",
     "azure-functions-core-tools": "^4.x",
