@@ -146,6 +146,65 @@ describe('HomePage', () => {
     })
   })
 
+  describe('prerelease badges', () => {
+    beforeEach(() => {
+      mockStytchUser.mockReturnValue(anonymousUser)
+    })
+
+    it('shows preview badge for .NET-style preview tags', async () => {
+      server.use(
+        http.get('/api/feed', () => {
+          return HttpResponse.json({
+            groups: [
+              {
+                packageId: 'pkg-dotnet-test-id',
+                packageName: 'dotnet-runtime',
+                npmName: null,
+                githubOwner: 'dotnet',
+                githubRepo: 'runtime',
+                majorVersion: 11,
+                isPrerelease: true,
+                versionRange: 'v11.x-preview',
+                summary: null,
+                releaseCount: 1,
+                lastUpdated: '2026-02-10T00:00:00Z',
+                releases: [
+                  {
+                    id: 'rel-dotnet-preview-test-id',
+                    tag: 'v11.0.0-preview.1.26104.118',
+                    title: '.NET 11 Preview 1',
+                    publishedAt: '2026-02-10T00:00:00Z',
+                  },
+                ],
+              },
+            ],
+          })
+        })
+      )
+
+      // Enable prerelease filter to see prerelease groups
+      localStorage.setItem(
+        'filter-store',
+        JSON.stringify({
+          state: {
+            showPrerelease: true,
+            sortBy: 'date',
+            groupByPackage: false,
+            heroDismissed: true,
+          },
+          version: 0,
+        })
+      )
+
+      render(<HomePage />)
+
+      await waitFor(() => {
+        expect(screen.getByText('dotnet/runtime')).toBeInTheDocument()
+      })
+      expect(screen.getByText('preview')).toBeInTheDocument()
+    })
+  })
+
   describe('authenticated user with empty watchlist', () => {
     beforeEach(() => {
       mockStytchUser.mockReturnValue(authenticatedUser)
