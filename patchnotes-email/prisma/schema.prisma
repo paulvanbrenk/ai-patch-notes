@@ -7,83 +7,92 @@ datasource db {
   provider = "sqlserver"
 }
 
-model Users {
-  Id                    String     @id @db.NVarChar(21)
-  StytchUserId          String     @unique @db.NVarChar(128)
-  Email                 String?    @db.NVarChar(256)
-  Name                  String?    @db.NVarChar(256)
-  CreatedAt             DateTime   @db.DateTimeOffset
-  UpdatedAt             DateTime   @db.DateTimeOffset
-  LastLoginAt           DateTime?  @db.DateTimeOffset
-  StripeCustomerId      String?    @db.NVarChar(64)
-  StripeSubscriptionId  String?    @db.NVarChar(64)
-  SubscriptionStatus    String?    @db.NVarChar(32)
-  SubscriptionExpiresAt DateTime?  @db.DateTimeOffset
-  EmailDigestEnabled    Boolean    @default(true)
-  EmailReleaseEnabled   Boolean    @default(true)
-  EmailWelcomeSent      Boolean    @default(false)
-  Watchlists            Watchlists[]
+model EFMigrationsHistory {
+  MigrationId    String @id(map: "PK___EFMigrationsHistory") @db.NVarChar(150)
+  ProductVersion String @db.NVarChar(32)
 
-  @@index([Email])
-  @@index([StripeCustomerId])
+  @@map("__EFMigrationsHistory")
 }
 
 model Packages {
-  Id              String            @id @db.NVarChar(21)
-  Name            String            @db.NVarChar(Max)
-  Url             String            @db.NVarChar(Max)
-  NpmName         String?           @unique @db.NVarChar(256)
-  GithubOwner     String            @db.NVarChar(128)
-  GithubRepo      String            @db.NVarChar(128)
-  TagPrefix       String?           @db.NVarChar(64)
-  LastFetchedAt   DateTime?         @db.DateTimeOffset
-  CreatedAt       DateTime          @db.DateTimeOffset
-  Releases        Releases[]
+  Name             String             @db.NVarChar(Max)
+  Url              String             @db.NVarChar(Max)
+  NpmName          String?            @db.NVarChar(256)
+  GithubOwner      String             @db.NVarChar(128)
+  GithubRepo       String             @db.NVarChar(128)
+  LastFetchedAt    DateTime?          @db.DateTimeOffset
+  CreatedAt        DateTime           @db.DateTimeOffset
+  Id               String             @id(map: "PK_Packages") @default("", map: "DF__Packages__Id__59063A47") @db.NVarChar(21)
+  TagPrefix        String?            @db.NVarChar(64)
+  Releases         Releases[]
   ReleaseSummaries ReleaseSummaries[]
-  Watchlists      Watchlists[]
+  Watchlists       Watchlists[]
+}
+
+model ProcessedWebhookEvents {
+  EventId     String   @id(map: "PK_ProcessedWebhookEvents") @db.NVarChar(128)
+  ProcessedAt DateTime @db.DateTimeOffset
 }
 
 model Releases {
-  Id           String   @id @db.NVarChar(21)
   PackageId    String   @db.NVarChar(21)
   Tag          String   @db.NVarChar(128)
   Title        String?  @db.NVarChar(Max)
   Body         String?  @db.NVarChar(Max)
   PublishedAt  DateTime @db.DateTimeOffset
   FetchedAt    DateTime @db.DateTimeOffset
-  MajorVersion Int
-  MinorVersion Int
-  PatchVersion Int
-  IsPrerelease Boolean
-  SummaryStale Boolean  @default(true)
-  Package      Packages @relation(fields: [PackageId], references: [Id], onDelete: Cascade)
+  Id           String   @id(map: "PK_Releases") @default("", map: "DF__Releases__Id__5CD6CB2B") @db.NVarChar(21)
+  SummaryStale Boolean  @default(dbgenerated("CONVERT([bit],(1))"), map: "DF__Releases__Summar__693CA210")
+  IsPrerelease Boolean  @default(dbgenerated("CONVERT([bit],(0))"), map: "DF__Releases__IsPrer__6B24EA82")
+  MajorVersion Int      @default(0, map: "DF__Releases__MajorV__6C190EBB")
+  MinorVersion Int      @default(0, map: "DF__Releases__MinorV__6D0D32F4")
+  PatchVersion Int      @default(0, map: "DF__Releases__PatchV__6E01572D")
+  Packages     Packages @relation(fields: [PackageId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Releases_Packages_PackageId")
 
-  @@unique([PackageId, Tag])
-  @@index([PublishedAt])
-  @@index([PackageId, MajorVersion, IsPrerelease])
+  @@index([PackageId], map: "IX_Releases_PackageId")
+  @@index([PackageId, MajorVersion, IsPrerelease], map: "IX_Releases_PackageId_MajorVersion_IsPrerelease")
+  @@index([PublishedAt], map: "IX_Releases_PublishedAt")
 }
 
 model ReleaseSummaries {
-  Id           String   @id @db.NVarChar(21)
+  Id           String   @id(map: "PK_ReleaseSummaries") @db.NVarChar(21)
   PackageId    String   @db.NVarChar(21)
   MajorVersion Int
   IsPrerelease Boolean
   Summary      String   @db.NVarChar(Max)
   GeneratedAt  DateTime @db.DateTimeOffset
-  UpdatedAt    DateTime @db.DateTimeOffset
-  Package      Packages @relation(fields: [PackageId], references: [Id], onDelete: Cascade)
+  UpdatedAt    DateTime @default(dbgenerated("0001-01-01T00:00:00.0000000+00:00"), map: "DF__ReleaseSu__Updat__6EF57B66") @db.DateTimeOffset
+  Packages     Packages @relation(fields: [PackageId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_ReleaseSummaries_Packages_PackageId")
 
-  @@unique([PackageId, MajorVersion, IsPrerelease])
+  @@unique([PackageId, MajorVersion, IsPrerelease], map: "IX_ReleaseSummaries_PackageId_MajorVersion_IsPrerelease")
+}
+
+model Users {
+  StytchUserId          String       @db.NVarChar(128)
+  Email                 String?      @db.NVarChar(256)
+  Name                  String?      @db.NVarChar(256)
+  CreatedAt             DateTime     @db.DateTimeOffset
+  UpdatedAt             DateTime     @db.DateTimeOffset
+  LastLoginAt           DateTime?    @db.DateTimeOffset
+  StripeCustomerId      String?      @db.NVarChar(64)
+  StripeSubscriptionId  String?      @db.NVarChar(64)
+  SubscriptionExpiresAt DateTime?    @db.DateTimeOffset
+  SubscriptionStatus    String?      @db.NVarChar(32)
+  Id                    String       @id(map: "PK_Users") @default("", map: "DF__Users__Id__5AEE82B9") @db.NVarChar(21)
+  EmailDigestEnabled    Boolean      @default(dbgenerated("CONVERT([bit],(1))"), map: "DF__Users__EmailDige__6FE99F9F")
+  EmailReleaseEnabled   Boolean      @default(dbgenerated("CONVERT([bit],(1))"), map: "DF__Users__EmailRele__70DDC3D8")
+  EmailWelcomeSent      Boolean      @default(dbgenerated("CONVERT([bit],(0))"), map: "DF__Users__EmailWelc__71D1E811")
+  Watchlists            Watchlists[]
 }
 
 model Watchlists {
-  Id        String   @id @db.NVarChar(21)
   UserId    String   @db.NVarChar(21)
   PackageId String   @db.NVarChar(21)
   CreatedAt DateTime @db.DateTimeOffset
-  User      Users    @relation(fields: [UserId], references: [Id], onDelete: Cascade)
-  Package   Packages @relation(fields: [PackageId], references: [Id], onDelete: Cascade)
+  Id        String   @id(map: "PK_Watchlists") @default("", map: "DF__Watchlists__Id__60A75C0F") @db.NVarChar(21)
+  Packages  Packages @relation(fields: [PackageId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Watchlists_Packages_PackageId")
+  Users     Users    @relation(fields: [UserId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Watchlists_Users_UserId")
 
-  @@unique([UserId, PackageId])
-  @@index([PackageId])
+  @@index([PackageId], map: "IX_Watchlists_PackageId")
+  @@index([UserId], map: "IX_Watchlists_UserId")
 }
