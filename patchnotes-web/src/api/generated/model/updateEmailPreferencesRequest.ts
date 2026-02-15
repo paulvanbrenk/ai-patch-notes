@@ -8,6 +8,4 @@
 export interface UpdateEmailPreferencesRequest {
   /** @nullable */
   emailDigestEnabled: boolean | null;
-  /** @nullable */
-  emailReleaseEnabled: boolean | null;
 }

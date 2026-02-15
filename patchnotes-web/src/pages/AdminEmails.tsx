@@ -19,11 +19,6 @@ interface EmailTemplateDto {
 
 const SAMPLE_DATA: Record<string, Record<string, unknown>> = {
   welcome: { name: 'Jane Doe' },
-  release: {
-    packageName: 'react',
-    version: '19.1.0',
-    summary: 'New compiler features and performance improvements',
-  },
   digest: {
     name: 'Jane Doe',
     releases: [
@@ -74,24 +69,6 @@ function generatePreviewHtml(
     </p>
     <p style="color:#4a4a4a;font-size:16px;line-height:26px">
       Head to your <a href="#" style="color:#5469d4">dashboard</a> to start watching packages.
-    </p>
-    <hr style="border:none;border-top:1px solid #e6ebf1;margin:32px 0" />
-    <p style="color:#8898aa;font-size:12px">PatchNotes — Release notifications for developers</p>
-  </div>
-</body></html>`
-    }
-    case 'release': {
-      const pkg = String(sampleData.packageName ?? 'package')
-      const ver = String(sampleData.version ?? '0.0.0')
-      const summary = String(sampleData.summary ?? '')
-      return `<!DOCTYPE html>
-<html><head><meta charset="utf-8"></head>
-<body style="background-color:#f6f9fc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;margin:0;padding:20px">
-  <div style="background-color:#ffffff;margin:0 auto;padding:40px 20px;max-width:560px;border-radius:8px">
-    <h1 style="color:#1a1a1a;font-size:24px;font-weight:bold;margin:0 0 16px">New Release: ${pkg} ${ver}</h1>
-    <p style="color:#4a4a4a;font-size:16px;line-height:26px">${summary}</p>
-    <p style="color:#4a4a4a;font-size:16px;line-height:26px">
-      <a href="#" style="color:#5469d4">View on PatchNotes</a>
     </p>
     <hr style="border:none;border-top:1px solid #e6ebf1;margin:32px 0" />
     <p style="color:#8898aa;font-size:12px">PatchNotes — Release notifications for developers</p>
