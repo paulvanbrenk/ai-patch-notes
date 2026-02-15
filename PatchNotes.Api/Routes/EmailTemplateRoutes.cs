@@ -162,7 +162,12 @@ public static class EmailTemplateRoutes
                     </Text>
                   </Section>
                   <Hr style={{ borderColor: "#e6ebf1", margin: "32px 0" }} />
-                  <Text style={{ color: "#8898aa", fontSize: "12px" }}>PatchNotes — Release notifications for developers</Text>
+                  <Text style={{ color: "#8898aa", fontSize: "12px" }}>
+                    PatchNotes — Release notifications for developers
+                  </Text>
+                  <Text style={{ color: "#8898aa", fontSize: "12px" }}>
+                    <Link href="https://myreleasenotes.ai/settings" style={{ color: "#8898aa", textDecoration: "underline" }}>Manage email preferences</Link>
+                  </Text>
                 </Container>
               </Body>
             </Html>
@@ -191,7 +196,12 @@ public static class EmailTemplateRoutes
                     </Text>
                   </Section>
                   <Hr style={{ borderColor: "#e6ebf1", margin: "32px 0" }} />
-                  <Text style={{ color: "#8898aa", fontSize: "12px" }}>PatchNotes — Release notifications for developers</Text>
+                  <Text style={{ color: "#8898aa", fontSize: "12px" }}>
+                    PatchNotes — Release notifications for developers
+                  </Text>
+                  <Text style={{ color: "#8898aa", fontSize: "12px" }}>
+                    <Link href="https://myreleasenotes.ai/settings" style={{ color: "#8898aa", textDecoration: "underline" }}>Manage email preferences</Link>
+                  </Text>
                 </Container>
               </Body>
             </Html>
@@ -231,7 +241,12 @@ public static class EmailTemplateRoutes
                     </Text>
                   </Section>
                   <Hr style={{ borderColor: "#e6ebf1", margin: "32px 0" }} />
-                  <Text style={{ color: "#8898aa", fontSize: "12px" }}>PatchNotes — Release notifications for developers</Text>
+                  <Text style={{ color: "#8898aa", fontSize: "12px" }}>
+                    PatchNotes — Release notifications for developers
+                  </Text>
+                  <Text style={{ color: "#8898aa", fontSize: "12px" }}>
+                    <Link href="https://myreleasenotes.ai/settings" style={{ color: "#8898aa", textDecoration: "underline" }}>Manage email preferences</Link>
+                  </Text>
                 </Container>
               </Body>
             </Html>
