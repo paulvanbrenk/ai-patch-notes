@@ -4,14 +4,13 @@ Azure Functions project for email delivery in the PatchNotes application.
 
 ## Overview
 
-A TypeScript Azure Functions app that handles email notifications via [Resend](https://resend.com/). Provides welcome emails, release notifications, and weekly digest emails.
+A TypeScript Azure Functions app that handles email notifications via [Resend](https://resend.com/). Provides welcome emails and weekly digest emails.
 
 ## Functions
 
 | Function | Trigger | Description |
 |----------|---------|-------------|
 | `sendWelcome` | HTTP POST | Sends welcome email to new users |
-| `sendRelease` | HTTP POST | Sends release notification email |
 | `sendDigest` | Timer | Sends weekly digest of release activity |
 
 ## Running
@@ -54,7 +53,6 @@ patchnotes-email/
 ├── src/
 │   ├── functions/
 │   │   ├── sendWelcome.ts    # Welcome email (HTTP trigger)
-│   │   ├── sendRelease.ts    # Release notification (HTTP trigger)
 │   │   └── sendDigest.ts     # Weekly digest (timer trigger)
 │   └── lib/
 │       └── resend.ts         # Resend client setup

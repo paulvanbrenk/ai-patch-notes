@@ -224,11 +224,6 @@ namespace PatchNotes.Data.Migrations.SqlServer
                         .HasColumnType("bit")
                         .HasDefaultValue(true);
 
-                    b.Property<bool>("EmailReleaseEnabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
-
                     b.Property<bool>("EmailWelcomeSent")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
