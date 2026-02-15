@@ -7,6 +7,5 @@
 
 export interface EmailPreferencesDto {
   emailDigestEnabled?: boolean;
-  emailReleaseEnabled?: boolean;
   emailWelcomeSent?: boolean;
 }

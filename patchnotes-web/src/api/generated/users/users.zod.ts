@@ -40,18 +40,15 @@ export const LoginUserResponse = zod.object({
 
 export const GetEmailPreferencesResponse = zod.object({
   "emailDigestEnabled": zod.boolean().optional(),
-  "emailReleaseEnabled": zod.boolean().optional(),
   "emailWelcomeSent": zod.boolean().optional()
 })
 
 export const UpdateEmailPreferencesBody = zod.object({
-  "emailDigestEnabled": zod.boolean().nullable(),
-  "emailReleaseEnabled": zod.boolean().nullable()
+  "emailDigestEnabled": zod.boolean().nullable()
 })
 
 export const UpdateEmailPreferencesResponse = zod.object({
   "emailDigestEnabled": zod.boolean().optional(),
-  "emailReleaseEnabled": zod.boolean().optional(),
   "emailWelcomeSent": zod.boolean().optional()
 })
 

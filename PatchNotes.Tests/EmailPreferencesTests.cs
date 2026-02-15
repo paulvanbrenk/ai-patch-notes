@@ -37,7 +37,6 @@ public class EmailPreferencesTests : IAsyncLifetime
         var prefs = await response.Content.ReadFromJsonAsync<EmailPreferencesDto>();
         prefs.Should().NotBeNull();
         prefs!.EmailDigestEnabled.Should().BeTrue();
-        prefs.EmailReleaseEnabled.Should().BeTrue();
         prefs.EmailWelcomeSent.Should().BeFalse();
     }
 
@@ -50,7 +49,7 @@ public class EmailPreferencesTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task PatchEmailPreferences_UpdatesDigestOnly()
+    public async Task PatchEmailPreferences_UpdatesDigest()
     {
         var response = await _authClient.PatchAsJsonAsync("/api/users/me/email-preferences",
             new { EmailDigestEnabled = false });
@@ -58,31 +57,6 @@ public class EmailPreferencesTests : IAsyncLifetime
 
         var prefs = await response.Content.ReadFromJsonAsync<EmailPreferencesDto>();
         prefs!.EmailDigestEnabled.Should().BeFalse();
-        prefs.EmailReleaseEnabled.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task PatchEmailPreferences_UpdatesReleaseOnly()
-    {
-        var response = await _authClient.PatchAsJsonAsync("/api/users/me/email-preferences",
-            new { EmailReleaseEnabled = false });
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        var prefs = await response.Content.ReadFromJsonAsync<EmailPreferencesDto>();
-        prefs!.EmailDigestEnabled.Should().BeTrue();
-        prefs.EmailReleaseEnabled.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task PatchEmailPreferences_UpdatesBothFields()
-    {
-        var response = await _authClient.PatchAsJsonAsync("/api/users/me/email-preferences",
-            new { EmailDigestEnabled = false, EmailReleaseEnabled = false });
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        var prefs = await response.Content.ReadFromJsonAsync<EmailPreferencesDto>();
-        prefs!.EmailDigestEnabled.Should().BeFalse();
-        prefs.EmailReleaseEnabled.Should().BeFalse();
     }
 
     [Fact]
@@ -114,6 +88,5 @@ public class EmailPreferencesTests : IAsyncLifetime
 
         var prefs = await response.Content.ReadFromJsonAsync<EmailPreferencesDto>();
         prefs!.EmailDigestEnabled.Should().BeTrue();
-        prefs.EmailReleaseEnabled.Should().BeTrue();
     }
 }

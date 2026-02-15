@@ -189,7 +189,6 @@ public static class UserRoutes
                 .Select(u => new EmailPreferencesDto
                 {
                     EmailDigestEnabled = u.EmailDigestEnabled,
-                    EmailReleaseEnabled = u.EmailReleaseEnabled,
                     EmailWelcomeSent = u.EmailWelcomeSent
                 })
                 .FirstOrDefaultAsync();
@@ -220,15 +219,11 @@ public static class UserRoutes
             if (request.EmailDigestEnabled.HasValue)
                 user.EmailDigestEnabled = request.EmailDigestEnabled.Value;
 
-            if (request.EmailReleaseEnabled.HasValue)
-                user.EmailReleaseEnabled = request.EmailReleaseEnabled.Value;
-
             await db.SaveChangesAsync();
 
             return Results.Ok(new EmailPreferencesDto
             {
                 EmailDigestEnabled = user.EmailDigestEnabled,
-                EmailReleaseEnabled = user.EmailReleaseEnabled,
                 EmailWelcomeSent = user.EmailWelcomeSent
             });
         })
@@ -257,8 +252,7 @@ public record UpdateUserRequest(string? Name);
 public class EmailPreferencesDto
 {
     public bool EmailDigestEnabled { get; set; }
-    public bool EmailReleaseEnabled { get; set; }
     public bool EmailWelcomeSent { get; set; }
 }
 
-public record UpdateEmailPreferencesRequest(bool? EmailDigestEnabled, bool? EmailReleaseEnabled);
+public record UpdateEmailPreferencesRequest(bool? EmailDigestEnabled);
