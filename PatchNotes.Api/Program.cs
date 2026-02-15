@@ -135,13 +135,6 @@ app.MapStytchWebhook();
 app.MapStripeWebhook();
 app.MapEmailTemplateRoutes();
 
-// Seed default email templates
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
-    await EmailTemplateRoutes.SeedDefaultTemplatesAsync(db);
-}
-
 app.Run();
 
 // Make the Program class accessible to the test project

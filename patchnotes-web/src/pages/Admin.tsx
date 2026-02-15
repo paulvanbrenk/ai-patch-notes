@@ -474,6 +474,11 @@ export function Admin() {
               Back to Home
             </Button>
           </Link>
+          <Link to="/admin/emails">
+            <Button variant="secondary" size="sm">
+              Email Templates
+            </Button>
+          </Link>
           <Button
             variant="secondary"
             size="sm"
