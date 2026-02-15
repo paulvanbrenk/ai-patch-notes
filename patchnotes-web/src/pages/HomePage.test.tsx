@@ -146,6 +146,49 @@ describe('HomePage', () => {
     })
   })
 
+  describe('prerelease type detection', () => {
+    beforeEach(() => {
+      mockStytchUser.mockReturnValue(anonymousUser)
+    })
+
+    it('detects .NET-style preview tags and renders preview badge', async () => {
+      const previewGroup: (typeof mockFeedGroups)[number] = {
+        packageId: 'pkg-dotnet-test-id',
+        packageName: 'dotnet-runtime',
+        npmName: null,
+        githubOwner: 'dotnet',
+        githubRepo: 'runtime',
+        majorVersion: 11,
+        isPrerelease: true,
+        versionRange: 'v11.x',
+        summary: null,
+        releaseCount: 1,
+        lastUpdated: '2026-02-01T00:00:00Z',
+        releases: [
+          {
+            id: 'rel-dotnet-preview-test-id',
+            tag: 'v11.0.0-preview.1.26104.118',
+            title: '.NET 11 Preview 1',
+            publishedAt: '2026-02-01T00:00:00Z',
+          },
+        ],
+      }
+
+      server.use(
+        http.get('/api/feed', () => {
+          return HttpResponse.json({ groups: [previewGroup] })
+        })
+      )
+
+      render(<HomePage />)
+
+      await waitFor(() => {
+        expect(screen.getByText('dotnet/runtime')).toBeInTheDocument()
+      })
+      expect(screen.getByText('preview')).toBeInTheDocument()
+    })
+  })
+
   describe('authenticated user with empty watchlist', () => {
     beforeEach(() => {
       mockStytchUser.mockReturnValue(authenticatedUser)
