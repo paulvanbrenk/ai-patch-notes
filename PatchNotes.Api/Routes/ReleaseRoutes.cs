@@ -39,7 +39,7 @@ public static class ReleaseRoutes
 
             if (release == null)
             {
-                return Results.NotFound(new { error = "Release not found" });
+                return Results.NotFound(new ApiError("Release not found"));
             }
 
             return Results.Ok(release);
@@ -62,7 +62,7 @@ public static class ReleaseRoutes
 
             if (watchlist == true && !string.IsNullOrEmpty(packages))
             {
-                return Results.Json(new { error = "Cannot specify both 'watchlist' and 'packages' parameters" }, statusCode: 400);
+                return Results.Json(new ApiError("Cannot specify both 'watchlist' and 'packages' parameters"), statusCode: 400);
             }
 
             if (watchlist == true)
@@ -71,7 +71,7 @@ public static class ReleaseRoutes
                 var userWatchlistIds = await RouteUtils.GetAuthenticatedUserWatchlistIds(httpContext, db, stytchClient);
                 if (userWatchlistIds == null)
                 {
-                    return Results.Json(new { error = "Authentication required for watchlist filter" }, statusCode: 401);
+                    return Results.Json(new ApiError("Authentication required for watchlist filter"), statusCode: 401);
                 }
 
                 query = query.Where(r => userWatchlistIds.Contains(r.PackageId));

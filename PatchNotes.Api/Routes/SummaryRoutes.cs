@@ -19,7 +19,7 @@ public static class SummaryRoutes
             var packageExists = await db.Packages.AnyAsync(p => p.Id == id);
             if (!packageExists)
             {
-                return Results.NotFound(new { error = "Package not found" });
+                return Results.NotFound(new ApiError("Package not found"));
             }
 
             IQueryable<ReleaseSummary> query = db.ReleaseSummaries

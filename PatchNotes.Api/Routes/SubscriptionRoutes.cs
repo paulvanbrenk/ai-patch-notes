@@ -70,7 +70,7 @@ public static class SubscriptionRoutes
             var user = await db.Users.FirstOrDefaultAsync(u => u.StytchUserId == stytchUserId);
             if (user == null)
             {
-                return Results.NotFound(new { error = "User not found" });
+                return Results.NotFound(new ApiError("User not found"));
             }
 
             var priceId = configuration["Stripe:PriceId"];
@@ -137,12 +137,12 @@ public static class SubscriptionRoutes
             var user = await db.Users.FirstOrDefaultAsync(u => u.StytchUserId == stytchUserId);
             if (user == null)
             {
-                return Results.NotFound(new { error = "User not found" });
+                return Results.NotFound(new ApiError("User not found"));
             }
 
             if (string.IsNullOrEmpty(user.StripeCustomerId))
             {
-                return Results.BadRequest(new { error = "No subscription found" });
+                return Results.BadRequest(new ApiError("No subscription found"));
             }
 
             var origin = GetValidatedOrigin(httpContext);
@@ -181,7 +181,7 @@ public static class SubscriptionRoutes
             var user = await db.Users.FirstOrDefaultAsync(u => u.StytchUserId == stytchUserId);
             if (user == null)
             {
-                return Results.NotFound(new { error = "User not found" });
+                return Results.NotFound(new ApiError("User not found"));
             }
 
             return Results.Ok(new SubscriptionStatusDto

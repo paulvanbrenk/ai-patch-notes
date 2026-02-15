@@ -31,7 +31,7 @@ public static class UserRoutes
 
             if (user == null)
             {
-                return Results.NotFound(new { error = "User not found" });
+                return Results.NotFound(new ApiError("User not found"));
             }
 
             return Results.Ok(user);
@@ -127,12 +127,12 @@ public static class UserRoutes
             }
             catch (Exception ex)
             {
-                return Results.Json(new { error = "Stytch API call failed", detail = ex.Message }, statusCode: 502);
+                return Results.Json(new ApiError("Stytch API call failed", ex.Message), statusCode: 502);
             }
 
             if (stytchUser == null)
             {
-                return Results.Json(new { error = "Could not fetch user from Stytch", stytchUserId }, statusCode: 502);
+                return Results.Json(new ApiError("Could not fetch user from Stytch", stytchUserId), statusCode: 502);
             }
 
             // Step 2: Find user in DB (same as webhook)
@@ -143,12 +143,12 @@ public static class UserRoutes
             }
             catch (Exception ex)
             {
-                return Results.Json(new { error = "DB query failed", detail = ex.Message }, statusCode: 500);
+                return Results.Json(new ApiError("DB query failed", ex.Message), statusCode: 500);
             }
 
             if (user == null)
             {
-                return Results.NotFound(new { error = "User not found" });
+                return Results.NotFound(new ApiError("User not found"));
             }
 
             // Step 3: Update fields (same as webhook, plus the name from request)
@@ -160,7 +160,7 @@ public static class UserRoutes
             }
             catch (Exception ex)
             {
-                return Results.Json(new { error = "DB save failed", detail = ex.Message, innerException = ex.InnerException?.Message }, statusCode: 500);
+                return Results.Json(new ApiError("DB save failed", ex.Message), statusCode: 500);
             }
 
             return Results.Ok(new UserDto
@@ -195,7 +195,7 @@ public static class UserRoutes
 
             if (prefs == null)
             {
-                return Results.NotFound(new { error = "User not found" });
+                return Results.NotFound(new ApiError("User not found"));
             }
 
             return Results.Ok(prefs);
@@ -213,7 +213,7 @@ public static class UserRoutes
             var user = await db.Users.FirstOrDefaultAsync(u => u.StytchUserId == stytchUserId);
             if (user == null)
             {
-                return Results.NotFound(new { error = "User not found" });
+                return Results.NotFound(new ApiError("User not found"));
             }
 
             if (request.EmailDigestEnabled.HasValue)

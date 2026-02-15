@@ -96,7 +96,7 @@ public static class RouteUtils
 
             if (session == null || !session.IsAdmin)
             {
-                return Results.Json(new { error = "Forbidden" }, statusCode: StatusCodes.Status403Forbidden);
+                return Results.Json(new ApiError("Forbidden"), statusCode: StatusCodes.Status403Forbidden);
             }
 
             return await next(invocationContext);
@@ -164,6 +164,8 @@ public static class RouteUtils
         return (ids, true);
     }
 }
+
+public record ApiError(string Error, string? Details = null);
 
 public record AddPackageRequest(string NpmName, string? TagPrefix = null);
 public record UpdatePackageRequest(string? GithubOwner, string? GithubRepo, string? TagPrefix = null);
