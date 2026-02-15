@@ -96,3 +96,11 @@ model Watchlists {
   @@index([PackageId], map: "IX_Watchlists_PackageId")
   @@index([UserId], map: "IX_Watchlists_UserId")
 }
+
+model EmailTemplates {
+  Id        String   @id(map: "PK_EmailTemplates") @db.NVarChar(128)
+  Name      String   @unique(map: "IX_EmailTemplates_Name") @db.NVarChar(128)
+  Subject   String   @db.NVarChar(512)
+  JsxSource String   @db.NVarChar(Max)
+  UpdatedAt DateTime @db.DateTimeOffset
+}

@@ -20,7 +20,7 @@ export async function sendDigest(
             Email: { not: null },
             Watchlists: {
                 some: {
-                    Package: {
+                    Packages: {
                         Releases: {
                             some: { PublishedAt: { gte: cutoff } },
                         },
@@ -33,7 +33,7 @@ export async function sendDigest(
             Name: true,
             Watchlists: {
                 select: {
-                    Package: {
+                    Packages: {
                         select: {
                             Name: true,
                             Releases: {
@@ -70,12 +70,12 @@ export async function sendDigest(
         const releases: Array<{ packageName: string; version: string; summary: string }> = [];
 
         for (const watch of user.Watchlists) {
-            for (const release of watch.Package.Releases) {
-                const matchingSummary = watch.Package.ReleaseSummaries.find(
+            for (const release of watch.Packages.Releases) {
+                const matchingSummary = watch.Packages.ReleaseSummaries.find(
                     (s) => s.MajorVersion === release.MajorVersion && s.IsPrerelease === release.IsPrerelease
                 );
                 releases.push({
-                    packageName: watch.Package.Name,
+                    packageName: watch.Packages.Name,
                     version: release.Tag,
                     summary: matchingSummary?.Summary ?? "",
                 });
