@@ -22,7 +22,13 @@ public static class StytchWebhook
         // POST /webhooks/stytch - Handle Stytch webhook events
         app.MapPost("/webhooks/stytch", async (HttpContext httpContext, PatchNotesDbContext db, IStytchClient stytchClient, IConfiguration configuration) =>
         {
+            // CRITICAL: Fail early if webhook secret is not configured
             var stytchWebhookSecret = configuration["Stytch:WebhookSecret"];
+            if (string.IsNullOrEmpty(stytchWebhookSecret))
+            {
+                Console.WriteLine("Stytch:WebhookSecret is not configured. Rejecting webhook to prevent unverified payloads");
+                return Results.StatusCode(503);
+            }
 
             // Read Svix headers for signature verification
             var svixId = httpContext.Request.Headers["svix-id"].FirstOrDefault();
@@ -34,27 +40,24 @@ public static class StytchWebhook
             var body = await reader.ReadToEndAsync();
 
             // Verify webhook signature using Svix
-            if (!string.IsNullOrEmpty(stytchWebhookSecret))
+            if (string.IsNullOrEmpty(svixId) || string.IsNullOrEmpty(svixTimestamp) || string.IsNullOrEmpty(svixSignature))
             {
-                if (string.IsNullOrEmpty(svixId) || string.IsNullOrEmpty(svixTimestamp) || string.IsNullOrEmpty(svixSignature))
-                {
-                    return Results.Unauthorized();
-                }
+                return Results.Unauthorized();
+            }
 
-                var svix = new Svix.Webhook(stytchWebhookSecret);
-                var headers = new WebHeaderCollection();
-                headers.Set("svix-id", svixId);
-                headers.Set("svix-timestamp", svixTimestamp);
-                headers.Set("svix-signature", svixSignature);
+            var svix = new Svix.Webhook(stytchWebhookSecret);
+            var headers = new WebHeaderCollection();
+            headers.Set("svix-id", svixId);
+            headers.Set("svix-timestamp", svixTimestamp);
+            headers.Set("svix-signature", svixSignature);
 
-                try
-                {
-                    svix.Verify(body, headers);
-                }
-                catch
-                {
-                    return Results.Unauthorized();
-                }
+            try
+            {
+                svix.Verify(body, headers);
+            }
+            catch
+            {
+                return Results.Unauthorized();
             }
 
             // Step 1: Deserialize the webhook payload
