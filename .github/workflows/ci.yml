@@ -152,3 +152,74 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+  schema-drift:
+    name: Prisma Schema Drift Check
+    runs-on: ubuntu-latest
+
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: Y
+          MSSQL_SA_PASSWORD: Passw0rd_CI_2024
+        ports:
+          - 1433:1433
+        options: >-
+          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'Passw0rd_CI_2024' -C -Q 'SELECT 1' || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+          --health-start-period 30s
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore and build
+        run: dotnet build PatchNotes.slnx --configuration Release
+
+      - name: Install EF Core tools
+        run: dotnet tool install --global dotnet-ef
+
+      - name: Apply EF Core migrations to SQL Server
+        env:
+          ConnectionStrings__PatchNotes: "Server=localhost,1433;Database=PatchNotes;User Id=sa;Password=Passw0rd_CI_2024;TrustServerCertificate=True"
+        run: |
+          dotnet ef database update \
+            --context SqlServerContext \
+            --project PatchNotes.Data \
+            --startup-project PatchNotes.Api \
+            --configuration Release \
+            --no-build
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Pull schema from database
+        env:
+          DATABASE_URL: "sqlserver://localhost:1433;database=PatchNotes;user=sa;password=Passw0rd_CI_2024;trustServerCertificate=true"
+        working-directory: patchnotes-email
+        run: pnpm db:pull
+
+      - name: Check Prisma schema is up to date
+        run: |
+          git diff --exit-code patchnotes-email/prisma/schema.prisma || {
+            echo ""
+            echo "::error::Prisma schema is out of sync with database. Run 'cd patchnotes-email && pnpm db:pull && pnpm db:generate' and commit the changes."
+            exit 1
+          }

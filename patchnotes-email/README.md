@@ -63,7 +63,36 @@ patchnotes-email/
 └── tsconfig.json
 ```
 
+## Database Schema (Prisma)
+
+This project uses [Prisma](https://www.prisma.io/) for database access. **EF Core owns all migrations** — the `PatchNotes.Data` project is the source of truth for the database schema. Prisma is introspection-only here.
+
+**Important:** Never run `prisma migrate` or `prisma db push` in this project. Prisma only reads the schema via `prisma db pull`.
+
+### After changing an EF Core migration
+
+When you add or modify an EF Core migration in `PatchNotes.Data`, you must also update the Prisma schema:
+
+```bash
+cd patchnotes-email
+pnpm db:pull      # Introspect the database and update prisma/schema.prisma
+pnpm db:generate  # Regenerate the Prisma client from the updated schema
+```
+
+Commit both the EF Core migration and the updated Prisma schema together.
+
+### CI enforcement
+
+CI runs a `schema-drift` job that:
+1. Spins up a SQL Server instance
+2. Applies all EF Core migrations
+3. Runs `prisma db pull` against that database
+4. Fails if `prisma/schema.prisma` differs from what's committed
+
+This prevents the email function from silently breaking due to schema drift.
+
 ## Dependencies
 
 - **@azure/functions** - Azure Functions SDK
 - **resend** - Email delivery API
+- **prisma** / **@prisma/client** - Database access (introspection-only)
