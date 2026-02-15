@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
@@ -11,4 +5,85 @@ generator client {
 
 datasource db {
   provider = "sqlserver"
+}
+
+model Users {
+  Id                    String     @id @db.NVarChar(21)
+  StytchUserId          String     @unique @db.NVarChar(128)
+  Email                 String?    @db.NVarChar(256)
+  Name                  String?    @db.NVarChar(256)
+  CreatedAt             DateTime   @db.DateTimeOffset
+  UpdatedAt             DateTime   @db.DateTimeOffset
+  LastLoginAt           DateTime?  @db.DateTimeOffset
+  StripeCustomerId      String?    @db.NVarChar(64)
+  StripeSubscriptionId  String?    @db.NVarChar(64)
+  SubscriptionStatus    String?    @db.NVarChar(32)
+  SubscriptionExpiresAt DateTime?  @db.DateTimeOffset
+  EmailDigestEnabled    Boolean    @default(true)
+  EmailReleaseEnabled   Boolean    @default(true)
+  EmailWelcomeSent      Boolean    @default(false)
+  Watchlists            Watchlists[]
+
+  @@index([Email])
+  @@index([StripeCustomerId])
+}
+
+model Packages {
+  Id              String            @id @db.NVarChar(21)
+  Name            String            @db.NVarChar(Max)
+  Url             String            @db.NVarChar(Max)
+  NpmName         String?           @unique @db.NVarChar(256)
+  GithubOwner     String            @db.NVarChar(128)
+  GithubRepo      String            @db.NVarChar(128)
+  TagPrefix       String?           @db.NVarChar(64)
+  LastFetchedAt   DateTime?         @db.DateTimeOffset
+  CreatedAt       DateTime          @db.DateTimeOffset
+  Releases        Releases[]
+  ReleaseSummaries ReleaseSummaries[]
+  Watchlists      Watchlists[]
+}
+
+model Releases {
+  Id           String   @id @db.NVarChar(21)
+  PackageId    String   @db.NVarChar(21)
+  Tag          String   @db.NVarChar(128)
+  Title        String?  @db.NVarChar(Max)
+  Body         String?  @db.NVarChar(Max)
+  PublishedAt  DateTime @db.DateTimeOffset
+  FetchedAt    DateTime @db.DateTimeOffset
+  MajorVersion Int
+  MinorVersion Int
+  PatchVersion Int
+  IsPrerelease Boolean
+  SummaryStale Boolean  @default(true)
+  Package      Packages @relation(fields: [PackageId], references: [Id], onDelete: Cascade)
+
+  @@unique([PackageId, Tag])
+  @@index([PublishedAt])
+  @@index([PackageId, MajorVersion, IsPrerelease])
+}
+
+model ReleaseSummaries {
+  Id           String   @id @db.NVarChar(21)
+  PackageId    String   @db.NVarChar(21)
+  MajorVersion Int
+  IsPrerelease Boolean
+  Summary      String   @db.NVarChar(Max)
+  GeneratedAt  DateTime @db.DateTimeOffset
+  UpdatedAt    DateTime @db.DateTimeOffset
+  Package      Packages @relation(fields: [PackageId], references: [Id], onDelete: Cascade)
+
+  @@unique([PackageId, MajorVersion, IsPrerelease])
+}
+
+model Watchlists {
+  Id        String   @id @db.NVarChar(21)
+  UserId    String   @db.NVarChar(21)
+  PackageId String   @db.NVarChar(21)
+  CreatedAt DateTime @db.DateTimeOffset
+  User      Users    @relation(fields: [UserId], references: [Id], onDelete: Cascade)
+  Package   Packages @relation(fields: [PackageId], references: [Id], onDelete: Cascade)
+
+  @@unique([UserId, PackageId])
+  @@index([PackageId])
 }
