@@ -43,7 +43,7 @@ A GitHub release viewer for npm packages. Track release notes across your favori
 
 - **PatchNotes.Data** - EF Core models, SQLite/SQL Server, database seeding, version parsing
 - **PatchNotes.Api** - ASP.NET Core Web API (port 5031), Stytch authentication
-- **PatchNotes.Sync** - CLI tool + SyncPipeline for concurrent sync & summary generation, GitHub client, AI client
+- **PatchNotes.Sync** - CLI tool + SyncPipeline for concurrent sync & summary generation, GitHub client, AI client. **TODO:** Refactor into a class library (PatchNotes.Sync.Core) and a thin CLI entry point — the API currently references this Exe project for the GitHub client, which causes Azure App Service startup issues when multiple `runtimeconfig.json` files are published.
 - **PatchNotes.Functions** - Azure Functions timer trigger that runs the SyncPipeline every 6 hours
 - **patchnotes-web** - React frontend with TanStack Router & Query, Orval-generated API client
 - **patchnotes-email** - Azure Functions (TypeScript) for email delivery via Resend
