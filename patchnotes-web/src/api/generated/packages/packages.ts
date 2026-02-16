@@ -27,11 +27,14 @@ import type {
   AddPackageRequest,
   BulkAddPackageItem,
   BulkAddPackageResult,
-  OwnerPackageDto,
+  GetPackagesByOwnerParams,
+  GetPackagesParams,
   PackageDetailDto,
   PackageDetailResponseDto,
   PackageDto,
   PackageReleaseDto,
+  PaginatedResponseOfOwnerPackageDto,
+  PaginatedResponseOfPackageDto,
   UpdatePackageRequest
 } from '.././model';
 
@@ -43,7 +46,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
 export type getPackagesResponse200 = {
-  data: PackageDto[]
+  data: PaginatedResponseOfPackageDto
   status: 200
 }
     
@@ -54,17 +57,24 @@ export type getPackagesResponseSuccess = (getPackagesResponse200) & {
 
 export type getPackagesResponse = (getPackagesResponseSuccess)
 
-export const getGetPackagesUrl = () => {
+export const getGetPackagesUrl = (params?: GetPackagesParams,) => {
+  const normalizedParams = new URLSearchParams();
 
+  Object.entries(params || {}).forEach(([key, value]) => {
+    
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
 
-  
+  const stringifiedParams = normalizedParams.toString();
 
-  return `/api/packages`
+  return stringifiedParams.length > 0 ? `/api/packages?${stringifiedParams}` : `/api/packages`
 }
 
-export const getPackages = async ( options?: RequestInit): Promise<getPackagesResponse> => {
+export const getPackages = async (params?: GetPackagesParams, options?: RequestInit): Promise<getPackagesResponse> => {
   
-  return customFetch<getPackagesResponse>(getGetPackagesUrl(),
+  return customFetch<getPackagesResponse>(getGetPackagesUrl(params),
   {      
     ...options,
     method: 'GET'
@@ -77,23 +87,23 @@ export const getPackages = async ( options?: RequestInit): Promise<getPackagesRe
 
 
 
-export const getGetPackagesQueryKey = () => {
+export const getGetPackagesQueryKey = (params?: GetPackagesParams,) => {
     return [
-    `/api/packages`
+    `/api/packages`, ...(params ? [params] : [])
     ] as const;
     }
 
     
-export const getGetPackagesQueryOptions = <TData = Awaited<ReturnType<typeof getPackages>>, TError = unknown>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackages>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+export const getGetPackagesQueryOptions = <TData = Awaited<ReturnType<typeof getPackages>>, TError = unknown>(params?: GetPackagesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackages>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetPackagesQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getGetPackagesQueryKey(params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPackages>>> = ({ signal }) => getPackages({ signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPackages>>> = ({ signal }) => getPackages(params, { signal, ...requestOptions });
 
       
 
@@ -107,7 +117,7 @@ export type GetPackagesQueryError = unknown
 
 
 export function useGetPackages<TData = Awaited<ReturnType<typeof getPackages>>, TError = unknown>(
-  options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackages>>, TError, TData>> & Pick<
+ params: undefined |  GetPackagesParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackages>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getPackages>>,
           TError,
@@ -117,7 +127,7 @@ export function useGetPackages<TData = Awaited<ReturnType<typeof getPackages>>, 
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetPackages<TData = Awaited<ReturnType<typeof getPackages>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackages>>, TError, TData>> & Pick<
+ params?: GetPackagesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackages>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getPackages>>,
           TError,
@@ -127,16 +137,16 @@ export function useGetPackages<TData = Awaited<ReturnType<typeof getPackages>>, 
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetPackages<TData = Awaited<ReturnType<typeof getPackages>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackages>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ params?: GetPackagesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackages>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
 export function useGetPackages<TData = Awaited<ReturnType<typeof getPackages>>, TError = unknown>(
-  options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackages>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ params?: GetPackagesParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackages>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetPackagesQueryOptions(options)
+  const queryOptions = getGetPackagesQueryOptions(params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
@@ -628,7 +638,7 @@ export function useGetPackageReleases<TData = Awaited<ReturnType<typeof getPacka
 
 
 export type getPackagesByOwnerResponse200 = {
-  data: OwnerPackageDto[]
+  data: PaginatedResponseOfOwnerPackageDto
   status: 200
 }
     
@@ -639,17 +649,26 @@ export type getPackagesByOwnerResponseSuccess = (getPackagesByOwnerResponse200) 
 
 export type getPackagesByOwnerResponse = (getPackagesByOwnerResponseSuccess)
 
-export const getGetPackagesByOwnerUrl = (owner: string,) => {
+export const getGetPackagesByOwnerUrl = (owner: string,
+    params?: GetPackagesByOwnerParams,) => {
+  const normalizedParams = new URLSearchParams();
 
+  Object.entries(params || {}).forEach(([key, value]) => {
+    
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
 
-  
+  const stringifiedParams = normalizedParams.toString();
 
-  return `/api/packages/${owner}`
+  return stringifiedParams.length > 0 ? `/api/packages/${owner}?${stringifiedParams}` : `/api/packages/${owner}`
 }
 
-export const getPackagesByOwner = async (owner: string, options?: RequestInit): Promise<getPackagesByOwnerResponse> => {
+export const getPackagesByOwner = async (owner: string,
+    params?: GetPackagesByOwnerParams, options?: RequestInit): Promise<getPackagesByOwnerResponse> => {
   
-  return customFetch<getPackagesByOwnerResponse>(getGetPackagesByOwnerUrl(owner),
+  return customFetch<getPackagesByOwnerResponse>(getGetPackagesByOwnerUrl(owner,params),
   {      
     ...options,
     method: 'GET'
@@ -662,23 +681,25 @@ export const getPackagesByOwner = async (owner: string, options?: RequestInit): 
 
 
 
-export const getGetPackagesByOwnerQueryKey = (owner: string,) => {
+export const getGetPackagesByOwnerQueryKey = (owner: string,
+    params?: GetPackagesByOwnerParams,) => {
     return [
-    `/api/packages/${owner}`
+    `/api/packages/${owner}`, ...(params ? [params] : [])
     ] as const;
     }
 
     
-export const getGetPackagesByOwnerQueryOptions = <TData = Awaited<ReturnType<typeof getPackagesByOwner>>, TError = unknown>(owner: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackagesByOwner>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+export const getGetPackagesByOwnerQueryOptions = <TData = Awaited<ReturnType<typeof getPackagesByOwner>>, TError = unknown>(owner: string,
+    params?: GetPackagesByOwnerParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackagesByOwner>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getGetPackagesByOwnerQueryKey(owner);
+  const queryKey =  queryOptions?.queryKey ?? getGetPackagesByOwnerQueryKey(owner,params);
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPackagesByOwner>>> = ({ signal }) => getPackagesByOwner(owner, { signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPackagesByOwner>>> = ({ signal }) => getPackagesByOwner(owner,params, { signal, ...requestOptions });
 
       
 
@@ -692,7 +713,8 @@ export type GetPackagesByOwnerQueryError = unknown
 
 
 export function useGetPackagesByOwner<TData = Awaited<ReturnType<typeof getPackagesByOwner>>, TError = unknown>(
- owner: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackagesByOwner>>, TError, TData>> & Pick<
+ owner: string,
+    params: undefined |  GetPackagesByOwnerParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackagesByOwner>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof getPackagesByOwner>>,
           TError,
@@ -702,7 +724,8 @@ export function useGetPackagesByOwner<TData = Awaited<ReturnType<typeof getPacka
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetPackagesByOwner<TData = Awaited<ReturnType<typeof getPackagesByOwner>>, TError = unknown>(
- owner: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackagesByOwner>>, TError, TData>> & Pick<
+ owner: string,
+    params?: GetPackagesByOwnerParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackagesByOwner>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof getPackagesByOwner>>,
           TError,
@@ -712,16 +735,18 @@ export function useGetPackagesByOwner<TData = Awaited<ReturnType<typeof getPacka
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 export function useGetPackagesByOwner<TData = Awaited<ReturnType<typeof getPackagesByOwner>>, TError = unknown>(
- owner: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackagesByOwner>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ owner: string,
+    params?: GetPackagesByOwnerParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackagesByOwner>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 
 export function useGetPackagesByOwner<TData = Awaited<ReturnType<typeof getPackagesByOwner>>, TError = unknown>(
- owner: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackagesByOwner>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
+ owner: string,
+    params?: GetPackagesByOwnerParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getPackagesByOwner>>, TError, TData>>, request?: SecondParameter<typeof customFetch>}
  , queryClient?: QueryClient 
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
-  const queryOptions = getGetPackagesByOwnerQueryOptions(owner,options)
+  const queryOptions = getGetPackagesByOwnerQueryOptions(owner,params,options)
 
   const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

@@ -7,7 +7,13 @@
 import * as zod from 'zod';
 
 
-export const GetPackagesResponseItem = zod.object({
+export const GetPackagesQueryParams = zod.object({
+  "limit": zod.number().optional(),
+  "offset": zod.number().optional()
+})
+
+export const GetPackagesResponse = zod.object({
+  "items": zod.array(zod.object({
   "id": zod.string(),
   "name": zod.string(),
   "url": zod.string().nullish(),
@@ -17,8 +23,11 @@ export const GetPackagesResponseItem = zod.object({
   "tagPrefix": zod.string().nullish(),
   "lastFetchedAt": zod.iso.datetime({"offset":true}).nullish(),
   "createdAt": zod.iso.datetime({"offset":true}).optional()
+})),
+  "total": zod.number().optional(),
+  "limit": zod.number().optional(),
+  "offset": zod.number().optional()
 })
-export const GetPackagesResponse = zod.array(GetPackagesResponseItem)
 
 export const CreatePackageBody = zod.object({
   "npmName": zod.string(),
@@ -114,7 +123,13 @@ export const GetPackagesByOwnerParams = zod.object({
   "owner": zod.string()
 })
 
-export const GetPackagesByOwnerResponseItem = zod.object({
+export const GetPackagesByOwnerQueryParams = zod.object({
+  "limit": zod.number().optional(),
+  "offset": zod.number().optional()
+})
+
+export const GetPackagesByOwnerResponse = zod.object({
+  "items": zod.array(zod.object({
   "id": zod.string(),
   "name": zod.string(),
   "npmName": zod.string().nullish(),
@@ -122,8 +137,11 @@ export const GetPackagesByOwnerResponseItem = zod.object({
   "githubRepo": zod.string(),
   "latestVersion": zod.string().nullish(),
   "lastUpdated": zod.iso.datetime({"offset":true}).nullish()
+})),
+  "total": zod.number().optional(),
+  "limit": zod.number().optional(),
+  "offset": zod.number().optional()
 })
-export const GetPackagesByOwnerResponse = zod.array(GetPackagesByOwnerResponseItem)
 
 export const GetPackageByOwnerRepoParams = zod.object({
   "owner": zod.string(),
