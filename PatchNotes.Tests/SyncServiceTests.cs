@@ -1024,13 +1024,25 @@ public class SyncServiceTests : IDisposable
         _db.Releases.AddRange(
             new Release
             {
-                PackageId = package.Id, Tag = "v1.0.0", PublishedAt = DateTimeOffset.UtcNow, FetchedAt = DateTimeOffset.UtcNow,
-                MajorVersion = 1, MinorVersion = 0, PatchVersion = 0, IsPrerelease = false // already correct
+                PackageId = package.Id,
+                Tag = "v1.0.0",
+                PublishedAt = DateTimeOffset.UtcNow,
+                FetchedAt = DateTimeOffset.UtcNow,
+                MajorVersion = 1,
+                MinorVersion = 0,
+                PatchVersion = 0,
+                IsPrerelease = false // already correct
             },
             new Release
             {
-                PackageId = package.Id, Tag = "v2.0.0", PublishedAt = DateTimeOffset.UtcNow, FetchedAt = DateTimeOffset.UtcNow,
-                MajorVersion = 0, MinorVersion = 0, PatchVersion = 0, IsPrerelease = false // needs update
+                PackageId = package.Id,
+                Tag = "v2.0.0",
+                PublishedAt = DateTimeOffset.UtcNow,
+                FetchedAt = DateTimeOffset.UtcNow,
+                MajorVersion = 0,
+                MinorVersion = 0,
+                PatchVersion = 0,
+                IsPrerelease = false // needs update
             }
         );
         await _db.SaveChangesAsync();

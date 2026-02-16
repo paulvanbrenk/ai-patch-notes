@@ -123,6 +123,9 @@ namespace PatchNotes.Data.Migrations.SqlServer
                     b.Property<string>("Body")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
                     b.Property<DateTimeOffset>("FetchedAt")
                         .HasColumnType("datetimeoffset");
 
@@ -159,6 +162,9 @@ namespace PatchNotes.Data.Migrations.SqlServer
                     b.Property<string>("Title")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
                     b.HasKey("Id");
 
                     b.HasIndex("PublishedAt");
@@ -176,6 +182,9 @@ namespace PatchNotes.Data.Migrations.SqlServer
                     b.Property<string>("Id")
                         .HasMaxLength(21)
                         .HasColumnType("nvarchar(21)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<DateTimeOffset>("GeneratedAt")
                         .HasColumnType("datetimeoffset");
