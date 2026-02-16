@@ -115,8 +115,9 @@ public static class UserRoutes
 
         // PUT /api/users/me - Update current user profile
         // Mirrors the webhook path: fetches user from Stytch API, then updates DB
-        group.MapPut("/me", async (HttpContext httpContext, UpdateUserRequest request, PatchNotesDbContext db, IStytchClient stytchClient) =>
+        group.MapPut("/me", async (HttpContext httpContext, UpdateUserRequest request, PatchNotesDbContext db, IStytchClient stytchClient, ILoggerFactory loggerFactory) =>
         {
+            var logger = loggerFactory.CreateLogger("PatchNotes.Api.Routes.UserRoutes");
             var stytchUserId = httpContext.Items["StytchUserId"] as string;
 
             // Step 1: Fetch fresh user data from Stytch (same as webhook)
@@ -127,12 +128,13 @@ public static class UserRoutes
             }
             catch (Exception ex)
             {
-                return Results.Json(new ApiError("Stytch API call failed", ex.Message), statusCode: 502);
+                logger.LogError(ex, "Stytch API call failed for user {StytchUserId}", stytchUserId);
+                return Results.Json(new ApiError("Stytch API call failed"), statusCode: 502);
             }
 
             if (stytchUser == null)
             {
-                return Results.Json(new ApiError("Could not fetch user from Stytch", stytchUserId), statusCode: 502);
+                return Results.Json(new ApiError("Could not fetch user from Stytch"), statusCode: 502);
             }
 
             // Step 2: Find user in DB (same as webhook)
@@ -143,7 +145,8 @@ public static class UserRoutes
             }
             catch (Exception ex)
             {
-                return Results.Json(new ApiError("DB query failed", ex.Message), statusCode: 500);
+                logger.LogError(ex, "DB query failed for user {StytchUserId}", stytchUserId);
+                return Results.Json(new ApiError("DB query failed"), statusCode: 500);
             }
 
             if (user == null)
@@ -160,7 +163,8 @@ public static class UserRoutes
             }
             catch (Exception ex)
             {
-                return Results.Json(new ApiError("DB save failed", ex.Message), statusCode: 500);
+                logger.LogError(ex, "DB save failed for user {StytchUserId}", stytchUserId);
+                return Results.Json(new ApiError("DB save failed"), statusCode: 500);
             }
 
             return Results.Ok(new UserDto
