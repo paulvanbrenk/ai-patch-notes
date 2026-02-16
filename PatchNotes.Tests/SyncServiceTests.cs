@@ -74,6 +74,43 @@ public class SyncServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task SyncAllAsync_WithPartialFailure_DoesNotSaveReleasesFromFailedPackage()
+    {
+        // Arrange
+        var package1 = new Package { Name = "pkg1", Url = "https://github.com/owner1/repo1", NpmName = "pkg1", GithubOwner = "owner1", GithubRepo = "repo1" };
+        var package2 = new Package { Name = "pkg2", Url = "https://github.com/owner2/repo2", NpmName = "pkg2", GithubOwner = "owner2", GithubRepo = "repo2" };
+        var package3 = new Package { Name = "pkg3", Url = "https://github.com/owner3/repo3", NpmName = "pkg3", GithubOwner = "owner3", GithubRepo = "repo3" };
+        _db.Packages.AddRange(package1, package2, package3);
+        await _db.SaveChangesAsync();
+
+        SetupGitHubReleases("owner1", "repo1", [CreateRelease("v1.0.0", DateTimeOffset.UtcNow)]);
+
+        // Package 2: yields one release successfully then throws
+        _mockGitHub
+            .Setup(x => x.GetAllReleasesAsync("owner2", "repo2", It.IsAny<CancellationToken>()))
+            .Returns(PartiallyThrowingAsyncEnumerable(
+                [CreateRelease("v2.0.0", DateTimeOffset.UtcNow)],
+                "API Error partway through"));
+
+        SetupGitHubReleases("owner3", "repo3", [CreateRelease("v3.0.0", DateTimeOffset.UtcNow)]);
+
+        // Act
+        var result = await _syncService.SyncAllAsync();
+
+        // Assert
+        result.PackagesSynced.Should().Be(2); // pkg1 and pkg3
+        result.Errors.Should().HaveCount(1);
+        result.Errors[0].PackageName.Should().Be("pkg2");
+
+        // Key assertion: pkg2's partially-added release should NOT be saved
+        var releases = await _db.Releases.ToListAsync();
+        releases.Should().HaveCount(2);
+        releases.Should().Contain(r => r.Tag == "v1.0.0");
+        releases.Should().Contain(r => r.Tag == "v3.0.0");
+        releases.Should().NotContain(r => r.Tag == "v2.0.0");
+    }
+
+    [Fact]
     public async Task SyncAllAsync_WithFailingPackage_ContinuesAndRecordsError()
     {
         // Arrange
@@ -1256,6 +1293,16 @@ public class SyncServiceTests : IDisposable
             yield return item;
         }
         await Task.CompletedTask;
+    }
+
+    private static async IAsyncEnumerable<T> PartiallyThrowingAsyncEnumerable<T>(IEnumerable<T> items, string message)
+    {
+        foreach (var item in items)
+        {
+            yield return item;
+        }
+        await Task.CompletedTask;
+        throw new Exception(message);
     }
 
     private static async IAsyncEnumerable<T> ThrowingAsyncEnumerable<T>(string message)

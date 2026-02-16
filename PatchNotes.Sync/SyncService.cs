@@ -75,6 +75,19 @@ public class SyncService
             {
                 result.Errors.Add(new SyncError(package.Name, ex.Message));
                 _logger.LogError(ex, "Failed to sync {Package}", package.Name);
+
+                // Discard pending changes from the failed package to prevent
+                // them from being saved by a subsequent package's SaveChanges
+                foreach (var entry in _db.ChangeTracker.Entries().ToList())
+                {
+                    if (entry.State == EntityState.Added)
+                        entry.State = EntityState.Detached;
+                    else if (entry.State == EntityState.Modified)
+                    {
+                        entry.CurrentValues.SetValues(entry.OriginalValues);
+                        entry.State = EntityState.Unchanged;
+                    }
+                }
             }
         }
 
