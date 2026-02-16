@@ -1,6 +1,10 @@
+using System.Net;
 using System.Net.Http.Headers;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Options;
+using Polly;
 
 namespace PatchNotes.Sync.GitHub;
 
@@ -28,6 +32,9 @@ public static class GitHubServiceCollectionExtensions
             services.AddOptions<GitHubClientOptions>();
         }
 
+        services.TryAddSingleton(TimeProvider.System);
+        services.AddTransient<RateLimitHandler>();
+
         services.AddHttpClient<IGitHubClient, GitHubClient>((serviceProvider, client) =>
         {
             var options = serviceProvider.GetRequiredService<IOptions<GitHubClientOptions>>().Value;
@@ -41,6 +48,24 @@ public static class GitHubServiceCollectionExtensions
             {
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.Token);
             }
+        })
+        .AddHttpMessageHandler<RateLimitHandler>()
+        .AddResilienceHandler("github-rate-limit", builder =>
+        {
+            builder.AddRetry(new HttpRetryStrategyOptions
+            {
+                MaxRetryAttempts = 3,
+                BackoffType = DelayBackoffType.Exponential,
+                Delay = TimeSpan.FromSeconds(2),
+                ShouldHandle = args => ValueTask.FromResult(
+                    args.Outcome.Result?.StatusCode is HttpStatusCode.TooManyRequests
+                    or HttpStatusCode.ServiceUnavailable),
+                DelayGenerator = args =>
+                {
+                    var retryAfter = args.Outcome.Result?.Headers.RetryAfter?.Delta;
+                    return new ValueTask<TimeSpan?>(retryAfter);
+                }
+            });
         });
 
         return services;
