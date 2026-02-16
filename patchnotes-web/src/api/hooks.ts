@@ -160,16 +160,25 @@ export function useUpdatePackage() {
       githubOwner,
       githubRepo,
       tagPrefix,
+      name,
+      npmName,
+      url,
     }: {
       id: string
       githubOwner?: string
       githubRepo?: string
       tagPrefix?: string
+      name?: string
+      npmName?: string
+      url?: string
     }) =>
       updatePackage(id, {
         githubOwner: githubOwner ?? null,
         githubRepo: githubRepo ?? null,
         tagPrefix: tagPrefix !== undefined ? tagPrefix : undefined,
+        name: name ?? null,
+        npmName: npmName ?? null,
+        url: url ?? null,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: getGetPackagesQueryKey() })

@@ -12,4 +12,10 @@ export interface UpdatePackageRequest {
   githubRepo: string | null;
   /** @nullable */
   tagPrefix?: string | null;
+  /** @nullable */
+  name?: string | null;
+  /** @nullable */
+  npmName?: string | null;
+  /** @nullable */
+  url?: string | null;
 }
