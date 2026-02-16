@@ -12,6 +12,21 @@ namespace PatchNotes.Data.Migrations.Sqlite
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "EmailTemplates",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "TEXT", maxLength: 128, nullable: false),
+                    Name = table.Column<string>(type: "TEXT", maxLength: 128, nullable: false),
+                    Subject = table.Column<string>(type: "TEXT", maxLength: 512, nullable: false),
+                    JsxSource = table.Column<string>(type: "TEXT", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EmailTemplates", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Packages",
                 columns: table => new
                 {
@@ -21,6 +36,7 @@ namespace PatchNotes.Data.Migrations.Sqlite
                     NpmName = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
                     GithubOwner = table.Column<string>(type: "TEXT", maxLength: 128, nullable: false),
                     GithubRepo = table.Column<string>(type: "TEXT", maxLength: 128, nullable: false),
+                    TagPrefix = table.Column<string>(type: "TEXT", maxLength: 64, nullable: true),
                     LastFetchedAt = table.Column<DateTime>(type: "TEXT", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
@@ -55,7 +71,9 @@ namespace PatchNotes.Data.Migrations.Sqlite
                     StripeCustomerId = table.Column<string>(type: "TEXT", maxLength: 64, nullable: true),
                     StripeSubscriptionId = table.Column<string>(type: "TEXT", maxLength: 64, nullable: true),
                     SubscriptionStatus = table.Column<string>(type: "TEXT", maxLength: 32, nullable: true),
-                    SubscriptionExpiresAt = table.Column<DateTime>(type: "TEXT", nullable: true)
+                    SubscriptionExpiresAt = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    EmailDigestEnabled = table.Column<bool>(type: "INTEGER", nullable: false, defaultValue: true),
+                    EmailWelcomeSent = table.Column<bool>(type: "INTEGER", nullable: false, defaultValue: false)
                 },
                 constraints: table =>
                 {
@@ -100,7 +118,7 @@ namespace PatchNotes.Data.Migrations.Sqlite
                     IsPrerelease = table.Column<bool>(type: "INTEGER", nullable: false),
                     Summary = table.Column<string>(type: "TEXT", nullable: false),
                     GeneratedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "TEXT", nullable: true)
+                    UpdatedAt = table.Column<DateTime>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -138,6 +156,12 @@ namespace PatchNotes.Data.Migrations.Sqlite
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EmailTemplates_Name",
+                table: "EmailTemplates",
+                column: "Name",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Packages_NpmName",
@@ -198,6 +222,9 @@ namespace PatchNotes.Data.Migrations.Sqlite
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "EmailTemplates");
+
             migrationBuilder.DropTable(
                 name: "ProcessedWebhookEvents");
 

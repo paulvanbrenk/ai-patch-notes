@@ -11,8 +11,8 @@ using PatchNotes.Data;
 namespace PatchNotes.Data.Migrations.Sqlite
 {
     [DbContext(typeof(SqliteContext))]
-    [Migration("20260215160601_AddEmailTemplates")]
-    partial class AddEmailTemplates
+    [Migration("20260215233034_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -217,11 +217,6 @@ namespace PatchNotes.Data.Migrations.Sqlite
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("EmailDigestEnabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(true);
-
-                    b.Property<bool>("EmailReleaseEnabled")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER")
                         .HasDefaultValue(true);

@@ -125,12 +125,6 @@ public static class EmailTemplateRoutes
             },
             new EmailTemplate
             {
-                Name = "release",
-                Subject = "{{packageName}} {{version}} released",
-                JsxSource = ReleaseJsx,
-            },
-            new EmailTemplate
-            {
                 Name = "digest",
                 Subject = "Your Weekly PatchNotes Digest — {{releaseCount}} updates",
                 JsxSource = DigestJsx,
@@ -159,40 +153,6 @@ public static class EmailTemplateRoutes
                     </Text>
                     <Text style={{ color: "#4a4a4a", fontSize: "16px", lineHeight: "26px" }}>
                       Head to your <Link href="https://patchnotes.dev" style={{ color: "#5469d4" }}>dashboard</Link> to start watching packages.
-                    </Text>
-                  </Section>
-                  <Hr style={{ borderColor: "#e6ebf1", margin: "32px 0" }} />
-                  <Text style={{ color: "#8898aa", fontSize: "12px" }}>
-                    PatchNotes — Release notifications for developers
-                  </Text>
-                  <Text style={{ color: "#8898aa", fontSize: "12px" }}>
-                    <Link href="https://myreleasenotes.ai/settings" style={{ color: "#8898aa", textDecoration: "underline" }}>Manage email preferences</Link>
-                  </Text>
-                </Container>
-              </Body>
-            </Html>
-          );
-        }
-        """;
-
-    private const string ReleaseJsx = """
-        import { Html, Head, Body, Container, Section, Heading, Text, Hr, Link } from "@react-email/components";
-
-        export default function ReleaseEmail({ packageName = "react", version = "19.1.0", summary = "New features and improvements" }) {
-          return (
-            <Html>
-              <Head />
-              <Body style={{ backgroundColor: "#f6f9fc", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" }}>
-                <Container style={{ backgroundColor: "#ffffff", margin: "0 auto", padding: "40px 20px", maxWidth: "560px" }}>
-                  <Section>
-                    <Heading style={{ color: "#1a1a1a", fontSize: "24px", fontWeight: "bold", margin: "0 0 16px" }}>
-                      New Release: {packageName} {version}
-                    </Heading>
-                    <Text style={{ color: "#4a4a4a", fontSize: "16px", lineHeight: "26px" }}>
-                      {summary}
-                    </Text>
-                    <Text style={{ color: "#4a4a4a", fontSize: "16px", lineHeight: "26px" }}>
-                      <Link href="https://patchnotes.dev" style={{ color: "#5469d4" }}>View on PatchNotes</Link>
                     </Text>
                   </Section>
                   <Hr style={{ borderColor: "#e6ebf1", margin: "32px 0" }} />

@@ -218,11 +218,6 @@ namespace PatchNotes.Data.Migrations.Sqlite
                         .HasColumnType("INTEGER")
                         .HasDefaultValue(true);
 
-                    b.Property<bool>("EmailReleaseEnabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(true);
-
                     b.Property<bool>("EmailWelcomeSent")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER")

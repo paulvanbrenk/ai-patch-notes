@@ -209,7 +209,7 @@ PatchNotes/
 │       └── routes/           # TanStack Router config
 └── patchnotes-email/         # Azure Functions (email via Resend)
     └── src/
-        ├── functions/        # sendWelcome, sendRelease, sendDigest
+        ├── functions/        # sendWelcome, sendDigest
         └── lib/              # Resend client
 ```
 
