@@ -152,7 +152,7 @@ public static class EmailTemplateRoutes
                       You're all set to receive release notifications for the packages you care about.
                     </Text>
                     <Text style={{ color: "#4a4a4a", fontSize: "16px", lineHeight: "26px" }}>
-                      Head to your <Link href="https://patchnotes.dev" style={{ color: "#5469d4" }}>dashboard</Link> to start watching packages.
+                      Head to your <Link href="https://app.myreleasenotes.ai" style={{ color: "#5469d4" }}>dashboard</Link> to start watching packages.
                     </Text>
                   </Section>
                   <Hr style={{ borderColor: "#e6ebf1", margin: "32px 0" }} />
@@ -197,7 +197,7 @@ public static class EmailTemplateRoutes
                       <Text style={{ color: "#4a4a4a", fontSize: "16px" }}>No new releases this week.</Text>
                     )}
                     <Text style={{ color: "#4a4a4a", fontSize: "16px", lineHeight: "26px" }}>
-                      <Link href="https://patchnotes.dev" style={{ color: "#5469d4" }}>View all updates on PatchNotes</Link>
+                      <Link href="https://app.myreleasenotes.ai" style={{ color: "#5469d4" }}>View all updates on PatchNotes</Link>
                     </Text>
                   </Section>
                   <Hr style={{ borderColor: "#e6ebf1", margin: "32px 0" }} />

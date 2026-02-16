@@ -7,9 +7,8 @@ namespace PatchNotes.Api.Routes;
 
 public static class SubscriptionRoutes
 {
-    private static readonly HashSet<string> AllowedOrigins = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly string[] DevOrigins =
     {
-        "https://app.myreleasenotes.ai",
         "http://localhost:5173",
         "http://localhost:3000",
     };
@@ -23,15 +22,25 @@ public static class SubscriptionRoutes
         "billing.stripe.com",
     };
 
-    private static string GetValidatedOrigin(HttpContext httpContext)
+    private static HashSet<string> BuildAllowedOrigins(IConfiguration configuration)
     {
+        var baseUrl = configuration["App:BaseUrl"] ?? "https://app.myreleasenotes.ai";
+        var origins = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { baseUrl };
+        foreach (var dev in DevOrigins)
+            origins.Add(dev);
+        return origins;
+    }
+
+    private static string GetValidatedOrigin(HttpContext httpContext, IConfiguration configuration)
+    {
+        var allowedOrigins = BuildAllowedOrigins(configuration);
         var origin = httpContext.Request.Headers.Origin.FirstOrDefault();
-        if (!string.IsNullOrEmpty(origin) && AllowedOrigins.Contains(origin))
+        if (!string.IsNullOrEmpty(origin) && allowedOrigins.Contains(origin))
         {
             return origin;
         }
-        // Fallback to first allowed origin in production
-        return AllowedOrigins.First();
+        // Fallback to configured base URL in production
+        return configuration["App:BaseUrl"] ?? "https://app.myreleasenotes.ai";
     }
 
     private static bool IsValidStripeRedirectUrl(string? url)
@@ -80,7 +89,7 @@ public static class SubscriptionRoutes
             }
 
             // Determine the base URL for success/cancel redirects
-            var origin = GetValidatedOrigin(httpContext);
+            var origin = GetValidatedOrigin(httpContext, configuration);
 
             var sessionOptions = new SessionCreateOptions
             {
@@ -126,7 +135,7 @@ public static class SubscriptionRoutes
         .WithName("CreateCheckoutSession");
 
         // POST /api/subscription/portal - Create Stripe Customer Portal session
-        group.MapPost("/portal", async (HttpContext httpContext, PatchNotesDbContext db) =>
+        group.MapPost("/portal", async (HttpContext httpContext, PatchNotesDbContext db, IConfiguration configuration) =>
         {
             var stytchUserId = httpContext.Items["StytchUserId"] as string;
             if (string.IsNullOrEmpty(stytchUserId))
@@ -145,7 +154,7 @@ public static class SubscriptionRoutes
                 return Results.BadRequest(new ApiError("No subscription found"));
             }
 
-            var origin = GetValidatedOrigin(httpContext);
+            var origin = GetValidatedOrigin(httpContext, configuration);
 
             var portalOptions = new Stripe.BillingPortal.SessionCreateOptions
             {

@@ -8,6 +8,7 @@ const { mockSend, mockFindMany } = vi.hoisted(() => ({
 vi.mock("../lib/resend", () => ({
     resend: { emails: { send: mockSend } },
     FROM_ADDRESS: "PatchNotes <notifications@patchnotes.dev>",
+    APP_BASE_URL: "https://app.myreleasenotes.ai",
     escapeHtml: (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"),
     emailFooter: () => "<footer/>",
     sanitizeSubject: (s: string) => s.replace(/[\r\n]+/g, " ").trim(),

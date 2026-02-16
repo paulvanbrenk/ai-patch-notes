@@ -30,7 +30,9 @@ export function isValidEmail(email: string): boolean {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-export const SETTINGS_URL = "https://myreleasenotes.ai/settings";
+export const APP_BASE_URL = process.env.APP_BASE_URL || "https://app.myreleasenotes.ai";
+
+export const SETTINGS_URL = `${APP_BASE_URL}/settings`;
 
 export function emailFooter(): string {
     return `
