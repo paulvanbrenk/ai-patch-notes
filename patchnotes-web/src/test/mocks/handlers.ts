@@ -134,7 +134,12 @@ export const handlers = [
 
   // GET /packages
   http.get(`${API_BASE}/packages`, () => {
-    return HttpResponse.json(mockPackages)
+    return HttpResponse.json({
+      items: mockPackages,
+      total: mockPackages.length,
+      limit: 20,
+      offset: 0,
+    })
   }),
 
   // GET /packages/:id
