@@ -57,7 +57,7 @@ public static class EmailTemplateRoutes
 
             if (template == null)
             {
-                return Results.NotFound(new { error = "Template not found" });
+                return Results.NotFound(new ApiError("Template not found"));
             }
 
             return Results.Ok(template);
@@ -74,7 +74,7 @@ public static class EmailTemplateRoutes
             var template = await db.EmailTemplates.FirstOrDefaultAsync(t => t.Name == name);
             if (template == null)
             {
-                return Results.NotFound(new { error = "Template not found" });
+                return Results.NotFound(new ApiError("Template not found"));
             }
 
             if (request.Subject != null)

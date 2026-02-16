@@ -57,7 +57,7 @@ public static class PackageRoutes
 
             if (package == null)
             {
-                return Results.NotFound(new { error = "Package not found" });
+                return Results.NotFound(new ApiError("Package not found"));
             }
 
             return Results.Ok(package);
@@ -72,7 +72,7 @@ public static class PackageRoutes
             var packageExists = await db.Packages.AnyAsync(p => p.Id == id);
             if (!packageExists)
             {
-                return Results.NotFound(new { error = "Package not found" });
+                return Results.NotFound(new ApiError("Package not found"));
             }
 
             var releases = await db.Releases
@@ -140,7 +140,7 @@ public static class PackageRoutes
 
             if (package == null)
             {
-                return Results.NotFound(new { error = "Package not found" });
+                return Results.NotFound(new ApiError("Package not found"));
             }
 
             // Get all releases grouped by (majorVersion, isPrerelease) — no filtering
@@ -214,7 +214,7 @@ public static class PackageRoutes
         {
             if (string.IsNullOrWhiteSpace(request.NpmName))
             {
-                return Results.BadRequest(new { error = "npmName is required" });
+                return Results.BadRequest(new ApiError("npmName is required"));
             }
 
             // Check package limit for free users
@@ -229,13 +229,7 @@ public static class PackageRoutes
                         var packageCount = await db.Watchlists.CountAsync(w => w.UserId == user.Id);
                         if (packageCount >= 5)
                         {
-                            return Results.Json(new
-                            {
-                                error = "Package limit reached",
-                                message = "Free accounts can track up to 5 packages. Upgrade to Pro for unlimited packages.",
-                                limit = 5,
-                                current = packageCount
-                            }, statusCode: 403);
+                            return Results.Json(new ApiError("Package limit reached", "Free accounts can track up to 5 packages. Upgrade to Pro for unlimited packages."), statusCode: 403);
                         }
                     }
                 }
@@ -244,7 +238,7 @@ public static class PackageRoutes
             var existing = await db.Packages.FirstOrDefaultAsync(p => p.NpmName == request.NpmName);
             if (existing != null)
             {
-                return Results.Conflict(new { error = "Package already exists", package = new { existing.Id, existing.NpmName } });
+                return Results.Conflict(new ApiError("Package already exists", $"{existing.NpmName} ({existing.Id})"));
             }
 
             var client = httpClientFactory.CreateClient();
@@ -258,12 +252,12 @@ public static class PackageRoutes
             }
             catch
             {
-                return Results.BadRequest(new { error = "Failed to fetch package from npm registry" });
+                return Results.BadRequest(new ApiError("Failed to fetch package from npm registry"));
             }
 
             if (!npmResponse.IsSuccessStatusCode)
             {
-                return Results.NotFound(new { error = "Package not found on npm" });
+                return Results.NotFound(new ApiError("Package not found on npm"));
             }
 
             var npmJson = await npmResponse.Content.ReadAsStringAsync();
@@ -284,14 +278,14 @@ public static class PackageRoutes
 
             if (string.IsNullOrEmpty(repoUrl))
             {
-                return Results.BadRequest(new { error = "Package does not have a GitHub repository" });
+                return Results.BadRequest(new ApiError("Package does not have a GitHub repository"));
             }
 
             // Parse GitHub owner/repo from URL
             var (owner, repoName) = RouteUtils.ParseGitHubUrl(repoUrl);
             if (owner == null || repoName == null)
             {
-                return Results.BadRequest(new { error = "Could not parse GitHub repository URL", repositoryUrl = repoUrl });
+                return Results.BadRequest(new ApiError("Could not parse GitHub repository URL", repoUrl));
             }
 
             var package = new Package
@@ -333,7 +327,7 @@ public static class PackageRoutes
             var package = await db.Packages.FindAsync(id);
             if (package == null)
             {
-                return Results.NotFound(new { error = "Package not found" });
+                return Results.NotFound(new ApiError("Package not found"));
             }
 
             if (!string.IsNullOrWhiteSpace(request.GithubOwner))
@@ -378,7 +372,7 @@ public static class PackageRoutes
             var package = await db.Packages.FindAsync(id);
             if (package == null)
             {
-                return Results.NotFound(new { error = "Package not found" });
+                return Results.NotFound(new ApiError("Package not found"));
             }
 
             db.Packages.Remove(package);
@@ -397,7 +391,7 @@ public static class PackageRoutes
         {
             if (items.Count == 0)
             {
-                return Results.BadRequest(new { error = "At least one package is required" });
+                return Results.BadRequest(new ApiError("At least one package is required"));
             }
 
             var results = new List<BulkAddPackageResultItem>();
