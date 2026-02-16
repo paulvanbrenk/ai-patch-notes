@@ -10,6 +10,7 @@
   },
   "exclude": [
     "scripts",
-    "prisma.config.ts"
+    "prisma.config.ts",
+    "**/*.test.ts"
   ]
 }

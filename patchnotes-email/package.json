@@ -9,7 +9,7 @@
     "clean": "rimraf dist",
     "prestart": "pnpm clean && pnpm build",
     "start": "func start",
-    "test": "echo \"No tests yet...\"",
+    "test": "vitest run",
     "db:pull": "prisma db pull",
     "db:generate": "prisma generate",
     "db:smoke-test": "pnpm tsx scripts/prisma-smoke-test.ts"
@@ -27,6 +27,7 @@
     "dotenv": "^17.3.1",
     "prisma": "^7.4.0",
     "rimraf": "^6.1.2",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "vitest": "^4.0.18"
   }
 }

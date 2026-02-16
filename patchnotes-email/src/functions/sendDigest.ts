@@ -66,6 +66,10 @@ export async function sendDigest(
 
     context.log(`Sending digests to ${users.length} users`);
 
+    const failures: Array<{ email: string; error: unknown }> = [];
+    let sentCount = 0;
+    let skippedCount = 0;
+
     for (const user of users) {
         const releases: Array<{ packageName: string; version: string; summary: string }> = [];
 
@@ -82,10 +86,14 @@ export async function sendDigest(
             }
         }
 
-        if (releases.length === 0) continue;
+        if (releases.length === 0) {
+            skippedCount++;
+            continue;
+        }
 
         if (!user.Email || !isValidEmail(user.Email)) {
             context.warn(`Skipping digest for user with invalid email: ${user.Email}`);
+            skippedCount++;
             continue;
         }
 
@@ -112,12 +120,26 @@ export async function sendDigest(
 
             if (error) {
                 context.error(`Failed to send digest to ${user.Email}:`, error);
+                failures.push({ email: user.Email!, error });
             } else {
+                sentCount++;
                 context.log(`Digest sent to ${user.Email}`);
             }
         } catch (err) {
             context.error(`Error sending to ${user.Email}:`, err);
+            failures.push({ email: user.Email!, error: err });
         }
+    }
+
+    context.log(
+        `Digest summary: ${sentCount} sent, ${failures.length} failed, ${skippedCount} skipped out of ${users.length} users`
+    );
+
+    if (failures.length > 0) {
+        const failedEmails = failures.map((f) => f.email).join(", ");
+        throw new Error(
+            `Digest send partially failed: ${failures.length}/${sentCount + failures.length} sends failed. Failed: ${failedEmails}`
+        );
     }
 }
 
