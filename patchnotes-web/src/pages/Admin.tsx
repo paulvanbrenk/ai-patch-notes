@@ -23,6 +23,19 @@ function formatDate(dateString: string | null | undefined): string {
   return new Date(dateString).toLocaleString()
 }
 
+/** Strip HTML tags and truncate error messages from API responses. */
+function sanitizeErrorMessage(
+  error: string | null | undefined,
+  maxLength = 200
+): string {
+  if (!error) return 'Failed'
+  const clean = error
+    .replace(/<[^>]*>/g, '')
+    .trim()
+    .slice(0, maxLength)
+  return clean || 'Failed'
+}
+
 // ── Auth Gate ─────────────────────────────────────────────────
 
 function useIsAdmin(): { isAdmin: boolean; isLoading: boolean } {
@@ -357,7 +370,7 @@ function BulkAddForm({ onClose }: BulkAddFormProps) {
               className={`text-xs ${r.success ? 'text-minor' : 'text-major'}`}
             >
               {r.githubOwner}/{r.githubRepo}:{' '}
-              {r.success ? 'Added' : (r.error ?? 'Failed')}
+              {r.success ? 'Added' : sanitizeErrorMessage(r.error)}
             </div>
           ))}
         </div>
