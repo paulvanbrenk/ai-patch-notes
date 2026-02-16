@@ -52,18 +52,18 @@ public static class WatchlistRoutes
             var user = await db.Users.FirstOrDefaultAsync(u => u.StytchUserId == stytchUserId);
             if (user == null)
             {
-                return Results.NotFound(new { error = "User not found" });
+                return Results.NotFound(new ApiError("User not found"));
             }
 
             var packageIds = request.PackageIds ?? [];
 
             if (!user.IsPro && packageIds.Length > FreeWatchlistLimit)
             {
-                return Results.Json(new { error = $"Free plan is limited to {FreeWatchlistLimit} packages. Upgrade to Pro for unlimited." }, statusCode: 403);
+                return Results.Json(new ApiError($"Free plan is limited to {FreeWatchlistLimit} packages. Upgrade to Pro for unlimited."), statusCode: 403);
             }
             if (packageIds.Length > MaxWatchlistSize)
             {
-                return Results.BadRequest(new { error = $"Watchlist cannot exceed {MaxWatchlistSize} packages" });
+                return Results.BadRequest(new ApiError($"Watchlist cannot exceed {MaxWatchlistSize} packages"));
             }
 
             var distinctIds = packageIds.Distinct().ToArray();
@@ -72,7 +72,7 @@ public static class WatchlistRoutes
                 .CountAsync();
             if (existingPackageCount != distinctIds.Length)
             {
-                return Results.BadRequest(new { error = "One or more package IDs do not exist" });
+                return Results.BadRequest(new ApiError("One or more package IDs do not exist"));
             }
 
             var existing = await db.Watchlists
@@ -116,30 +116,30 @@ public static class WatchlistRoutes
             var user = await db.Users.FirstOrDefaultAsync(u => u.StytchUserId == stytchUserId);
             if (user == null)
             {
-                return Results.NotFound(new { error = "User not found" });
+                return Results.NotFound(new ApiError("User not found"));
             }
 
             var packageExists = await db.Packages.AnyAsync(p => p.Id == packageId);
             if (!packageExists)
             {
-                return Results.NotFound(new { error = "Package not found" });
+                return Results.NotFound(new ApiError("Package not found"));
             }
 
             var watchlistSize = await db.Watchlists.CountAsync(w => w.UserId == user.Id);
             if (!user.IsPro && watchlistSize >= FreeWatchlistLimit)
             {
-                return Results.Json(new { error = $"Free plan is limited to {FreeWatchlistLimit} packages. Upgrade to Pro for unlimited." }, statusCode: 403);
+                return Results.Json(new ApiError($"Free plan is limited to {FreeWatchlistLimit} packages. Upgrade to Pro for unlimited."), statusCode: 403);
             }
             if (watchlistSize >= MaxWatchlistSize)
             {
-                return Results.BadRequest(new { error = $"Watchlist cannot exceed {MaxWatchlistSize} packages" });
+                return Results.BadRequest(new ApiError($"Watchlist cannot exceed {MaxWatchlistSize} packages"));
             }
 
             var alreadyWatching = await db.Watchlists
                 .AnyAsync(w => w.UserId == user.Id && w.PackageId == packageId);
             if (alreadyWatching)
             {
-                return Results.Conflict(new { error = "Already watching this package" });
+                return Results.Conflict(new ApiError("Already watching this package"));
             }
 
             db.Watchlists.Add(new Watchlist
