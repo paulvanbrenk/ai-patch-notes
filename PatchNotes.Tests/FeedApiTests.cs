@@ -51,23 +51,38 @@ public class FeedApiTests : IAsyncLifetime
         // Recent release (within window)
         db.Releases.Add(new Release
         {
-            PackageId = package.Id, Tag = "v1.2.0", Title = "Recent",
-            PublishedAt = latestDate, FetchedAt = latestDate,
-            MajorVersion = 1, MinorVersion = 2, PatchVersion = 0
+            PackageId = package.Id,
+            Tag = "v1.2.0",
+            Title = "Recent",
+            PublishedAt = latestDate,
+            FetchedAt = latestDate,
+            MajorVersion = 1,
+            MinorVersion = 2,
+            PatchVersion = 0
         });
         // Release within window (5 days ago)
         db.Releases.Add(new Release
         {
-            PackageId = package.Id, Tag = "v1.1.0", Title = "Within window",
-            PublishedAt = latestDate.AddDays(-5), FetchedAt = latestDate,
-            MajorVersion = 1, MinorVersion = 1, PatchVersion = 0
+            PackageId = package.Id,
+            Tag = "v1.1.0",
+            Title = "Within window",
+            PublishedAt = latestDate.AddDays(-5),
+            FetchedAt = latestDate,
+            MajorVersion = 1,
+            MinorVersion = 1,
+            PatchVersion = 0
         });
         // Old release (outside 7-day window)
         db.Releases.Add(new Release
         {
-            PackageId = package.Id, Tag = "v1.0.0", Title = "Old",
-            PublishedAt = latestDate.AddDays(-30), FetchedAt = latestDate,
-            MajorVersion = 1, MinorVersion = 0, PatchVersion = 0
+            PackageId = package.Id,
+            Tag = "v1.0.0",
+            Title = "Old",
+            PublishedAt = latestDate.AddDays(-30),
+            FetchedAt = latestDate,
+            MajorVersion = 1,
+            MinorVersion = 0,
+            PatchVersion = 0
         });
         await db.SaveChangesAsync();
 
@@ -112,35 +127,62 @@ public class FeedApiTests : IAsyncLifetime
         // Old stable versions (should be hidden)
         db.Releases.Add(new Release
         {
-            PackageId = package.Id, Tag = "v7.0.0", Title = "v7 stable",
-            PublishedAt = now.AddDays(-1), FetchedAt = now,
-            MajorVersion = 7, MinorVersion = 0, PatchVersion = 0
+            PackageId = package.Id,
+            Tag = "v7.0.0",
+            Title = "v7 stable",
+            PublishedAt = now.AddDays(-1),
+            FetchedAt = now,
+            MajorVersion = 7,
+            MinorVersion = 0,
+            PatchVersion = 0
         });
         db.Releases.Add(new Release
         {
-            PackageId = package.Id, Tag = "v8.0.0", Title = "v8 stable",
-            PublishedAt = now.AddDays(-1), FetchedAt = now,
-            MajorVersion = 8, MinorVersion = 0, PatchVersion = 0
+            PackageId = package.Id,
+            Tag = "v8.0.0",
+            Title = "v8 stable",
+            PublishedAt = now.AddDays(-1),
+            FetchedAt = now,
+            MajorVersion = 8,
+            MinorVersion = 0,
+            PatchVersion = 0
         });
         // Current stable (should be shown)
         db.Releases.Add(new Release
         {
-            PackageId = package.Id, Tag = "v9.0.0", Title = "v9 stable",
-            PublishedAt = now, FetchedAt = now,
-            MajorVersion = 9, MinorVersion = 0, PatchVersion = 0
+            PackageId = package.Id,
+            Tag = "v9.0.0",
+            Title = "v9 stable",
+            PublishedAt = now,
+            FetchedAt = now,
+            MajorVersion = 9,
+            MinorVersion = 0,
+            PatchVersion = 0
         });
         // Future prereleases (should be shown)
         db.Releases.Add(new Release
         {
-            PackageId = package.Id, Tag = "v10.0.0-preview.1", Title = "v10 preview",
-            PublishedAt = now, FetchedAt = now,
-            MajorVersion = 10, MinorVersion = 0, PatchVersion = 0, IsPrerelease = true
+            PackageId = package.Id,
+            Tag = "v10.0.0-preview.1",
+            Title = "v10 preview",
+            PublishedAt = now,
+            FetchedAt = now,
+            MajorVersion = 10,
+            MinorVersion = 0,
+            PatchVersion = 0,
+            IsPrerelease = true
         });
         db.Releases.Add(new Release
         {
-            PackageId = package.Id, Tag = "v11.0.0-preview.1", Title = "v11 preview",
-            PublishedAt = now, FetchedAt = now,
-            MajorVersion = 11, MinorVersion = 0, PatchVersion = 0, IsPrerelease = true
+            PackageId = package.Id,
+            Tag = "v11.0.0-preview.1",
+            Title = "v11 preview",
+            PublishedAt = now,
+            FetchedAt = now,
+            MajorVersion = 11,
+            MinorVersion = 0,
+            PatchVersion = 0,
+            IsPrerelease = true
         });
         await db.SaveChangesAsync();
 
@@ -187,16 +229,27 @@ public class FeedApiTests : IAsyncLifetime
         // v0 stable
         db.Releases.Add(new Release
         {
-            PackageId = package.Id, Tag = "v0.100.0", Title = "v0 stable",
-            PublishedAt = now, FetchedAt = now,
-            MajorVersion = 0, MinorVersion = 100, PatchVersion = 0
+            PackageId = package.Id,
+            Tag = "v0.100.0",
+            Title = "v0 stable",
+            PublishedAt = now,
+            FetchedAt = now,
+            MajorVersion = 0,
+            MinorVersion = 100,
+            PatchVersion = 0
         });
         // v0 prerelease (same major as stable - should be hidden)
         db.Releases.Add(new Release
         {
-            PackageId = package.Id, Tag = "v0.99.0-beta.1", Title = "v0 beta",
-            PublishedAt = now.AddDays(-1), FetchedAt = now,
-            MajorVersion = 0, MinorVersion = 99, PatchVersion = 0, IsPrerelease = true
+            PackageId = package.Id,
+            Tag = "v0.99.0-beta.1",
+            Title = "v0 beta",
+            PublishedAt = now.AddDays(-1),
+            FetchedAt = now,
+            MajorVersion = 0,
+            MinorVersion = 99,
+            PatchVersion = 0,
+            IsPrerelease = true
         });
         await db.SaveChangesAsync();
 
@@ -236,16 +289,28 @@ public class FeedApiTests : IAsyncLifetime
         // v1 prerelease (old, should be hidden)
         db.Releases.Add(new Release
         {
-            PackageId = package.Id, Tag = "v1.0.0-alpha.1", Title = "v1 alpha",
-            PublishedAt = now.AddDays(-1), FetchedAt = now,
-            MajorVersion = 1, MinorVersion = 0, PatchVersion = 0, IsPrerelease = true
+            PackageId = package.Id,
+            Tag = "v1.0.0-alpha.1",
+            Title = "v1 alpha",
+            PublishedAt = now.AddDays(-1),
+            FetchedAt = now,
+            MajorVersion = 1,
+            MinorVersion = 0,
+            PatchVersion = 0,
+            IsPrerelease = true
         });
         // v2 prerelease (highest, should be shown)
         db.Releases.Add(new Release
         {
-            PackageId = package.Id, Tag = "v2.0.0-alpha.1", Title = "v2 alpha",
-            PublishedAt = now, FetchedAt = now,
-            MajorVersion = 2, MinorVersion = 0, PatchVersion = 0, IsPrerelease = true
+            PackageId = package.Id,
+            Tag = "v2.0.0-alpha.1",
+            Title = "v2 alpha",
+            PublishedAt = now,
+            FetchedAt = now,
+            MajorVersion = 2,
+            MinorVersion = 0,
+            PatchVersion = 0,
+            IsPrerelease = true
         });
         await db.SaveChangesAsync();
 
@@ -284,15 +349,25 @@ public class FeedApiTests : IAsyncLifetime
         // Two releases, each >7 days apart from each other
         db.Releases.Add(new Release
         {
-            PackageId = package.Id, Tag = "v2.1.0", Title = "Latest old",
-            PublishedAt = baseDate, FetchedAt = baseDate,
-            MajorVersion = 2, MinorVersion = 1, PatchVersion = 0
+            PackageId = package.Id,
+            Tag = "v2.1.0",
+            Title = "Latest old",
+            PublishedAt = baseDate,
+            FetchedAt = baseDate,
+            MajorVersion = 2,
+            MinorVersion = 1,
+            PatchVersion = 0
         });
         db.Releases.Add(new Release
         {
-            PackageId = package.Id, Tag = "v2.0.0", Title = "Older",
-            PublishedAt = baseDate.AddDays(-30), FetchedAt = baseDate,
-            MajorVersion = 2, MinorVersion = 0, PatchVersion = 0
+            PackageId = package.Id,
+            Tag = "v2.0.0",
+            Title = "Older",
+            PublishedAt = baseDate.AddDays(-30),
+            FetchedAt = baseDate,
+            MajorVersion = 2,
+            MinorVersion = 0,
+            PatchVersion = 0
         });
         await db.SaveChangesAsync();
 
