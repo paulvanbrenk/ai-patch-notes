@@ -26,10 +26,13 @@ function formatDate(dateString: string | null | undefined): string {
 /** Strip HTML tags and truncate error messages from API responses. */
 function sanitizeErrorMessage(
   error: string | null | undefined,
-  maxLength = 200,
+  maxLength = 200
 ): string {
   if (!error) return 'Failed'
-  const clean = error.replace(/<[^>]*>/g, '').trim().slice(0, maxLength)
+  const clean = error
+    .replace(/<[^>]*>/g, '')
+    .trim()
+    .slice(0, maxLength)
   return clean || 'Failed'
 }
 
