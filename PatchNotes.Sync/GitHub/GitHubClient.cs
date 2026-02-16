@@ -101,6 +101,28 @@ public class GitHubClient : IGitHubClient
         return await response.Content.ReadFromJsonAsync<GitHubRelease>(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<GitHubSearchResult>> SearchRepositoriesAsync(
+        string query,
+        int perPage = 10,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(query);
+        ArgumentOutOfRangeException.ThrowIfLessThan(perPage, 1);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(perPage, 100);
+
+        var url = $"search/repositories?q={Uri.EscapeDataString(query)}&per_page={perPage}";
+
+        using var response = await _httpClient.GetAsync(url, cancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        var rateLimitInfo = RateLimitHelper.ParseHeaders(response.Headers);
+        RateLimitHelper.LogStatus(_logger, rateLimitInfo, "search");
+
+        var searchResponse = await response.Content.ReadFromJsonAsync<GitHubSearchResponse>(cancellationToken);
+
+        return searchResponse?.Items ?? [];
+    }
+
     public async Task<string?> GetFileContentAsync(
         string owner,
         string repo,

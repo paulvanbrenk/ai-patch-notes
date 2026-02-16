@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using PatchNotes.Data;
+using PatchNotes.Sync.GitHub;
 
 namespace PatchNotes.Api.Routes;
 
@@ -507,6 +508,34 @@ public static class PackageRoutes
         .Produces(StatusCodes.Status400BadRequest)
         .WithName("BulkCreatePackages");
 
+        // GET /api/admin/github/search?q={query} - Search GitHub repositories (admin only)
+        var adminGitHub = app.MapGroup("/api/admin/github").WithTags("AdminGitHub");
+
+        adminGitHub.MapGet("/search", async (string? q, IGitHubClient gitHubClient) =>
+        {
+            if (string.IsNullOrWhiteSpace(q) || q.Trim().Length < 2)
+            {
+                return Results.BadRequest(new ApiError("Query parameter 'q' is required and must be at least 2 characters"));
+            }
+
+            var results = await gitHubClient.SearchRepositoriesAsync(q.Trim(), perPage: 10);
+
+            var dtos = results.Select(r => new GitHubRepoSearchResultDto
+            {
+                Owner = r.Owner.Login,
+                Repo = r.Name,
+                Description = r.Description,
+                StarCount = r.StargazersCount,
+            }).ToList();
+
+            return Results.Ok(dtos);
+        })
+        .AddEndpointFilterFactory(requireAuth)
+        .AddEndpointFilterFactory(requireAdmin)
+        .Produces<List<GitHubRepoSearchResultDto>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .WithName("SearchGitHubRepositories");
+
         return app;
     }
 }
@@ -623,4 +652,12 @@ public class PaginatedResponse<T>
     public int Total { get; set; }
     public int Limit { get; set; }
     public int Offset { get; set; }
+}
+
+public class GitHubRepoSearchResultDto
+{
+    public required string Owner { get; set; }
+    public required string Repo { get; set; }
+    public string? Description { get; set; }
+    public int StarCount { get; set; }
 }

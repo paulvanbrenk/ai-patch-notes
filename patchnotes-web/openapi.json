@@ -4,6 +4,11 @@
     "title": "PatchNotes.Api | v1",
     "version": "1.0.0"
   },
+  "servers": [
+    {
+      "url": "http://localhost:5199/"
+    }
+  ],
   "paths": {
     "/webhooks/stytch": {
       "post": {
@@ -359,6 +364,41 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/BulkAddPackageResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
+    "/api/admin/github/search": {
+      "get": {
+        "tags": [
+          "AdminGitHub"
+        ],
+        "operationId": "SearchGitHubRepositories",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GitHubRepoSearchResultDto"
+                  }
                 }
               }
             }
@@ -1232,6 +1272,31 @@
           }
         }
       },
+      "GitHubRepoSearchResultDto": {
+        "required": [
+          "owner",
+          "repo"
+        ],
+        "type": "object",
+        "properties": {
+          "owner": {
+            "type": "string"
+          },
+          "repo": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "starCount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
       "OwnerPackageDto": {
         "required": [
           "id",
@@ -1909,6 +1974,9 @@
     },
     {
       "name": "Packages"
+    },
+    {
+      "name": "AdminGitHub"
     },
     {
       "name": "Releases"
