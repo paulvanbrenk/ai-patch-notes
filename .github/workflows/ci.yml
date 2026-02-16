@@ -129,6 +129,7 @@ jobs:
 
   email-function:
     name: Email Function (Node.js)
+    needs: schema-drift
     runs-on: ubuntu-latest
     defaults:
       run:
