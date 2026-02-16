@@ -9,6 +9,10 @@ export const resend = new Resend(apiKey);
 
 export const FROM_ADDRESS = "PatchNotes <notifications@patchnotes.dev>";
 
+export function sanitizeSubject(str: string): string {
+    return str.replace(/[\r\n]+/g, " ").trim();
+}
+
 export function escapeHtml(str: string): string {
     return str
         .replace(/&/g, "&amp;")
