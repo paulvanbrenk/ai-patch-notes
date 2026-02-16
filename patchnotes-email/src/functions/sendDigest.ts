@@ -1,5 +1,5 @@
 import { app, InvocationContext, Timer } from "@azure/functions";
-import { resend, FROM_ADDRESS, escapeHtml, emailFooter, sanitizeSubject, isValidEmail } from "../lib/resend";
+import { resend, FROM_ADDRESS, APP_BASE_URL, escapeHtml, emailFooter, sanitizeSubject, isValidEmail } from "../lib/resend";
 import { getPrismaClient } from "../lib/prisma";
 
 const DIGEST_WINDOW_DAYS = 7;
@@ -106,7 +106,7 @@ export async function sendDigest(
             <h1>Your Weekly PatchNotes Digest</h1>
             <p>Hi ${escapeHtml(user.Name ?? "there")}, here's what happened this week with the packages you're watching:</p>
             <ul>${releaseList}</ul>
-            <p><a href="https://myreleasenotes.ai">View all updates on PatchNotes</a></p>
+            <p><a href="${APP_BASE_URL}">View all updates on PatchNotes</a></p>
             ${emailFooter()}
         `;
 
