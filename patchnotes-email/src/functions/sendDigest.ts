@@ -1,5 +1,5 @@
 import { app, InvocationContext, Timer } from "@azure/functions";
-import { resend, FROM_ADDRESS, escapeHtml, emailFooter, sanitizeSubject } from "../lib/resend";
+import { resend, FROM_ADDRESS, escapeHtml, emailFooter, sanitizeSubject, isValidEmail } from "../lib/resend";
 import { getPrismaClient } from "../lib/prisma";
 
 const DIGEST_WINDOW_DAYS = 7;
@@ -83,6 +83,11 @@ export async function sendDigest(
         }
 
         if (releases.length === 0) continue;
+
+        if (!user.Email || !isValidEmail(user.Email)) {
+            context.warn(`Skipping digest for user with invalid email: ${user.Email}`);
+            continue;
+        }
 
         // TODO: Replace with React Email WeeklyDigest template when available
         const releaseList = releases

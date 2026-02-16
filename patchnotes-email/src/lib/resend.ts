@@ -21,6 +21,15 @@ export function escapeHtml(str: string): string {
         .replace(/"/g, "&quot;");
 }
 
+/**
+ * Basic email format validation. Rejects obviously invalid addresses
+ * like "test@", "@foo", or strings with special characters that would
+ * fail at the mail provider.
+ */
+export function isValidEmail(email: string): boolean {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
 export const SETTINGS_URL = "https://myreleasenotes.ai/settings";
 
 export function emailFooter(): string {

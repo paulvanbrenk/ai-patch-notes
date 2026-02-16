@@ -1,5 +1,5 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
-import { resend, FROM_ADDRESS, escapeHtml, emailFooter, sanitizeSubject } from "../lib/resend";
+import { resend, FROM_ADDRESS, escapeHtml, emailFooter, sanitizeSubject, isValidEmail } from "../lib/resend";
 
 interface WelcomeRequest {
     email: string;
@@ -21,6 +21,10 @@ export async function sendWelcome(
 
     if (!body.email || !body.name) {
         return { status: 400, body: "Missing required fields: email, name" };
+    }
+
+    if (!isValidEmail(body.email)) {
+        return { status: 400, body: "Invalid email address format" };
     }
 
     try {
