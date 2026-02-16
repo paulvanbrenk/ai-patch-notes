@@ -13,10 +13,18 @@ public static class PackageRoutes
 
         var group = app.MapGroup("/api/packages").WithTags("Packages");
 
-        // GET /api/packages - List all tracked packages
-        group.MapGet("/", async (PatchNotesDbContext db) =>
+        // GET /api/packages - List all tracked packages (paginated)
+        group.MapGet("/", async (int? limit, int? offset, PatchNotesDbContext db) =>
         {
+            var take = Math.Clamp(limit ?? 20, 1, 100);
+            var skip = Math.Max(offset ?? 0, 0);
+
+            var total = await db.Packages.CountAsync();
+
             var packages = await db.Packages
+                .OrderBy(p => p.Name)
+                .Skip(skip)
+                .Take(take)
                 .Select(p => new PackageDto
                 {
                     Id = p.Id,
@@ -30,9 +38,16 @@ public static class PackageRoutes
                     CreatedAt = p.CreatedAt
                 })
                 .ToListAsync();
-            return TypedResults.Ok(packages);
+
+            return TypedResults.Ok(new PaginatedResponse<PackageDto>
+            {
+                Items = packages,
+                Total = total,
+                Limit = take,
+                Offset = skip
+            });
         })
-        .Produces<List<PackageDto>>(StatusCodes.Status200OK)
+        .Produces<PaginatedResponse<PackageDto>>(StatusCodes.Status200OK)
         .WithName("GetPackages");
 
         // GET /api/packages/{id} - Get single package details (by nanoid)
@@ -104,11 +119,19 @@ public static class PackageRoutes
         .Produces(StatusCodes.Status404NotFound)
         .WithName("GetPackageReleases");
 
-        // GET /api/packages/{owner} - List packages by GitHub owner
-        group.MapGet("/{owner}", async (string owner, PatchNotesDbContext db) =>
+        // GET /api/packages/{owner} - List packages by GitHub owner (paginated)
+        group.MapGet("/{owner}", async (string owner, int? limit, int? offset, PatchNotesDbContext db) =>
         {
-            var packages = await db.Packages
-                .Where(p => p.GithubOwner == owner)
+            var take = Math.Clamp(limit ?? 20, 1, 100);
+            var skip = Math.Max(offset ?? 0, 0);
+
+            var query = db.Packages.Where(p => p.GithubOwner == owner);
+            var total = await query.CountAsync();
+
+            var packages = await query
+                .OrderBy(p => p.Name)
+                .Skip(skip)
+                .Take(take)
                 .Select(p => new OwnerPackageDto
                 {
                     Id = p.Id,
@@ -125,9 +148,15 @@ public static class PackageRoutes
                 })
                 .ToListAsync();
 
-            return Results.Ok(packages);
+            return Results.Ok(new PaginatedResponse<OwnerPackageDto>
+            {
+                Items = packages,
+                Total = total,
+                Limit = take,
+                Offset = skip
+            });
         })
-        .Produces<List<OwnerPackageDto>>(StatusCodes.Status200OK)
+        .Produces<PaginatedResponse<OwnerPackageDto>>(StatusCodes.Status200OK)
         .WithName("GetPackagesByOwner");
 
         // GET /api/packages/{owner}/{repo} - Package detail with all version groups and releases
@@ -571,4 +600,12 @@ public class BulkAddPackageResultItem
     public string? Error { get; set; }
     public string? GithubOwner { get; set; }
     public string? GithubRepo { get; set; }
+}
+
+public class PaginatedResponse<T>
+{
+    public required List<T> Items { get; set; }
+    public int Total { get; set; }
+    public int Limit { get; set; }
+    public int Offset { get; set; }
 }

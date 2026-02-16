@@ -53,9 +53,9 @@ function safeParse<T extends z.ZodType>(
 // ── Query Hooks ──────────────────────────────────────────────
 
 export function usePackages() {
-  return useGetPackages({
+  return useGetPackages(undefined, {
     query: {
-      select: (res) => safeParse(GetPackagesResponse, res.data),
+      select: (res) => safeParse(GetPackagesResponse, res.data)?.items ?? null,
     },
   })
 }
@@ -111,9 +111,10 @@ export function usePackageReleases(packageId: string) {
 // ── Owner/Repo Query Hooks ──────────────────────────────────
 
 export function usePackagesByOwner(owner: string) {
-  return useGetPackagesByOwner(owner, {
+  return useGetPackagesByOwner(owner, undefined, {
     query: {
-      select: (res) => safeParse(GetPackagesByOwnerResponse, res.data),
+      select: (res) =>
+        safeParse(GetPackagesByOwnerResponse, res.data)?.items ?? null,
     },
   })
 }

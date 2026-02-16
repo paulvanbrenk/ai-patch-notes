@@ -40,8 +40,11 @@ public class PackagesApiTests : IAsyncLifetime
         var response = await _client.GetAsync("/api/packages");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var packages = await response.Content.ReadFromJsonAsync<JsonElement>();
-        packages.GetArrayLength().Should().Be(0);
+        var result = await response.Content.ReadFromJsonAsync<JsonElement>();
+        result.GetProperty("items").GetArrayLength().Should().Be(0);
+        result.GetProperty("total").GetInt32().Should().Be(0);
+        result.GetProperty("limit").GetInt32().Should().Be(20);
+        result.GetProperty("offset").GetInt32().Should().Be(0);
     }
 
     [Fact]
@@ -61,8 +64,9 @@ public class PackagesApiTests : IAsyncLifetime
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var packages = await response.Content.ReadFromJsonAsync<JsonElement>();
-        packages.GetArrayLength().Should().Be(2);
+        var result = await response.Content.ReadFromJsonAsync<JsonElement>();
+        result.GetProperty("items").GetArrayLength().Should().Be(2);
+        result.GetProperty("total").GetInt32().Should().Be(2);
     }
 
     [Fact]
@@ -88,14 +92,57 @@ public class PackagesApiTests : IAsyncLifetime
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var packages = await response.Content.ReadFromJsonAsync<JsonElement>();
-        var pkg = packages[0];
+        var result = await response.Content.ReadFromJsonAsync<JsonElement>();
+        var pkg = result.GetProperty("items")[0];
         pkg.GetProperty("npmName").GetString().Should().Be("lodash");
         pkg.GetProperty("githubOwner").GetString().Should().Be("lodash");
         pkg.GetProperty("githubRepo").GetString().Should().Be("lodash");
         pkg.TryGetProperty("id", out _).Should().BeTrue();
         pkg.TryGetProperty("createdAt", out _).Should().BeTrue();
         pkg.TryGetProperty("lastFetchedAt", out _).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task GetPackages_RespectsLimitAndOffset()
+    {
+        // Arrange
+        using var scope = _fixture.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
+        db.Packages.AddRange(
+            new Package { Name = "alpha", Url = "https://github.com/o/alpha", NpmName = "alpha", GithubOwner = "o", GithubRepo = "alpha" },
+            new Package { Name = "bravo", Url = "https://github.com/o/bravo", NpmName = "bravo", GithubOwner = "o", GithubRepo = "bravo" },
+            new Package { Name = "charlie", Url = "https://github.com/o/charlie", NpmName = "charlie", GithubOwner = "o", GithubRepo = "charlie" }
+        );
+        await db.SaveChangesAsync();
+
+        // Act
+        var response = await _client.GetAsync("/api/packages?limit=2&offset=1");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await response.Content.ReadFromJsonAsync<JsonElement>();
+        result.GetProperty("items").GetArrayLength().Should().Be(2);
+        result.GetProperty("total").GetInt32().Should().Be(3);
+        result.GetProperty("limit").GetInt32().Should().Be(2);
+        result.GetProperty("offset").GetInt32().Should().Be(1);
+    }
+
+    [Fact]
+    public async Task GetPackages_ClampsLimitToMax100()
+    {
+        // Arrange
+        using var scope = _fixture.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
+        db.Packages.Add(new Package { Name = "pkg", Url = "https://github.com/o/r", NpmName = "pkg", GithubOwner = "o", GithubRepo = "r" });
+        await db.SaveChangesAsync();
+
+        // Act
+        var response = await _client.GetAsync("/api/packages?limit=500");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await response.Content.ReadFromJsonAsync<JsonElement>();
+        result.GetProperty("limit").GetInt32().Should().Be(100);
     }
 
     #endregion
@@ -232,8 +279,8 @@ public class PackagesApiTests : IAsyncLifetime
 
         // Verify deletion
         var getResponse = await _client.GetAsync("/api/packages");
-        var packages = await getResponse.Content.ReadFromJsonAsync<JsonElement>();
-        packages.GetArrayLength().Should().Be(0);
+        var result = await getResponse.Content.ReadFromJsonAsync<JsonElement>();
+        result.GetProperty("items").GetArrayLength().Should().Be(0);
     }
 
     #endregion
@@ -246,8 +293,9 @@ public class PackagesApiTests : IAsyncLifetime
         var response = await _client.GetAsync("/api/packages/nonexistent-owner");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var packages = await response.Content.ReadFromJsonAsync<JsonElement>();
-        packages.GetArrayLength().Should().Be(0);
+        var result = await response.Content.ReadFromJsonAsync<JsonElement>();
+        result.GetProperty("items").GetArrayLength().Should().Be(0);
+        result.GetProperty("total").GetInt32().Should().Be(0);
     }
 
     [Fact]
@@ -268,8 +316,9 @@ public class PackagesApiTests : IAsyncLifetime
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var packages = await response.Content.ReadFromJsonAsync<JsonElement>();
-        packages.GetArrayLength().Should().Be(2);
+        var result = await response.Content.ReadFromJsonAsync<JsonElement>();
+        result.GetProperty("items").GetArrayLength().Should().Be(2);
+        result.GetProperty("total").GetInt32().Should().Be(2);
     }
 
     [Fact]
@@ -288,14 +337,39 @@ public class PackagesApiTests : IAsyncLifetime
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var packages = await response.Content.ReadFromJsonAsync<JsonElement>();
-        var p = packages[0];
+        var result = await response.Content.ReadFromJsonAsync<JsonElement>();
+        var p = result.GetProperty("items")[0];
         p.GetProperty("id").GetString().Should().NotBeNullOrEmpty();
         p.GetProperty("name").GetString().Should().Be("FastAPI");
         p.GetProperty("githubOwner").GetString().Should().Be("tiangolo");
         p.GetProperty("githubRepo").GetString().Should().Be("fastapi");
         p.GetProperty("latestVersion").GetString().Should().Be("v0.100.0");
         p.TryGetProperty("lastUpdated", out _).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task GetPackagesByOwner_RespectsLimitAndOffset()
+    {
+        // Arrange
+        using var scope = _fixture.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
+        db.Packages.AddRange(
+            new Package { Name = "alpha", Url = "https://github.com/testowner/alpha", NpmName = "alpha", GithubOwner = "testowner", GithubRepo = "alpha" },
+            new Package { Name = "bravo", Url = "https://github.com/testowner/bravo", NpmName = "bravo", GithubOwner = "testowner", GithubRepo = "bravo" },
+            new Package { Name = "charlie", Url = "https://github.com/testowner/charlie", NpmName = "charlie", GithubOwner = "testowner", GithubRepo = "charlie" }
+        );
+        await db.SaveChangesAsync();
+
+        // Act
+        var response = await _client.GetAsync("/api/packages/testowner?limit=1&offset=1");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await response.Content.ReadFromJsonAsync<JsonElement>();
+        result.GetProperty("items").GetArrayLength().Should().Be(1);
+        result.GetProperty("total").GetInt32().Should().Be(3);
+        result.GetProperty("limit").GetInt32().Should().Be(1);
+        result.GetProperty("offset").GetInt32().Should().Be(1);
     }
 
     [Fact]
