@@ -113,7 +113,8 @@ export function usePackageReleases(packageId: string) {
 export function usePackagesByOwner(owner: string) {
   return useGetPackagesByOwner(owner, undefined, {
     query: {
-      select: (res) => safeParse(GetPackagesByOwnerResponse, res.data)?.items ?? null,
+      select: (res) =>
+        safeParse(GetPackagesByOwnerResponse, res.data)?.items ?? null,
     },
   })
 }
