@@ -35,7 +35,7 @@ public class PatchNotesDbContext : DbContext
 
     public DbSet<Package> Packages => Set<Package>();
     public DbSet<Release> Releases => Set<Release>();
-public DbSet<User> Users => Set<User>();
+    public DbSet<User> Users => Set<User>();
     public DbSet<Watchlist> Watchlists => Set<Watchlist>();
     public DbSet<ProcessedWebhookEvent> ProcessedWebhookEvents => Set<ProcessedWebhookEvent>();
     public DbSet<ReleaseSummary> ReleaseSummaries => Set<ReleaseSummary>();
