@@ -68,7 +68,10 @@ export const UpdatePackageParams = zod.object({
 export const UpdatePackageBody = zod.object({
   "githubOwner": zod.string().nullable(),
   "githubRepo": zod.string().nullable(),
-  "tagPrefix": zod.string().nullish()
+  "tagPrefix": zod.string().nullish(),
+  "name": zod.string().nullish(),
+  "npmName": zod.string().nullish(),
+  "url": zod.string().nullish()
 })
 
 export const UpdatePackageResponse = zod.object({

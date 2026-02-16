@@ -55,6 +55,9 @@ interface EditPackageModalProps {
 }
 
 function EditPackageModal({ open, onClose, pkg }: EditPackageModalProps) {
+  const [name, setName] = useState(pkg?.name ?? '')
+  const [npmName, setNpmName] = useState(pkg?.npmName ?? '')
+  const [url, setUrl] = useState(pkg?.url ?? '')
   const [githubOwner, setGithubOwner] = useState(pkg?.githubOwner ?? '')
   const [githubRepo, setGithubRepo] = useState(pkg?.githubRepo ?? '')
   const [tagPrefix, setTagPrefix] = useState(pkg?.tagPrefix ?? '')
@@ -65,6 +68,9 @@ function EditPackageModal({ open, onClose, pkg }: EditPackageModalProps) {
 
     await updatePackage.mutateAsync({
       id: pkg.id,
+      name: name.trim() || undefined,
+      npmName: npmName.trim() || undefined,
+      url: url.trim() || undefined,
       githubOwner: githubOwner.trim() || undefined,
       githubRepo: githubRepo.trim() || undefined,
       tagPrefix: tagPrefix.trim(),
@@ -81,6 +87,24 @@ function EditPackageModal({ open, onClose, pkg }: EditPackageModalProps) {
       title={`Edit ${pkg?.name ?? pkg?.npmName}`}
     >
       <div className="space-y-4">
+        <Input
+          label="Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="e.g., React"
+        />
+        <Input
+          label="npm Name"
+          value={npmName}
+          onChange={(e) => setNpmName(e.target.value)}
+          placeholder="e.g., react"
+        />
+        <Input
+          label="URL"
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          placeholder="e.g., https://github.com/facebook/react"
+        />
         <Input
           label="GitHub Owner"
           value={githubOwner}

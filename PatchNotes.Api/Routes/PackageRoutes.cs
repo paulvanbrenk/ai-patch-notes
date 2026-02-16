@@ -374,6 +374,21 @@ public static class PackageRoutes
                 package.TagPrefix = request.TagPrefix == "" ? null : request.TagPrefix;
             }
 
+            if (!string.IsNullOrWhiteSpace(request.Name))
+            {
+                package.Name = request.Name;
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.NpmName))
+            {
+                package.NpmName = request.NpmName;
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.Url))
+            {
+                package.Url = request.Url;
+            }
+
             await db.SaveChangesAsync();
 
             return Results.Ok(new PackageDto
