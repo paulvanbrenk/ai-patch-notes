@@ -1,6 +1,6 @@
 namespace PatchNotes.Data;
 
-public class Release
+public class Release : IHasCreatedAt, IHasUpdatedAt
 {
     public string Id { get; set; } = IdGenerator.NewId();
     public string PackageId { get; set; } = null!;
@@ -9,6 +9,8 @@ public class Release
     public string? Body { get; set; }
     public DateTimeOffset PublishedAt { get; set; }
     public DateTimeOffset FetchedAt { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
 
     /// <summary>
     /// Parsed major version from Tag. -1 for non-semver tags (unversioned).
