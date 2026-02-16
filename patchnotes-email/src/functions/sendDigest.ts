@@ -1,6 +1,7 @@
 import { app, InvocationContext, Timer } from "@azure/functions";
 import { resend, FROM_ADDRESS, APP_BASE_URL, escapeHtml, emailFooter, sanitizeSubject, isValidEmail } from "../lib/resend";
 import { getPrismaClient } from "../lib/prisma";
+import { renderTemplate, interpolateSubject } from "../lib/templateRenderer";
 
 const DIGEST_WINDOW_DAYS = 7;
 
@@ -66,6 +67,14 @@ export async function sendDigest(
 
     context.log(`Sending digests to ${users.length} users`);
 
+    // Fetch digest template once for all users
+    const template = await db.emailTemplates.findUnique({ where: { Name: "digest" } });
+    if (template) {
+        context.log("Using digest template from DB");
+    } else {
+        context.log("No digest template found in DB, using fallback for all users");
+    }
+
     const failures: Array<{ email: string; error: unknown }> = [];
     let sentCount = 0;
     let skippedCount = 0;
@@ -97,24 +106,34 @@ export async function sendDigest(
             continue;
         }
 
-        // TODO: Replace with React Email WeeklyDigest template when available
-        const releaseList = releases
-            .map((r) => `<li><strong>${escapeHtml(r.packageName)} ${escapeHtml(r.version)}</strong>: ${escapeHtml(r.summary)}</li>`)
-            .join("\n");
+        let html: string;
+        let subject: string;
 
-        const html = `
-            <h1>Your Weekly PatchNotes Digest</h1>
-            <p>Hi ${escapeHtml(user.Name ?? "there")}, here's what happened this week with the packages you're watching:</p>
-            <ul>${releaseList}</ul>
-            <p><a href="${APP_BASE_URL}">View all updates on PatchNotes</a></p>
-            ${emailFooter()}
-        `;
+        if (template) {
+            try {
+                html = await renderTemplate(template.JsxSource, {
+                    name: user.Name ?? "there",
+                    releases,
+                });
+                subject = interpolateSubject(template.Subject, {
+                    name: user.Name ?? "there",
+                    count: String(releases.length),
+                });
+            } catch (renderErr) {
+                context.warn(`Failed to render digest template for ${user.Email}, using fallback:`, renderErr);
+                html = fallbackDigestHtml(user.Name, releases);
+                subject = sanitizeSubject(`Your Weekly PatchNotes Digest — ${releases.length} updates`);
+            }
+        } else {
+            html = fallbackDigestHtml(user.Name, releases);
+            subject = sanitizeSubject(`Your Weekly PatchNotes Digest — ${releases.length} updates`);
+        }
 
         try {
             const { error } = await resend.emails.send({
                 from: FROM_ADDRESS,
                 to: user.Email!,
-                subject: sanitizeSubject(`Your Weekly PatchNotes Digest — ${releases.length} updates`),
+                subject,
                 html,
             });
 
@@ -141,6 +160,23 @@ export async function sendDigest(
             `Digest send partially failed: ${failures.length}/${sentCount + failures.length} sends failed. Failed: ${failedEmails}`
         );
     }
+}
+
+function fallbackDigestHtml(
+    name: string | null,
+    releases: Array<{ packageName: string; version: string; summary: string }>
+): string {
+    const releaseList = releases
+        .map((r) => `<li><strong>${escapeHtml(r.packageName)} ${escapeHtml(r.version)}</strong>: ${escapeHtml(r.summary)}</li>`)
+        .join("\n");
+
+    return `
+            <h1>Your Weekly PatchNotes Digest</h1>
+            <p>Hi ${escapeHtml(name ?? "there")}, here's what happened this week with the packages you're watching:</p>
+            <ul>${releaseList}</ul>
+            <p><a href="${APP_BASE_URL}">View all updates on PatchNotes</a></p>
+            ${emailFooter()}
+        `;
 }
 
 // Runs every Monday at 9:00 AM UTC

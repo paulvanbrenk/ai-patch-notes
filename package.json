@@ -6,6 +6,10 @@
       "azure-functions-core-tools",
       "esbuild",
       "msw"
+    ],
+    "ignoredBuiltDependencies": [
+      "@prisma/engines",
+      "prisma"
     ]
   }
 }
