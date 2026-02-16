@@ -1,5 +1,5 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
-import { resend, FROM_ADDRESS, escapeHtml, emailFooter } from "../lib/resend";
+import { resend, FROM_ADDRESS, escapeHtml, emailFooter, sanitizeSubject } from "../lib/resend";
 
 interface WelcomeRequest {
     email: string;
@@ -36,7 +36,7 @@ export async function sendWelcome(
         const { error } = await resend.emails.send({
             from: FROM_ADDRESS,
             to: body.email,
-            subject: `Welcome to PatchNotes, ${body.name}!`,
+            subject: sanitizeSubject(`Welcome to PatchNotes, ${body.name}!`),
             html,
         });
 

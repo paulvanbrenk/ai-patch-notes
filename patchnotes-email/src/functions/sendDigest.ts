@@ -1,5 +1,5 @@
 import { app, InvocationContext, Timer } from "@azure/functions";
-import { resend, FROM_ADDRESS, escapeHtml, emailFooter } from "../lib/resend";
+import { resend, FROM_ADDRESS, escapeHtml, emailFooter, sanitizeSubject } from "../lib/resend";
 import { getPrismaClient } from "../lib/prisma";
 
 const DIGEST_WINDOW_DAYS = 7;
@@ -101,7 +101,7 @@ export async function sendDigest(
             const { error } = await resend.emails.send({
                 from: FROM_ADDRESS,
                 to: user.Email!,
-                subject: `Your Weekly PatchNotes Digest — ${releases.length} updates`,
+                subject: sanitizeSubject(`Your Weekly PatchNotes Digest — ${releases.length} updates`),
                 html,
             });
 
