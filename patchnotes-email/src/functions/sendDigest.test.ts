@@ -1,8 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const { mockSend, mockFindMany } = vi.hoisted(() => ({
+const { mockSend, mockFindMany, mockFindUnique, mockRenderTemplate, mockInterpolateSubject } = vi.hoisted(() => ({
     mockSend: vi.fn(),
     mockFindMany: vi.fn(),
+    mockFindUnique: vi.fn(),
+    mockRenderTemplate: vi.fn(),
+    mockInterpolateSubject: vi.fn(),
 }));
 
 vi.mock("../lib/resend", () => ({
@@ -16,7 +19,15 @@ vi.mock("../lib/resend", () => ({
 }));
 
 vi.mock("../lib/prisma", () => ({
-    getPrismaClient: () => ({ users: { findMany: mockFindMany } }),
+    getPrismaClient: () => ({
+        users: { findMany: mockFindMany },
+        emailTemplates: { findUnique: mockFindUnique },
+    }),
+}));
+
+vi.mock("../lib/templateRenderer", () => ({
+    renderTemplate: mockRenderTemplate,
+    interpolateSubject: mockInterpolateSubject,
 }));
 
 import { sendDigest } from "./sendDigest";
@@ -60,6 +71,8 @@ function makeUser(email: string, name: string, releases: Array<{ tag: string; ma
 describe("sendDigest", () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        // Default: no template in DB, use fallback HTML
+        mockFindUnique.mockResolvedValue(null);
     });
 
     it("returns early when no users have pending items", async () => {
@@ -186,5 +199,63 @@ describe("sendDigest", () => {
         await expect(sendDigest(makeTimer(), context)).rejects.toThrow();
         // All 3 users should have been attempted (not short-circuited)
         expect(mockSend).toHaveBeenCalledTimes(3);
+    });
+
+    it("uses DB template when available", async () => {
+        const template = {
+            Name: "digest",
+            Subject: "Digest for {{name}} — {{count}} updates",
+            JsxSource: "<fake-jsx/>",
+        };
+        mockFindUnique.mockResolvedValue(template);
+        mockRenderTemplate.mockResolvedValue("<html>rendered</html>");
+        mockInterpolateSubject.mockReturnValue("Digest for Alice — 1 updates");
+        mockFindMany.mockResolvedValue([
+            makeUser("a@test.com", "Alice", [{ tag: "v1.0.0", major: 1 }]),
+        ]);
+        mockSend.mockResolvedValue({ error: null });
+        const context = makeContext();
+
+        await sendDigest(makeTimer(), context);
+
+        expect(mockRenderTemplate).toHaveBeenCalledWith("<fake-jsx/>", {
+            name: "Alice",
+            releases: [{ packageName: "test-package", version: "v1.0.0", summary: "Summary for v1.0.0" }],
+        });
+        expect(mockInterpolateSubject).toHaveBeenCalledWith(
+            "Digest for {{name}} — {{count}} updates",
+            { name: "Alice", count: "1" }
+        );
+        expect(mockSend).toHaveBeenCalledWith(
+            expect.objectContaining({
+                html: "<html>rendered</html>",
+                subject: "Digest for Alice — 1 updates",
+            })
+        );
+    });
+
+    it("falls back to hardcoded HTML when template rendering fails", async () => {
+        mockFindUnique.mockResolvedValue({
+            Name: "digest",
+            Subject: "Digest",
+            JsxSource: "bad-jsx",
+        });
+        mockRenderTemplate.mockRejectedValue(new Error("render failed"));
+        mockFindMany.mockResolvedValue([
+            makeUser("a@test.com", "Alice", [{ tag: "v1.0.0", major: 1 }]),
+        ]);
+        mockSend.mockResolvedValue({ error: null });
+        const context = makeContext();
+
+        await sendDigest(makeTimer(), context);
+
+        expect(context.warn).toHaveBeenCalledWith(
+            expect.stringContaining("Failed to render digest template"),
+            expect.any(Error)
+        );
+        expect(mockSend).toHaveBeenCalledTimes(1);
+        // Should still send with fallback HTML
+        const sentHtml = mockSend.mock.calls[0][0].html;
+        expect(sentHtml).toContain("Your Weekly PatchNotes Digest");
     });
 });
