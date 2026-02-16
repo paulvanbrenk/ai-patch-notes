@@ -47,6 +47,8 @@ model Releases {
   MajorVersion Int      @default(0, map: "DF__Releases__MajorV__6C190EBB")
   MinorVersion Int      @default(0, map: "DF__Releases__MinorV__6D0D32F4")
   PatchVersion Int      @default(0, map: "DF__Releases__PatchV__6E01572D")
+  CreatedAt    DateTime @default(dbgenerated("0001-01-01T00:00:00.0000000+00:00"), map: "DF__Releases__Create__75A278F5") @db.DateTimeOffset
+  UpdatedAt    DateTime @default(dbgenerated("0001-01-01T00:00:00.0000000+00:00"), map: "DF__Releases__Update__76969D2E") @db.DateTimeOffset
   Packages     Packages @relation(fields: [PackageId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_Releases_Packages_PackageId")
 
   @@index([PackageId], map: "IX_Releases_PackageId")
@@ -62,6 +64,7 @@ model ReleaseSummaries {
   Summary      String   @db.NVarChar(Max)
   GeneratedAt  DateTime @db.DateTimeOffset
   UpdatedAt    DateTime @default(dbgenerated("0001-01-01T00:00:00.0000000+00:00"), map: "DF__ReleaseSu__Updat__6EF57B66") @db.DateTimeOffset
+  CreatedAt    DateTime @default(dbgenerated("0001-01-01T00:00:00.0000000+00:00"), map: "DF__ReleaseSu__Creat__74AE54BC") @db.DateTimeOffset
   Packages     Packages @relation(fields: [PackageId], references: [Id], onDelete: Cascade, onUpdate: NoAction, map: "FK_ReleaseSummaries_Packages_PackageId")
 
   @@unique([PackageId, MajorVersion, IsPrerelease], map: "IX_ReleaseSummaries_PackageId_MajorVersion_IsPrerelease")
