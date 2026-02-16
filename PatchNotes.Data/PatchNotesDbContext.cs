@@ -66,7 +66,8 @@ public DbSet<User> Users => Set<User>();
             entity.HasIndex(e => new { e.PackageId, e.MajorVersion, e.IsPrerelease });
             entity.HasOne(e => e.Package)
                 .WithMany(p => p.Releases)
-                .HasForeignKey(e => e.PackageId);
+                .HasForeignKey(e => e.PackageId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<User>(entity =>
@@ -118,10 +119,12 @@ public DbSet<User> Users => Set<User>();
             entity.HasIndex(e => new { e.UserId, e.PackageId }).IsUnique();
             entity.HasOne(e => e.User)
                 .WithMany(u => u.Watchlists)
-                .HasForeignKey(e => e.UserId);
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
             entity.HasOne(e => e.Package)
                 .WithMany(p => p.Watchlists)
-                .HasForeignKey(e => e.PackageId);
+                .HasForeignKey(e => e.PackageId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
     }
