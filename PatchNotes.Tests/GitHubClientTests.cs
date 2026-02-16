@@ -261,6 +261,94 @@ public class GitHubClientTests : IDisposable
 
     #endregion
 
+    #region SearchRepositoriesAsync Tests
+
+    [Fact]
+    public async Task SearchRepositoriesAsync_ReturnsResults()
+    {
+        // Arrange
+        var searchResponse = new
+        {
+            total_count = 2,
+            items = new[]
+            {
+                new { full_name = "facebook/react", owner = new { login = "facebook" }, name = "react", description = "A JavaScript library for building user interfaces", stargazers_count = 200000 },
+                new { full_name = "facebook/react-native", owner = new { login = "facebook" }, name = "react-native", description = "React Native", stargazers_count = 100000 }
+            }
+        };
+        _mockHandler.SetupResponse("search/repositories?q=react&per_page=10", searchResponse);
+
+        // Act
+        var result = await _client.SearchRepositoriesAsync("react");
+
+        // Assert
+        result.Should().HaveCount(2);
+        result[0].Owner.Login.Should().Be("facebook");
+        result[0].Name.Should().Be("react");
+        result[0].Description.Should().Be("A JavaScript library for building user interfaces");
+        result[0].StargazersCount.Should().Be(200000);
+    }
+
+    [Fact]
+    public async Task SearchRepositoriesAsync_WithCustomPerPage_UsesCorrectParameter()
+    {
+        // Arrange
+        var searchResponse = new { total_count = 0, items = Array.Empty<object>() };
+        _mockHandler.SetupResponse("search/repositories?q=test&per_page=5", searchResponse);
+
+        // Act
+        await _client.SearchRepositoriesAsync("test", perPage: 5);
+
+        // Assert
+        _mockHandler.LastRequestUri.Should().Contain("per_page=5");
+    }
+
+    [Fact]
+    public async Task SearchRepositoriesAsync_WithEmptyQuery_ThrowsArgumentException()
+    {
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            _client.SearchRepositoriesAsync(""));
+    }
+
+    [Fact]
+    public async Task SearchRepositoriesAsync_WithInvalidPerPage_ThrowsArgumentOutOfRangeException()
+    {
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+            _client.SearchRepositoriesAsync("react", perPage: 101));
+    }
+
+    [Fact]
+    public async Task SearchRepositoriesAsync_EscapesQueryString()
+    {
+        // Arrange
+        var searchResponse = new { total_count = 0, items = Array.Empty<object>() };
+        _mockHandler.SetupResponse("search/repositories?q=c%23%20library&per_page=10", searchResponse);
+
+        // Act
+        await _client.SearchRepositoriesAsync("c# library");
+
+        // Assert
+        _mockHandler.LastRequestUri.Should().Contain("q=c%23%20library");
+    }
+
+    [Fact]
+    public async Task SearchRepositoriesAsync_WithNoResults_ReturnsEmptyList()
+    {
+        // Arrange
+        var searchResponse = new { total_count = 0, items = Array.Empty<object>() };
+        _mockHandler.SetupResponse("search/repositories?q=xyznonexistent&per_page=10", searchResponse);
+
+        // Act
+        var result = await _client.SearchRepositoriesAsync("xyznonexistent");
+
+        // Assert
+        result.Should().BeEmpty();
+    }
+
+    #endregion
+
     #region Error Handling Tests
 
     [Fact]

@@ -2,6 +2,7 @@ using PatchNotes.Data;
 using PatchNotes.Api.Stytch;
 using PatchNotes.Api.Routes;
 using PatchNotes.Api.Webhooks;
+using PatchNotes.Sync.GitHub;
 using Stripe;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -68,6 +69,14 @@ builder.Services.AddOpenApi(options =>
 });
 builder.Services.AddPatchNotesDbContext(builder.Configuration);
 builder.Services.AddHttpClient();
+builder.Services.AddGitHubClient(options =>
+{
+    var token = builder.Configuration["GitHub:Token"];
+    if (!string.IsNullOrEmpty(token))
+    {
+        options.Token = token;
+    }
+});
 
 builder.Services.AddSingleton<IStytchClient, StytchClient>();
 

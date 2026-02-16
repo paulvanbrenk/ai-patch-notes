@@ -62,4 +62,16 @@ public interface IGitHubClient
         string repo,
         string path,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Searches GitHub repositories by query string.
+    /// </summary>
+    /// <param name="query">The search query.</param>
+    /// <param name="perPage">Number of results per page (max 100).</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A list of matching repositories.</returns>
+    Task<IReadOnlyList<GitHubSearchResult>> SearchRepositoriesAsync(
+        string query,
+        int perPage = 10,
+        CancellationToken cancellationToken = default);
 }
