@@ -147,9 +147,10 @@ export function AdminEmails() {
   const [isEditing, setIsEditing] = useState(false)
   const [editSubject, setEditSubject] = useState('')
   const [editJsxSource, setEditJsxSource] = useState('')
-  const [saveStatus, setSaveStatus] = useState<
-    { type: 'success' | 'error'; message: string } | null
-  >(null)
+  const [saveStatus, setSaveStatus] = useState<{
+    type: 'success' | 'error'
+    message: string
+  } | null>(null)
 
   const queryClient = useQueryClient()
   const updateMutation = useUpdateEmailTemplate({
@@ -159,7 +160,10 @@ export function AdminEmails() {
           queryKey: getGetEmailTemplatesQueryKey(),
         })
         setIsEditing(false)
-        setSaveStatus({ type: 'success', message: 'Template saved successfully' })
+        setSaveStatus({
+          type: 'success',
+          message: 'Template saved successfully',
+        })
         setTimeout(() => setSaveStatus(null), 3000)
       },
       onError: () => {
@@ -344,7 +348,11 @@ export function AdminEmails() {
                       </Button>
                     </>
                   ) : (
-                    <Button variant="secondary" size="sm" onClick={enterEditMode}>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={enterEditMode}
+                    >
                       Edit
                     </Button>
                   )}
