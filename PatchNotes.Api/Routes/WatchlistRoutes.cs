@@ -75,26 +75,33 @@ public static class WatchlistRoutes
                 return Results.BadRequest(new ApiError("One or more package IDs do not exist"));
             }
 
-            var existing = await db.Watchlists
-                .Where(w => w.UserId == user.Id)
-                .ToListAsync();
-            db.Watchlists.RemoveRange(existing);
-
-            foreach (var packageId in distinctIds)
+            var strategy = db.Database.CreateExecutionStrategy();
+            var resultIds = await strategy.ExecuteAsync(async () =>
             {
-                db.Watchlists.Add(new Watchlist
+                await using var transaction = await db.Database.BeginTransactionAsync();
+
+                var existing = await db.Watchlists
+                    .Where(w => w.UserId == user.Id)
+                    .ToListAsync();
+                db.Watchlists.RemoveRange(existing);
+
+                foreach (var packageId in distinctIds)
                 {
-                    UserId = user.Id,
-                    PackageId = packageId,
-                });
-            }
+                    db.Watchlists.Add(new Watchlist
+                    {
+                        UserId = user.Id,
+                        PackageId = packageId,
+                    });
+                }
 
-            await db.SaveChangesAsync();
+                await db.SaveChangesAsync();
+                await transaction.CommitAsync();
 
-            var resultIds = await db.Watchlists
-                .Where(w => w.UserId == user.Id)
-                .Select(w => w.PackageId)
-                .ToArrayAsync();
+                return await db.Watchlists
+                    .Where(w => w.UserId == user.Id)
+                    .Select(w => w.PackageId)
+                    .ToArrayAsync();
+            });
 
             return Results.Ok(resultIds);
         })
