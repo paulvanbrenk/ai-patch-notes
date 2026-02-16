@@ -1,9 +1,13 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { useStytchUser } from '@stytch/react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Header, HeaderTitle, Container, Button, Card } from '../components/ui'
 import { api } from '../api/client'
+import {
+  useUpdateEmailTemplate,
+  getGetEmailTemplatesQueryKey,
+} from '../api/generated/email-templates/email-templates'
 
 // ── Types ────────────────────────────────────────────────────
 
@@ -140,6 +144,34 @@ export function AdminEmails() {
   const navigate = useNavigate()
   const [selectedTemplate, setSelectedTemplate] = useState<string>('welcome')
   const [showSource, setShowSource] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editSubject, setEditSubject] = useState('')
+  const [editJsxSource, setEditJsxSource] = useState('')
+  const [saveStatus, setSaveStatus] = useState<{
+    type: 'success' | 'error'
+    message: string
+  } | null>(null)
+
+  const queryClient = useQueryClient()
+  const updateMutation = useUpdateEmailTemplate({
+    mutation: {
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: getGetEmailTemplatesQueryKey(),
+        })
+        setIsEditing(false)
+        setSaveStatus({
+          type: 'success',
+          message: 'Template saved successfully',
+        })
+        setTimeout(() => setSaveStatus(null), 3000)
+      },
+      onError: () => {
+        setSaveStatus({ type: 'error', message: 'Failed to save template' })
+        setTimeout(() => setSaveStatus(null), 5000)
+      },
+    },
+  })
 
   const { data: templates, isLoading } = useQuery({
     queryKey: ['/api/admin/email-templates'],
@@ -171,6 +203,31 @@ export function AdminEmails() {
       String(sampleData[key] ?? `{{${key}}}`)
     )
   }, [currentTemplate, sampleData])
+
+  function enterEditMode() {
+    if (!currentTemplate) return
+    setEditSubject(currentTemplate.subject)
+    setEditJsxSource(currentTemplate.jsxSource)
+    setIsEditing(true)
+    setShowSource(true)
+    setSaveStatus(null)
+  }
+
+  function cancelEdit() {
+    setIsEditing(false)
+    setSaveStatus(null)
+  }
+
+  function handleSave() {
+    if (!currentTemplate) return
+    updateMutation.mutate({
+      name: currentTemplate.name,
+      data: {
+        subject: editSubject,
+        jsxSource: editJsxSource,
+      },
+    })
+  }
 
   if (authLoading || !isAdmin) {
     return (
@@ -204,7 +261,11 @@ export function AdminEmails() {
                 key={t.name}
                 name={t.name}
                 active={selectedTemplate === t.name}
-                onClick={() => setSelectedTemplate(t.name)}
+                onClick={() => {
+                  setSelectedTemplate(t.name)
+                  setIsEditing(false)
+                  setSaveStatus(null)
+                }}
               />
             ))}
             {isLoading && (
@@ -216,27 +277,39 @@ export function AdminEmails() {
 
           {currentTemplate && (
             <div className="space-y-6">
-              {/* Subject Line Preview */}
+              {/* Subject Line */}
               <Card>
                 <div className="space-y-2">
                   <label className="text-xs font-medium text-text-secondary uppercase tracking-wide">
                     Subject Line
                   </label>
-                  <p className="text-text-primary font-medium">
-                    {subjectPreview}
-                  </p>
-                  <p className="text-xs text-text-tertiary">
-                    Template: {currentTemplate.subject}
-                  </p>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={editSubject}
+                      onChange={(e) => setEditSubject(e.target.value)}
+                      className="w-full px-3 py-2 text-sm font-mono text-text-primary bg-surface-secondary border border-border-default rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    />
+                  ) : (
+                    <>
+                      <p className="text-text-primary font-medium">
+                        {subjectPreview}
+                      </p>
+                      <p className="text-xs text-text-tertiary">
+                        Template: {currentTemplate.subject}
+                      </p>
+                    </>
+                  )}
                 </div>
               </Card>
 
-              {/* Toggle Source / Preview */}
-              <div className="flex gap-2">
+              {/* Toggle Source / Preview + Edit controls */}
+              <div className="flex items-center gap-2">
                 <Button
                   variant={showSource ? 'secondary' : 'primary'}
                   size="sm"
                   onClick={() => setShowSource(false)}
+                  disabled={isEditing}
                 >
                   Preview
                 </Button>
@@ -247,6 +320,43 @@ export function AdminEmails() {
                 >
                   JSX Source
                 </Button>
+                <div className="ml-auto flex items-center gap-2">
+                  {saveStatus && (
+                    <span
+                      className={`text-sm ${saveStatus.type === 'success' ? 'text-green-600' : 'text-red-600'}`}
+                    >
+                      {saveStatus.message}
+                    </span>
+                  )}
+                  {isEditing ? (
+                    <>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={cancelEdit}
+                        disabled={updateMutation.isPending}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={handleSave}
+                        disabled={updateMutation.isPending}
+                      >
+                        {updateMutation.isPending ? 'Saving...' : 'Save'}
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={enterEditMode}
+                    >
+                      Edit
+                    </Button>
+                  )}
+                </div>
               </div>
 
               {showSource ? (
@@ -261,9 +371,19 @@ export function AdminEmails() {
                       {new Date(currentTemplate.updatedAt).toLocaleString()}
                     </p>
                   </div>
-                  <pre className="p-6 overflow-x-auto text-sm font-mono text-text-primary bg-surface-primary leading-relaxed">
-                    <code>{currentTemplate.jsxSource}</code>
-                  </pre>
+                  {isEditing ? (
+                    <textarea
+                      value={editJsxSource}
+                      onChange={(e) => setEditJsxSource(e.target.value)}
+                      className="w-full p-6 text-sm font-mono text-text-primary bg-surface-primary leading-relaxed border-0 resize-y focus:outline-none focus:ring-2 focus:ring-inset focus:ring-brand-500"
+                      style={{ minHeight: '400px' }}
+                      spellCheck={false}
+                    />
+                  ) : (
+                    <pre className="p-6 overflow-x-auto text-sm font-mono text-text-primary bg-surface-primary leading-relaxed">
+                      <code>{currentTemplate.jsxSource}</code>
+                    </pre>
+                  )}
                 </Card>
               ) : (
                 /* Rendered HTML Preview */
