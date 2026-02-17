@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { useDebouncedValue } from '@tanstack/react-pacer'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { useStytchUser } from '@stytch/react'
 import {
@@ -16,7 +17,11 @@ import {
   useUpdatePackage,
   useBulkAddPackages,
 } from '../api/hooks'
-import type { PackageDto } from '../api/generated/model'
+import type {
+  PackageDto,
+  GitHubRepoSearchResultDto,
+} from '../api/generated/model'
+import { useSearchGitHubRepositories } from '../api/generated/admin-git-hub/admin-git-hub'
 
 function formatDate(dateString: string | null | undefined): string {
   if (!dateString) return 'Never'
@@ -184,6 +189,131 @@ function DeleteConfirmModal({
   )
 }
 
+// ── GitHub Search Dropdown ────────────────────────────────────
+
+interface GitHubSearchDropdownProps {
+  onSelect: (result: GitHubRepoSearchResultDto) => void
+  disabled?: boolean
+}
+
+function GitHubSearchDropdown({
+  onSelect,
+  disabled,
+}: GitHubSearchDropdownProps) {
+  const [query, setQuery] = useState('')
+  const [debouncedQuery] = useDebouncedValue(query.trim(), { wait: 300 })
+  const [dismissed, setDismissed] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  const handleQueryChange = (value: string) => {
+    setQuery(value)
+    setDismissed(false)
+  }
+
+  const { data: searchResponse, isFetching } = useSearchGitHubRepositories(
+    debouncedQuery.length >= 2 ? { q: debouncedQuery } : undefined,
+    {
+      query: {
+        enabled: debouncedQuery.length >= 2,
+        staleTime: 30_000,
+      },
+    }
+  )
+
+  const results = searchResponse?.status === 200 ? searchResponse.data : []
+  const isOpen = !dismissed && debouncedQuery.length >= 2 && results.length > 0
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
+        setDismissed(true)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  function handleSelect(result: GitHubRepoSearchResultDto) {
+    setQuery(`${result.owner}/${result.repo}`)
+    setDismissed(true)
+    onSelect(result)
+  }
+
+  function formatStars(count: number | undefined): string {
+    if (count == null) return ''
+    if (count >= 1000) return `${(count / 1000).toFixed(1)}k`
+    return String(count)
+  }
+
+  return (
+    <div ref={containerRef} className="relative col-span-full">
+      <label className="block text-sm font-medium text-text-primary mb-1.5">
+        Search GitHub
+      </label>
+      <div className="relative">
+        <input
+          type="text"
+          className="w-full px-3 py-2 bg-surface-primary border border-border-default rounded-lg text-text-primary placeholder:text-text-tertiary transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent disabled:opacity-50 disabled:bg-surface-tertiary"
+          placeholder="Search repositories (e.g., react, next.js)"
+          value={query}
+          onChange={(e) => handleQueryChange(e.target.value)}
+          onFocus={() => {
+            if (results.length > 0 && debouncedQuery.length >= 2)
+              setDismissed(false)
+          }}
+          disabled={disabled}
+          autoFocus
+        />
+        {isFetching && (
+          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+            <div className="h-4 w-4 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
+          </div>
+        )}
+      </div>
+      {isOpen && results.length > 0 && (
+        <ul className="absolute z-10 mt-1 w-full max-h-60 overflow-auto bg-surface-primary border border-border-default rounded-lg shadow-lg">
+          {results.map((r) => (
+            <li key={`${r.owner}/${r.repo}`}>
+              <button
+                type="button"
+                className="w-full text-left px-3 py-2 hover:bg-surface-secondary transition-colors"
+                onClick={() => handleSelect(r)}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-text-primary text-sm">
+                    {r.owner}/{r.repo}
+                  </span>
+                  {r.starCount != null && r.starCount > 0 && (
+                    <span className="text-xs text-text-tertiary">
+                      &#9733; {formatStars(r.starCount)}
+                    </span>
+                  )}
+                </div>
+                {r.description && (
+                  <p className="text-xs text-text-secondary mt-0.5 line-clamp-1">
+                    {r.description}
+                  </p>
+                )}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {debouncedQuery.length >= 2 &&
+        !isFetching &&
+        results.length === 0 &&
+        !dismissed && (
+          <div className="absolute z-10 mt-1 w-full bg-surface-primary border border-border-default rounded-lg shadow-lg px-3 py-2 text-sm text-text-secondary">
+            No repositories found
+          </div>
+        )}
+    </div>
+  )
+}
+
 // ── Add Package Form ──────────────────────────────────────────
 
 interface AddPackageFormProps {
@@ -224,12 +354,21 @@ function AddPackageForm({ onClose }: AddPackageFormProps) {
     }
   }
 
+  function handleSearchSelect(result: GitHubRepoSearchResultDto) {
+    setGithubOwner(result.owner)
+    setGithubRepo(result.repo)
+  }
+
   return (
     <Card className="mb-6">
       <h3 className="text-sm font-semibold text-text-primary mb-3">
         Add New Package
       </h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl">
+        <GitHubSearchDropdown
+          onSelect={handleSearchSelect}
+          disabled={bulkAdd.isPending}
+        />
         <Input
           label="GitHub Owner *"
           placeholder="e.g., facebook"
@@ -237,7 +376,6 @@ function AddPackageForm({ onClose }: AddPackageFormProps) {
           onChange={(e) => setGithubOwner(e.target.value)}
           onKeyDown={handleKeyDown}
           disabled={bulkAdd.isPending}
-          autoFocus
         />
         <Input
           label="GitHub Repo *"

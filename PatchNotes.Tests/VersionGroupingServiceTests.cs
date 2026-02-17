@@ -1,6 +1,6 @@
 using FluentAssertions;
 using PatchNotes.Data;
-using PatchNotes.Sync;
+using PatchNotes.Sync.Core;
 
 namespace PatchNotes.Tests;
 

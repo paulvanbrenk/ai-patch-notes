@@ -1,8 +1,9 @@
 using PatchNotes.Data;
+using PatchNotes.Api.Middleware;
 using PatchNotes.Api.Stytch;
 using PatchNotes.Api.Routes;
 using PatchNotes.Api.Webhooks;
-using PatchNotes.Sync.GitHub;
+using PatchNotes.Sync.Core.GitHub;
 using Stripe;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -130,6 +131,7 @@ else
 }
 
 app.UseCors();
+app.UseMiddleware<CsrfMiddleware>();
 
 // Map routes
 app.MapStatusPageRoutes();

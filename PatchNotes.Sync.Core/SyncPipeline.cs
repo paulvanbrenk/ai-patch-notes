@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PatchNotes.Data;
 
-namespace PatchNotes.Sync;
+namespace PatchNotes.Sync.Core;
 
 /// <summary>
 /// Orchestrates sync and summary generation as a producer-consumer pipeline.

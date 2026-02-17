@@ -1,4 +1,4 @@
-namespace PatchNotes.Sync;
+namespace PatchNotes.Sync.Core;
 
 /// <summary>
 /// Combined result from the sync pipeline (producer + consumer).

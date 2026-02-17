@@ -71,12 +71,13 @@ public class EmailPreferencesTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task PatchEmailPreferences_Unauthenticated_Returns401()
+    public async Task PatchEmailPreferences_Unauthenticated_Returns403()
     {
         var unauthClient = _fixture.CreateClient();
         var response = await unauthClient.PatchAsJsonAsync("/api/users/me/email-preferences",
             new { EmailDigestEnabled = false });
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        // CSRF middleware rejects requests without Origin header before auth runs
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Fact]

@@ -5,9 +5,9 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using PatchNotes.Sync.AI.Models;
+using PatchNotes.Sync.Core.AI.Models;
 
-namespace PatchNotes.Sync.AI;
+namespace PatchNotes.Sync.Core.AI;
 
 /// <summary>
 /// Client for interacting with OpenAI-compatible APIs.

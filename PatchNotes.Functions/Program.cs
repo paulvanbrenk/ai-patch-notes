@@ -3,9 +3,9 @@ using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PatchNotes.Data;
-using PatchNotes.Sync.AI;
-using PatchNotes.Sync.GitHub;
-using PatchNotes.Sync;
+using PatchNotes.Sync.Core;
+using PatchNotes.Sync.Core.AI;
+using PatchNotes.Sync.Core.GitHub;
 
 var builder = FunctionsApplication.CreateBuilder(args);
 

@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using PatchNotes.Data;
-using PatchNotes.Sync.GitHub;
+using PatchNotes.Sync.Core.GitHub;
 
 namespace PatchNotes.Api.Routes;
 

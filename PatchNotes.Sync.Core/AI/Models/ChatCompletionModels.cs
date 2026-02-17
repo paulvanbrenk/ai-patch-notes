@@ -1,4 +1,4 @@
-namespace PatchNotes.Sync.AI.Models;
+namespace PatchNotes.Sync.Core.AI.Models;
 
 internal class ChatCompletionRequest
 {

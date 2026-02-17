@@ -69,12 +69,12 @@ public static class StytchWebhook
             catch (JsonException ex)
             {
                 Console.WriteLine($"Stytch webhook JSON parse error: {ex.Message}");
-                return Results.BadRequest(new { error = "JSON deserialization failed", detail = ex.Message, bodyPreview = body.Length > 500 ? body[..500] : body });
+                return Results.BadRequest(new { error = "Invalid webhook payload" });
             }
 
             if (stytchEvent == null)
             {
-                return Results.BadRequest(new { error = "Deserialized event was null", bodyPreview = body.Length > 500 ? body[..500] : body });
+                return Results.BadRequest(new { error = "Invalid webhook payload" });
             }
 
             Console.WriteLine($"Stytch webhook received: object_type={stytchEvent.object_type}, action={stytchEvent.action}, id={stytchEvent.id}");
@@ -94,13 +94,13 @@ public static class StytchWebhook
                         catch (Exception ex)
                         {
                             Console.WriteLine($"Stytch API call failed for user {stytchEvent.id}: {ex.Message}");
-                            return Results.Json(new { error = "Stytch API call failed", stytchUserId = stytchEvent.id, detail = ex.Message }, statusCode: 502);
+                            return Results.Json(new { error = "Failed to fetch user data" }, statusCode: 502);
                         }
 
                         if (stytchUser == null)
                         {
                             Console.WriteLine($"Stytch API returned null for user {stytchEvent.id}");
-                            return Results.Json(new { error = "Stytch API returned null user", stytchUserId = stytchEvent.id }, statusCode: 502);
+                            return Results.Json(new { error = "Failed to fetch user data" }, statusCode: 502);
                         }
 
                         Console.WriteLine($"Stytch user fetched: userId={stytchUser.UserId}, email={stytchUser.Email}, name={stytchUser.Name}");
@@ -114,7 +114,7 @@ public static class StytchWebhook
                         catch (Exception ex)
                         {
                             Console.WriteLine($"DB query failed for StytchUserId={stytchEvent.id}: {ex.Message}");
-                            return Results.Json(new { error = "DB query failed", stytchUserId = stytchEvent.id, detail = ex.Message, innerException = ex.InnerException?.Message }, statusCode: 500);
+                            return Results.Json(new { error = "Internal server error" }, statusCode: 500);
                         }
 
                         if (user == null)
@@ -144,7 +144,7 @@ public static class StytchWebhook
                         catch (Exception ex)
                         {
                             Console.WriteLine($"DB save failed for StytchUserId={stytchEvent.id}: {ex.Message} | Inner: {ex.InnerException?.Message}");
-                            return Results.Json(new { error = "DB save failed", stytchUserId = stytchEvent.id, detail = ex.Message, innerException = ex.InnerException?.Message }, statusCode: 500);
+                            return Results.Json(new { error = "Internal server error" }, statusCode: 500);
                         }
 
                         break;
@@ -169,7 +169,7 @@ public static class StytchWebhook
                         catch (Exception ex)
                         {
                             Console.WriteLine($"Delete user failed for StytchUserId={stytchEvent.id}: {ex.Message}");
-                            return Results.Json(new { error = "Delete user failed", stytchUserId = stytchEvent.id, detail = ex.Message }, statusCode: 500);
+                            return Results.Json(new { error = "Internal server error" }, statusCode: 500);
                         }
                         break;
                     }

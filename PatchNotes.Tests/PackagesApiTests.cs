@@ -154,7 +154,8 @@ public class PackagesApiTests : IAsyncLifetime
     {
         var response = await _client.PostAsJsonAsync("/api/packages", new { npmName = "test" });
 
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        // CSRF middleware rejects requests without Origin header before auth runs
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Fact]
@@ -242,7 +243,8 @@ public class PackagesApiTests : IAsyncLifetime
     {
         var response = await _client.DeleteAsync("/api/packages/nonexistent-id-1234xx");
 
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        // CSRF middleware rejects requests without Origin header before auth runs
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Fact]
@@ -536,7 +538,8 @@ public class PackagesApiTests : IAsyncLifetime
             new { githubOwner = "facebook", githubRepo = "react" }
         });
 
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        // CSRF middleware rejects requests without Origin header before auth runs
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
     [Fact]

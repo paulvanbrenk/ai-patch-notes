@@ -30,6 +30,7 @@ export const GetFeedResponse = zod.object({
   "title": zod.string().nullish(),
   "publishedAt": zod.iso.datetime({"offset":true}).optional()
 }))
-}))
+})),
+  "isDefaultFeed": zod.boolean().optional()
 })
 

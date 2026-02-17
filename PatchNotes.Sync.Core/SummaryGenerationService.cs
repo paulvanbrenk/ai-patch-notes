@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using PatchNotes.Data;
-using PatchNotes.Sync.AI;
+using PatchNotes.Sync.Core.AI;
 
-namespace PatchNotes.Sync;
+namespace PatchNotes.Sync.Core;
 
 /// <summary>
 /// Generates AI summaries per version group, aggregating release notes

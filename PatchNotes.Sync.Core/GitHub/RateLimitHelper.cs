@@ -1,8 +1,8 @@
 using System.Net.Http.Headers;
 using Microsoft.Extensions.Logging;
-using PatchNotes.Sync.GitHub.Models;
+using PatchNotes.Sync.Core.GitHub.Models;
 
-namespace PatchNotes.Sync.GitHub;
+namespace PatchNotes.Sync.Core.GitHub;
 
 /// <summary>
 /// Helper class for parsing and logging GitHub API rate limit information.

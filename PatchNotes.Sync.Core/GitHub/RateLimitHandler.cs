@@ -1,7 +1,7 @@
 using System.Net;
 using Microsoft.Extensions.Logging;
 
-namespace PatchNotes.Sync.GitHub;
+namespace PatchNotes.Sync.Core.GitHub;
 
 /// <summary>
 /// DelegatingHandler that enforces GitHub API rate limits by proactively

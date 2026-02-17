@@ -3,8 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
 using PatchNotes.Data;
-using PatchNotes.Sync;
-using PatchNotes.Sync.AI;
+using PatchNotes.Sync.Core;
+using PatchNotes.Sync.Core.AI;
 
 namespace PatchNotes.Tests;
 

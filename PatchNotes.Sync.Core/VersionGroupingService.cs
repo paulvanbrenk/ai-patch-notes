@@ -1,6 +1,6 @@
 using PatchNotes.Data;
 
-namespace PatchNotes.Sync;
+namespace PatchNotes.Sync.Core;
 
 /// <summary>
 /// A group of releases sharing the same package, major version, and pre-release status.

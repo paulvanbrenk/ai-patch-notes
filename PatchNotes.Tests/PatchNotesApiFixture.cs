@@ -86,6 +86,7 @@ public class PatchNotesApiFixture : WebApplicationFactory<Program>, IAsyncLifeti
         builder.UseSetting("Stytch:ProjectId", "test-project-id");
         builder.UseSetting("Stytch:Secret", "test-secret");
         builder.UseSetting("Stytch:WebhookSecret", "test-webhook-secret");
+        builder.UseSetting("AllowedOrigins:0", "http://localhost");
 
         _additionalConfig?.Invoke(builder);
     }
@@ -138,6 +139,10 @@ public class PatchNotesApiFixture : WebApplicationFactory<Program>, IAsyncLifeti
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             request.Headers.Add("Cookie", $"stytch_session={_sessionToken}");
+            if (!request.Headers.Contains("Origin"))
+            {
+                request.Headers.Add("Origin", "http://localhost");
+            }
             return base.SendAsync(request, cancellationToken);
         }
     }

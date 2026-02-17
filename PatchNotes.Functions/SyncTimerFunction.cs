@@ -1,6 +1,6 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
-using PatchNotes.Sync;
+using PatchNotes.Sync.Core;
 
 namespace PatchNotes.Functions;
 

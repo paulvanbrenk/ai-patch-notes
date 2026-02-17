@@ -15,18 +15,22 @@ model EFMigrationsHistory {
 }
 
 model Packages {
-  Name             String             @db.NVarChar(Max)
-  Url              String             @db.NVarChar(Max)
-  NpmName          String?            @db.NVarChar(256)
-  GithubOwner      String             @db.NVarChar(128)
-  GithubRepo       String             @db.NVarChar(128)
-  LastFetchedAt    DateTime?          @db.DateTimeOffset
-  CreatedAt        DateTime           @db.DateTimeOffset
-  Id               String             @id(map: "PK_Packages") @default("", map: "DF__Packages__Id__59063A47") @db.NVarChar(21)
-  TagPrefix        String?            @db.NVarChar(64)
-  Releases         Releases[]
-  ReleaseSummaries ReleaseSummaries[]
-  Watchlists       Watchlists[]
+  Name                String             @db.NVarChar(Max)
+  Url                 String             @db.NVarChar(Max)
+  NpmName             String?            @db.NVarChar(256)
+  GithubOwner         String             @db.NVarChar(128)
+  GithubRepo          String             @db.NVarChar(128)
+  LastFetchedAt       DateTime?          @db.DateTimeOffset
+  CreatedAt           DateTime           @db.DateTimeOffset
+  Id                  String             @id(map: "PK_Packages") @default("", map: "DF__Packages__Id__59063A47") @db.NVarChar(21)
+  TagPrefix           String?            @db.NVarChar(64)
+  ConsecutiveFailures Int                @default(0, map: "DF__Packages__Consec__778AC167")
+  IsSyncDisabled      Boolean            @default(dbgenerated("CONVERT([bit],(0))"), map: "DF__Packages__IsSync__787EE5A0")
+  LastFailureAt       DateTime?          @db.DateTimeOffset
+  LastFailureMessage  String?            @db.NVarChar(1024)
+  Releases            Releases[]
+  ReleaseSummaries    ReleaseSummaries[]
+  Watchlists          Watchlists[]
 }
 
 model ProcessedWebhookEvents {
