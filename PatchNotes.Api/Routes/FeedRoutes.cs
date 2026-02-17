@@ -24,6 +24,24 @@ public static class FeedRoutes
             var (watchlistIds, hasWatchlistConfig) = await RouteUtils.ResolveWatchlistPackageIds(
                 httpContext, db, stytchClient, watchlistOptions.Value);
 
+            var isDefaultFeed = false;
+
+            if (!hasWatchlistConfig)
+            {
+                // No auth or empty watchlist: show top 5 most recently released packages
+                var topPackageIds = await db.Releases
+                    .GroupBy(r => r.PackageId)
+                    .Select(g => new { PackageId = g.Key, LatestRelease = g.Max(r => r.PublishedAt) })
+                    .OrderByDescending(x => x.LatestRelease)
+                    .Take(5)
+                    .Select(x => x.PackageId)
+                    .ToListAsync();
+
+                watchlistIds = topPackageIds;
+                hasWatchlistConfig = true;
+                isDefaultFeed = true;
+            }
+
             IQueryable<Release> releaseQuery = db.Releases
                 .Include(r => r.Package);
 
@@ -138,7 +156,7 @@ public static class FeedRoutes
                 };
             }).ToList();
 
-            return Results.Ok(new FeedResponseDto { Groups = feedGroups });
+            return Results.Ok(new FeedResponseDto { Groups = feedGroups, IsDefaultFeed = isDefaultFeed });
         })
         .Produces<FeedResponseDto>(StatusCodes.Status200OK)
         .WithName("GetFeed");
@@ -150,6 +168,7 @@ public static class FeedRoutes
 public class FeedResponseDto
 {
     public required List<FeedGroupDto> Groups { get; set; }
+    public bool IsDefaultFeed { get; set; }
 }
 
 public class FeedGroupDto

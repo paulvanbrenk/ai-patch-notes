@@ -1269,6 +1269,9 @@
             "items": {
               "$ref": "#/components/schemas/FeedGroupDto"
             }
+          },
+          "isDefaultFeed": {
+            "type": "boolean"
           }
         }
       },

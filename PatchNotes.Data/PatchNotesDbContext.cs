@@ -53,6 +53,9 @@ public class PatchNotesDbContext : DbContext
             entity.Property(e => e.GithubRepo).HasMaxLength(128);
             entity.Property(e => e.TagPrefix).HasMaxLength(64);
             entity.HasIndex(e => e.NpmName).IsUnique();
+            entity.Property(e => e.ConsecutiveFailures).HasDefaultValue(0);
+            entity.Property(e => e.LastFailureMessage).HasMaxLength(1024);
+            entity.Property(e => e.IsSyncDisabled).HasDefaultValue(false);
         });
 
         modelBuilder.Entity<Release>(entity =>

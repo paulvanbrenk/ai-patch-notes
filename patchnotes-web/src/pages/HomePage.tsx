@@ -584,6 +584,12 @@ export function HomePage() {
             </div>
           )}
 
+          {feedData?.isDefaultFeed && (
+            <h2 className="text-lg font-semibold text-text-primary mb-4">
+              Recently Updated Packages
+            </h2>
+          )}
+
           {/* Main layout */}
           <div className="flex gap-6">
             {/* Content */}

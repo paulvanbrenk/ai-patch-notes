@@ -11,6 +11,10 @@ public class Package : IHasCreatedAt
     public string? TagPrefix { get; set; }
     public DateTimeOffset? LastFetchedAt { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
+    public int ConsecutiveFailures { get; set; }
+    public DateTimeOffset? LastFailureAt { get; set; }
+    public string? LastFailureMessage { get; set; }
+    public bool IsSyncDisabled { get; set; }
 
     public ICollection<Release> Releases { get; set; } = [];
     public ICollection<ReleaseSummary> ReleaseSummaries { get; set; } = [];
