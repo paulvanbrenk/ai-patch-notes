@@ -132,6 +132,10 @@ public class SyncService
             .Select(r => r.Tag)
             .ToHashSetAsync(cancellationToken);
 
+        // Batch-collect releases locally before adding to the change tracker.
+        // This prevents orphaned entities if processing fails mid-loop.
+        var newReleases = new List<Release>();
+
         await foreach (var ghRelease in _github.GetAllReleasesAsync(
             package.GithubOwner,
             package.GithubRepo,
@@ -223,7 +227,7 @@ public class SyncService
                 IsPrerelease = parsed.IsPrerelease
             };
 
-            _db.Releases.Add(release);
+            newReleases.Add(release);
             existingTags.Add(ghRelease.TagName);
             releasesAdded++;
 
@@ -231,6 +235,9 @@ public class SyncService
             releasesNeedingSummary.Add(release);
         }
 
+        // Add all releases to the change tracker only after the loop
+        // completes successfully — no orphans if processing threw mid-loop
+        _db.Releases.AddRange(newReleases);
         package.LastFetchedAt = fetchedAt;
         await _db.SaveChangesAsync(cancellationToken);
 
