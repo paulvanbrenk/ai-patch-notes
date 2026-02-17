@@ -14,22 +14,47 @@ public class SyncTimerFunction(
         [TimerTrigger("0 0 */6 * * *")] TimerInfo timerInfo,
         CancellationToken cancellationToken)
     {
-        logger.LogInformation("Sync function triggered at {Time}", DateTimeOffset.UtcNow);
+        var startedAt = DateTimeOffset.UtcNow;
+        logger.LogWarning("SyncReleases started at {Time}, IsPastDue: {IsPastDue}",
+            startedAt, timerInfo.IsPastDue);
 
-        var result = await pipeline.RunAsync(cancellationToken);
+        try
+        {
+            var result = await pipeline.RunAsync(cancellationToken);
 
-        logger.LogInformation(
-            "Sync pipeline complete: {Packages} packages synced, {Releases} releases added, " +
-            "{Summaries} summaries generated, {SyncErrors} sync errors, {SummaryErrors} summary errors",
-            result.PackagesSynced,
-            result.ReleasesAdded,
-            result.SummariesGenerated,
-            result.SyncErrors.Count,
-            result.SummaryErrors.Count);
+            var elapsed = DateTimeOffset.UtcNow - startedAt;
+            logger.LogWarning(
+                "SyncReleases completed in {ElapsedSeconds:F1}s — " +
+                "{Packages} packages ({PackagesWithNewReleases} with new releases), {Releases} new releases, " +
+                "{Summaries} summaries generated, {SyncErrors} sync errors, {SummaryErrors} summary errors",
+                elapsed.TotalSeconds,
+                result.PackagesSynced,
+                result.PackagesWithNewReleases,
+                result.ReleasesAdded,
+                result.SummariesGenerated,
+                result.SyncErrors.Count,
+                result.SummaryErrors.Count);
+
+            foreach (var error in result.SyncErrors)
+            {
+                logger.LogError("Sync error for {Package}: {Error}", error.PackageName, error.Message);
+            }
+
+            foreach (var error in result.SummaryErrors)
+            {
+                logger.LogError("Summary error for package {PackageId}: {Error}", error.PackageId, error.Message);
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "SyncReleases failed after {ElapsedSeconds:F1}s",
+                (DateTimeOffset.UtcNow - startedAt).TotalSeconds);
+            throw;
+        }
 
         if (timerInfo.ScheduleStatus is not null)
         {
-            logger.LogInformation("Next sync scheduled at {NextRun}", timerInfo.ScheduleStatus.Next);
+            logger.LogWarning("Next SyncReleases scheduled at {NextRun}", timerInfo.ScheduleStatus.Next);
         }
     }
 }

@@ -6,6 +6,7 @@ namespace PatchNotes.Sync.Core;
 public record PipelineResult
 {
     public int PackagesSynced { get; internal set; }
+    public int PackagesWithNewReleases { get; internal set; }
     public int ReleasesAdded { get; internal set; }
     public int SummariesGenerated { get; internal set; }
     public int GroupsSkipped { get; internal set; }

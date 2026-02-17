@@ -81,6 +81,8 @@ public class SyncPipeline
                     var packageResult = await syncService.SyncPackageAsync(package, cancellationToken: ct);
                     result.PackagesSynced++;
                     result.ReleasesAdded += packageResult.ReleasesAdded;
+                    if (packageResult.ReleasesAdded > 0)
+                        result.PackagesWithNewReleases++;
 
                     if (packageResult.ReleasesAdded > 0)
                     {

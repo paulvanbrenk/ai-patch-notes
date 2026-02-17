@@ -3,14 +3,14 @@
   "logging": {
     "applicationInsights": {
       "samplingSettings": {
-        "isEnabled": true,
-        "excludedTypes": "Request"
+        "isEnabled": false
       },
       "enableLiveMetrics": true
     },
     "logLevel": {
       "default": "Information",
-      "Function.SyncReleases": "Information"
+      "Function.SyncReleases": "Information",
+      "PatchNotes": "Information"
     }
   },
   "functionTimeout": "00:10:00"
