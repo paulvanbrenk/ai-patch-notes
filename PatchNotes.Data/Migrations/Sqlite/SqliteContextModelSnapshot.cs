@@ -54,6 +54,11 @@ namespace PatchNotes.Data.Migrations.Sqlite
                         .HasMaxLength(21)
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("ConsecutiveFailures")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(0);
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
@@ -65,6 +70,18 @@ namespace PatchNotes.Data.Migrations.Sqlite
                     b.Property<string>("GithubRepo")
                         .IsRequired()
                         .HasMaxLength(128)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsSyncDisabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(false);
+
+                    b.Property<DateTime?>("LastFailureAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("LastFailureMessage")
+                        .HasMaxLength(1024)
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("LastFetchedAt")
