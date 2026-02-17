@@ -21,7 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PatchNotes.Data\PatchNotes.Data.csproj" />
-    <ProjectReference Include="..\PatchNotes.Sync\PatchNotes.Sync.csproj" />
+    <ProjectReference Include="..\PatchNotes.Sync.Core\PatchNotes.Sync.Core.csproj" />
   </ItemGroup>
 
 </Project>

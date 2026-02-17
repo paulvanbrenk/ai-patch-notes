@@ -1,4 +1,4 @@
-namespace PatchNotes.Sync;
+namespace PatchNotes.Sync.Core;
 
 public static class GitHubUrlParser
 {

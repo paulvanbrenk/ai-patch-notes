@@ -6,7 +6,7 @@ using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Options;
 using Polly;
 
-namespace PatchNotes.Sync.GitHub;
+namespace PatchNotes.Sync.Core.GitHub;
 
 /// <summary>
 /// Extension methods for registering GitHub client services.
