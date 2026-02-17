@@ -191,6 +191,7 @@ jobs:
         with:
           app-name: api-myreleasenotes-ai
           package: ./api
+          startup-command: dotnet PatchNotes.Api.dll
 
   deploy-frontend:
     name: Deploy Frontend to Static Web Apps
