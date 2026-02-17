@@ -38,14 +38,14 @@ import { GetWatchlistResponse } from './generated/watchlist/watchlist.zod'
 
 // ── Helpers ─────────────────────────────────────────────────
 
-function safeParse<T extends z.ZodType>(
+function validateResponse<T extends z.ZodType>(
   schema: T,
   data: unknown
-): z.output<T> | null {
+): z.output<T> {
   const result = schema.safeParse(data)
   if (!result.success) {
     console.error('[Zod validation error]', z.prettifyError(result.error))
-    return null
+    throw result.error
   }
   return result.data
 }
@@ -55,7 +55,7 @@ function safeParse<T extends z.ZodType>(
 export function usePackages() {
   return useGetPackages(undefined, {
     query: {
-      select: (res) => safeParse(GetPackagesResponse, res.data)?.items ?? null,
+      select: (res) => validateResponse(GetPackagesResponse, res.data).items,
     },
   })
 }
@@ -63,7 +63,7 @@ export function usePackages() {
 export function usePackage(id: string) {
   return useGetPackage(id, {
     query: {
-      select: (res) => safeParse(GetPackageResponse, res.data),
+      select: (res) => validateResponse(GetPackageResponse, res.data),
     },
   })
 }
@@ -87,7 +87,7 @@ export function useReleases(options?: ReleasesOptions) {
 
   return useGetReleases(params, {
     query: {
-      select: (res) => safeParse(GetReleasesResponse, res.data),
+      select: (res) => validateResponse(GetReleasesResponse, res.data),
     },
   })
 }
@@ -95,7 +95,7 @@ export function useReleases(options?: ReleasesOptions) {
 export function useRelease(id: string) {
   return useGetRelease(id, {
     query: {
-      select: (res) => safeParse(GetReleaseResponse, res.data),
+      select: (res) => validateResponse(GetReleaseResponse, res.data),
     },
   })
 }
@@ -103,7 +103,7 @@ export function useRelease(id: string) {
 export function usePackageReleases(packageId: string) {
   return useGetPackageReleases(packageId, {
     query: {
-      select: (res) => safeParse(GetPackageReleasesResponse, res.data),
+      select: (res) => validateResponse(GetPackageReleasesResponse, res.data),
     },
   })
 }
@@ -114,7 +114,7 @@ export function usePackagesByOwner(owner: string) {
   return useGetPackagesByOwner(owner, undefined, {
     query: {
       select: (res) =>
-        safeParse(GetPackagesByOwnerResponse, res.data)?.items ?? null,
+        validateResponse(GetPackagesByOwnerResponse, res.data).items,
     },
   })
 }
@@ -122,7 +122,7 @@ export function usePackagesByOwner(owner: string) {
 export function usePackageByOwnerRepo(owner: string, repo: string) {
   return useGetPackageByOwnerRepo(owner, repo, {
     query: {
-      select: (res) => safeParse(GetPackageByOwnerRepoResponse, res.data),
+      select: (res) => validateResponse(GetPackageByOwnerRepoResponse, res.data),
     },
   })
 }
@@ -212,7 +212,7 @@ export function useWatchlist() {
   return useGetWatchlist({
     query: {
       enabled: !!user,
-      select: (res) => safeParse(GetWatchlistResponse, res.data),
+      select: (res) => validateResponse(GetWatchlistResponse, res.data),
     },
   })
 }
