@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using PatchNotes.Data;
 using PatchNotes.Api.Stytch;
 using static PatchNotes.Data.SummaryConstants;
@@ -17,38 +16,34 @@ public static class FeedRoutes
             bool? excludePrerelease,
             HttpContext httpContext,
             PatchNotesDbContext db,
-            IStytchClient stytchClient,
-            IOptions<DefaultWatchlistOptions> watchlistOptions) =>
+            IStytchClient stytchClient) =>
         {
-            // Resolve which packages to show
-            var (watchlistIds, hasWatchlistConfig) = await RouteUtils.ResolveWatchlistPackageIds(
-                httpContext, db, stytchClient, watchlistOptions.Value);
+            // Resolve which packages to show: user's watchlist or top 5 most recent
+            var userWatchlistIds = await RouteUtils.GetAuthenticatedUserWatchlistIds(
+                httpContext, db, stytchClient);
 
-            var isDefaultFeed = false;
+            var isDefaultFeed = userWatchlistIds is not { Count: > 0 };
+            List<string> watchlistIds;
 
-            if (!hasWatchlistConfig)
+            if (!isDefaultFeed)
+            {
+                watchlistIds = userWatchlistIds!;
+            }
+            else
             {
                 // No auth or empty watchlist: show top 5 most recently released packages
-                var topPackageIds = await db.Releases
+                watchlistIds = await db.Releases
                     .GroupBy(r => r.PackageId)
                     .Select(g => new { PackageId = g.Key, LatestRelease = g.Max(r => r.PublishedAt) })
                     .OrderByDescending(x => x.LatestRelease)
                     .Take(5)
                     .Select(x => x.PackageId)
                     .ToListAsync();
-
-                watchlistIds = topPackageIds;
-                hasWatchlistConfig = true;
-                isDefaultFeed = true;
             }
 
             IQueryable<Release> releaseQuery = db.Releases
-                .Include(r => r.Package);
-
-            if (hasWatchlistConfig)
-            {
-                releaseQuery = releaseQuery.Where(r => watchlistIds.Contains(r.PackageId));
-            }
+                .Include(r => r.Package)
+                .Where(r => watchlistIds.Contains(r.PackageId));
 
             if (excludePrerelease == true)
             {
