@@ -81,12 +81,8 @@ jobs:
       - name: Prepare deployment package
         working-directory: ${{ github.workspace }}
         run: |
-          mkdir -p publish/email-function
-          cp -r patchnotes-email/dist publish/email-function/
+          pnpm --filter patchnotes-email deploy publish/email-function --prod
           cp patchnotes-email/host.json publish/email-function/
-          cp patchnotes-email/package.json publish/email-function/
-          cd publish/email-function
-          npm install --omit=dev
 
       - name: Upload Email Function artifact
         uses: actions/upload-artifact@v6
