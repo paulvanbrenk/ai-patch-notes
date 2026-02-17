@@ -436,10 +436,10 @@ public class MockHttpMessageHandler : HttpMessageHandler
             return Task.FromResult(response);
         }
 
-        // Return empty array by default for any unmatched request
-        return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
-        {
-            Content = JsonContent.Create(Array.Empty<object>())
-        });
+        // Fail loudly for unmatched requests so tests don't silently pass
+        // with empty data. Every expected HTTP call must be explicitly set up.
+        throw new InvalidOperationException(
+            $"No mock response configured for {request.Method} {pathAndQuery}. " +
+            $"Call SetupResponse/SetupErrorResponse for this path in your test arrangement.");
     }
 }
