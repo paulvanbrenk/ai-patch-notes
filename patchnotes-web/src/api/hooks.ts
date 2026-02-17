@@ -122,7 +122,8 @@ export function usePackagesByOwner(owner: string) {
 export function usePackageByOwnerRepo(owner: string, repo: string) {
   return useGetPackageByOwnerRepo(owner, repo, {
     query: {
-      select: (res) => validateResponse(GetPackageByOwnerRepoResponse, res.data),
+      select: (res) =>
+        validateResponse(GetPackageByOwnerRepoResponse, res.data),
     },
   })
 }
