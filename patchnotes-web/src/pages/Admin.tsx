@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { useDebouncedValue } from '@tanstack/react-pacer'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { useStytchUser } from '@stytch/react'
 import {
@@ -200,25 +201,14 @@ function GitHubSearchDropdown({
   disabled,
 }: GitHubSearchDropdownProps) {
   const [query, setQuery] = useState('')
-  const [debouncedQuery, setDebouncedQuery] = useState('')
+  const [debouncedQuery] = useDebouncedValue(query.trim(), { wait: 300 })
   const [dismissed, setDismissed] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
-  const timerRef = useRef<ReturnType<typeof setTimeout>>(null)
 
-  const handleQueryChange = useCallback((value: string) => {
+  const handleQueryChange = (value: string) => {
     setQuery(value)
     setDismissed(false)
-    if (timerRef.current) clearTimeout(timerRef.current)
-    timerRef.current = setTimeout(() => {
-      setDebouncedQuery(value.trim())
-    }, 300)
-  }, [])
-
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current)
-    }
-  }, [])
+  }
 
   const { data: searchResponse, isFetching } = useSearchGitHubRepositories(
     debouncedQuery.length >= 2 ? { q: debouncedQuery } : undefined,
