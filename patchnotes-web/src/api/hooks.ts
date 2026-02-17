@@ -255,6 +255,7 @@ export interface FeedGroupDto {
 
 export interface FeedResponseDto {
   groups: FeedGroupDto[]
+  isDefaultFeed?: boolean
 }
 
 // ── Feed Hook ───────────────────────────────────────────────

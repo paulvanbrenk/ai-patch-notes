@@ -8,4 +8,5 @@ import type { FeedGroupDto } from './feedGroupDto';
 
 export interface FeedResponseDto {
   groups: FeedGroupDto[];
+  isDefaultFeed?: boolean;
 }
