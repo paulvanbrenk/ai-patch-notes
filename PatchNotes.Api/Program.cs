@@ -1,4 +1,5 @@
 using PatchNotes.Data;
+using PatchNotes.Api.Middleware;
 using PatchNotes.Api.Stytch;
 using PatchNotes.Api.Routes;
 using PatchNotes.Api.Webhooks;
@@ -130,6 +131,7 @@ else
 }
 
 app.UseCors();
+app.UseMiddleware<CsrfMiddleware>();
 
 // Map routes
 app.MapStatusPageRoutes();
