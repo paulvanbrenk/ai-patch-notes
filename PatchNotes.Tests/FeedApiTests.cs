@@ -15,9 +15,6 @@ public class FeedApiTests : IAsyncLifetime
     public async Task InitializeAsync()
     {
         _fixture = new PatchNotesApiFixture();
-        // Clear default watchlist so test packages aren't filtered out
-        _fixture.ConfigureServices(services =>
-            services.Configure<DefaultWatchlistOptions>(o => o.Packages = []));
         await _fixture.InitializeAsync();
         _client = _fixture.CreateClient();
     }
