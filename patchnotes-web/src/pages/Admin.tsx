@@ -195,7 +195,10 @@ interface GitHubSearchDropdownProps {
   disabled?: boolean
 }
 
-function GitHubSearchDropdown({ onSelect, disabled }: GitHubSearchDropdownProps) {
+function GitHubSearchDropdown({
+  onSelect,
+  disabled,
+}: GitHubSearchDropdownProps) {
   const [query, setQuery] = useState('')
   const [debouncedQuery, setDebouncedQuery] = useState('')
   const [dismissed, setDismissed] = useState(false)
@@ -232,7 +235,10 @@ function GitHubSearchDropdown({ onSelect, disabled }: GitHubSearchDropdownProps)
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
         setDismissed(true)
       }
     }
@@ -265,7 +271,8 @@ function GitHubSearchDropdown({ onSelect, disabled }: GitHubSearchDropdownProps)
           value={query}
           onChange={(e) => handleQueryChange(e.target.value)}
           onFocus={() => {
-            if (results.length > 0 && debouncedQuery.length >= 2) setIsOpen(true)
+            if (results.length > 0 && debouncedQuery.length >= 2)
+              setDismissed(false)
           }}
           disabled={disabled}
           autoFocus
@@ -305,11 +312,14 @@ function GitHubSearchDropdown({ onSelect, disabled }: GitHubSearchDropdownProps)
           ))}
         </ul>
       )}
-      {debouncedQuery.length >= 2 && !isFetching && results.length === 0 && isOpen && (
-        <div className="absolute z-10 mt-1 w-full bg-surface-primary border border-border-default rounded-lg shadow-lg px-3 py-2 text-sm text-text-secondary">
-          No repositories found
-        </div>
-      )}
+      {debouncedQuery.length >= 2 &&
+        !isFetching &&
+        results.length === 0 &&
+        !dismissed && (
+          <div className="absolute z-10 mt-1 w-full bg-surface-primary border border-border-default rounded-lg shadow-lg px-3 py-2 text-sm text-text-secondary">
+            No repositories found
+          </div>
+        )}
     </div>
   )
 }
