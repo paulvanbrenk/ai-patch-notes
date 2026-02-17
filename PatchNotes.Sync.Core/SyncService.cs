@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using PatchNotes.Data;
-using PatchNotes.Sync.GitHub;
+using PatchNotes.Sync.Core.GitHub;
 
-namespace PatchNotes.Sync;
+namespace PatchNotes.Sync.Core;
 
 /// <summary>
 /// Service for syncing package releases from GitHub.

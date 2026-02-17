@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace PatchNotes.Sync.GitHub.Models;
+namespace PatchNotes.Sync.Core.GitHub.Models;
 
 /// <summary>
 /// Represents the response from GitHub's repository search API.

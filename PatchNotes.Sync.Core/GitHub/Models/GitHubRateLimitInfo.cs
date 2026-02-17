@@ -1,4 +1,4 @@
-namespace PatchNotes.Sync.GitHub.Models;
+namespace PatchNotes.Sync.Core.GitHub.Models;
 
 /// <summary>
 /// Contains rate limit information from GitHub API responses.

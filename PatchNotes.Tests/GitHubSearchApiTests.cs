@@ -5,8 +5,8 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Moq;
-using PatchNotes.Sync.GitHub;
-using PatchNotes.Sync.GitHub.Models;
+using PatchNotes.Sync.Core.GitHub;
+using PatchNotes.Sync.Core.GitHub.Models;
 
 namespace PatchNotes.Tests;
 

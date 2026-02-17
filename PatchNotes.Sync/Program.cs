@@ -4,9 +4,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using PatchNotes.Data;
-using PatchNotes.Sync.AI;
-using PatchNotes.Sync.GitHub;
-using PatchNotes.Sync;
+using PatchNotes.Sync.Core;
+using PatchNotes.Sync.Core.AI;
+using PatchNotes.Sync.Core.GitHub;
 
 // Exit codes for cron monitoring
 const int ExitSuccess = 0;

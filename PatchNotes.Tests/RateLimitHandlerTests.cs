@@ -3,7 +3,7 @@ using System.Net.Http.Json;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
-using PatchNotes.Sync.GitHub;
+using PatchNotes.Sync.Core.GitHub;
 
 namespace PatchNotes.Tests;
 

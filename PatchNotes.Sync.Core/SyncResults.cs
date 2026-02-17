@@ -1,6 +1,6 @@
 using PatchNotes.Data;
 
-namespace PatchNotes.Sync;
+namespace PatchNotes.Sync.Core;
 
 /// <summary>
 /// Result of syncing all packages.

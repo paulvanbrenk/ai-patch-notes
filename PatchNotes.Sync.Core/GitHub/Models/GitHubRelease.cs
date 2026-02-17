@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace PatchNotes.Sync.GitHub.Models;
+namespace PatchNotes.Sync.Core.GitHub.Models;
 
 /// <summary>
 /// Represents a release from the GitHub API.

@@ -2,7 +2,7 @@ using System.Net.Http.Headers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace PatchNotes.Sync.AI;
+namespace PatchNotes.Sync.Core.AI;
 
 /// <summary>
 /// Extension methods for registering AI client services.

@@ -4,8 +4,8 @@ using System.Text.Json;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
-using PatchNotes.Sync.GitHub;
-using PatchNotes.Sync.GitHub.Models;
+using PatchNotes.Sync.Core.GitHub;
+using PatchNotes.Sync.Core.GitHub.Models;
 
 namespace PatchNotes.Tests;
 

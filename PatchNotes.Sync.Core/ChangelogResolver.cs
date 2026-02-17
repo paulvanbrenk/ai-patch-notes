@@ -1,8 +1,8 @@
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
-using PatchNotes.Sync.GitHub;
+using PatchNotes.Sync.Core.GitHub;
 
-namespace PatchNotes.Sync;
+namespace PatchNotes.Sync.Core;
 
 /// <summary>
 /// Detects release bodies that reference external changelogs and fetches the real content.
