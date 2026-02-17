@@ -81,7 +81,7 @@ jobs:
       - name: Prepare deployment package
         working-directory: ${{ github.workspace }}
         run: |
-          pnpm --filter patchnotes-email deploy publish/email-function --prod --legacy
+          pnpm --filter patchnotes-email deploy publish/email-function --prod
           cp patchnotes-email/host.json publish/email-function/
 
       - name: Upload Email Function artifact
