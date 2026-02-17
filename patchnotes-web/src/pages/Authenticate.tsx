@@ -34,11 +34,11 @@ export function Authenticate() {
       try {
         if (tokenType === 'magic_links') {
           await stytch.magicLinks.authenticate(token, {
-            session_duration_minutes: 60,
+            session_duration_minutes: 43200, // 30 days
           })
         } else if (tokenType === 'oauth') {
           await stytch.oauth.authenticate(token, {
-            session_duration_minutes: 60,
+            session_duration_minutes: 43200, // 30 days
           })
         } else {
           setError(`Unknown token type: ${tokenType}`)
