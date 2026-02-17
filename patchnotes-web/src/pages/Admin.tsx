@@ -198,12 +198,13 @@ interface GitHubSearchDropdownProps {
 function GitHubSearchDropdown({ onSelect, disabled }: GitHubSearchDropdownProps) {
   const [query, setQuery] = useState('')
   const [debouncedQuery, setDebouncedQuery] = useState('')
-  const [isOpen, setIsOpen] = useState(false)
+  const [dismissed, setDismissed] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const timerRef = useRef<ReturnType<typeof setTimeout>>(null)
 
   const handleQueryChange = useCallback((value: string) => {
     setQuery(value)
+    setDismissed(false)
     if (timerRef.current) clearTimeout(timerRef.current)
     timerRef.current = setTimeout(() => {
       setDebouncedQuery(value.trim())
@@ -227,15 +228,12 @@ function GitHubSearchDropdown({ onSelect, disabled }: GitHubSearchDropdownProps)
   )
 
   const results = searchResponse?.status === 200 ? searchResponse.data : []
-
-  useEffect(() => {
-    setIsOpen(debouncedQuery.length >= 2 && results.length > 0)
-  }, [debouncedQuery, results.length])
+  const isOpen = !dismissed && debouncedQuery.length >= 2 && results.length > 0
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setIsOpen(false)
+        setDismissed(true)
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
@@ -244,7 +242,7 @@ function GitHubSearchDropdown({ onSelect, disabled }: GitHubSearchDropdownProps)
 
   function handleSelect(result: GitHubRepoSearchResultDto) {
     setQuery(`${result.owner}/${result.repo}`)
-    setIsOpen(false)
+    setDismissed(true)
     onSelect(result)
   }
 
