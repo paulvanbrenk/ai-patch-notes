@@ -9,23 +9,18 @@ import { queryClient } from './queryClient'
 import { stytchClient } from './auth/stytch'
 import { ErrorFallback } from './components/ErrorFallback'
 import { ToastProvider } from './components/Toast'
-import { QueryErrorHandler } from './components/QueryErrorHandler'
-import { ThemeProvider } from './components/theme'
 import './index.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary FallbackComponent={ErrorFallback}>
-      <ThemeProvider>
-        <StytchProvider stytch={stytchClient}>
-          <ToastProvider>
-            <QueryClientProvider client={queryClient}>
-              <QueryErrorHandler />
-              <RouterProvider router={router} />
-            </QueryClientProvider>
-          </ToastProvider>
-        </StytchProvider>
-      </ThemeProvider>
+      <StytchProvider stytch={stytchClient}>
+        <ToastProvider>
+          <QueryClientProvider client={queryClient}>
+            <RouterProvider router={router} />
+          </QueryClientProvider>
+        </ToastProvider>
+      </StytchProvider>
     </ErrorBoundary>
   </StrictMode>
 )

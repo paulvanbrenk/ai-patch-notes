@@ -13,21 +13,10 @@ import {
 import { ReleaseCard } from '../components/releases'
 import { usePackage, usePackageReleases } from '../api/hooks'
 import type { PackageReleaseDto } from '../api/generated/model'
+import { formatDateTime } from '../utils/dateFormat'
 
 interface PackageDetailProps {
   packageId: string
-}
-
-function formatDate(dateString: string | undefined): string {
-  if (!dateString) return ''
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
 }
 
 function getReleaseUrl(release: PackageReleaseDto): string {
@@ -160,7 +149,7 @@ export function PackageDetail({ packageId }: PackageDetailProps) {
                 </a>
                 {pkg.lastFetchedAt && (
                   <span className="text-text-tertiary">
-                    Last synced: {formatDate(pkg.lastFetchedAt)}
+                    Last synced: {formatDateTime(pkg.lastFetchedAt)}
                   </span>
                 )}
               </div>

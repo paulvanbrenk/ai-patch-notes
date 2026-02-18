@@ -1,5 +1,6 @@
 import { Card, CardHeader, CardTitle, CardContent } from '../ui'
 import { VersionBadge } from './VersionBadge'
+import { formatRelativeTime } from '../../utils/dateFormat'
 
 interface ReleaseCardProps {
   tag: string
@@ -9,37 +10,6 @@ interface ReleaseCardProps {
   htmlUrl?: string | null
   hoverable?: boolean
   onClick?: () => void
-}
-
-function formatDate(dateString: string): string {
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  })
-}
-
-function formatRelativeTime(dateString: string): string {
-  const date = new Date(dateString)
-  const now = new Date()
-  const diffMs = now.getTime() - date.getTime()
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
-
-  if (diffDays === 0) {
-    return 'Today'
-  }
-  if (diffDays === 1) {
-    return 'Yesterday'
-  }
-  if (diffDays < 7) {
-    return `${diffDays} days ago`
-  }
-  if (diffDays < 30) {
-    const weeks = Math.floor(diffDays / 7)
-    return `${weeks} week${weeks > 1 ? 's' : ''} ago`
-  }
-  return formatDate(dateString)
 }
 
 const MARKDOWN_LINK_RE = /^\s*\[([^\]]+)\]\((\S+)\)\s*$/
