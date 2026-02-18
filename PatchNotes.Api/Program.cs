@@ -146,6 +146,7 @@ app.MapFeedRoutes();
 app.MapStytchWebhook();
 app.MapStripeWebhook();
 app.MapEmailTemplateRoutes();
+app.MapSitemapRoutes();
 
 app.Run();
 
