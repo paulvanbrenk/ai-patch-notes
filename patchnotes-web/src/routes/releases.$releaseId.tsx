@@ -31,6 +31,18 @@ export const Route = createFileRoute('/releases/$releaseId')({
         title: `${owner}/${repo} ${tag} | My Release Notes`,
         description: `Release notes for ${owner}/${repo} ${tag}.`,
         path: `/releases/${data.id}`,
+        jsonLd: {
+          '@context': 'https://schema.org',
+          '@type': 'TechArticle',
+          headline: `${owner}/${repo} ${tag}`,
+          datePublished: data.publishedAt,
+          about: {
+            '@type': 'SoftwareSourceCode',
+            name: repo,
+            version: tag,
+            codeRepository: `https://github.com/${owner}/${repo}`,
+          },
+        },
       }),
     }
   },

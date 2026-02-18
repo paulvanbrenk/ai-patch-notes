@@ -80,4 +80,19 @@ describe('seoHead', () => {
     const { meta } = seoHead(defaultOpts)
     expect(meta.find((m) => 'name' in m && m.name === 'robots')).toBeUndefined()
   })
+
+  it('includes JSON-LD script tag when jsonLd is provided', () => {
+    const jsonLd = {
+      '@context': 'https://schema.org',
+      '@type': 'WebApplication',
+      name: 'Test App',
+    }
+    const { meta } = seoHead({ ...defaultOpts, jsonLd })
+    expect(meta).toContainEqual({ 'script:ld+json': jsonLd })
+  })
+
+  it('omits JSON-LD when jsonLd is not provided', () => {
+    const { meta } = seoHead(defaultOpts)
+    expect(meta.find((m) => 'script:ld+json' in m)).toBeUndefined()
+  })
 })

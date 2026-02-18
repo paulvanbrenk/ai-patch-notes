@@ -6,21 +6,11 @@ export function seoHead(opts: {
   description: string
   path: string
   noindex?: boolean
-}): {
-  meta: Array<
-    | { title: string }
-    | { name: string; content: string }
-    | { property: string; content: string }
-  >
-  links: Array<{ rel: string; href: string }>
-} {
+  jsonLd?: Record<string, unknown>
+}) {
   const url = `${BASE_URL}${opts.path}`
 
-  const meta: Array<
-    | { title: string }
-    | { name: string; content: string }
-    | { property: string; content: string }
-  > = [
+  const meta: Array<Record<string, unknown>> = [
     { title: opts.title },
     { name: 'description', content: opts.description },
     { property: 'og:type', content: 'website' },
@@ -36,6 +26,10 @@ export function seoHead(opts: {
 
   if (opts.noindex) {
     meta.push({ name: 'robots', content: 'noindex' })
+  }
+
+  if (opts.jsonLd) {
+    meta.push({ 'script:ld+json': opts.jsonLd })
   }
 
   const links = [{ rel: 'canonical', href: url }]

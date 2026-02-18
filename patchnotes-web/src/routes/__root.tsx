@@ -27,6 +27,20 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         description:
           'Track GitHub releases for the packages you depend on. AI-powered summaries, smart filtering, dark mode, and instant notifications. Free to start.',
         path: '/',
+        jsonLd: {
+          '@context': 'https://schema.org',
+          '@type': 'WebApplication',
+          name: 'My Release Notes',
+          url: 'https://www.myreleasenotes.ai',
+          description: 'Track GitHub releases for the packages you depend on.',
+          applicationCategory: 'DeveloperApplication',
+          operatingSystem: 'Web',
+          offers: {
+            '@type': 'Offer',
+            price: '0',
+            priceCurrency: 'USD',
+          },
+        },
       }),
     }),
   }
