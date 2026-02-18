@@ -164,6 +164,70 @@ public static class WatchlistRoutes
         .Produces(StatusCodes.Status409Conflict)
         .WithName("AddToWatchlist");
 
+        // POST /api/watchlist/github/{owner}/{repo} — add a GitHub repo to watchlist, creating package if needed
+        group.MapPost("/github/{owner}/{repo}", async (string owner, string repo, HttpContext httpContext, PatchNotesDbContext db) =>
+        {
+            var stytchUserId = httpContext.Items["StytchUserId"] as string;
+            if (stytchUserId == null)
+            {
+                return Results.Unauthorized();
+            }
+
+            var user = await db.Users.FirstOrDefaultAsync(u => u.StytchUserId == stytchUserId);
+            if (user == null)
+            {
+                return Results.NotFound(new ApiError("User not found"));
+            }
+
+            var watchlistSize = await db.Watchlists.CountAsync(w => w.UserId == user.Id);
+            if (!user.IsPro && watchlistSize >= FreeWatchlistLimit)
+            {
+                return Results.Json(new ApiError($"Free plan is limited to {FreeWatchlistLimit} packages. Upgrade to Pro for unlimited."), statusCode: 403);
+            }
+            if (watchlistSize >= MaxWatchlistSize)
+            {
+                return Results.BadRequest(new ApiError($"Watchlist cannot exceed {MaxWatchlistSize} packages"));
+            }
+
+            // Find or create the package
+            var package = await db.Packages
+                .FirstOrDefaultAsync(p => p.GithubOwner == owner && p.GithubRepo == repo);
+
+            if (package == null)
+            {
+                package = new Package
+                {
+                    Name = repo,
+                    Url = $"https://github.com/{owner}/{repo}",
+                    GithubOwner = owner,
+                    GithubRepo = repo,
+                };
+                db.Packages.Add(package);
+                await db.SaveChangesAsync();
+            }
+
+            var alreadyWatching = await db.Watchlists
+                .AnyAsync(w => w.UserId == user.Id && w.PackageId == package.Id);
+            if (alreadyWatching)
+            {
+                return Results.Conflict(new ApiError("Already watching this package"));
+            }
+
+            db.Watchlists.Add(new Watchlist
+            {
+                UserId = user.Id,
+                PackageId = package.Id,
+            });
+            await db.SaveChangesAsync();
+
+            return Results.Created($"/api/watchlist/{package.Id}", new AddFromGitHubResponse { PackageId = package.Id });
+        })
+        .AddEndpointFilterFactory(requireAuth)
+        .Produces<AddFromGitHubResponse>(StatusCodes.Status201Created)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status409Conflict)
+        .WithName("AddToWatchlistFromGitHub");
+
         // DELETE /api/watchlist/{packageId} — remove a single package from watchlist
         group.MapDelete("/{packageId}", async (string packageId, HttpContext httpContext, PatchNotesDbContext db) =>
         {
@@ -198,3 +262,8 @@ public static class WatchlistRoutes
 }
 
 public record SetWatchlistRequest(string[] PackageIds);
+
+public class AddFromGitHubResponse
+{
+    public required string PackageId { get; set; }
+}
