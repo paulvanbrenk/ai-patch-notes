@@ -749,6 +749,85 @@
         }
       }
     },
+    "/api/watchlist/github/{owner}/{repo}": {
+      "post": {
+        "tags": [
+          "Watchlist"
+        ],
+        "operationId": "AddToWatchlistFromGitHub",
+        "parameters": [
+          {
+            "name": "owner",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "repo",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddFromGitHubResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "409": {
+            "description": "Conflict"
+          }
+        }
+      }
+    },
+    "/api/github/search": {
+      "get": {
+        "tags": [
+          "GitHubSearch"
+        ],
+        "operationId": "SearchGitHubRepositoriesUser",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GitHubRepoSearchResultDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          }
+        }
+      }
+    },
     "/api/subscription/checkout": {
       "post": {
         "tags": [
@@ -1034,6 +1113,17 @@
   },
   "components": {
     "schemas": {
+      "AddFromGitHubResponse": {
+        "required": [
+          "packageId"
+        ],
+        "type": "object",
+        "properties": {
+          "packageId": {
+            "type": "string"
+          }
+        }
+      },
       "AddPackageRequest": {
         "required": [
           "npmName"
@@ -1989,6 +2079,9 @@
     },
     {
       "name": "Watchlist"
+    },
+    {
+      "name": "GitHubSearch"
     },
     {
       "name": "Subscription"
