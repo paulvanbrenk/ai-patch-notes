@@ -187,134 +187,31 @@ public class VersionParserTests
 
     #endregion
 
-    #region GetMajorVersion
+    #region ParseTagValues
 
     [Theory]
-    [InlineData("v15.0.0", 15)]
-    [InlineData("v16.2.0-canary.3", 16)]
-    [InlineData("1.0.0", 1)]
-    [InlineData("@babel/core@7.23.0", 7)]
-    [InlineData("v5.9-rc", 5)]
-    public void GetMajorVersion_ValidTag_ReturnsMajor(string tag, int expected)
+    [InlineData("v1.0.0", 1, 0, 0, false)]
+    [InlineData("v16.2.0-canary.3", 16, 2, 0, true)]
+    [InlineData("@babel/core@7.23.0", 7, 23, 0, false)]
+    public void ParseTagValues_ValidTag_ReturnsDenormalized(string tag, int major, int minor, int patch, bool isPrerelease)
     {
-        var result = VersionParser.GetMajorVersion(tag);
+        var result = VersionParser.ParseTagValues(tag);
 
-        result.Should().Be(expected);
+        result.MajorVersion.Should().Be(major);
+        result.MinorVersion.Should().Be(minor);
+        result.PatchVersion.Should().Be(patch);
+        result.IsPrerelease.Should().Be(isPrerelease);
     }
 
     [Theory]
     [InlineData("latest")]
     [InlineData("nightly")]
     [InlineData("")]
-    public void GetMajorVersion_InvalidTag_ReturnsNull(string tag)
+    public void ParseTagValues_InvalidTag_ReturnsNegativeOne(string tag)
     {
-        var result = VersionParser.GetMajorVersion(tag);
+        var result = VersionParser.ParseTagValues(tag);
 
-        result.Should().BeNull();
-    }
-
-    #endregion
-
-    #region IsPrerelease
-
-    [Theory]
-    [InlineData("v1.0.0-alpha", true)]
-    [InlineData("v1.0.0-beta.1", true)]
-    [InlineData("v1.0.0-rc.1", true)]
-    [InlineData("v16.2.0-canary.3", true)]
-    [InlineData("v1.0.0-preview", true)]
-    [InlineData("v1.0.0-next.5", true)]
-    [InlineData("v1.0.0-nightly", true)]
-    [InlineData("v1.0.0-dev", true)]
-    [InlineData("v1.0.0-experimental", true)]
-    public void IsPrerelease_PrereleaseTag_ReturnsTrue(string tag, bool expected)
-    {
-        var result = VersionParser.IsPrerelease(tag);
-
-        result.Should().Be(expected);
-    }
-
-    [Theory]
-    [InlineData("v1.0.0", false)]
-    [InlineData("v15.0.0", false)]
-    [InlineData("1.2.3", false)]
-    [InlineData("@babel/core@7.23.0", false)]
-    public void IsPrerelease_StableTag_ReturnsFalse(string tag, bool expected)
-    {
-        var result = VersionParser.IsPrerelease(tag);
-
-        result.Should().Be(expected);
-    }
-
-    // Edge case: keyword in tag but not in prerelease position
-    [Theory]
-    [InlineData("alphabetical-1.0.0", false)]  // Contains "alpha" but not a prerelease identifier
-    [InlineData("beta-package@1.0.0", false)]  // Contains "beta" but package name, not prerelease
-    public void IsPrerelease_KeywordInTagName_NotFalsePositive(string tag, bool expected)
-    {
-        var result = VersionParser.IsPrerelease(tag);
-
-        result.Should().Be(expected);
-    }
-
-    #endregion
-
-    #region GetVersionGroupKey
-
-    [Theory]
-    [InlineData("v15.0.0", "15.x")]
-    [InlineData("v15.1.0", "15.x")]
-    [InlineData("v15.0.1", "15.x")]
-    [InlineData("v16.0.0", "16.x")]
-    [InlineData("v1.0.0", "1.x")]
-    public void GetVersionGroupKey_StableVersion_ReturnsMajorX(string tag, string expectedGroup)
-    {
-        var result = VersionParser.Parse(tag);
-
-        result.Success.Should().BeTrue();
-        result.Version!.GetVersionGroupKey().Should().Be(expectedGroup);
-    }
-
-    [Theory]
-    [InlineData("v16.2.0-canary.3", "16.x-canary")]
-    [InlineData("v16.0.0-alpha.1", "16.x-alpha")]
-    [InlineData("v16.0.0-beta", "16.x-beta")]
-    [InlineData("v16.0.0-rc.1", "16.x-rc")]
-    [InlineData("v15.0.0-preview.1", "15.x-preview")]
-    public void GetVersionGroupKey_PrereleaseVersion_ReturnsMajorXWithType(string tag, string expectedGroup)
-    {
-        var result = VersionParser.Parse(tag);
-
-        result.Success.Should().BeTrue();
-        result.Version!.GetVersionGroupKey().Should().Be(expectedGroup);
-    }
-
-    #endregion
-
-    #region GetPrereleaseType
-
-    [Theory]
-    [InlineData("v1.0.0-alpha.1", "alpha")]
-    [InlineData("v1.0.0-beta", "beta")]
-    [InlineData("v1.0.0-rc.1", "rc")]
-    [InlineData("v1.0.0-canary.3", "canary")]
-    [InlineData("v1.0.0-preview.1", "preview")]
-    [InlineData("v1.0.0-next.5", "next")]
-    public void GetPrereleaseType_ExtractsCorrectType(string tag, string expectedType)
-    {
-        var result = VersionParser.Parse(tag);
-
-        result.Success.Should().BeTrue();
-        result.Version!.GetPrereleaseType().Should().Be(expectedType);
-    }
-
-    [Fact]
-    public void GetPrereleaseType_StableVersion_ReturnsStable()
-    {
-        var result = VersionParser.Parse("v1.0.0");
-
-        result.Success.Should().BeTrue();
-        result.Version!.GetPrereleaseType().Should().Be("stable");
+        result.MajorVersion.Should().Be(-1);
     }
 
     #endregion
@@ -332,8 +229,8 @@ public class VersionParserTests
             result.Success.Should().BeTrue($"Failed to parse TypeScript tag: {tag}");
         }
 
-        VersionParser.IsPrerelease("v5.9-rc").Should().BeTrue();
-        VersionParser.IsPrerelease("v5.9.3").Should().BeFalse();
+        VersionParser.Parse("v5.9-rc").Version!.IsPrerelease.Should().BeTrue();
+        VersionParser.Parse("v5.9.3").Version!.IsPrerelease.Should().BeFalse();
     }
 
     [Fact]
@@ -346,7 +243,7 @@ public class VersionParserTests
             var result = VersionParser.Parse(tag);
             result.Success.Should().BeTrue($"Failed to parse Next.js tag: {tag}");
             result.Version!.IsPrerelease.Should().BeTrue();
-            result.Version.GetPrereleaseType().Should().Be("canary");
+            result.Version.Prerelease.Should().StartWith("canary");
         }
     }
 
@@ -361,9 +258,8 @@ public class VersionParserTests
             result.Success.Should().BeTrue($"Failed to parse Node.js tag: {tag}");
         }
 
-        // Verify major version extraction
-        VersionParser.GetMajorVersion("v25.4.0").Should().Be(25);
-        VersionParser.GetMajorVersion("v24.13.0").Should().Be(24);
+        VersionParser.Parse("v25.4.0").Version!.Major.Should().Be(25);
+        VersionParser.Parse("v24.13.0").Version!.Major.Should().Be(24);
     }
 
     [Fact]

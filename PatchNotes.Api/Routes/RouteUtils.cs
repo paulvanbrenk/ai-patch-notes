@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using PatchNotes.Data;
 using PatchNotes.Api.Stytch;
@@ -7,47 +6,6 @@ namespace PatchNotes.Api.Routes;
 
 public static class RouteUtils
 {
-    public static (string? owner, string? repo) ParseGitHubUrl(string url)
-    {
-        // Handle various formats:
-        // git+https://github.com/owner/repo.git
-        // https://github.com/owner/repo.git
-        // https://github.com/owner/repo
-        // git://github.com/owner/repo.git
-        // github:owner/repo
-
-        url = url.Trim();
-
-        // Handle github:owner/repo shorthand
-        if (url.StartsWith("github:"))
-        {
-            var parts = url[7..].Split('/');
-            if (parts.Length >= 2)
-            {
-                return (parts[0], parts[1].Replace(".git", ""));
-            }
-        }
-
-        // Handle URL formats
-        var patterns = new[]
-        {
-            @"github\.com[:/]([^/]+)/([^/\.]+)",
-        };
-
-        foreach (var pattern in patterns)
-        {
-            var match = Regex.Match(url, pattern);
-            if (match.Success)
-            {
-                var owner = match.Groups[1].Value;
-                var repo = match.Groups[2].Value.Replace(".git", "");
-                return (owner, repo);
-            }
-        }
-
-        return (null, null);
-    }
-
     public static Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate> CreateAuthFilter()
     {
         return (context, next) => async invocationContext =>
