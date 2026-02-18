@@ -1,6 +1,6 @@
 import { Card, CardHeader, CardTitle, CardContent } from '../ui'
 import { VersionBadge } from './VersionBadge'
-import { formatRelativeTime } from '../../utils/dateFormat'
+import { formatDate, formatRelativeTime } from '../../utils/dateFormat'
 
 interface ReleaseCardProps {
   tag: string
