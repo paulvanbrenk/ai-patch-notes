@@ -4,11 +4,6 @@
     "title": "PatchNotes.Api | v1",
     "version": "1.0.0"
   },
-  "servers": [
-    {
-      "url": "http://localhost:5199/"
-    }
-  ],
   "paths": {
     "/webhooks/stytch": {
       "post": {

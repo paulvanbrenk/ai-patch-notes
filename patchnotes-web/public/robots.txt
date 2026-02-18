@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+Disallow: /login
+Disallow: /authenticate
+Disallow: /settings
+Disallow: /watchlist
+Disallow: /subscription-success
+Disallow: /subscription-canceled
+Disallow: /admin
+
+Sitemap: https://api.myreleasenotes.ai/sitemap.xml
+Llms-txt: https://www.myreleasenotes.ai/llms.txt
