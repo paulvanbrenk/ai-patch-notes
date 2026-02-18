@@ -7,8 +7,8 @@
   "description": "",
   "main": "dist/src/functions/*.js",
   "scripts": {
-    "build": "prisma generate && tsc",
-    "watch": "tsc -w",
+    "build": "prisma generate && tsgo",
+    "watch": "tsgo -w",
     "clean": "rimraf dist",
     "prestart": "pnpm clean && pnpm build",
     "start": "func start",
@@ -36,6 +36,7 @@
     "prisma": "^7.4.0",
     "rimraf": "^6.1.2",
     "tailwindcss": "catalog:",
+    "@typescript/native-preview": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   }

@@ -24,6 +24,7 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  AddFromGitHubResponse,
   SetWatchlistRequest
 } from '.././model';
 
@@ -387,5 +388,94 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         TContext
       > => {
       return useMutation(getRemoveFromWatchlistMutationOptions(options), queryClient);
+    }
+    export type addToWatchlistFromGitHubResponse201 = {
+  data: AddFromGitHubResponse
+  status: 201
+}
+
+export type addToWatchlistFromGitHubResponse404 = {
+  data: void
+  status: 404
+}
+
+export type addToWatchlistFromGitHubResponse409 = {
+  data: void
+  status: 409
+}
+    
+export type addToWatchlistFromGitHubResponseSuccess = (addToWatchlistFromGitHubResponse201) & {
+  headers: Headers;
+};
+export type addToWatchlistFromGitHubResponseError = (addToWatchlistFromGitHubResponse404 | addToWatchlistFromGitHubResponse409) & {
+  headers: Headers;
+};
+
+export type addToWatchlistFromGitHubResponse = (addToWatchlistFromGitHubResponseSuccess | addToWatchlistFromGitHubResponseError)
+
+export const getAddToWatchlistFromGitHubUrl = (owner: string,
+    repo: string,) => {
+
+
+  
+
+  return `/api/watchlist/github/${owner}/${repo}`
+}
+
+export const addToWatchlistFromGitHub = async (owner: string,
+    repo: string, options?: RequestInit): Promise<addToWatchlistFromGitHubResponse> => {
+  
+  return customFetch<addToWatchlistFromGitHubResponse>(getAddToWatchlistFromGitHubUrl(owner,repo),
+  {      
+    ...options,
+    method: 'POST'
+    
+    
+  }
+);}
+
+
+
+
+export const getAddToWatchlistFromGitHubMutationOptions = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addToWatchlistFromGitHub>>, TError,{owner: string;repo: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof addToWatchlistFromGitHub>>, TError,{owner: string;repo: string}, TContext> => {
+
+const mutationKey = ['addToWatchlistFromGitHub'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+      
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof addToWatchlistFromGitHub>>, {owner: string;repo: string}> = (props) => {
+          const {owner,repo} = props ?? {};
+
+          return  addToWatchlistFromGitHub(owner,repo,requestOptions)
+        }
+
+
+
+        
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AddToWatchlistFromGitHubMutationResult = NonNullable<Awaited<ReturnType<typeof addToWatchlistFromGitHub>>>
+    
+    export type AddToWatchlistFromGitHubMutationError = void
+
+    export const useAddToWatchlistFromGitHub = <TError = void,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addToWatchlistFromGitHub>>, TError,{owner: string;repo: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof addToWatchlistFromGitHub>>,
+        TError,
+        {owner: string;repo: string},
+        TContext
+      > => {
+      return useMutation(getAddToWatchlistFromGitHubMutationOptions(options), queryClient);
     }
     

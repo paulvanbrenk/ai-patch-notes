@@ -124,7 +124,6 @@ describe('HomePage', () => {
         expect(screen.getAllByText('react').length).toBeGreaterThan(0)
       })
       // Lodash releases should not appear since it's not in the watchlist
-      // (lodash still appears in the PackagePicker sidebar)
       expect(screen.queryByText('v4.x')).not.toBeInTheDocument()
     })
 

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Link } from '@tanstack/react-router'
 import { useStytchUser } from '@stytch/react'
 import Markdown from 'react-markdown'
@@ -9,6 +9,7 @@ import {
   CalendarArrowDown,
   Group,
   Sparkles,
+  List,
 } from 'lucide-react'
 import {
   Header,
@@ -21,17 +22,11 @@ import {
 } from '../components/ui'
 import { ThemeToggle } from '../components/theme'
 import { UserMenu } from '../components/auth'
-import { PackagePicker } from '../components/package-picker/PackagePicker'
 import { HeroCard } from '../components/landing/HeroCard'
 import { Logo } from '../components/landing/Logo'
 import { useFilterStore } from '../stores/filterStore'
 import { useSubscriptionStore } from '../stores/subscriptionStore'
-import {
-  usePackages,
-  useWatchlist,
-  useSetWatchlist,
-  useFeed,
-} from '../api/hooks'
+import { useWatchlist, useFeed } from '../api/hooks'
 import type { FeedGroupDto } from '../api/hooks'
 
 // ============================================================================
@@ -425,17 +420,7 @@ export function HomePage() {
   const { user } = useStytchUser()
   const { isPro, checkSubscription, startCheckout } = useSubscriptionStore()
 
-  // Fetch packages (for watchlist sidebar) and watchlist
-  const { data: packages, isLoading: packagesLoading } = usePackages()
   const { data: watchlist, isLoading: watchlistLoading } = useWatchlist()
-  const setWatchlistMutation = useSetWatchlist()
-
-  const handleWatchlistChange = useCallback(
-    (selectedIds: string[]) => {
-      setWatchlistMutation.mutate(selectedIds)
-    },
-    [setWatchlistMutation]
-  )
 
   // Single combined feed call replaces usePackages + useReleases + buildVersionGroups
   const feedOptions = useMemo(() => {
@@ -513,6 +498,15 @@ export function HomePage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {user && (
+            <Link
+              to="/watchlist"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-text-secondary hover:text-text-primary transition-colors rounded-lg hover:bg-surface-secondary"
+            >
+              <List className="w-4 h-4" />
+              Watchlist
+            </Link>
+          )}
           {user && !isPro && (
             <Button
               variant="primary"
@@ -579,7 +573,13 @@ export function HomePage() {
           {user && watchlist && watchlist.length === 0 && !watchlistLoading && (
             <div className="mb-6 rounded-lg border border-border-default bg-surface-primary p-4 text-center">
               <p className="text-sm text-text-secondary">
-                Add packages to your watchlist to see relevant releases here.
+                Add packages to your watchlist to see relevant releases here.{' '}
+                <Link
+                  to="/watchlist"
+                  className="font-medium text-brand-600 hover:text-brand-700 transition-colors"
+                >
+                  Go to Watchlist
+                </Link>
               </p>
             </div>
           )}
@@ -590,86 +590,67 @@ export function HomePage() {
             </h2>
           )}
 
-          {/* Main layout */}
-          <div className="flex gap-6">
-            {/* Content */}
-            <div className="flex-1 min-w-0">
-              {isLoading ? (
-                <div className="space-y-4">
-                  <SkeletonCard />
-                  <SkeletonCard />
-                  <SkeletonCard />
-                </div>
-              ) : groupByPackage ? (
-                <div className="space-y-8">
-                  {Object.entries(groupedByPackageMap).map(
-                    ([packageName, groups]) => (
-                      <section key={packageName}>
-                        <h2 className="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
-                          <PackageIcon name={packageName} />
-                          {packageName}
-                          <span className="text-sm font-normal text-text-tertiary">
-                            ({groups.length} version
-                            {groups.length !== 1 && 's'})
-                          </span>
-                        </h2>
-                        <div className="space-y-4">
-                          {groups.map((group) => (
-                            <SummaryCard
-                              key={group.id}
-                              group={group}
-                              isExpanded={expandedGroups.has(group.id)}
-                              onToggle={() => toggleExpanded(group.id)}
-                            />
-                          ))}
-                        </div>
-                      </section>
-                    )
-                  )}
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {sortedGroups.map((group) => (
-                    <SummaryCard
-                      key={group.id}
-                      group={group}
-                      isExpanded={expandedGroups.has(group.id)}
-                      onToggle={() => toggleExpanded(group.id)}
-                    />
-                  ))}
-                </div>
-              )}
-
-              {/* Empty State */}
-              {!isLoading && versionGroups.length === 0 && (
-                <div className="text-center py-16">
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-surface-tertiary flex items-center justify-center">
-                    <FlaskConicalOff className="w-8 h-8 text-text-tertiary" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-text-primary mb-2">
-                    No releases found
-                  </h3>
-                  <p className="text-text-secondary">
-                    Try adjusting your filters to see more releases.
-                  </p>
-                </div>
+          {/* Feed */}
+          {isLoading ? (
+            <div className="space-y-4">
+              <SkeletonCard />
+              <SkeletonCard />
+              <SkeletonCard />
+            </div>
+          ) : groupByPackage ? (
+            <div className="space-y-8">
+              {Object.entries(groupedByPackageMap).map(
+                ([packageName, groups]) => (
+                  <section key={packageName}>
+                    <h2 className="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
+                      <PackageIcon name={packageName} />
+                      {packageName}
+                      <span className="text-sm font-normal text-text-tertiary">
+                        ({groups.length} version
+                        {groups.length !== 1 && 's'})
+                      </span>
+                    </h2>
+                    <div className="space-y-4">
+                      {groups.map((group) => (
+                        <SummaryCard
+                          key={group.id}
+                          group={group}
+                          isExpanded={expandedGroups.has(group.id)}
+                          onToggle={() => toggleExpanded(group.id)}
+                        />
+                      ))}
+                    </div>
+                  </section>
+                )
               )}
             </div>
+          ) : (
+            <div className="space-y-4">
+              {sortedGroups.map((group) => (
+                <SummaryCard
+                  key={group.id}
+                  group={group}
+                  isExpanded={expandedGroups.has(group.id)}
+                  onToggle={() => toggleExpanded(group.id)}
+                />
+              ))}
+            </div>
+          )}
 
-            {/* Watchlist Sidebar */}
-            {user && (
-              <div className="hidden lg:block w-80 flex-shrink-0">
-                <div className="sticky top-24">
-                  <PackagePicker
-                    packages={packages ?? []}
-                    isLoading={packagesLoading}
-                    watchlistIds={watchlist ?? []}
-                    onWatchlistChange={handleWatchlistChange}
-                  />
-                </div>
+          {/* Empty State */}
+          {!isLoading && versionGroups.length === 0 && (
+            <div className="text-center py-16">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-surface-tertiary flex items-center justify-center">
+                <FlaskConicalOff className="w-8 h-8 text-text-tertiary" />
               </div>
-            )}
-          </div>
+              <h3 className="text-lg font-semibold text-text-primary mb-2">
+                No releases found
+              </h3>
+              <p className="text-text-secondary">
+                Try adjusting your filters to see more releases.
+              </p>
+            </div>
+          )}
         </Container>
       </main>
     </div>

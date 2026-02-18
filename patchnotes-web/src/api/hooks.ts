@@ -21,7 +21,14 @@ import {
   useGetWatchlist,
   getGetWatchlistQueryKey,
   setWatchlist,
+  addToWatchlist,
+  removeFromWatchlist,
+  addToWatchlistFromGitHub,
 } from './generated/watchlist/watchlist'
+import {
+  searchGitHubRepositoriesUser,
+  getSearchGitHubRepositoriesUserQueryKey,
+} from './generated/git-hub-search/git-hub-search'
 
 import {
   GetPackagesResponse,
@@ -226,6 +233,85 @@ export function useSetWatchlist() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: getGetWatchlistQueryKey() })
     },
+  })
+}
+
+export function useAddToWatchlist() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (packageId: string) => addToWatchlist(packageId),
+    onMutate: async (packageId) => {
+      await queryClient.cancelQueries({ queryKey: getGetWatchlistQueryKey() })
+      const previous = queryClient.getQueryData(getGetWatchlistQueryKey())
+      queryClient.setQueryData(
+        getGetWatchlistQueryKey(),
+        (old: { data: string[] } | undefined) =>
+          old ? { ...old, data: [...old.data, packageId] } : old
+      )
+      return { previous }
+    },
+    onError: (_err, _packageId, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(getGetWatchlistQueryKey(), context.previous)
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: getGetWatchlistQueryKey() })
+      queryClient.invalidateQueries({ queryKey: ['/api/feed'] })
+    },
+  })
+}
+
+export function useRemoveFromWatchlist() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (packageId: string) => removeFromWatchlist(packageId),
+    onMutate: async (packageId) => {
+      await queryClient.cancelQueries({ queryKey: getGetWatchlistQueryKey() })
+      const previous = queryClient.getQueryData(getGetWatchlistQueryKey())
+      queryClient.setQueryData(
+        getGetWatchlistQueryKey(),
+        (old: { data: string[] } | undefined) =>
+          old
+            ? { ...old, data: old.data.filter((id) => id !== packageId) }
+            : old
+      )
+      return { previous }
+    },
+    onError: (_err, _packageId, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(getGetWatchlistQueryKey(), context.previous)
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: getGetWatchlistQueryKey() })
+      queryClient.invalidateQueries({ queryKey: ['/api/feed'] })
+    },
+  })
+}
+
+export function useAddFromGithub() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ owner, repo }: { owner: string; repo: string }) =>
+      addToWatchlistFromGitHub(owner, repo),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: getGetWatchlistQueryKey() })
+      queryClient.invalidateQueries({ queryKey: getGetPackagesQueryKey() })
+    },
+  })
+}
+
+export function useGithubSearch(query: string) {
+  return useQuery({
+    queryKey: getSearchGitHubRepositoriesUserQueryKey({ q: query }),
+    queryFn: ({ signal }) =>
+      searchGitHubRepositoriesUser({ q: query }, { signal }),
+    enabled: query.length >= 2,
+    staleTime: 60_000,
   })
 }
 

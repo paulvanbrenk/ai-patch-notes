@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using PatchNotes.Data;
+using PatchNotes.Api.Stytch;
 using Stripe;
 using Stripe.Checkout;
 
@@ -94,6 +95,7 @@ public static class SubscriptionRoutes
             var sessionOptions = new SessionCreateOptions
             {
                 Mode = "subscription",
+                AllowPromotionCodes = true,
                 LineItems = new List<SessionLineItemOptions>
                 {
                     new()
@@ -193,9 +195,12 @@ public static class SubscriptionRoutes
                 return Results.NotFound(new ApiError("User not found"));
             }
 
+            var session = httpContext.Items["StytchSession"] as StytchSessionResult;
+            var isAdmin = session?.IsAdmin ?? false;
+
             return Results.Ok(new SubscriptionStatusDto
             {
-                IsPro = user.IsPro,
+                IsPro = user.IsPro || isAdmin,
                 Status = user.SubscriptionStatus,
                 ExpiresAt = user.SubscriptionExpiresAt?.ToString("o"),
             });

@@ -25,3 +25,8 @@ export const RemoveFromWatchlistParams = zod.object({
   "packageId": zod.string()
 })
 
+export const AddToWatchlistFromGitHubParams = zod.object({
+  "owner": zod.string(),
+  "repo": zod.string()
+})
+

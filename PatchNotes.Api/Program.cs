@@ -139,6 +139,7 @@ app.MapPackageRoutes();
 app.MapReleaseRoutes();
 app.MapUserRoutes();
 app.MapWatchlistRoutes();
+app.MapGitHubSearchRoutes();
 app.MapSubscriptionRoutes();
 app.MapSummaryRoutes();
 app.MapFeedRoutes();
