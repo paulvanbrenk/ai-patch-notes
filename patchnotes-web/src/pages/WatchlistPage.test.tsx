@@ -65,9 +65,7 @@ describe('WatchlistPage', () => {
       render(<WatchlistPage />)
 
       await waitFor(() => {
-        expect(
-          screen.getByText(/Your watchlist is empty/)
-        ).toBeInTheDocument()
+        expect(screen.getByText(/Your watchlist is empty/)).toBeInTheDocument()
       })
     })
 
@@ -114,10 +112,7 @@ describe('WatchlistPage', () => {
     it('shows package count', async () => {
       server.use(
         http.get('/api/watchlist', () => {
-          return HttpResponse.json([
-            'pkg-react-test-id',
-            'pkg-lodash-test-id',
-          ])
+          return HttpResponse.json(['pkg-react-test-id', 'pkg-lodash-test-id'])
         })
       )
 
@@ -149,9 +144,7 @@ describe('WatchlistPage', () => {
       await waitFor(() => {
         expect(screen.getByText('facebook/react')).toBeInTheDocument()
       })
-      expect(
-        screen.getByText('A library for building UIs')
-      ).toBeInTheDocument()
+      expect(screen.getByText('A library for building UIs')).toBeInTheDocument()
     })
 
     it('shows no results message when search returns empty', async () => {
@@ -168,9 +161,7 @@ describe('WatchlistPage', () => {
       await user.type(input, 'nonexistentpackage')
 
       await waitFor(() => {
-        expect(
-          screen.getByText(/No repositories found/)
-        ).toBeInTheDocument()
+        expect(screen.getByText(/No repositories found/)).toBeInTheDocument()
       })
     })
 

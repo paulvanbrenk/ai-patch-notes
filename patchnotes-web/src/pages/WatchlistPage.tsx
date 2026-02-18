@@ -3,13 +3,7 @@ import { Link, useNavigate } from '@tanstack/react-router'
 import { useStytchUser } from '@stytch/react'
 import { useDebouncedValue } from '@tanstack/react-pacer'
 import { Search, X, Plus, Star, Loader2 } from 'lucide-react'
-import {
-  Header,
-  HeaderTitle,
-  Container,
-  Button,
-  Card,
-} from '../components/ui'
+import { Header, HeaderTitle, Container, Button, Card } from '../components/ui'
 import { ThemeToggle } from '../components/theme'
 import { UserMenu } from '../components/auth'
 import { Logo } from '../components/landing/Logo'
