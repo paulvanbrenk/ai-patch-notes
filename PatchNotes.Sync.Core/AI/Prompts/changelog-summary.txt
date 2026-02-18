@@ -13,18 +13,20 @@ Rules:
 - Never repeat information between sections
 - When summarizing multiple releases, focus on the net effect rather than listing every intermediate change
 
-Format:
+CRITICAL: Only include sections that have real content. If a section would be empty or say "None", do NOT include that section heading at all. Never write "None" or "N/A" under any heading.
+
+Format (only include sections with actual content):
 ## TL;DR
 [Answer: "What's the biggest change and why should I care?" in one sentence. Be specific - mention the main technology or feature by name.]
 
 ## Breaking
-[Bullet list with brief parenthetical explanations. Omit this section entirely if there are no breaking changes.]
+[Bullet list with brief parenthetical explanations. OMIT this entire section if there are no breaking changes.]
 
 ## New
-[2-3 most impactful features max - skip if already in TL;DR. Omit if nothing new.]
+[2-3 most impactful features max - skip if already in TL;DR. OMIT this entire section if nothing new.]
 
 ## Fixes Worth Knowing
-[Only fixes affecting typical daily usage. Omit if unsure or none.]
+[Only fixes affecting typical daily usage. OMIT this entire section if none.]
 
 ## Before You Upgrade
-[1-2 specific action steps, not vague warnings. Omit if no action needed.]
+[1-2 specific action steps, not vague warnings. OMIT this entire section if no action needed.]
