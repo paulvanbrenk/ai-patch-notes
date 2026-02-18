@@ -16,6 +16,10 @@ import {
   useAddPackage,
   useDeletePackage,
   useUpdatePackage,
+  useAddToWatchlist,
+  useRemoveFromWatchlist,
+  useAddFromGithub,
+  useGithubSearch,
 } from './hooks'
 
 function createWrapper() {
@@ -183,5 +187,98 @@ describe('useUpdatePackage', () => {
     expect(result.current.data).toMatchObject({
       data: { githubOwner: 'new-owner' },
     })
+  })
+})
+
+describe('useAddToWatchlist', () => {
+  it('adds a package to watchlist successfully', async () => {
+    const { result } = renderHook(() => useAddToWatchlist(), {
+      wrapper: createWrapper(),
+    })
+
+    result.current.mutate('pkg-react-test-id')
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+  })
+
+  it('handles conflict when already watching', async () => {
+    server.use(
+      http.post('/api/watchlist/:packageId', () => {
+        return HttpResponse.json(
+          { error: 'Already watching' },
+          { status: 409 }
+        )
+      })
+    )
+
+    const { result } = renderHook(() => useAddToWatchlist(), {
+      wrapper: createWrapper(),
+    })
+
+    result.current.mutate('pkg-react-test-id')
+
+    await waitFor(() => expect(result.current.isError).toBe(true))
+  })
+})
+
+describe('useRemoveFromWatchlist', () => {
+  it('removes a package from watchlist successfully', async () => {
+    const { result } = renderHook(() => useRemoveFromWatchlist(), {
+      wrapper: createWrapper(),
+    })
+
+    result.current.mutate('pkg-react-test-id')
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+  })
+})
+
+describe('useAddFromGithub', () => {
+  it('adds a package from GitHub successfully', async () => {
+    const { result } = renderHook(() => useAddFromGithub(), {
+      wrapper: createWrapper(),
+    })
+
+    result.current.mutate({ owner: 'facebook', repo: 'react' })
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+
+    expect(result.current.data).toMatchObject({
+      data: { packageId: 'pkg-facebook-react-id' },
+    })
+  })
+})
+
+describe('useGithubSearch', () => {
+  it('searches GitHub repos when query is long enough', async () => {
+    const { result } = renderHook(() => useGithubSearch('react'), {
+      wrapper: createWrapper(),
+    })
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+
+    expect(result.current.data).toMatchObject({
+      data: expect.arrayContaining([
+        expect.objectContaining({ owner: 'facebook', repo: 'react' }),
+      ]),
+    })
+  })
+
+  it('does not fetch when query is too short', () => {
+    const { result } = renderHook(() => useGithubSearch('r'), {
+      wrapper: createWrapper(),
+    })
+
+    expect(result.current.isFetching).toBe(false)
+    expect(result.current.data).toBeUndefined()
+  })
+
+  it('does not fetch when query is empty', () => {
+    const { result } = renderHook(() => useGithubSearch(''), {
+      wrapper: createWrapper(),
+    })
+
+    expect(result.current.isFetching).toBe(false)
+    expect(result.current.data).toBeUndefined()
   })
 })

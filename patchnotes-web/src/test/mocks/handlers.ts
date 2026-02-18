@@ -3,6 +3,7 @@ import type {
   PackageDto,
   PackageDetailDto,
   ReleaseDto,
+  GitHubRepoSearchResultDto,
 } from '../../api/generated/model'
 import type { FeedResponseDto, FeedGroupDto } from '../../api/hooks'
 
@@ -240,6 +241,29 @@ export const handlers = [
       mockWatchlist.splice(index, 1)
     }
     return new HttpResponse(null, { status: 204 })
+  }),
+
+  // POST /watchlist/github/:owner/:repo
+  http.post(`${API_BASE}/watchlist/github/:owner/:repo`, ({ params }) => {
+    const owner = params.owner as string
+    const repo = params.repo as string
+    const packageId = `pkg-${owner}-${repo}-id`
+    mockWatchlist.push(packageId)
+    return HttpResponse.json({ packageId }, { status: 201 })
+  }),
+
+  // GET /github/search
+  http.get(`${API_BASE}/github/search`, ({ request }) => {
+    const url = new URL(request.url)
+    const q = url.searchParams.get('q') ?? ''
+    if (q.length < 2) {
+      return HttpResponse.json([], { status: 400 })
+    }
+    const results: GitHubRepoSearchResultDto[] = [
+      { owner: 'facebook', repo: 'react', description: 'A library for building UIs', starCount: 200000 },
+      { owner: 'vuejs', repo: 'vue', description: 'Progressive JS framework', starCount: 190000 },
+    ]
+    return HttpResponse.json(results)
   }),
 
   // GET /subscription/status
