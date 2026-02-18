@@ -57,7 +57,7 @@ public class User : IHasCreatedAt, IHasUpdatedAt
     /// <summary>
     /// Whether the user wants to receive weekly digest emails
     /// </summary>
-    public bool EmailDigestEnabled { get; set; } = true;
+    public bool EmailDigestEnabled { get; set; } = false;
 
     /// <summary>
     /// Whether the welcome email has been sent to this user

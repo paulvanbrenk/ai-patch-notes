@@ -248,7 +248,7 @@ namespace PatchNotes.Data.Migrations.SqlServer
                     b.Property<bool>("EmailDigestEnabled")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
-                        .HasDefaultValue(true);
+                        .HasDefaultValue(false);
 
                     b.Property<bool>("EmailWelcomeSent")
                         .ValueGeneratedOnAdd()

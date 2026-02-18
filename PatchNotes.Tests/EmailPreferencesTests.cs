@@ -36,7 +36,7 @@ public class EmailPreferencesTests : IAsyncLifetime
 
         var prefs = await response.Content.ReadFromJsonAsync<EmailPreferencesDto>();
         prefs.Should().NotBeNull();
-        prefs!.EmailDigestEnabled.Should().BeTrue();
+        prefs!.EmailDigestEnabled.Should().BeFalse();
         prefs.EmailWelcomeSent.Should().BeFalse();
     }
 
@@ -88,6 +88,6 @@ public class EmailPreferencesTests : IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var prefs = await response.Content.ReadFromJsonAsync<EmailPreferencesDto>();
-        prefs!.EmailDigestEnabled.Should().BeTrue();
+        prefs!.EmailDigestEnabled.Should().BeFalse();
     }
 }
