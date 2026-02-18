@@ -5,7 +5,7 @@ Supports both single releases and multiple releases from the same package.
 
 ## Usage
 
-The system prompt is embedded as a resource in `PatchNotes.Data/AI/Prompts/changelog-summary.txt`.
+The system prompt is embedded as a resource in `PatchNotes.Sync.Core/AI/Prompts/changelog-summary.txt`.
 
 The user message is formatted by `AiClient.FormatUserMessage()` and follows this structure:
 

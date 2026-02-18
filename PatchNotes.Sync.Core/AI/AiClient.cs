@@ -122,7 +122,7 @@ public class AiClient : IAiClient
     private static string LoadEmbeddedPrompt()
     {
         var assembly = Assembly.GetExecutingAssembly();
-        var resourceName = "PatchNotes.Sync.AI.Prompts.changelog-summary.txt";
+        var resourceName = "PatchNotes.Sync.Core.AI.Prompts.changelog-summary.txt";
 
         using var stream = assembly.GetManifestResourceStream(resourceName);
         if (stream == null)
