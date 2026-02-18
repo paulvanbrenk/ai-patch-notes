@@ -94,6 +94,7 @@ public static class SubscriptionRoutes
             var sessionOptions = new SessionCreateOptions
             {
                 Mode = "subscription",
+                AllowPromotionCodes = true,
                 LineItems = new List<SessionLineItemOptions>
                 {
                     new()
