@@ -204,10 +204,7 @@ describe('useAddToWatchlist', () => {
   it('handles conflict when already watching', async () => {
     server.use(
       http.post('/api/watchlist/:packageId', () => {
-        return HttpResponse.json(
-          { error: 'Already watching' },
-          { status: 409 }
-        )
+        return HttpResponse.json({ error: 'Already watching' }, { status: 409 })
       })
     )
 

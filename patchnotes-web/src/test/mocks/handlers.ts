@@ -260,8 +260,18 @@ export const handlers = [
       return HttpResponse.json([], { status: 400 })
     }
     const results: GitHubRepoSearchResultDto[] = [
-      { owner: 'facebook', repo: 'react', description: 'A library for building UIs', starCount: 200000 },
-      { owner: 'vuejs', repo: 'vue', description: 'Progressive JS framework', starCount: 190000 },
+      {
+        owner: 'facebook',
+        repo: 'react',
+        description: 'A library for building UIs',
+        starCount: 200000,
+      },
+      {
+        owner: 'vuejs',
+        repo: 'vue',
+        description: 'Progressive JS framework',
+        starCount: 190000,
+      },
     ]
     return HttpResponse.json(results)
   }),
