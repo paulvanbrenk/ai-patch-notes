@@ -65,9 +65,15 @@ public class User : IHasCreatedAt, IHasUpdatedAt
     public bool EmailWelcomeSent { get; set; }
 
     /// <summary>
-    /// Whether the user has an active Pro subscription
+    /// Whether the user has admin privileges (synced from Stytch roles on login)
+    /// </summary>
+    public bool IsAdmin { get; set; }
+
+    /// <summary>
+    /// Whether the user has an active Pro subscription (or is an admin)
     /// </summary>
     public bool IsPro =>
+        IsAdmin ||
         SubscriptionStatus == "active" ||
         SubscriptionStatus == "trialing" ||
         SubscriptionStatus == "past_due" ||

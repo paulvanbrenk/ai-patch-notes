@@ -10,6 +10,7 @@ public class UserWatchlistTests : IAsyncLifetime
 {
     private PatchNotesApiFixture _fixture = null!;
     private HttpClient _authClient = null!;
+    private HttpClient _nonAdminClient = null!;
 
     // Packages that exist in the DB and are in the default watchlist
     private readonly List<Package> _defaultPackages = [];
@@ -31,6 +32,7 @@ public class UserWatchlistTests : IAsyncLifetime
 
         await _fixture.InitializeAsync();
         _authClient = _fixture.CreateAuthenticatedClient();
+        _nonAdminClient = _fixture.CreateNonAdminClient();
 
         // Seed all 6 default packages into the DB
         using var scope = _fixture.Services.CreateScope();
@@ -66,6 +68,7 @@ public class UserWatchlistTests : IAsyncLifetime
     public async Task DisposeAsync()
     {
         _authClient.Dispose();
+        _nonAdminClient.Dispose();
         await _fixture.DisposeAsync();
         _fixture.Dispose();
     }
@@ -74,10 +77,11 @@ public class UserWatchlistTests : IAsyncLifetime
     public async Task NewUserLogin_PopulatesWatchlistWithDefaultPackages()
     {
         // Login as a new user (no user record exists yet)
+        // Uses admin client, so gets all default packages (admin = Pro = no cap)
         var loginResponse = await _authClient.PostAsync("/api/users/login", null);
         loginResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        // Check watchlist was auto-populated (capped at 5 for free user)
+        // Check watchlist was auto-populated
         var watchlistResponse = await _authClient.GetAsync("/api/watchlist");
         watchlistResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var watchlistIds = await watchlistResponse.Content.ReadFromJsonAsync<string[]>();
@@ -114,10 +118,11 @@ public class UserWatchlistTests : IAsyncLifetime
     public async Task NewFreeUserLogin_CapsWatchlistAtFreeLimit()
     {
         // We configured 6 default packages but free limit is 5
-        var loginResponse = await _authClient.PostAsync("/api/users/login", null);
+        // Use non-admin client since admin users are treated as Pro (unlimited)
+        var loginResponse = await _nonAdminClient.PostAsync("/api/users/login", null);
         loginResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var watchlistResponse = await _authClient.GetAsync("/api/watchlist");
+        var watchlistResponse = await _nonAdminClient.GetAsync("/api/watchlist");
         var watchlistIds = await watchlistResponse.Content.ReadFromJsonAsync<string[]>();
 
         watchlistIds.Should().NotBeNull();

@@ -249,6 +249,11 @@ namespace PatchNotes.Data.Migrations.Sqlite
                         .HasColumnType("INTEGER")
                         .HasDefaultValue(false);
 
+                    b.Property<bool>("IsAdmin")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(false);
+
                     b.Property<DateTime?>("LastLoginAt")
                         .HasColumnType("TEXT");
 

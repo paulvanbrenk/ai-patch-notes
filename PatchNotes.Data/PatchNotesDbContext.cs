@@ -84,6 +84,7 @@ public class PatchNotesDbContext : DbContext
             entity.Property(e => e.SubscriptionStatus).HasMaxLength(32);
             entity.Property(e => e.EmailDigestEnabled).HasDefaultValue(true);
             entity.Property(e => e.EmailWelcomeSent).HasDefaultValue(false);
+            entity.Property(e => e.IsAdmin).HasDefaultValue(false);
             entity.HasIndex(e => e.StytchUserId).IsUnique();
             entity.HasIndex(e => e.Email);
             entity.HasIndex(e => e.StripeCustomerId);
