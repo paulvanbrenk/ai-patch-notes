@@ -113,11 +113,15 @@ public class UserWatchlistTests : IAsyncLifetime
     [Fact]
     public async Task NewFreeUserLogin_CapsWatchlistAtFreeLimit()
     {
+        // Use a non-admin client so the free tier limit applies
+        // (admin users are treated as Pro and bypass the limit)
+        using var freeClient = _fixture.CreateNonAdminClient();
+
         // We configured 6 default packages but free limit is 5
-        var loginResponse = await _authClient.PostAsync("/api/users/login", null);
+        var loginResponse = await freeClient.PostAsync("/api/users/login", null);
         loginResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var watchlistResponse = await _authClient.GetAsync("/api/watchlist");
+        var watchlistResponse = await freeClient.GetAsync("/api/watchlist");
         var watchlistIds = await watchlistResponse.Content.ReadFromJsonAsync<string[]>();
 
         watchlistIds.Should().NotBeNull();

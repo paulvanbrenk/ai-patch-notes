@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using PatchNotes.Data;
+using PatchNotes.Api.Stytch;
 
 namespace PatchNotes.Api.Routes;
 
@@ -56,8 +57,10 @@ public static class WatchlistRoutes
             }
 
             var packageIds = request.PackageIds ?? [];
+            var session = httpContext.Items["StytchSession"] as StytchSessionResult;
+            var isPro = user.IsPro || (session?.IsAdmin ?? false);
 
-            if (!user.IsPro && packageIds.Length > FreeWatchlistLimit)
+            if (!isPro && packageIds.Length > FreeWatchlistLimit)
             {
                 return Results.Json(new ApiError($"Free plan is limited to {FreeWatchlistLimit} packages. Upgrade to Pro for unlimited."), statusCode: 403);
             }
@@ -132,8 +135,11 @@ public static class WatchlistRoutes
                 return Results.NotFound(new ApiError("Package not found"));
             }
 
+            var session = httpContext.Items["StytchSession"] as StytchSessionResult;
+            var isPro = user.IsPro || (session?.IsAdmin ?? false);
+
             var watchlistSize = await db.Watchlists.CountAsync(w => w.UserId == user.Id);
-            if (!user.IsPro && watchlistSize >= FreeWatchlistLimit)
+            if (!isPro && watchlistSize >= FreeWatchlistLimit)
             {
                 return Results.Json(new ApiError($"Free plan is limited to {FreeWatchlistLimit} packages. Upgrade to Pro for unlimited."), statusCode: 403);
             }
@@ -179,8 +185,11 @@ public static class WatchlistRoutes
                 return Results.NotFound(new ApiError("User not found"));
             }
 
+            var session = httpContext.Items["StytchSession"] as StytchSessionResult;
+            var isPro = user.IsPro || (session?.IsAdmin ?? false);
+
             var watchlistSize = await db.Watchlists.CountAsync(w => w.UserId == user.Id);
-            if (!user.IsPro && watchlistSize >= FreeWatchlistLimit)
+            if (!isPro && watchlistSize >= FreeWatchlistLimit)
             {
                 return Results.Json(new ApiError($"Free plan is limited to {FreeWatchlistLimit} packages. Upgrade to Pro for unlimited."), statusCode: 403);
             }

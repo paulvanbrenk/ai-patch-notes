@@ -2056,6 +2056,12 @@
               "string"
             ],
             "format": "date-time"
+          },
+          "isPro": {
+            "type": "boolean"
+          },
+          "isAdmin": {
+            "type": "boolean"
           }
         }
       }

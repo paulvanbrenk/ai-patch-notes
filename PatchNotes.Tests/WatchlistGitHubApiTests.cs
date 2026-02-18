@@ -11,6 +11,7 @@ public class WatchlistGitHubApiTests : IAsyncLifetime
 {
     private PatchNotesApiFixture _fixture = null!;
     private HttpClient _authClient = null!;
+    private HttpClient _nonAdminClient = null!;
     private HttpClient _unauthClient = null!;
 
     public async Task InitializeAsync()
@@ -18,6 +19,7 @@ public class WatchlistGitHubApiTests : IAsyncLifetime
         _fixture = new PatchNotesApiFixture();
         await _fixture.InitializeAsync();
         _authClient = _fixture.CreateAuthenticatedClient();
+        _nonAdminClient = _fixture.CreateNonAdminClient();
         _unauthClient = _fixture.CreateClient();
 
         using var scope = _fixture.Services.CreateScope();
@@ -27,12 +29,18 @@ public class WatchlistGitHubApiTests : IAsyncLifetime
             StytchUserId = PatchNotesApiFixture.TestUserId,
             Email = "test@example.com",
         });
+        db.Users.Add(new User
+        {
+            StytchUserId = PatchNotesApiFixture.NonAdminUserId,
+            Email = "nonadmin@example.com",
+        });
         await db.SaveChangesAsync();
     }
 
     public async Task DisposeAsync()
     {
         _authClient.Dispose();
+        _nonAdminClient.Dispose();
         _unauthClient.Dispose();
         await _fixture.DisposeAsync();
         _fixture.Dispose();
@@ -94,15 +102,16 @@ public class WatchlistGitHubApiTests : IAsyncLifetime
     [Fact]
     public async Task AddFromGitHub_Returns403_WhenFreeTierLimitReached()
     {
-        // Add 5 packages (the free tier limit)
+        // Use non-admin client so the free tier limit applies
+        // (admin users are treated as Pro and bypass the limit)
         for (int i = 0; i < 5; i++)
         {
-            var res = await _authClient.PostAsync($"/api/watchlist/github/owner{i}/repo{i}", null);
+            var res = await _nonAdminClient.PostAsync($"/api/watchlist/github/owner{i}/repo{i}", null);
             res.StatusCode.Should().Be(HttpStatusCode.Created);
         }
 
         // 6th should be rejected
-        var response = await _authClient.PostAsync("/api/watchlist/github/owner5/repo5", null);
+        var response = await _nonAdminClient.PostAsync("/api/watchlist/github/owner5/repo5", null);
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
