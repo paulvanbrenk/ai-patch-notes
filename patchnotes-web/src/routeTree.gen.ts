@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WatchlistRouteImport } from './routes/watchlist'
 import { Route as SubscriptionSuccessRouteImport } from './routes/subscription-success'
 import { Route as SubscriptionCanceledRouteImport } from './routes/subscription-canceled'
 import { Route as SettingsRouteImport } from './routes/settings'
@@ -25,6 +26,11 @@ import { Route as AdminEmailsRouteImport } from './routes/admin_.emails'
 import { Route as PackagesOwnerIndexRouteImport } from './routes/packages.$owner.index'
 import { Route as PackagesOwnerRepoRouteImport } from './routes/packages.$owner.$repo'
 
+const WatchlistRoute = WatchlistRouteImport.update({
+  id: '/watchlist',
+  path: '/watchlist',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SubscriptionSuccessRoute = SubscriptionSuccessRouteImport.update({
   id: '/subscription-success',
   path: '/subscription-success',
@@ -112,6 +118,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/subscription-canceled': typeof SubscriptionCanceledRoute
   '/subscription-success': typeof SubscriptionSuccessRoute
+  '/watchlist': typeof WatchlistRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/packages/$owner': typeof PackagesOwnerRouteWithChildren
   '/releases/$releaseId': typeof ReleasesReleaseIdRoute
@@ -129,6 +136,7 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/subscription-canceled': typeof SubscriptionCanceledRoute
   '/subscription-success': typeof SubscriptionSuccessRoute
+  '/watchlist': typeof WatchlistRoute
   '/admin/emails': typeof AdminEmailsRoute
   '/releases/$releaseId': typeof ReleasesReleaseIdRoute
   '/packages/$owner/$repo': typeof PackagesOwnerRepoRoute
@@ -146,6 +154,7 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/subscription-canceled': typeof SubscriptionCanceledRoute
   '/subscription-success': typeof SubscriptionSuccessRoute
+  '/watchlist': typeof WatchlistRoute
   '/admin_/emails': typeof AdminEmailsRoute
   '/packages/$owner': typeof PackagesOwnerRouteWithChildren
   '/releases/$releaseId': typeof ReleasesReleaseIdRoute
@@ -165,6 +174,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/subscription-canceled'
     | '/subscription-success'
+    | '/watchlist'
     | '/admin/emails'
     | '/packages/$owner'
     | '/releases/$releaseId'
@@ -182,6 +192,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/subscription-canceled'
     | '/subscription-success'
+    | '/watchlist'
     | '/admin/emails'
     | '/releases/$releaseId'
     | '/packages/$owner/$repo'
@@ -198,6 +209,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/subscription-canceled'
     | '/subscription-success'
+    | '/watchlist'
     | '/admin_/emails'
     | '/packages/$owner'
     | '/releases/$releaseId'
@@ -216,6 +228,7 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   SubscriptionCanceledRoute: typeof SubscriptionCanceledRoute
   SubscriptionSuccessRoute: typeof SubscriptionSuccessRoute
+  WatchlistRoute: typeof WatchlistRoute
   AdminEmailsRoute: typeof AdminEmailsRoute
   PackagesOwnerRoute: typeof PackagesOwnerRouteWithChildren
   ReleasesReleaseIdRoute: typeof ReleasesReleaseIdRoute
@@ -223,6 +236,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/watchlist': {
+      id: '/watchlist'
+      path: '/watchlist'
+      fullPath: '/watchlist'
+      preLoaderRoute: typeof WatchlistRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/subscription-success': {
       id: '/subscription-success'
       path: '/subscription-success'
@@ -356,6 +376,7 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   SubscriptionCanceledRoute: SubscriptionCanceledRoute,
   SubscriptionSuccessRoute: SubscriptionSuccessRoute,
+  WatchlistRoute: WatchlistRoute,
   AdminEmailsRoute: AdminEmailsRoute,
   PackagesOwnerRoute: PackagesOwnerRouteWithChildren,
   ReleasesReleaseIdRoute: ReleasesReleaseIdRoute,
