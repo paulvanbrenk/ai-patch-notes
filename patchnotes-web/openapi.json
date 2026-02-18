@@ -4,11 +4,6 @@
     "title": "PatchNotes.Api | v1",
     "version": "1.0.0"
   },
-  "servers": [
-    {
-      "url": "http://localhost:5199/"
-    }
-  ],
   "paths": {
     "/webhooks/stytch": {
       "post": {
@@ -30,6 +25,26 @@
         "responses": {
           "200": {
             "description": "OK"
+          }
+        }
+      }
+    },
+    "/sitemap.xml": {
+      "get": {
+        "tags": [
+          "PatchNotes.Api"
+        ],
+        "operationId": "GetSitemap",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/xml": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           }
         }
       }
