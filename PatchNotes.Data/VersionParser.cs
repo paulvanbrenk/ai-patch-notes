@@ -18,33 +18,6 @@ public record ParsedVersion(
     /// Returns true if this is a pre-release version (has pre-release identifier).
     /// </summary>
     public bool IsPrerelease => !string.IsNullOrEmpty(Prerelease);
-
-    /// <summary>
-    /// Returns the version group key (e.g., "15.x" for stable, "15.x-canary" for pre-release).
-    /// </summary>
-    public string GetVersionGroupKey()
-    {
-        var baseGroup = $"{Major}.x";
-        if (IsPrerelease)
-        {
-            var prereleaseType = GetPrereleaseType();
-            return $"{baseGroup}-{prereleaseType}";
-        }
-        return baseGroup;
-    }
-
-    /// <summary>
-    /// Extracts the pre-release type from the prerelease string.
-    /// E.g., "alpha.1" -> "alpha", "rc.2" -> "rc", "canary.3" -> "canary"
-    /// </summary>
-    public string GetPrereleaseType()
-    {
-        if (string.IsNullOrEmpty(Prerelease))
-            return "stable";
-
-        var match = Regex.Match(Prerelease, @"^([a-zA-Z]+)");
-        return match.Success ? match.Groups[1].Value.ToLowerInvariant() : "prerelease";
-    }
 }
 
 /// <summary>
@@ -242,25 +215,6 @@ public static class VersionParser
 
         return VersionParseResult.Ok(new ParsedVersion(
             major, minor, 0, prerelease, null, tag));
-    }
-
-    /// <summary>
-    /// Extracts the major version from a tag. Returns null if parsing fails.
-    /// </summary>
-    public static int? GetMajorVersion(string tag)
-    {
-        var result = Parse(tag);
-        return result.Success ? result.Version!.Major : null;
-    }
-
-    /// <summary>
-    /// Determines if a tag represents a pre-release version.
-    /// Returns true only when the tag parses successfully and contains a pre-release identifier.
-    /// </summary>
-    public static bool IsPrerelease(string tag)
-    {
-        var result = Parse(tag);
-        return result.Success && result.Version!.IsPrerelease;
     }
 
 }

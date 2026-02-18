@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using PatchNotes.Data;
+using PatchNotes.Sync.Core;
 using PatchNotes.Sync.Core.GitHub;
 
 namespace PatchNotes.Api.Routes;
@@ -312,7 +313,7 @@ public static class PackageRoutes
             }
 
             // Parse GitHub owner/repo from URL
-            var (owner, repoName) = RouteUtils.ParseGitHubUrl(repoUrl);
+            var (owner, repoName) = GitHubUrlParser.TryParse(repoUrl);
             if (owner == null || repoName == null)
             {
                 return Results.BadRequest(new ApiError("Could not parse GitHub repository URL", repoUrl));
