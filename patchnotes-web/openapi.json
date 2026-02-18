@@ -29,26 +29,6 @@
         }
       }
     },
-    "/sitemap.xml": {
-      "get": {
-        "tags": [
-          "PatchNotes.Api"
-        ],
-        "operationId": "GetSitemap",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/xml": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/packages": {
       "get": {
         "tags": [

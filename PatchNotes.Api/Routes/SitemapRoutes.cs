@@ -69,7 +69,8 @@ public static class SitemapRoutes
             return Results.Text(sitemap.Declaration + "\n" + sitemap.ToString(), "application/xml");
         })
         .WithName("GetSitemap")
-        .Produces<string>(StatusCodes.Status200OK, "application/xml");
+        .Produces<string>(StatusCodes.Status200OK, "application/xml")
+        .ExcludeFromDescription();
 
         return app;
     }
