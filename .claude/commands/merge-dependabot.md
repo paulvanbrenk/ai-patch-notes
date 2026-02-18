@@ -33,12 +33,12 @@ If no PRs exist, inform the user and stop.
    git merge origin/<branch-name> --no-edit
    ```
 
-3. **If there are conflicts with lock files** (package-lock.json):
+3. **If there are conflicts with lock files** (pnpm-lock.yaml):
    - **Do NOT try to resolve lock file conflicts manually**
    - Accept the current version and mark resolved:
      ```bash
-     git checkout --ours package-lock.json
-     git add package-lock.json
+     git checkout --ours pnpm-lock.yaml
+     git add pnpm-lock.yaml
      ```
    - Complete the merge commit:
      ```bash
@@ -48,7 +48,7 @@ If no PRs exist, inform the user and stop.
 
 ## Step 3: Fix @types/node Version
 
-The `@types/node` major version **must match** the Node.js major version in `engines.node` in `patchnotes-web/package.json`.
+The `@types/node` major version **must match** the Node.js major version in `engines.node` in `patchnotes-web/package.json`. The version is defined in `pnpm-workspace.yaml` under `catalog:`.
 
 1. Check the engine version:
    ```bash
@@ -57,19 +57,16 @@ The `@types/node` major version **must match** the Node.js major version in `eng
 
 2. Check current @types/node version:
    ```bash
-   grep '"@types/node"' patchnotes-web/package.json
+   grep '@types/node' pnpm-workspace.yaml
    ```
 
-3. If @types/node major version doesn't match the engine version (e.g., engine is `>=22` but @types/node is `^24.x.x`), fix it:
-   ```bash
-   cd patchnotes-web && npm install -D @types/node@^22 --legacy-peer-deps && cd ..
-   ```
+3. If @types/node major version doesn't match the engine version (e.g., engine is `>=22` but @types/node is `25.x`), fix it in `pnpm-workspace.yaml`.
 
 ## Step 4: Regenerate Lock Files
 
 After all merges, regenerate lock files to ensure consistency:
 ```bash
-cd patchnotes-web && npm install --legacy-peer-deps && cd ..
+pnpm install
 ```
 
 ## Step 5: Build and Validate
@@ -81,28 +78,32 @@ cd patchnotes-web && npm run lint && npm run build && npm run test:run && cd ..
 
 ### Backend (.NET)
 ```bash
-dotnet build
-dotnet test
+dotnet build PatchNotes.slnx
+dotnet test PatchNotes.slnx
 ```
 
 If any checks fail, fix the issues before proceeding.
 
 ## Step 6: Commit and Push
 
+`main` is protected, so push to a branch and create a PR.
+
 1. Stage all changes:
    ```bash
-   git add patchnotes-web/package-lock.json
-   git add patchnotes-web/package.json  # if any versions were fixed
+   git add pnpm-lock.yaml
+   git add pnpm-workspace.yaml  # if @types/node was fixed
    ```
 
-2. Commit:
+2. Create a branch, commit, and push:
    ```bash
+   git checkout -b chore/merge-dependabot-updates
    git commit -m "chore(deps): merge dependabot updates and regenerate lock file"
+   git push -u origin chore/merge-dependabot-updates
    ```
 
-3. Push to remote:
+3. Create a PR:
    ```bash
-   git push origin main
+   gh pr create --title "chore(deps): merge dependabot updates" --body "Merges all pending dependabot PRs and regenerates pnpm lock file."
    ```
 
 ## Step 7: Monitor CI/Deploy Actions
