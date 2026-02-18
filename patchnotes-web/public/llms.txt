@@ -1,0 +1,32 @@
+# My Release Notes
+
+> My Release Notes (myreleasenotes.ai) tracks GitHub releases for the packages developers depend on. It provides AI-powered summaries, smart filtering, and notifications so you never miss a release that matters.
+
+## Key Features
+
+- Track GitHub releases for any package (npm, Python, Go, Rust, etc.)
+- AI-powered release note summaries that highlight what matters
+- Personalized watchlist and notification preferences
+- Dark mode, smart filtering by severity and relevance
+- Free tier available
+
+## Pages
+
+- [Homepage](https://www.myreleasenotes.ai/): Overview of the service and how it works
+- [About](https://www.myreleasenotes.ai/about): About My Release Notes
+- [Pricing](https://www.myreleasenotes.ai/pricing): Plans and pricing
+- [Privacy Policy](https://www.myreleasenotes.ai/privacy): Privacy policy
+
+## Browsing Packages
+
+Package pages are available at `https://www.myreleasenotes.ai/packages/{owner}/{repo}` where `{owner}` is the GitHub organization or user and `{repo}` is the repository name. For example:
+
+- [facebook/react](https://www.myreleasenotes.ai/packages/facebook/react): Release notes for React
+- [microsoft/TypeScript](https://www.myreleasenotes.ai/packages/microsoft/TypeScript): Release notes for TypeScript
+- [vercel/next.js](https://www.myreleasenotes.ai/packages/vercel/next.js): Release notes for Next.js
+
+Individual release pages are at `https://www.myreleasenotes.ai/releases/{releaseId}`.
+
+## Optional
+
+- [Sitemap](https://api.myreleasenotes.ai/sitemap.xml): XML sitemap of all indexed packages

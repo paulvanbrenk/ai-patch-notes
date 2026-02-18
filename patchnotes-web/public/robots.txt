@@ -10,3 +10,4 @@ Disallow: /subscription-canceled
 Disallow: /admin
 
 Sitemap: https://api.myreleasenotes.ai/sitemap.xml
+Llms-txt: https://www.myreleasenotes.ai/llms.txt
