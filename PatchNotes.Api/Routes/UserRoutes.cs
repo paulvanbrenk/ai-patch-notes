@@ -15,26 +15,28 @@ public static class UserRoutes
         group.MapGet("/me", async (HttpContext httpContext, PatchNotesDbContext db) =>
         {
             var stytchUserId = httpContext.Items["StytchUserId"] as string;
+            var session = httpContext.Items["StytchSession"] as StytchSessionResult;
 
-            var user = await db.Users
-                .Where(u => u.StytchUserId == stytchUserId)
-                .Select(u => new UserDto
-                {
-                    Id = u.Id,
-                    StytchUserId = u.StytchUserId,
-                    Email = u.Email,
-                    Name = u.Name,
-                    CreatedAt = u.CreatedAt,
-                    LastLoginAt = u.LastLoginAt
-                })
-                .FirstOrDefaultAsync();
+            var user = await db.Users.FirstOrDefaultAsync(u => u.StytchUserId == stytchUserId);
 
             if (user == null)
             {
                 return Results.NotFound(new ApiError("User not found"));
             }
 
-            return Results.Ok(user);
+            var isAdmin = session?.IsAdmin ?? false;
+
+            return Results.Ok(new UserDto
+            {
+                Id = user.Id,
+                StytchUserId = user.StytchUserId,
+                Email = user.Email,
+                Name = user.Name,
+                CreatedAt = user.CreatedAt,
+                LastLoginAt = user.LastLoginAt,
+                IsPro = user.IsPro || isAdmin,
+                IsAdmin = isAdmin
+            });
         })
         .AddEndpointFilterFactory(RouteUtils.CreateAuthFilter())
         .Produces<UserDto>(StatusCodes.Status200OK)
@@ -49,6 +51,8 @@ public static class UserRoutes
         {
             var stytchUserId = httpContext.Items["StytchUserId"] as string;
             var email = httpContext.Items["StytchEmail"] as string;
+            var session = httpContext.Items["StytchSession"] as StytchSessionResult;
+            var isAdmin = session?.IsAdmin ?? false;
 
             var user = await db.Users.FirstOrDefaultAsync(u => u.StytchUserId == stytchUserId);
             var isNewUser = user == null;
@@ -68,7 +72,8 @@ public static class UserRoutes
                 var defaults = watchlistOptions.Value.Packages;
                 if (defaults.Length > 0)
                 {
-                    var limit = user.IsPro ? defaults.Length : Math.Min(defaults.Length, WatchlistRoutes.FreeWatchlistLimit);
+                    var isPro = user.IsPro || isAdmin;
+                    var limit = isPro ? defaults.Length : Math.Min(defaults.Length, WatchlistRoutes.FreeWatchlistLimit);
 
                     var ownerRepoPairs = defaults
                         .Select(p => p.Split('/', 2))
@@ -106,7 +111,9 @@ public static class UserRoutes
                 Email = user.Email,
                 Name = user.Name,
                 CreatedAt = user.CreatedAt,
-                LastLoginAt = user.LastLoginAt
+                LastLoginAt = user.LastLoginAt,
+                IsPro = user.IsPro || isAdmin,
+                IsAdmin = isAdmin
             });
         })
         .AddEndpointFilterFactory(RouteUtils.CreateAuthFilter())
@@ -167,6 +174,9 @@ public static class UserRoutes
                 return Results.Json(new ApiError("DB save failed"), statusCode: 500);
             }
 
+            var session = httpContext.Items["StytchSession"] as StytchSessionResult;
+            var isAdmin = session?.IsAdmin ?? false;
+
             return Results.Ok(new UserDto
             {
                 Id = user.Id,
@@ -174,7 +184,9 @@ public static class UserRoutes
                 Email = user.Email,
                 Name = user.Name,
                 CreatedAt = user.CreatedAt,
-                LastLoginAt = user.LastLoginAt
+                LastLoginAt = user.LastLoginAt,
+                IsPro = user.IsPro || isAdmin,
+                IsAdmin = isAdmin
             });
         })
         .AddEndpointFilterFactory(RouteUtils.CreateAuthFilter())
@@ -249,6 +261,8 @@ public class UserDto
     public string? Name { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset? LastLoginAt { get; set; }
+    public bool IsPro { get; set; }
+    public bool IsAdmin { get; set; }
 }
 
 public record UpdateUserRequest(string? Name);
