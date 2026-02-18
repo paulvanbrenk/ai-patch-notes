@@ -1,18 +1,10 @@
 import { Link } from '@tanstack/react-router'
 import { Header, HeaderTitle, Container, Button, Card } from '../components/ui'
 import { usePackagesByOwner } from '../api/hooks'
+import { formatDate } from '../utils/dateFormat'
 
 interface OwnerPackagesPageProps {
   owner: string
-}
-
-function formatDate(dateString: string | undefined | null): string {
-  if (!dateString) return ''
-  return new Date(dateString).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  })
 }
 
 export function OwnerPackagesPage({ owner }: OwnerPackagesPageProps) {

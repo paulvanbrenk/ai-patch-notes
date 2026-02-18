@@ -1,7 +1,5 @@
 import { create } from 'zustand'
-import { getSubscriptionStatus } from '../api/subscription'
-
-import { API_ROOT } from '../api/client'
+import { api, API_ROOT } from '../api/client'
 
 const API_BASE_URL = `${API_ROOT}/api`
 
@@ -27,7 +25,11 @@ export const useSubscriptionStore = create<SubscriptionState>((set) => ({
   checkSubscription: async () => {
     set({ isLoading: true, error: null })
     try {
-      const { isPro, status, expiresAt } = await getSubscriptionStatus()
+      const { isPro, status, expiresAt } = await api.get<{
+        isPro: boolean
+        status: string | null
+        expiresAt: string | null
+      }>('/subscription/status')
       set({ isPro, status, expiresAt, isLoading: false })
     } catch (error) {
       // If unauthorized, user is not logged in - not an error state

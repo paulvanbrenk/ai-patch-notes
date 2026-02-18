@@ -12,31 +12,13 @@ import {
 } from '../components/ui'
 import { VersionBadge } from '../components/releases'
 import { useRelease } from '../api/hooks'
+import {
+  formatDateLong as formatDate,
+  formatDateTime,
+} from '../utils/dateFormat'
 
 interface ReleaseDetailProps {
   releaseId: string
-}
-
-function formatDate(dateString: string | undefined): string {
-  if (!dateString) return ''
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
-}
-
-function formatDateTime(dateString: string | undefined): string {
-  if (!dateString) return ''
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
 }
 
 export function ReleaseDetail({ releaseId }: ReleaseDetailProps) {

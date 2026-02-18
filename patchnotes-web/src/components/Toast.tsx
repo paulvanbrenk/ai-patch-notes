@@ -4,8 +4,10 @@ import {
   useContext,
   useState,
   useCallback,
+  useEffect,
   type ReactNode,
 } from 'react'
+import { setGlobalErrorHandler } from '../queryClient'
 
 type ToastType = 'error' | 'success' | 'info'
 
@@ -54,6 +56,10 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     },
     [showToast]
   )
+
+  useEffect(() => {
+    setGlobalErrorHandler(showError)
+  }, [showError])
 
   return (
     <ToastContext value={{ showToast, showError }}>
