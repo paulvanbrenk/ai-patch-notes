@@ -31,12 +31,13 @@ public static class FeedRoutes
             }
             else
             {
-                // No auth or empty watchlist: show top 5 most recently released packages
+                // No auth or empty watchlist: fetch a wider pool of packages so that
+                // individual (package, track) groups can compete for the top 5 slots.
                 watchlistIds = await db.Releases
                     .GroupBy(r => r.PackageId)
                     .Select(g => new { PackageId = g.Key, LatestRelease = g.Max(r => r.PublishedAt) })
                     .OrderByDescending(x => x.LatestRelease)
-                    .Take(5)
+                    .Take(10)
                     .Select(x => x.PackageId)
                     .ToListAsync();
             }
@@ -78,7 +79,7 @@ public static class FeedRoutes
                 .OrderByDescending(g => g.LastUpdated)
                 .ToListAsync();
 
-            // Filter to current stable + future pre-releases per package
+            // Filter to current stable + future pre-releases per package.
             // For each package: keep the highest stable major version group,
             // plus any pre-release groups with a higher major version.
             // If no stable releases exist, keep the highest major pre-release group.
@@ -109,6 +110,16 @@ public static class FeedRoutes
                 var packageGroups = groups.Where(g => g.PackageId == pid).ToList();
                 var maxMajor = packageGroups.Max(g => g.MajorVersion);
                 filteredGroups.AddRange(packageGroups.Where(g => g.MajorVersion == maxMajor));
+            }
+
+            // Default feed: each (package, major, prerelease) group competes
+            // independently for a top-5 slot based on its most recent release.
+            if (isDefaultFeed)
+            {
+                filteredGroups = filteredGroups
+                    .OrderByDescending(g => g.LastUpdated)
+                    .Take(5)
+                    .ToList();
             }
 
             // Left-join ReleaseSummary to attach AI summaries per group
