@@ -14,8 +14,8 @@ export const GetCurrentUserResponse = zod.object({
   "name": zod.string().nullish(),
   "createdAt": zod.iso.datetime({"offset":true}).optional(),
   "lastLoginAt": zod.iso.datetime({"offset":true}).nullish(),
-  "isPro": zod.boolean(),
-  "isAdmin": zod.boolean()
+  "isPro": zod.boolean().optional(),
+  "isAdmin": zod.boolean().optional()
 })
 
 export const UpdateCurrentUserBody = zod.object({
@@ -29,8 +29,8 @@ export const UpdateCurrentUserResponse = zod.object({
   "name": zod.string().nullish(),
   "createdAt": zod.iso.datetime({"offset":true}).optional(),
   "lastLoginAt": zod.iso.datetime({"offset":true}).nullish(),
-  "isPro": zod.boolean(),
-  "isAdmin": zod.boolean()
+  "isPro": zod.boolean().optional(),
+  "isAdmin": zod.boolean().optional()
 })
 
 export const LoginUserResponse = zod.object({
@@ -40,8 +40,8 @@ export const LoginUserResponse = zod.object({
   "name": zod.string().nullish(),
   "createdAt": zod.iso.datetime({"offset":true}).optional(),
   "lastLoginAt": zod.iso.datetime({"offset":true}).nullish(),
-  "isPro": zod.boolean(),
-  "isAdmin": zod.boolean()
+  "isPro": zod.boolean().optional(),
+  "isAdmin": zod.boolean().optional()
 })
 
 export const GetEmailPreferencesResponse = zod.object({

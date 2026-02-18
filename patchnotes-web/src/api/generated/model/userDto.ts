@@ -15,6 +15,6 @@ export interface UserDto {
   createdAt?: string;
   /** @nullable */
   lastLoginAt?: string | null;
-  isPro: boolean;
-  isAdmin: boolean;
+  isPro?: boolean;
+  isAdmin?: boolean;
 }
