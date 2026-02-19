@@ -269,7 +269,13 @@ export const handlers = [
     const owner = params.owner as string
     const repo = params.repo as string
     const packageId = `pkg-${owner}-${repo}-id`
-    mockWatchlist.push(packageId)
+    mockWatchlist.push({
+      id: packageId,
+      name: `${owner}/${repo}`,
+      githubOwner: owner,
+      githubRepo: repo,
+      npmName: null,
+    })
     return HttpResponse.json({ packageId }, { status: 201 })
   }),
 
