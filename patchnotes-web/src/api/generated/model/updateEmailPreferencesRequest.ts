@@ -7,5 +7,9 @@
 
 export interface UpdateEmailPreferencesRequest {
   /** @nullable */
-  emailDigestEnabled: boolean | null;
+  emailDigestEnabled?: boolean | null;
+  /** @nullable */
+  digestDay?: number | null;
+  /** @nullable */
+  digestHour?: number | null;
 }

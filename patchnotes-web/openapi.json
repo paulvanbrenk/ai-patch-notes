@@ -1227,6 +1227,14 @@
           },
           "emailWelcomeSent": {
             "type": "boolean"
+          },
+          "digestDay": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "digestHour": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },
@@ -1923,9 +1931,6 @@
         }
       },
       "UpdateEmailPreferencesRequest": {
-        "required": [
-          "emailDigestEnabled"
-        ],
         "type": "object",
         "properties": {
           "emailDigestEnabled": {
@@ -1933,6 +1938,20 @@
               "null",
               "boolean"
             ]
+          },
+          "digestDay": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "digestHour": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
           }
         }
       },
