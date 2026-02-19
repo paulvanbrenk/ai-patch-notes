@@ -57,7 +57,17 @@ public class User : IHasCreatedAt, IHasUpdatedAt
     /// <summary>
     /// Whether the user wants to receive weekly digest emails
     /// </summary>
-    public bool EmailDigestEnabled { get; set; } = true;
+    public bool EmailDigestEnabled { get; set; } = false;
+
+    /// <summary>
+    /// Day of week to send digest email: 0=Sunday through 6=Saturday. Default 1 = Monday.
+    /// </summary>
+    public int DigestDay { get; set; } = 1;
+
+    /// <summary>
+    /// Hour of day (UTC) to send digest email: 0-23. Default 9 = 4am EST.
+    /// </summary>
+    public int DigestHour { get; set; } = 9;
 
     /// <summary>
     /// Whether the welcome email has been sent to this user

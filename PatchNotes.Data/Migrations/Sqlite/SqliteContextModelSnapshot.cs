@@ -235,6 +235,12 @@ namespace PatchNotes.Data.Migrations.Sqlite
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("DigestDay")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("DigestHour")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("TEXT");
@@ -242,7 +248,7 @@ namespace PatchNotes.Data.Migrations.Sqlite
                     b.Property<bool>("EmailDigestEnabled")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER")
-                        .HasDefaultValue(true);
+                        .HasDefaultValue(false);
 
                     b.Property<bool>("EmailWelcomeSent")
                         .ValueGeneratedOnAdd()

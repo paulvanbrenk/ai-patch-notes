@@ -86,8 +86,10 @@ model Users {
   SubscriptionExpiresAt DateTime?    @db.DateTimeOffset
   SubscriptionStatus    String?      @db.NVarChar(32)
   Id                    String       @id(map: "PK_Users") @default("", map: "DF__Users__Id__5AEE82B9") @db.NVarChar(21)
-  EmailDigestEnabled    Boolean      @default(dbgenerated("CONVERT([bit],(1))"), map: "DF__Users__EmailDige__6FE99F9F")
+  EmailDigestEnabled    Boolean      @default(dbgenerated("CONVERT([bit],(0))"), map: "DF__Users__EmailDige__797309D9")
   EmailWelcomeSent      Boolean      @default(dbgenerated("CONVERT([bit],(0))"), map: "DF__Users__EmailWelc__71D1E811")
+  DigestDay             Int          @default(1, map: "DF__Users__DigestDay__7A672E12")
+  DigestHour            Int          @default(9, map: "DF__Users__DigestHou__7B5B524B")
   Watchlists            Watchlists[]
 }
 
