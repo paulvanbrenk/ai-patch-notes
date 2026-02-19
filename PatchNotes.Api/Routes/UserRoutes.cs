@@ -205,7 +205,9 @@ public static class UserRoutes
                 .Select(u => new EmailPreferencesDto
                 {
                     EmailDigestEnabled = u.EmailDigestEnabled,
-                    EmailWelcomeSent = u.EmailWelcomeSent
+                    EmailWelcomeSent = u.EmailWelcomeSent,
+                    DigestDay = u.DigestDay,
+                    DigestHour = u.DigestHour
                 })
                 .FirstOrDefaultAsync();
 
@@ -235,12 +237,28 @@ public static class UserRoutes
             if (request.EmailDigestEnabled.HasValue)
                 user.EmailDigestEnabled = request.EmailDigestEnabled.Value;
 
+            if (request.DigestDay.HasValue)
+            {
+                if (request.DigestDay.Value < 0 || request.DigestDay.Value > 6)
+                    return Results.BadRequest(new ApiError("DigestDay must be between 0 (Sunday) and 6 (Saturday)"));
+                user.DigestDay = request.DigestDay.Value;
+            }
+
+            if (request.DigestHour.HasValue)
+            {
+                if (request.DigestHour.Value < 0 || request.DigestHour.Value > 23)
+                    return Results.BadRequest(new ApiError("DigestHour must be between 0 and 23"));
+                user.DigestHour = request.DigestHour.Value;
+            }
+
             await db.SaveChangesAsync();
 
             return Results.Ok(new EmailPreferencesDto
             {
                 EmailDigestEnabled = user.EmailDigestEnabled,
-                EmailWelcomeSent = user.EmailWelcomeSent
+                EmailWelcomeSent = user.EmailWelcomeSent,
+                DigestDay = user.DigestDay,
+                DigestHour = user.DigestHour
             });
         })
         .AddEndpointFilterFactory(RouteUtils.CreateAuthFilter())
@@ -271,6 +289,8 @@ public class EmailPreferencesDto
 {
     public bool EmailDigestEnabled { get; set; }
     public bool EmailWelcomeSent { get; set; }
+    public int DigestDay { get; set; }
+    public int DigestHour { get; set; }
 }
 
-public record UpdateEmailPreferencesRequest(bool? EmailDigestEnabled);
+public record UpdateEmailPreferencesRequest(bool? EmailDigestEnabled, int? DigestDay, int? DigestHour);
