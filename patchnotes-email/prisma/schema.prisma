@@ -57,6 +57,7 @@ model Releases {
 
   @@index([PackageId], map: "IX_Releases_PackageId")
   @@index([PackageId, MajorVersion, IsPrerelease], map: "IX_Releases_PackageId_MajorVersion_IsPrerelease")
+  @@index([PackageId, PublishedAt], map: "IX_Releases_PackageId_PublishedAt")
   @@index([PublishedAt], map: "IX_Releases_PublishedAt")
 }
 

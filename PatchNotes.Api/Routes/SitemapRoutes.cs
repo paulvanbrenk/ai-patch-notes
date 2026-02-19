@@ -25,6 +25,7 @@ public static class SitemapRoutes
 
             // Owner pages and package pages
             var packages = await db.Packages
+                .AsNoTracking()
                 .Select(p => new
                 {
                     p.GithubOwner,
@@ -51,6 +52,7 @@ public static class SitemapRoutes
 
             // Recent releases (last 1000 by PublishedAt)
             var releases = await db.Releases
+                .AsNoTracking()
                 .OrderByDescending(r => r.PublishedAt)
                 .Take(1000)
                 .Select(r => new { r.Id, r.PublishedAt })

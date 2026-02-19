@@ -76,12 +76,8 @@ public static class RouteUtils
         if (session == null)
             return null;
 
-        var user = await db.Users.FirstOrDefaultAsync(u => u.StytchUserId == session.UserId);
-        if (user == null)
-            return null;
-
         return await db.Watchlists
-            .Where(w => w.UserId == user.Id)
+            .Where(w => w.User.StytchUserId == session.UserId)
             .Select(w => w.PackageId)
             .ToListAsync();
     }

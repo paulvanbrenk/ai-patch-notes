@@ -31,6 +31,7 @@ public static class WatchlistRoutes
             }
 
             var packages = await db.Watchlists
+                .AsNoTracking()
                 .Where(w => w.UserId == user.Id)
                 .Select(w => new WatchlistPackageDto(
                     w.Package.Id,

@@ -8,12 +8,6 @@ namespace PatchNotes.Api.Routes;
 
 public static class SubscriptionRoutes
 {
-    private static readonly string[] DevOrigins =
-    {
-        "http://localhost:5173",
-        "http://localhost:3000",
-    };
-
     /// <summary>
     /// Stripe domains that are safe to redirect to.
     /// </summary>
@@ -23,24 +17,21 @@ public static class SubscriptionRoutes
         "billing.stripe.com",
     };
 
-    private static HashSet<string> BuildAllowedOrigins(IConfiguration configuration)
-    {
-        var baseUrl = configuration["App:BaseUrl"] ?? "https://app.myreleasenotes.ai";
-        var origins = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { baseUrl };
-        foreach (var dev in DevOrigins)
-            origins.Add(dev);
-        return origins;
-    }
-
     private static string GetValidatedOrigin(HttpContext httpContext, IConfiguration configuration)
     {
-        var allowedOrigins = BuildAllowedOrigins(configuration);
         var origin = httpContext.Request.Headers.Origin.FirstOrDefault();
-        if (!string.IsNullOrEmpty(origin) && allowedOrigins.Contains(origin))
+        if (!string.IsNullOrEmpty(origin))
         {
-            return origin;
+            // Trust origins already validated by CsrfMiddleware (AllowedOrigins config).
+            var allowedOrigins = configuration.GetSection("AllowedOrigins").Get<string[]>() ?? [];
+            if (allowedOrigins.Contains(origin, StringComparer.OrdinalIgnoreCase))
+                return origin;
+
+            // In development, allow any localhost origin.
+            if (Uri.TryCreate(origin, UriKind.Absolute, out var uri) && uri.Host == "localhost")
+                return origin;
         }
-        // Fallback to configured base URL in production
+        // Fallback to configured base URL
         return configuration["App:BaseUrl"] ?? "https://app.myreleasenotes.ai";
     }
 

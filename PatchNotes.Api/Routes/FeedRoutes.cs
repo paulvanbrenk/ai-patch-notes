@@ -34,6 +34,7 @@ public static class FeedRoutes
                 // No auth or empty watchlist: fetch a wider pool of packages so that
                 // individual (package, track) groups can compete for the top 5 slots.
                 watchlistIds = await db.Releases
+                    .AsNoTracking()
                     .GroupBy(r => r.PackageId)
                     .Select(g => new { PackageId = g.Key, LatestRelease = g.Max(r => r.PublishedAt) })
                     .OrderByDescending(x => x.LatestRelease)
@@ -43,7 +44,7 @@ public static class FeedRoutes
             }
 
             IQueryable<Release> releaseQuery = db.Releases
-                .Include(r => r.Package)
+                .AsNoTracking()
                 .Where(r => watchlistIds.Contains(r.PackageId));
 
             if (excludePrerelease == true)
@@ -125,8 +126,13 @@ public static class FeedRoutes
             // Left-join ReleaseSummary to attach AI summaries per group
             var groupKeys = filteredGroups.Select(g => new { g.PackageId, g.MajorVersion, g.IsPrerelease }).ToList();
 
+            var summaryPackageIds = groupKeys.Select(k => k.PackageId).Distinct().ToList();
+            var summaryMajorVersions = groupKeys.Select(k => k.MajorVersion).Distinct().ToList();
+
             var summaries = await db.ReleaseSummaries
-                .Where(s => groupKeys.Select(k => k.PackageId).Contains(s.PackageId))
+                .AsNoTracking()
+                .Where(s => summaryPackageIds.Contains(s.PackageId)
+                    && summaryMajorVersions.Contains(s.MajorVersion))
                 .ToListAsync();
 
             var summaryLookup = summaries.ToDictionary(

@@ -24,6 +24,7 @@ public static class PackageRoutes
             var total = await db.Packages.CountAsync();
 
             var packages = await db.Packages
+                .AsNoTracking()
                 .OrderBy(p => p.Name)
                 .Skip(skip)
                 .Take(take)
@@ -56,6 +57,7 @@ public static class PackageRoutes
         group.MapGet("/{id:length(21)}", async (string id, PatchNotesDbContext db) =>
         {
             var package = await db.Packages
+                .AsNoTracking()
                 .Where(p => p.Id == id)
                 .Select(p => new PackageDetailDto
                 {
@@ -93,6 +95,7 @@ public static class PackageRoutes
             }
 
             var releases = await db.Releases
+                .AsNoTracking()
                 .Where(r => r.PackageId == id)
                 .OrderByDescending(r => r.PublishedAt)
                 .Select(r => new PackageReleaseDto
@@ -127,7 +130,7 @@ public static class PackageRoutes
             var take = Math.Clamp(limit ?? 20, 1, 100);
             var skip = Math.Max(offset ?? 0, 0);
 
-            var query = db.Packages.Where(p => p.GithubOwner == owner);
+            var query = db.Packages.AsNoTracking().Where(p => p.GithubOwner == owner);
             var total = await query.CountAsync();
 
             var packages = await query
@@ -165,6 +168,7 @@ public static class PackageRoutes
         group.MapGet("/{owner}/{repo}", async (string owner, string repo, PatchNotesDbContext db) =>
         {
             var package = await db.Packages
+                .AsNoTracking()
                 .Where(p => p.GithubOwner == owner && p.GithubRepo == repo)
                 .Select(p => new { p.Id, p.Name, p.GithubOwner, p.GithubRepo, p.NpmName })
                 .FirstOrDefaultAsync();
@@ -176,6 +180,7 @@ public static class PackageRoutes
 
             // Get all releases grouped by (majorVersion, isPrerelease) — no filtering
             var groups = await db.Releases
+                .AsNoTracking()
                 .Where(r => r.PackageId == package.Id)
                 .GroupBy(r => new { r.MajorVersion, r.IsPrerelease })
                 .Select(g => new
@@ -200,6 +205,7 @@ public static class PackageRoutes
 
             // Left-join ReleaseSummary for AI summaries per group
             var summaries = await db.ReleaseSummaries
+                .AsNoTracking()
                 .Where(s => s.PackageId == package.Id)
                 .ToListAsync();
 
