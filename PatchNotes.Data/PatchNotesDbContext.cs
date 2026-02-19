@@ -65,6 +65,7 @@ public class PatchNotesDbContext : DbContext
             entity.Property(e => e.Tag).HasMaxLength(128);
             entity.Property(e => e.SummaryStale).HasDefaultValue(true);
             entity.HasIndex(e => e.PublishedAt);
+            entity.HasIndex(e => new { e.PackageId, e.PublishedAt });
             entity.HasIndex(e => new { e.PackageId, e.Tag }).IsUnique();
             entity.HasIndex(e => new { e.PackageId, e.MajorVersion, e.IsPrerelease });
             entity.HasOne(e => e.Package)

@@ -4,6 +4,7 @@ public class CsrfMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly HashSet<string> _allowedOrigins;
+    private readonly bool _isDevelopment;
     private readonly ILogger<CsrfMiddleware> _logger;
 
     private static readonly HashSet<string> SafeMethods = new(StringComparer.OrdinalIgnoreCase)
@@ -11,10 +12,12 @@ public class CsrfMiddleware
         "GET", "HEAD", "OPTIONS"
     };
 
-    public CsrfMiddleware(RequestDelegate next, IConfiguration configuration, ILogger<CsrfMiddleware> logger)
+    public CsrfMiddleware(RequestDelegate next, IConfiguration configuration,
+        IHostEnvironment environment, ILogger<CsrfMiddleware> logger)
     {
         _next = next;
         _logger = logger;
+        _isDevelopment = environment.IsDevelopment();
 
         var origins = configuration.GetSection("AllowedOrigins").Get<string[]>() ?? [];
         _allowedOrigins = new HashSet<string>(origins, StringComparer.OrdinalIgnoreCase);
@@ -45,7 +48,10 @@ public class CsrfMiddleware
             return;
         }
 
-        if (!_allowedOrigins.Contains(origin))
+        var isAllowed = _allowedOrigins.Contains(origin)
+            || (_isDevelopment && Uri.TryCreate(origin, UriKind.Absolute, out var uri) && uri.Host == "localhost");
+
+        if (!isAllowed)
         {
             _logger.LogWarning("CSRF: Rejected {Method} {Path} - disallowed Origin: {Origin}", context.Request.Method, context.Request.Path, origin);
             context.Response.StatusCode = StatusCodes.Status403Forbidden;

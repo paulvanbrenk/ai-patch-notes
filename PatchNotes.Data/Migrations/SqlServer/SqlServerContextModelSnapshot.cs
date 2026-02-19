@@ -186,6 +186,8 @@ namespace PatchNotes.Data.Migrations.SqlServer
 
                     b.HasIndex("PublishedAt");
 
+                    b.HasIndex("PackageId", "PublishedAt");
+
                     b.HasIndex("PackageId", "Tag")
                         .IsUnique();
 

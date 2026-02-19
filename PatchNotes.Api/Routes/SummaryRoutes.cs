@@ -23,7 +23,7 @@ public static class SummaryRoutes
             }
 
             IQueryable<ReleaseSummary> query = db.ReleaseSummaries
-                .Include(s => s.Package)
+                .AsNoTracking()
                 .Where(s => s.PackageId == id);
 
             if (includePrerelease != true)
@@ -67,7 +67,7 @@ public static class SummaryRoutes
             var take = limit ?? 20;
 
             IQueryable<ReleaseSummary> query = db.ReleaseSummaries
-                .Include(s => s.Package);
+                .AsNoTracking();
 
             if (!string.IsNullOrEmpty(packages))
             {
