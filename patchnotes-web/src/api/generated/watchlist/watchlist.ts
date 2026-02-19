@@ -25,7 +25,8 @@ import type {
 
 import type {
   AddFromGitHubResponse,
-  SetWatchlistRequest
+  SetWatchlistRequest,
+  WatchlistPackageDto
 } from '.././model';
 
 import { customFetch } from '../../custom-fetch';
@@ -36,7 +37,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
 export type getWatchlistResponse200 = {
-  data: string[]
+  data: WatchlistPackageDto[]
   status: 200
 }
 

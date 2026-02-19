@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using PatchNotes.Api.Routes;
 using PatchNotes.Data;
 
 namespace PatchNotes.Tests;
@@ -80,14 +81,14 @@ public class UserWatchlistTests : IAsyncLifetime
         // Check watchlist was auto-populated (capped at 5 for free user)
         var watchlistResponse = await _authClient.GetAsync("/api/watchlist");
         watchlistResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var watchlistIds = await watchlistResponse.Content.ReadFromJsonAsync<string[]>();
+        var watchlistPackages = await watchlistResponse.Content.ReadFromJsonAsync<WatchlistPackageDto[]>();
 
-        watchlistIds.Should().NotBeNull();
-        watchlistIds!.Length.Should().BeGreaterThan(0, "new user should have default packages");
+        watchlistPackages.Should().NotBeNull();
+        watchlistPackages!.Length.Should().BeGreaterThan(0, "new user should have default packages");
 
         // All returned IDs should be from the default packages
         var defaultPackageIds = _defaultPackages.Select(p => p.Id).ToHashSet();
-        watchlistIds.Should().OnlyContain(id => defaultPackageIds.Contains(id));
+        watchlistPackages.Select(p => p.Id).Should().OnlyContain(id => defaultPackageIds.Contains(id));
     }
 
     [Fact]
@@ -105,9 +106,10 @@ public class UserWatchlistTests : IAsyncLifetime
 
         // Watchlist should still be the single package, NOT re-populated
         var watchlistResponse = await _authClient.GetAsync("/api/watchlist");
-        var watchlistIds = await watchlistResponse.Content.ReadFromJsonAsync<string[]>();
+        var watchlistPackages = await watchlistResponse.Content.ReadFromJsonAsync<WatchlistPackageDto[]>();
 
-        watchlistIds.Should().BeEquivalentTo([singlePackageId]);
+        watchlistPackages.Should().NotBeNull();
+        watchlistPackages!.Select(p => p.Id).Should().BeEquivalentTo([singlePackageId]);
     }
 
     [Fact]
@@ -122,10 +124,10 @@ public class UserWatchlistTests : IAsyncLifetime
         loginResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var watchlistResponse = await freeClient.GetAsync("/api/watchlist");
-        var watchlistIds = await watchlistResponse.Content.ReadFromJsonAsync<string[]>();
+        var watchlistPackages = await watchlistResponse.Content.ReadFromJsonAsync<WatchlistPackageDto[]>();
 
-        watchlistIds.Should().NotBeNull();
-        watchlistIds!.Length.Should().Be(5, "free user should be capped at FreeWatchlistLimit");
+        watchlistPackages.Should().NotBeNull();
+        watchlistPackages!.Length.Should().Be(5, "free user should be capped at FreeWatchlistLimit");
     }
 
 }
@@ -200,12 +202,12 @@ public class UserWatchlistMissingPackagesTests : IAsyncLifetime
         loginResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var watchlistResponse = await _authClient.GetAsync("/api/watchlist");
-        var watchlistIds = await watchlistResponse.Content.ReadFromJsonAsync<string[]>();
+        var watchlistPackages = await watchlistResponse.Content.ReadFromJsonAsync<WatchlistPackageDto[]>();
 
-        watchlistIds.Should().NotBeNull();
-        watchlistIds!.Length.Should().Be(3, "only the 3 packages that exist in DB should be added");
+        watchlistPackages.Should().NotBeNull();
+        watchlistPackages!.Length.Should().Be(3, "only the 3 packages that exist in DB should be added");
 
         var expectedIds = _seededPackages.Select(p => p.Id).ToHashSet();
-        watchlistIds.Should().OnlyContain(id => expectedIds.Contains(id));
+        watchlistPackages.Select(p => p.Id).Should().OnlyContain(id => expectedIds.Contains(id));
     }
 }

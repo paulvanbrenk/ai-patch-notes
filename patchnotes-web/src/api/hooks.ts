@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useStytchUser } from '@stytch/react'
 import * as z from 'zod'
-import type { GetReleasesParams } from './generated/model'
+import type { GetReleasesParams, WatchlistPackageDto } from './generated/model'
 import { api } from './client'
 
 import {
@@ -241,21 +241,6 @@ export function useAddToWatchlist() {
 
   return useMutation({
     mutationFn: (packageId: string) => addToWatchlist(packageId),
-    onMutate: async (packageId) => {
-      await queryClient.cancelQueries({ queryKey: getGetWatchlistQueryKey() })
-      const previous = queryClient.getQueryData(getGetWatchlistQueryKey())
-      queryClient.setQueryData(
-        getGetWatchlistQueryKey(),
-        (old: { data: string[] } | undefined) =>
-          old ? { ...old, data: [...old.data, packageId] } : old
-      )
-      return { previous }
-    },
-    onError: (_err, _packageId, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(getGetWatchlistQueryKey(), context.previous)
-      }
-    },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: getGetWatchlistQueryKey() })
       queryClient.invalidateQueries({ queryKey: ['/api/feed'] })
@@ -273,9 +258,9 @@ export function useRemoveFromWatchlist() {
       const previous = queryClient.getQueryData(getGetWatchlistQueryKey())
       queryClient.setQueryData(
         getGetWatchlistQueryKey(),
-        (old: { data: string[] } | undefined) =>
+        (old: { data: WatchlistPackageDto[] } | undefined) =>
           old
-            ? { ...old, data: old.data.filter((id) => id !== packageId) }
+            ? { ...old, data: old.data.filter((pkg) => pkg.id !== packageId) }
             : old
       )
       return { previous }

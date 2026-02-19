@@ -646,7 +646,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "type": "string"
+                    "$ref": "#/components/schemas/WatchlistPackageDto"
                   }
                 }
               }
@@ -2080,6 +2080,36 @@
           },
           "isAdmin": {
             "type": "boolean"
+          }
+        }
+      },
+      "WatchlistPackageDto": {
+        "required": [
+          "id",
+          "name",
+          "githubOwner",
+          "githubRepo",
+          "npmName"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "githubOwner": {
+            "type": "string"
+          },
+          "githubRepo": {
+            "type": "string"
+          },
+          "npmName": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       }

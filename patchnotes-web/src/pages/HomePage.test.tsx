@@ -3,6 +3,15 @@ import { http, HttpResponse } from 'msw'
 import { server } from '../test/mocks/server'
 import { mockFeedGroups } from '../test/mocks/handlers'
 import { HomePage } from './HomePage'
+import type { WatchlistPackageDto } from '../api/generated/model'
+
+const mockReactWatchlistItem: WatchlistPackageDto = {
+  id: 'pkg-react-test-id',
+  name: 'react',
+  githubOwner: 'facebook',
+  githubRepo: 'react',
+  npmName: 'react',
+}
 
 // Mock @tanstack/react-router Link to avoid RouterProvider requirement
 vi.mock('@tanstack/react-router', () => ({
@@ -106,7 +115,7 @@ describe('HomePage', () => {
       // Watchlist contains only React — feed endpoint handles filtering server-side
       server.use(
         http.get('/api/watchlist', () => {
-          return HttpResponse.json(['pkg-react-test-id'])
+          return HttpResponse.json([mockReactWatchlistItem])
         }),
         http.get('/api/feed', () => {
           // Server returns only React groups for this user's watchlist
@@ -130,7 +139,7 @@ describe('HomePage', () => {
     it('does not show hero card', async () => {
       server.use(
         http.get('/api/watchlist', () => {
-          return HttpResponse.json(['pkg-react-test-id'])
+          return HttpResponse.json([mockReactWatchlistItem])
         })
       )
 
