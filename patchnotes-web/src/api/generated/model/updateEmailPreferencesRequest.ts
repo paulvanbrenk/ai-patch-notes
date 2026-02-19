@@ -8,4 +8,6 @@
 export interface UpdateEmailPreferencesRequest {
   /** @nullable */
   emailDigestEnabled: boolean | null;
+  digestDay: number;
+  digestHour: number;
 }
