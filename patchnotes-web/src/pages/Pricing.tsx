@@ -6,6 +6,7 @@ import { ThemeToggle } from '../components/theme'
 import { UserMenu } from '../components/auth'
 import { Logo } from '../components/landing/Logo'
 import { useSubscriptionStore } from '../stores/subscriptionStore'
+import { useGeofencing } from '../hooks/useGeofencing'
 
 const FREE_FEATURES = [
   'Track up to 5 packages',
@@ -25,6 +26,8 @@ const PRO_FEATURES = [
 export function Pricing() {
   const { user, isInitialized } = useStytchUser()
   const { isPro, isLoading, startCheckout, openPortal } = useSubscriptionStore()
+  const { isAllowed: isGeofencingAllowed, isLoading: isGeofencingLoading } =
+    useGeofencing()
 
   const handleUpgrade = () => {
     if (!user) {
@@ -158,8 +161,15 @@ export function Pricing() {
                 ))}
               </ul>
 
+              {isGeofencingAllowed === false && !isPro && (
+                <p className="text-sm text-text-secondary mb-4">
+                  Pro subscription is not available in your region. You can
+                  continue using the free tier.
+                </p>
+              )}
+
               <div className="mt-auto">
-                {!isInitialized ? (
+                {!isInitialized || isGeofencingLoading ? (
                   <Button size="lg" className="w-full" disabled>
                     Loading...
                   </Button>
@@ -172,6 +182,10 @@ export function Pricing() {
                     disabled={isLoading}
                   >
                     {isLoading ? 'Loading...' : 'Manage Subscription'}
+                  </Button>
+                ) : isGeofencingAllowed === false ? (
+                  <Button size="lg" className="w-full" disabled>
+                    Not Available in Your Region
                   </Button>
                 ) : (
                   <Button
