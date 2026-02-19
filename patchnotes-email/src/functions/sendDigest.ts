@@ -11,6 +11,11 @@ export async function sendDigest(
 ): Promise<void> {
     context.log("sendDigest triggered at", new Date().toISOString());
 
+    const now = new Date();
+    const currentDayOfWeek = now.getUTCDay();
+    const currentHour = now.getUTCHours();
+    context.log(`Checking for digests: day=${currentDayOfWeek} hour=${currentHour}`);
+
     const db = getPrismaClient();
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - DIGEST_WINDOW_DAYS);
@@ -19,6 +24,8 @@ export async function sendDigest(
         where: {
             EmailDigestEnabled: true,
             Email: { not: null },
+            DigestDay: currentDayOfWeek,
+            DigestHour: currentHour,
             Watchlists: {
                 some: {
                     Packages: {
@@ -179,8 +186,8 @@ function fallbackDigestHtml(
         `;
 }
 
-// Runs every Monday at 9:00 AM UTC
+// Runs every hour, on the hour
 app.timer("sendDigest", {
-    schedule: "0 0 9 * * 1",
+    schedule: "0 0 * * * *",
     handler: sendDigest,
 });
