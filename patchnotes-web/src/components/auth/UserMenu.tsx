@@ -9,6 +9,7 @@ import {
   CreditCard,
 } from 'lucide-react'
 import { useSubscriptionStore } from '../../stores/subscriptionStore'
+import { useGeofencing } from '../../hooks/useGeofencing'
 
 // ============================================================================
 // Utilities
@@ -96,6 +97,7 @@ function DropdownMenu({
   isPro,
   onUpgrade,
   onManageSubscription,
+  isGeofencingAllowed,
 }: {
   isOpen: boolean
   onClose: () => void
@@ -106,6 +108,7 @@ function DropdownMenu({
   isPro: boolean
   onUpgrade: () => void
   onManageSubscription: () => void
+  isGeofencingAllowed: boolean | null
 }) {
   const menuRef = useRef<HTMLDivElement>(null)
 
@@ -157,30 +160,32 @@ function DropdownMenu({
       </div>
 
       {/* Subscription section */}
-      <div className="py-1.5 border-b border-border-muted">
-        {isPro ? (
-          <MenuButton
-            icon={<CreditCard className="w-4 h-4" />}
-            onClick={() => {
-              onClose()
-              onManageSubscription()
-            }}
-          >
-            Manage Subscription
-          </MenuButton>
-        ) : (
-          <MenuButton
-            icon={<Sparkles className="w-4 h-4" />}
-            onClick={() => {
-              onClose()
-              onUpgrade()
-            }}
-            variant="highlight"
-          >
-            Upgrade to Pro
-          </MenuButton>
-        )}
-      </div>
+      {(isPro || isGeofencingAllowed !== false) && (
+        <div className="py-1.5 border-b border-border-muted">
+          {isPro ? (
+            <MenuButton
+              icon={<CreditCard className="w-4 h-4" />}
+              onClick={() => {
+                onClose()
+                onManageSubscription()
+              }}
+            >
+              Manage Subscription
+            </MenuButton>
+          ) : (
+            <MenuButton
+              icon={<Sparkles className="w-4 h-4" />}
+              onClick={() => {
+                onClose()
+                onUpgrade()
+              }}
+              variant="highlight"
+            >
+              Upgrade to Pro
+            </MenuButton>
+          )}
+        </div>
+      )}
 
       {/* Menu items */}
       <div className="py-1.5">
@@ -258,6 +263,7 @@ export function UserMenu() {
   const navigate = useNavigate()
   const { isPro, checkSubscription, startCheckout, openPortal } =
     useSubscriptionStore()
+  const { isAllowed: isGeofencingAllowed } = useGeofencing()
 
   // Check subscription status when user is available
   useEffect(() => {
@@ -334,6 +340,7 @@ export function UserMenu() {
         isPro={isPro}
         onUpgrade={handleUpgrade}
         onManageSubscription={handleManageSubscription}
+        isGeofencingAllowed={isGeofencingAllowed}
       />
     </div>
   )
