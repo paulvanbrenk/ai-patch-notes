@@ -88,7 +88,7 @@ jobs:
           cd publish/email-function
           echo "node-linker=hoisted" > .npmrc
           echo "" > pnpm-workspace.yaml
-          pnpm install --prod
+          pnpm install --prod --no-frozen-lockfile
           rm .npmrc pnpm-workspace.yaml
 
       - name: Upload Email Function artifact
