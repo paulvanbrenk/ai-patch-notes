@@ -7,7 +7,13 @@
 import * as zod from 'zod';
 
 
-export const GetWatchlistResponseItem = zod.string()
+export const GetWatchlistResponseItem = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "githubOwner": zod.string(),
+  "githubRepo": zod.string(),
+  "npmName": zod.string().nullable()
+})
 export const GetWatchlistResponse = zod.array(GetWatchlistResponseItem)
 
 export const SetWatchlistBody = zod.object({

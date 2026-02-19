@@ -3,6 +3,23 @@ import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { server } from '../test/mocks/server'
 import { WatchlistPage } from './WatchlistPage'
+import type { WatchlistPackageDto } from '../api/generated/model'
+
+const mockReactPackage: WatchlistPackageDto = {
+  id: 'pkg-react-test-id',
+  name: 'react',
+  githubOwner: 'facebook',
+  githubRepo: 'react',
+  npmName: 'react',
+}
+
+const mockLodashPackage: WatchlistPackageDto = {
+  id: 'pkg-lodash-test-id',
+  name: 'lodash',
+  githubOwner: 'lodash',
+  githubRepo: 'lodash',
+  npmName: 'lodash',
+}
 
 vi.mock('@tanstack/react-router', () => ({
   Link: ({ children, to, ...props }: Record<string, unknown>) => (
@@ -95,7 +112,7 @@ describe('WatchlistPage', () => {
       mockStytchUser.mockReturnValue(authenticatedUser)
       server.use(
         http.get('/api/watchlist', () => {
-          return HttpResponse.json(['pkg-react-test-id'])
+          return HttpResponse.json([mockReactPackage])
         })
       )
     })
@@ -112,7 +129,7 @@ describe('WatchlistPage', () => {
     it('shows package count', async () => {
       server.use(
         http.get('/api/watchlist', () => {
-          return HttpResponse.json(['pkg-react-test-id', 'pkg-lodash-test-id'])
+          return HttpResponse.json([mockReactPackage, mockLodashPackage])
         })
       )
 
@@ -168,7 +185,7 @@ describe('WatchlistPage', () => {
     it('marks already-watched packages in search results', async () => {
       server.use(
         http.get('/api/watchlist', () => {
-          return HttpResponse.json(['pkg-react-test-id'])
+          return HttpResponse.json([mockReactPackage])
         })
       )
 

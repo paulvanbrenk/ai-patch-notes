@@ -4,12 +4,13 @@ import type {
   PackageDetailDto,
   ReleaseDto,
   GitHubRepoSearchResultDto,
+  WatchlistPackageDto,
 } from '../../api/generated/model'
 import type { FeedResponseDto, FeedGroupDto } from '../../api/hooks'
 
 const API_BASE = '/api'
 
-export const mockWatchlist: string[] = []
+export const mockWatchlist: WatchlistPackageDto[] = []
 
 export const mockPackages: PackageDto[] = [
   {
@@ -216,27 +217,47 @@ export const handlers = [
   // PUT /watchlist
   http.put(`${API_BASE}/watchlist`, async ({ request }) => {
     const body = (await request.json()) as { packageIds: string[] }
-    mockWatchlist.splice(0, mockWatchlist.length, ...body.packageIds)
-    return HttpResponse.json(mockWatchlist)
+    const newEntries = body.packageIds
+      .map((id) => mockPackages.find((p) => p.id === id))
+      .filter((p): p is PackageDto => p != null)
+      .map((pkg) => ({
+        id: pkg.id,
+        name: pkg.name,
+        githubOwner: pkg.githubOwner,
+        githubRepo: pkg.githubRepo,
+        npmName: pkg.npmName ?? null,
+      }))
+    mockWatchlist.splice(0, mockWatchlist.length, ...newEntries)
+    return HttpResponse.json(body.packageIds)
   }),
 
   // POST /watchlist/:packageId
   http.post(`${API_BASE}/watchlist/:packageId`, ({ params }) => {
     const packageId = params.packageId as string
-    if (mockWatchlist.includes(packageId)) {
+    if (mockWatchlist.some((w) => w.id === packageId)) {
       return HttpResponse.json(
         { error: 'Already watching this package' },
         { status: 409 }
       )
     }
-    mockWatchlist.push(packageId)
+    const pkg = mockPackages.find((p) => p.id === packageId)
+    if (!pkg) {
+      return HttpResponse.json({ error: 'Package not found' }, { status: 404 })
+    }
+    mockWatchlist.push({
+      id: pkg.id,
+      name: pkg.name,
+      githubOwner: pkg.githubOwner,
+      githubRepo: pkg.githubRepo,
+      npmName: pkg.npmName ?? null,
+    })
     return HttpResponse.json(packageId, { status: 201 })
   }),
 
   // DELETE /watchlist/:packageId
   http.delete(`${API_BASE}/watchlist/:packageId`, ({ params }) => {
     const packageId = params.packageId as string
-    const index = mockWatchlist.indexOf(packageId)
+    const index = mockWatchlist.findIndex((w) => w.id === packageId)
     if (index !== -1) {
       mockWatchlist.splice(index, 1)
     }
