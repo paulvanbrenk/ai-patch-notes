@@ -87,8 +87,9 @@ jobs:
           # (pnpm's symlinked node_modules breaks when deployed to Azure)
           cd publish/email-function
           echo "node-linker=hoisted" > .npmrc
+          echo "" > pnpm-workspace.yaml
           pnpm install --prod
-          rm .npmrc
+          rm .npmrc pnpm-workspace.yaml
 
       - name: Upload Email Function artifact
         uses: actions/upload-artifact@v6
