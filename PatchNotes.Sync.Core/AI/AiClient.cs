@@ -58,7 +58,7 @@ public class AiClient : IAiClient
                 new ChatMessage { Role = "system", Content = SystemPrompt },
                 new ChatMessage { Role = "user", Content = userMessage }
             ],
-            MaxTokens = 256,
+            MaxTokens = 512,
             Temperature = 0.3,
             Stream = false
         };
