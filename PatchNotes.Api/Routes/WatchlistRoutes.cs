@@ -27,18 +27,24 @@ public static class WatchlistRoutes
             var user = await db.Users.FirstOrDefaultAsync(u => u.StytchUserId == stytchUserId);
             if (user == null)
             {
-                return Results.Ok(Array.Empty<string>());
+                return Results.Ok(Array.Empty<WatchlistPackageDto>());
             }
 
-            var packageIds = await db.Watchlists
+            var packages = await db.Watchlists
                 .Where(w => w.UserId == user.Id)
-                .Select(w => w.PackageId)
+                .Select(w => new WatchlistPackageDto(
+                    w.Package.Id,
+                    w.Package.Name,
+                    w.Package.GithubOwner,
+                    w.Package.GithubRepo,
+                    w.Package.NpmName
+                ))
                 .ToArrayAsync();
 
-            return Results.Ok(packageIds);
+            return Results.Ok(packages);
         })
         .AddEndpointFilterFactory(requireAuth)
-        .Produces<string[]>(StatusCodes.Status200OK)
+        .Produces<WatchlistPackageDto[]>(StatusCodes.Status200OK)
         .WithName("GetWatchlist");
 
         // PUT /api/watchlist — replace the entire watchlist (bulk set)
@@ -269,6 +275,14 @@ public static class WatchlistRoutes
         return app;
     }
 }
+
+public record WatchlistPackageDto(
+    string Id,
+    string Name,
+    string GithubOwner,
+    string GithubRepo,
+    string? NpmName
+);
 
 public record SetWatchlistRequest(string[] PackageIds);
 

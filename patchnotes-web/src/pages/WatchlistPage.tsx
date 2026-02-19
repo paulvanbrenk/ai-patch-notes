@@ -8,13 +8,12 @@ import { ThemeToggle } from '../components/theme'
 import { UserMenu } from '../components/auth'
 import { Logo } from '../components/landing/Logo'
 import {
-  usePackages,
   useWatchlist,
   useRemoveFromWatchlist,
   useGithubSearch,
   useAddFromGithub,
 } from '../api/hooks'
-import type { PackageDto } from '../api/generated/model'
+import type { WatchlistPackageDto } from '../api/generated/model'
 import type { GitHubRepoSearchResultDto } from '../api/generated/model'
 
 // ── Helpers ──────────────────────────────────────────────────
@@ -89,7 +88,7 @@ function WatchedPackageItem({
   onRemove,
   isRemoving,
 }: {
-  pkg: PackageDto
+  pkg: WatchlistPackageDto
   onRemove: () => void
   isRemoving: boolean
 }) {
@@ -132,7 +131,6 @@ export function WatchlistPage() {
   const [addingGithub, setAddingGithub] = useState<string | null>(null)
 
   const { data: watchlist, isLoading: watchlistLoading } = useWatchlist()
-  const { data: packages } = usePackages()
   const removeFromWatchlist = useRemoveFromWatchlist()
   const addFromGithub = useAddFromGithub()
 
@@ -154,28 +152,13 @@ export function WatchlistPage() {
     )
   }
 
-  // Build a lookup from packageId -> PackageDto
-  const packageMap = new Map<string, PackageDto>()
-  if (packages) {
-    for (const pkg of packages) {
-      packageMap.set(pkg.id, pkg)
-    }
-  }
-
   // Build a set of watched owner/repo pairs for matching search results
   const watchedRepos = new Set<string>()
-  if (watchlist && packages) {
-    for (const id of watchlist) {
-      const pkg = packageMap.get(id)
-      if (pkg) {
-        watchedRepos.add(`${pkg.githubOwner}/${pkg.githubRepo}`.toLowerCase())
-      }
+  if (watchlist) {
+    for (const pkg of watchlist) {
+      watchedRepos.add(`${pkg.githubOwner}/${pkg.githubRepo}`.toLowerCase())
     }
   }
-
-  const watchedPackages = (watchlist ?? [])
-    .map((id) => packageMap.get(id))
-    .filter((pkg): pkg is PackageDto => pkg != null)
 
   // Extract search results from the response
   const searchResults: GitHubRepoSearchResultDto[] =
@@ -304,14 +287,14 @@ export function WatchlistPage() {
                 <div className="py-8 text-center text-sm text-text-secondary">
                   Loading watchlist...
                 </div>
-              ) : watchedPackages.length === 0 ? (
+              ) : (watchlist ?? []).length === 0 ? (
                 <div className="py-8 text-center">
                   <p className="text-sm text-text-secondary">
                     Your watchlist is empty. Search above to add packages.
                   </p>
                 </div>
               ) : (
-                watchedPackages.map((pkg) => (
+                (watchlist ?? []).map((pkg) => (
                   <WatchedPackageItem
                     key={pkg.id}
                     pkg={pkg}

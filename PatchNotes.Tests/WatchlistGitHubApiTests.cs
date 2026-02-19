@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using PatchNotes.Api.Routes;
 using PatchNotes.Data;
 
 namespace PatchNotes.Tests;
@@ -58,8 +59,9 @@ public class WatchlistGitHubApiTests : IAsyncLifetime
 
         // Verify it's in the watchlist
         var getResponse = await _authClient.GetAsync("/api/watchlist");
-        var ids = await getResponse.Content.ReadFromJsonAsync<string[]>();
-        ids.Should().Contain(packageId);
+        var packages = await getResponse.Content.ReadFromJsonAsync<WatchlistPackageDto[]>();
+        packages.Should().NotBeNull();
+        packages!.Select(p => p.Id).Should().Contain(packageId);
     }
 
     [Fact]

@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using PatchNotes.Api.Routes;
 using PatchNotes.Data;
 
 namespace PatchNotes.Tests;
@@ -59,8 +60,8 @@ public class WatchlistApiTests : IAsyncLifetime
         var response = await _authClient.GetAsync("/api/watchlist");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var ids = await response.Content.ReadFromJsonAsync<string[]>();
-        ids.Should().BeEmpty();
+        var packages = await response.Content.ReadFromJsonAsync<WatchlistPackageDto[]>();
+        packages.Should().BeEmpty();
     }
 
     [Fact]
@@ -72,10 +73,11 @@ public class WatchlistApiTests : IAsyncLifetime
         var ids = await response.Content.ReadFromJsonAsync<string[]>();
         ids.Should().BeEquivalentTo([_reactPackageId, _vuePackageId]);
 
-        // Verify GET returns same
+        // Verify GET returns same IDs (now as WatchlistPackageDto[])
         var getResponse = await _authClient.GetAsync("/api/watchlist");
-        var getIds = await getResponse.Content.ReadFromJsonAsync<string[]>();
-        getIds.Should().BeEquivalentTo([_reactPackageId, _vuePackageId]);
+        var getPackages = await getResponse.Content.ReadFromJsonAsync<WatchlistPackageDto[]>();
+        getPackages.Should().NotBeNull();
+        getPackages!.Select(p => p.Id).Should().BeEquivalentTo([_reactPackageId, _vuePackageId]);
     }
 
     [Fact]
@@ -100,8 +102,9 @@ public class WatchlistApiTests : IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var getResponse = await _authClient.GetAsync("/api/watchlist");
-        var ids = await getResponse.Content.ReadFromJsonAsync<string[]>();
-        ids.Should().Contain(_reactPackageId);
+        var packages = await getResponse.Content.ReadFromJsonAsync<WatchlistPackageDto[]>();
+        packages.Should().NotBeNull();
+        packages!.Select(p => p.Id).Should().Contain(_reactPackageId);
     }
 
     [Fact]
@@ -135,8 +138,9 @@ public class WatchlistApiTests : IAsyncLifetime
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         var getResponse = await _authClient.GetAsync("/api/watchlist");
-        var ids = await getResponse.Content.ReadFromJsonAsync<string[]>();
-        ids.Should().BeEquivalentTo([_vuePackageId]);
+        var packages = await getResponse.Content.ReadFromJsonAsync<WatchlistPackageDto[]>();
+        packages.Should().NotBeNull();
+        packages!.Select(p => p.Id).Should().BeEquivalentTo([_vuePackageId]);
     }
 
     [Fact]
