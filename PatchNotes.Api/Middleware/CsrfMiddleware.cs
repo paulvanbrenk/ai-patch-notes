@@ -40,8 +40,18 @@ public class CsrfMiddleware
 
         var origin = context.Request.Headers.Origin.FirstOrDefault();
 
-        if (string.IsNullOrEmpty(origin))
+        // Browsers send Origin: "null" for cross-subdomain navigational form POSTs
+        // (e.g. www.myreleasenotes.ai → api.myreleasenotes.ai). Fall back to the
+        // Sec-Fetch-Site header, which is browser-enforced and cannot be spoofed.
+        if (string.IsNullOrEmpty(origin) || origin == "null")
         {
+            var fetchSite = context.Request.Headers["Sec-Fetch-Site"].FirstOrDefault();
+            if (fetchSite is "same-origin" or "same-site")
+            {
+                await _next(context);
+                return;
+            }
+
             _logger.LogWarning("CSRF: Rejected {Method} {Path} - missing Origin header", context.Request.Method, context.Request.Path);
             context.Response.StatusCode = StatusCodes.Status403Forbidden;
             await context.Response.WriteAsJsonAsync(new { error = "Forbidden: missing Origin header" });
