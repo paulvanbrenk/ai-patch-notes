@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 const { mockSend, mockFindMany, mockFindUnique, mockRenderTemplate, mockInterpolateSubject } = vi.hoisted(() => ({
     mockSend: vi.fn(),
@@ -73,6 +73,14 @@ describe("sendDigest", () => {
         vi.clearAllMocks();
         // Default: no template in DB, use fallback HTML
         mockFindUnique.mockResolvedValue(null);
+        // Fix the clock so day/hour are deterministic in tests
+        vi.useFakeTimers();
+        // Wednesday (3) at 14:00 UTC
+        vi.setSystemTime(new Date("2026-01-07T14:00:00.000Z"));
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
     });
 
     it("returns early when no users have pending items", async () => {
@@ -83,6 +91,31 @@ describe("sendDigest", () => {
 
         expect(mockSend).not.toHaveBeenCalled();
         expect(context.log).toHaveBeenCalledWith("No users with pending digest items");
+    });
+
+    it("queries only users matching current UTC day and hour", async () => {
+        mockFindMany.mockResolvedValue([]);
+        const context = makeContext();
+
+        await sendDigest(makeTimer(), context);
+
+        expect(mockFindMany).toHaveBeenCalledWith(
+            expect.objectContaining({
+                where: expect.objectContaining({
+                    DigestDay: 3,  // Wednesday
+                    DigestHour: 14,
+                }),
+            })
+        );
+    });
+
+    it("logs the current day and hour being checked", async () => {
+        mockFindMany.mockResolvedValue([]);
+        const context = makeContext();
+
+        await sendDigest(makeTimer(), context);
+
+        expect(context.log).toHaveBeenCalledWith("Checking for digests: day=3 hour=14");
     });
 
     it("sends digests to all users and logs summary on full success", async () => {
