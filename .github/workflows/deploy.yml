@@ -83,6 +83,12 @@ jobs:
         run: |
           pnpm --filter patchnotes-email deploy publish/email-function --prod
           cp patchnotes-email/host.json publish/email-function/
+          # Re-install with hoisted layout so Azure Functions can resolve all deps
+          # (pnpm's symlinked node_modules breaks when deployed to Azure)
+          cd publish/email-function
+          echo "node-linker=hoisted" > .npmrc
+          pnpm install --prod
+          rm .npmrc
 
       - name: Upload Email Function artifact
         uses: actions/upload-artifact@v6
