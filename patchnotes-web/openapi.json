@@ -4,6 +4,11 @@
     "title": "PatchNotes.Api | v1",
     "version": "1.0.0"
   },
+  "servers": [
+    {
+      "url": "http://localhost:5000/"
+    }
+  ],
   "paths": {
     "/webhooks/stytch": {
       "post": {
@@ -1227,6 +1232,14 @@
           },
           "emailWelcomeSent": {
             "type": "boolean"
+          },
+          "digestDay": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "digestHour": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },
@@ -1924,7 +1937,9 @@
       },
       "UpdateEmailPreferencesRequest": {
         "required": [
-          "emailDigestEnabled"
+          "emailDigestEnabled",
+          "digestDay",
+          "digestHour"
         ],
         "type": "object",
         "properties": {
@@ -1933,6 +1948,14 @@
               "null",
               "boolean"
             ]
+          },
+          "digestDay": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "digestHour": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },

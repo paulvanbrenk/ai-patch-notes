@@ -8,4 +8,6 @@
 export interface EmailPreferencesDto {
   emailDigestEnabled?: boolean;
   emailWelcomeSent?: boolean;
+  digestDay?: number;
+  digestHour?: number;
 }
