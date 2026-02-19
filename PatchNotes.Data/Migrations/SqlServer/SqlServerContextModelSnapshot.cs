@@ -241,6 +241,12 @@ namespace PatchNotes.Data.Migrations.SqlServer
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<int>("DigestDay")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DigestHour")
+                        .HasColumnType("int");
+
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
