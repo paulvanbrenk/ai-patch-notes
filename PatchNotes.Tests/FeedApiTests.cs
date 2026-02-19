@@ -205,9 +205,10 @@ public class FeedApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetFeed_HidesOldPrereleases()
+    public async Task GetFeed_ShowsPrereleaseAtSameMajorVersion()
     {
-        // Arrange: prereleases at same major version as stable should be hidden
+        // Arrange: prereleases at same major version as stable should be shown
+        // (e.g. Next.js v16.2.0-canary.47 alongside stable v16.1.6)
         using var scope = _fixture.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<PatchNotesDbContext>();
 
@@ -235,7 +236,7 @@ public class FeedApiTests : IAsyncLifetime
             MinorVersion = 100,
             PatchVersion = 0
         });
-        // v0 prerelease (same major as stable - should be hidden)
+        // v0 prerelease (same major as stable - should be shown)
         db.Releases.Add(new Release
         {
             PackageId = package.Id,
@@ -258,10 +259,10 @@ public class FeedApiTests : IAsyncLifetime
         feed.Should().NotBeNull();
 
         var packageGroups = feed!.Groups.Where(g => g.PackageId == package.Id).ToList();
-        // Only the stable v0 group, not the prerelease v0 group
-        packageGroups.Should().ContainSingle();
-        packageGroups[0].IsPrerelease.Should().BeFalse();
-        packageGroups[0].MajorVersion.Should().Be(0);
+        // Both the stable v0 group and the prerelease v0 group should appear
+        packageGroups.Should().HaveCount(2);
+        packageGroups.Should().Contain(g => !g.IsPrerelease && g.MajorVersion == 0);
+        packageGroups.Should().Contain(g => g.IsPrerelease && g.MajorVersion == 0);
     }
 
     [Fact]

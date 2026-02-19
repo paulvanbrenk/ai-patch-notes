@@ -92,9 +92,9 @@ public static class FeedRoutes
             {
                 if (maxStableByPackage.TryGetValue(g.PackageId, out var maxStable))
                 {
-                    // Has stable releases: keep current stable + future prereleases
+                    // Has stable releases: keep current stable + prereleases at same or higher major
                     return (!g.IsPrerelease && g.MajorVersion == maxStable)
-                        || (g.IsPrerelease && g.MajorVersion > maxStable);
+                        || (g.IsPrerelease && g.MajorVersion >= maxStable);
                 }
                 // No stable releases: handled below
                 return false;
