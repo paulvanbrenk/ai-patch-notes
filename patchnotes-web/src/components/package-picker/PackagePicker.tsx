@@ -89,20 +89,25 @@ export function PackagePicker({
     }
   }, [localSelectedIds, fullStorageKey, useWatchlist])
 
-  // Notify parent of selection changes
-  useEffect(() => {
-    onSelectionChange?.([...selectedIds])
-  }, [selectedIds, onSelectionChange])
-
   const applyUpdate = useCallback(
     (updater: (prev: Set<string>) => Set<string>) => {
       if (useWatchlist) {
-        onWatchlistChange?.([...updater(new Set(watchlistIds))])
+        const next = [...updater(new Set(watchlistIds))]
+        onWatchlistChange?.(next)
+        onSelectionChange?.(next)
       } else {
-        setLocalSelectedIds((prev) => updater(prev))
+        const next = updater(localSelectedIds)
+        setLocalSelectedIds(next)
+        onSelectionChange?.([...next])
       }
     },
-    [useWatchlist, watchlistIds, onWatchlistChange]
+    [
+      useWatchlist,
+      watchlistIds,
+      localSelectedIds,
+      onWatchlistChange,
+      onSelectionChange,
+    ]
   )
 
   const handleToggle = useCallback(
