@@ -145,6 +145,16 @@ Both `HomePage.tsx:406` and `UserMenu.tsx:263` call `checkSubscription()` on mou
 
 ---
 
+## Completed
+
+### Sync releases on package creation (PR #369)
+
+New packages added via `POST /api/watchlist/github/{owner}/{repo}` previously had zero releases until the next 6-hour timer sync. Users saw an empty package.
+
+**Fix:** Added an HTTP-triggered Azure Function (`SyncNewPackages`) that syncs packages where `LastFetchedAt == null`. The API fires a best-effort POST to this function after creating a new package. Duplicate pings are harmless — the function queries the DB for never-synced packages each time, and `LastFetchedAt` gets set after sync. The 6-hour timer remains as a safety net.
+
+---
+
 ## Architectural Suggestions
 
 ### 1. Request-scoped auth context
