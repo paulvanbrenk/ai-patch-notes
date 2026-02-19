@@ -98,15 +98,19 @@ export function Settings() {
   }
 
   // Email preferences
-  const isPro = currentUser?.status === 200 ? (currentUser.data.isPro ?? false) : false
+  const isPro =
+    currentUser?.status === 200 ? (currentUser.data.isPro ?? false) : false
 
-  const { data: emailPrefs, isSuccess: emailPrefsLoaded } = useGetEmailPreferences({
-    query: { enabled: !!user },
-  })
+  const { data: emailPrefs, isSuccess: emailPrefsLoaded } =
+    useGetEmailPreferences({
+      query: { enabled: !!user },
+    })
   const updateEmailPrefs = useUpdateEmailPreferences()
 
   const serverDigestEnabled =
-    emailPrefs?.status === 200 ? (emailPrefs.data.emailDigestEnabled ?? true) : true
+    emailPrefs?.status === 200
+      ? (emailPrefs.data.emailDigestEnabled ?? true)
+      : true
   const serverDigestDay =
     emailPrefs?.status === 200 ? (emailPrefs.data.digestDay ?? 1) : 1
   const serverDigestHour =
