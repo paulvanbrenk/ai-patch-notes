@@ -1,4 +1,6 @@
+using System.Net.Http.Headers;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using PatchNotes.Data;
 using PatchNotes.Api.Stytch;
 
@@ -178,8 +180,9 @@ public static class WatchlistRoutes
         .WithName("AddToWatchlist");
 
         // POST /api/watchlist/github/{owner}/{repo} — add a GitHub repo to watchlist, creating package if needed
-        group.MapPost("/github/{owner}/{repo}", async (string owner, string repo, HttpContext httpContext, PatchNotesDbContext db) =>
+        group.MapPost("/github/{owner}/{repo}", async (string owner, string repo, HttpContext httpContext, PatchNotesDbContext db, IConfiguration configuration, ILoggerFactory loggerFactory) =>
         {
+            var logger = loggerFactory.CreateLogger("PatchNotes.Api.Routes.WatchlistRoutes");
             var stytchUserId = httpContext.Items["StytchUserId"] as string;
             if (stytchUserId == null)
             {
@@ -209,7 +212,8 @@ public static class WatchlistRoutes
             var package = await db.Packages
                 .FirstOrDefaultAsync(p => p.GithubOwner == owner && p.GithubRepo == repo);
 
-            if (package == null)
+            var isNewPackage = package == null;
+            if (isNewPackage)
             {
                 package = new Package
                 {
@@ -223,7 +227,7 @@ public static class WatchlistRoutes
             }
 
             var alreadyWatching = await db.Watchlists
-                .AnyAsync(w => w.UserId == user.Id && w.PackageId == package.Id);
+                .AnyAsync(w => w.UserId == user.Id && w.PackageId == package!.Id);
             if (alreadyWatching)
             {
                 return Results.Conflict(new ApiError("Already watching this package"));
@@ -232,9 +236,36 @@ public static class WatchlistRoutes
             db.Watchlists.Add(new Watchlist
             {
                 UserId = user.Id,
-                PackageId = package.Id,
+                PackageId = package!.Id,
             });
             await db.SaveChangesAsync();
+
+            // Fire-and-forget: ping the Function to sync new packages
+            if (isNewPackage)
+            {
+                var syncUrl = configuration["SyncFunction:Url"];
+                var syncKey = configuration["SyncFunction:Key"];
+                if (!string.IsNullOrEmpty(syncUrl))
+                {
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            using var http = new HttpClient();
+                            using var request = new HttpRequestMessage(HttpMethod.Post, syncUrl);
+                            if (!string.IsNullOrEmpty(syncKey))
+                                request.Headers.Add("x-functions-key", syncKey);
+                            request.Content = new StringContent("");
+                            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+                            await http.SendAsync(request);
+                        }
+                        catch (Exception ex)
+                        {
+                            logger.LogWarning(ex, "Failed to ping SyncNewPackages function");
+                        }
+                    });
+                }
+            }
 
             return Results.Created($"/api/watchlist/{package.Id}", new AddFromGitHubResponse { PackageId = package.Id });
         })
