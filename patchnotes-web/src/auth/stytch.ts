@@ -30,7 +30,7 @@ export const stytchLoginConfig = {
     signupExpirationMinutes: 30,
   },
   oauthOptions: {
-    providers: [{ type: 'github' as const }],
+    providers: [{ type: 'github' as const, custom_scopes: ['user:email'] }],
     loginRedirectURL: `${window.location.origin}/authenticate`,
     signupRedirectURL: `${window.location.origin}/authenticate`,
   },
