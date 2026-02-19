@@ -19,7 +19,7 @@ These run concurrently as a producer-consumer pipeline using `System.Threading.C
 
 HTTP POST trigger (`/api/sync-new-packages`) that syncs packages which have never been fetched (`LastFetchedAt == null`). Called by the API in a fire-and-forget fashion after a new package is created via the watchlist. The 6-hour timer acts as a safety net if the ping fails.
 
-**Network access**: This endpoint must **not** be publicly accessible. Configure the Function App's Access Restrictions in Azure Portal to only allow traffic from within the Azure virtual network (or from the API's outbound IPs). The function also requires a function key (`AuthorizationLevel.Function`).
+**Network access**: This endpoint must **not** be publicly accessible. The Function App's access restrictions allow only the `AppService.CentralUS` service tag (matching the API's region) with a default Deny rule. The function also requires a function key (`AuthorizationLevel.Function`).
 
 ## Configuration
 
@@ -39,7 +39,7 @@ The API needs these settings to ping the Function after creating a new package:
 
 | Setting | Description |
 |---|---|
-| `SyncFunction:Url` | Full URL of the SyncNewPackages endpoint, e.g. `https://<functions-app>.azurewebsites.net/api/sync-new-packages` |
+| `SyncFunction:Url` | Full URL of the SyncNewPackages endpoint: `https://fn-patchnotes-sync.azurewebsites.net/api/sync-new-packages` |
 | `SyncFunction:Key` | Function key from Azure Portal: Functions > SyncNewPackages > Function Keys > default |
 
 ## Local Development
