@@ -1,11 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
+import { API_ROOT } from '../api/client'
 
 export interface GeolocationData {
   country_code: string
-  country_name: string
-  region?: string
-  city?: string
-  ip?: string
 }
 
 export interface GeofencingState {
@@ -22,24 +19,13 @@ async function fetchGeolocation(): Promise<GeolocationData> {
     import.meta.env.DEV &&
     import.meta.env.VITE_BYPASS_GEOFENCING === 'true'
   ) {
-    return { country_code: 'US', country_name: 'United States (Development)' }
+    return { country_code: 'US' }
   }
 
-  const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), 10000)
-  try {
-    const response = await fetch('https://ipapi.co/json/', {
-      signal: controller.signal,
-    })
-    clearTimeout(timeoutId)
-    if (!response.ok)
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-    const data: GeolocationData = await response.json()
-    return data
-  } catch (error) {
-    clearTimeout(timeoutId)
-    throw error
-  }
+  const response = await fetch(`${API_ROOT}/api/geo/country`)
+  if (!response.ok)
+    throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+  return response.json()
 }
 
 export function useGeofencing(): GeofencingState {
@@ -48,10 +34,7 @@ export function useGeofencing(): GeofencingState {
     queryFn: fetchGeolocation,
     staleTime: 24 * 60 * 60 * 1000,
     gcTime: 24 * 60 * 60 * 1000,
-    retry: (failureCount, error) => {
-      if (error instanceof Error && error.name === 'AbortError') return false
-      return failureCount < 2
-    },
+    retry: 2,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   })
 
