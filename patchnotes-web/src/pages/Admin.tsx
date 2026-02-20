@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useDebouncedValue } from '@tanstack/react-pacer'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { useStytchUser } from '@stytch/react'
 import {
   Header,
   HeaderTitle,
@@ -22,6 +21,7 @@ import type {
   GitHubRepoSearchResultDto,
 } from '../api/generated/model'
 import { useSearchGitHubRepositories } from '../api/generated/admin-git-hub/admin-git-hub'
+import { useIsAdmin } from '../utils/auth'
 
 function formatDate(dateString: string | null | undefined): string {
   if (!dateString) return 'Never'
@@ -39,16 +39,6 @@ function sanitizeErrorMessage(
     .trim()
     .slice(0, maxLength)
   return clean || 'Failed'
-}
-
-// ── Auth Gate ─────────────────────────────────────────────────
-
-function useIsAdmin(): { isAdmin: boolean; isLoading: boolean } {
-  const { user, isInitialized } = useStytchUser()
-  if (!isInitialized) return { isAdmin: false, isLoading: true }
-  if (!user) return { isAdmin: false, isLoading: false }
-  const roles = (user as { roles?: string[] }).roles ?? []
-  return { isAdmin: roles.includes('patch_notes_admin'), isLoading: false }
 }
 
 // ── Edit Modal ────────────────────────────────────────────────
