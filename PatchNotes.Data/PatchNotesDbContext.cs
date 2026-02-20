@@ -93,7 +93,7 @@ public class PatchNotesDbContext : DbContext
         modelBuilder.Entity<ProcessedWebhookEvent>(entity =>
         {
             entity.HasKey(e => e.EventId);
-            entity.Property(e => e.EventId).HasMaxLength(128);
+            entity.Property(e => e.EventId).HasMaxLength(128).IsRequired();
         });
 
         modelBuilder.Entity<ReleaseSummary>(entity =>

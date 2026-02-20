@@ -45,7 +45,7 @@ namespace PatchNotes.Data.Migrations.Sqlite
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("EmailTemplates");
+                    b.ToTable("EmailTemplates", (string)null);
                 });
 
             modelBuilder.Entity("PatchNotes.Data.Package", b =>
@@ -108,7 +108,7 @@ namespace PatchNotes.Data.Migrations.Sqlite
                     b.HasIndex("NpmName")
                         .IsUnique();
 
-                    b.ToTable("Packages");
+                    b.ToTable("Packages", (string)null);
                 });
 
             modelBuilder.Entity("PatchNotes.Data.ProcessedWebhookEvent", b =>
@@ -122,7 +122,7 @@ namespace PatchNotes.Data.Migrations.Sqlite
 
                     b.HasKey("EventId");
 
-                    b.ToTable("ProcessedWebhookEvents");
+                    b.ToTable("ProcessedWebhookEvents", (string)null);
                 });
 
             modelBuilder.Entity("PatchNotes.Data.Release", b =>
@@ -187,7 +187,7 @@ namespace PatchNotes.Data.Migrations.Sqlite
 
                     b.HasIndex("PackageId", "MajorVersion", "IsPrerelease");
 
-                    b.ToTable("Releases");
+                    b.ToTable("Releases", (string)null);
                 });
 
             modelBuilder.Entity("PatchNotes.Data.ReleaseSummary", b =>
@@ -225,7 +225,7 @@ namespace PatchNotes.Data.Migrations.Sqlite
                     b.HasIndex("PackageId", "MajorVersion", "IsPrerelease")
                         .IsUnique();
 
-                    b.ToTable("ReleaseSummaries");
+                    b.ToTable("ReleaseSummaries", (string)null);
                 });
 
             modelBuilder.Entity("PatchNotes.Data.User", b =>
@@ -296,7 +296,7 @@ namespace PatchNotes.Data.Migrations.Sqlite
                     b.HasIndex("StytchUserId")
                         .IsUnique();
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("PatchNotes.Data.Watchlist", b =>
@@ -325,7 +325,7 @@ namespace PatchNotes.Data.Migrations.Sqlite
                     b.HasIndex("UserId", "PackageId")
                         .IsUnique();
 
-                    b.ToTable("Watchlists");
+                    b.ToTable("Watchlists", (string)null);
                 });
 
             modelBuilder.Entity("PatchNotes.Data.Release", b =>

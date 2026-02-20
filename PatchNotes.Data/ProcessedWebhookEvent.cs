@@ -2,6 +2,6 @@ namespace PatchNotes.Data;
 
 public class ProcessedWebhookEvent
 {
-    public string EventId { get; set; } = string.Empty;
+    public required string EventId { get; set; }
     public DateTimeOffset ProcessedAt { get; set; }
 }
