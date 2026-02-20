@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { useStytchUser } from '@stytch/react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Header, HeaderTitle, Container, Button, Card } from '../components/ui'
+import { useIsAdmin } from '../utils/auth'
 import { api } from '../api/client'
 import {
   useUpdateEmailTemplate,
@@ -38,16 +38,6 @@ const SAMPLE_DATA: Record<string, Record<string, unknown>> = {
       },
     ],
   },
-}
-
-// ── Auth Gate ─────────────────────────────────────────────────
-
-function useIsAdmin(): { isAdmin: boolean; isLoading: boolean } {
-  const { user, isInitialized } = useStytchUser()
-  if (!isInitialized) return { isAdmin: false, isLoading: true }
-  if (!user) return { isAdmin: false, isLoading: false }
-  const roles = (user as { roles?: string[] }).roles ?? []
-  return { isAdmin: roles.includes('patch_notes_admin'), isLoading: false }
 }
 
 // ── Preview HTML Generator ───────────────────────────────────
