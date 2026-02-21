@@ -3,7 +3,6 @@ import { useStytch, useStytchUser } from '@stytch/react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import {
   Settings,
-  HelpCircle,
   LogOut,
   Sparkles,
   CreditCard,
@@ -215,12 +214,6 @@ function DropdownMenu({
           onClick={onSettings}
         >
           Settings
-        </MenuButton>
-        <MenuButton
-          icon={<HelpCircle className="w-4 h-4" />}
-          onClick={() => {}}
-        >
-          Help & Support
         </MenuButton>
       </div>
 
