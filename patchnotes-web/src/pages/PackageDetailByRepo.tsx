@@ -5,10 +5,12 @@ import {
   Header,
   HeaderTitle,
   Container,
-  Button,
   Card,
   Badge,
 } from '../components/ui'
+import { ThemeToggle } from '../components/theme'
+import { UserMenu } from '../components/auth'
+import { Logo } from '../components/landing/Logo'
 import { usePackageByOwnerRepo } from '../api/hooks'
 import type {
   PackageDetailGroupDto,
@@ -214,7 +216,17 @@ export function PackageDetailByRepo({ owner, repo }: PackageDetailByRepoProps) {
     return (
       <div className="min-h-screen bg-surface-secondary">
         <Header>
-          <HeaderTitle>Loading...</HeaderTitle>
+          <Link to="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
+            <Logo size={36} />
+            <div>
+              <HeaderTitle>My Release Notes</HeaderTitle>
+              <p className="text-2xs text-text-tertiary leading-tight">by Tiny Tools</p>
+            </div>
+          </Link>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <UserMenu />
+          </div>
         </Header>
         <main className="py-8">
           <Container>
@@ -229,12 +241,17 @@ export function PackageDetailByRepo({ owner, repo }: PackageDetailByRepoProps) {
     return (
       <div className="min-h-screen bg-surface-secondary">
         <Header>
-          <HeaderTitle>Package Not Found</HeaderTitle>
-          <Link to="/">
-            <Button variant="secondary" size="sm">
-              Back to Home
-            </Button>
+          <Link to="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
+            <Logo size={36} />
+            <div>
+              <HeaderTitle>My Release Notes</HeaderTitle>
+              <p className="text-2xs text-text-tertiary leading-tight">by Tiny Tools</p>
+            </div>
           </Link>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <UserMenu />
+          </div>
         </Header>
         <main className="py-8">
           <Container>
@@ -253,18 +270,16 @@ export function PackageDetailByRepo({ owner, repo }: PackageDetailByRepoProps) {
   return (
     <div className="min-h-screen bg-surface-secondary">
       <Header>
-        <HeaderTitle>{pkg.npmName ?? pkg.name}</HeaderTitle>
+        <Link to="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
+          <Logo size={36} />
+          <div>
+            <HeaderTitle>{pkg.npmName ?? pkg.name}</HeaderTitle>
+            <p className="text-2xs text-text-tertiary leading-tight">by Tiny Tools</p>
+          </div>
+        </Link>
         <div className="flex items-center gap-2">
-          <Link to="/packages/$owner" params={{ owner: pkg.githubOwner }}>
-            <Button variant="secondary" size="sm">
-              {pkg.githubOwner}
-            </Button>
-          </Link>
-          <Link to="/">
-            <Button variant="secondary" size="sm">
-              Home
-            </Button>
-          </Link>
+          <ThemeToggle />
+          <UserMenu />
         </div>
       </Header>
 
