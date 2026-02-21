@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using PatchNotes.Data;
 using PatchNotes.Api.Stytch;
 using static PatchNotes.Data.SummaryConstants;
@@ -16,7 +17,8 @@ public static class FeedRoutes
             bool? excludePrerelease,
             HttpContext httpContext,
             PatchNotesDbContext db,
-            IStytchClient stytchClient) =>
+            IStytchClient stytchClient,
+            IMemoryCache cache) =>
         {
             // Resolve which packages to show: user's watchlist or top 5 most recent
             var userWatchlistIds = await RouteUtils.GetAuthenticatedUserWatchlistIds(
@@ -24,6 +26,14 @@ public static class FeedRoutes
 
             var isDefaultFeed = userWatchlistIds is not { Count: > 0 };
             List<string> watchlistIds;
+
+            // Return cached response for the default feed to avoid recomputing on every request
+            if (isDefaultFeed)
+            {
+                var cacheKey = $"feed:default:{excludePrerelease ?? false}";
+                if (cache.TryGetValue(cacheKey, out FeedResponseDto? cached))
+                    return Results.Ok(cached);
+            }
 
             if (!isDefaultFeed)
             {
@@ -168,7 +178,15 @@ public static class FeedRoutes
                 };
             }).ToList();
 
-            return Results.Ok(new FeedResponseDto { Groups = feedGroups, IsDefaultFeed = isDefaultFeed });
+            var response = new FeedResponseDto { Groups = feedGroups, IsDefaultFeed = isDefaultFeed };
+
+            if (isDefaultFeed)
+            {
+                var cacheKey = $"feed:default:{excludePrerelease ?? false}";
+                cache.Set(cacheKey, response, TimeSpan.FromSeconds(60));
+            }
+
+            return Results.Ok(response);
         })
         .Produces<FeedResponseDto>(StatusCodes.Status200OK)
         .WithName("GetFeed");

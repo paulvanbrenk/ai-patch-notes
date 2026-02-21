@@ -79,6 +79,7 @@ builder.Services.AddGitHubClient(options =>
     }
 });
 
+builder.Services.AddMemoryCache();
 builder.Services.AddSingleton<IStytchClient, StytchClient>();
 
 builder.Services.AddCors(options =>
