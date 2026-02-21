@@ -56,6 +56,7 @@ export const useSubscriptionStore = create<SubscriptionState>((set) => ({
     form.action = `${API_BASE_URL}/subscription/checkout`
     document.body.appendChild(form)
     form.submit()
+    form.remove()
   },
 
   openPortal: () => {
@@ -66,6 +67,7 @@ export const useSubscriptionStore = create<SubscriptionState>((set) => ({
     form.action = `${API_BASE_URL}/subscription/portal`
     document.body.appendChild(form)
     form.submit()
+    form.remove()
   },
 
   reset: () => {
