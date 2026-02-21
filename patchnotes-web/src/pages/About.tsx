@@ -51,9 +51,9 @@ export function About() {
                 >
                   Tiny Tools
                 </a>
-                , a small studio focused on crafting simple, sharp digital utilities 
-                for individual performers and small but mighty teams. We
-                believe the best tools do one thing well and stay out of your
+                , a small studio focused on crafting simple, sharp digital
+                utilities for individual performers and small but mighty teams.
+                We believe the best tools do one thing well and stay out of your
                 way.
               </p>
             </section>

@@ -50,8 +50,7 @@ const features = [
   {
     icon: MonitorSmartphone,
     title: 'Works Everywhere',
-    description:
-      'Fully responsive. Check releases from any device, any time.',
+    description: 'Fully responsive. Check releases from any device, any time.',
   },
 ]
 
