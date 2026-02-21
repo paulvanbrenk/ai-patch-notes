@@ -7,9 +7,11 @@ import {
   LogOut,
   Sparkles,
   CreditCard,
+  Shield,
 } from 'lucide-react'
 import { useSubscriptionStore } from '../../stores/subscriptionStore'
 import { useGeofencing } from '../../hooks/useGeofencing'
+import { useIsAdmin } from '../../utils/auth'
 
 // ============================================================================
 // Utilities
@@ -98,6 +100,8 @@ function DropdownMenu({
   onUpgrade,
   onManageSubscription,
   isGeofencingAllowed,
+  isAdmin,
+  onAdmin,
 }: {
   isOpen: boolean
   onClose: () => void
@@ -109,6 +113,8 @@ function DropdownMenu({
   onUpgrade: () => void
   onManageSubscription: () => void
   isGeofencingAllowed: boolean | null
+  isAdmin: boolean
+  onAdmin: () => void
 }) {
   const menuRef = useRef<HTMLDivElement>(null)
 
@@ -184,6 +190,21 @@ function DropdownMenu({
               Upgrade to Pro
             </MenuButton>
           )}
+        </div>
+      )}
+
+      {/* Admin section */}
+      {isAdmin && (
+        <div className="py-1.5 border-b border-border-muted">
+          <MenuButton
+            icon={<Shield className="w-4 h-4" />}
+            onClick={() => {
+              onClose()
+              onAdmin()
+            }}
+          >
+            Admin
+          </MenuButton>
         </div>
       )}
 
@@ -264,6 +285,7 @@ export function UserMenu() {
   const { isPro, checkSubscription, startCheckout, openPortal } =
     useSubscriptionStore()
   const { isAllowed: isGeofencingAllowed } = useGeofencing()
+  const { isAdmin } = useIsAdmin()
 
   // Check subscription status when user is available
   useEffect(() => {
@@ -288,6 +310,10 @@ export function UserMenu() {
 
   const handleManageSubscription = () => {
     openPortal()
+  }
+
+  const handleAdmin = () => {
+    navigate({ to: '/admin' })
   }
 
   // Loading state
@@ -341,6 +367,8 @@ export function UserMenu() {
         onUpgrade={handleUpgrade}
         onManageSubscription={handleManageSubscription}
         isGeofencingAllowed={isGeofencingAllowed}
+        isAdmin={isAdmin}
+        onAdmin={handleAdmin}
       />
     </div>
   )
