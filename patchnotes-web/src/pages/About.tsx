@@ -51,7 +51,8 @@ export function About() {
                 >
                   Tiny Tools
                 </a>
-                , a small studio focused on crafting simple, sharp utilities. We
+                , a small studio focused on crafting simple, sharp digital utilities 
+                for individual performers and small but mighty teams. We
                 believe the best tools do one thing well and stay out of your
                 way.
               </p>
@@ -95,7 +96,7 @@ export function About() {
                 >
                   Gas Town
                 </a>
-                , a multi-agent workspace manager. Good tools come from real
+                , a multi-agent workspace manager. Good tools solve real
                 problems, and My Release Notes was born out of our own
                 frustration with missing important releases buried in noisy
                 GitHub feeds.
