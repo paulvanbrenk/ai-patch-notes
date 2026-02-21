@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import Markdown from 'react-markdown'
+import { LazyMarkdown as Markdown } from '../components/LazyMarkdown'
 import {
   Header,
   HeaderTitle,
