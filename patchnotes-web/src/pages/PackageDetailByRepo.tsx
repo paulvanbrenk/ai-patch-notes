@@ -1,13 +1,7 @@
 import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import Markdown from 'react-markdown'
-import {
-  Header,
-  HeaderTitle,
-  Container,
-  Card,
-  Badge,
-} from '../components/ui'
+import { Header, HeaderTitle, Container, Card, Badge } from '../components/ui'
 import { ThemeToggle } from '../components/theme'
 import { UserMenu } from '../components/auth'
 import { Logo } from '../components/landing/Logo'
@@ -216,11 +210,16 @@ export function PackageDetailByRepo({ owner, repo }: PackageDetailByRepoProps) {
     return (
       <div className="min-h-screen bg-surface-secondary">
         <Header>
-          <Link to="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
+          <Link
+            to="/"
+            className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
+          >
             <Logo size={36} />
             <div>
               <HeaderTitle>My Release Notes</HeaderTitle>
-              <p className="text-2xs text-text-tertiary leading-tight">by Tiny Tools</p>
+              <p className="text-2xs text-text-tertiary leading-tight">
+                by Tiny Tools
+              </p>
             </div>
           </Link>
           <div className="flex items-center gap-2">
@@ -241,11 +240,16 @@ export function PackageDetailByRepo({ owner, repo }: PackageDetailByRepoProps) {
     return (
       <div className="min-h-screen bg-surface-secondary">
         <Header>
-          <Link to="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
+          <Link
+            to="/"
+            className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
+          >
             <Logo size={36} />
             <div>
               <HeaderTitle>My Release Notes</HeaderTitle>
-              <p className="text-2xs text-text-tertiary leading-tight">by Tiny Tools</p>
+              <p className="text-2xs text-text-tertiary leading-tight">
+                by Tiny Tools
+              </p>
             </div>
           </Link>
           <div className="flex items-center gap-2">
@@ -270,11 +274,16 @@ export function PackageDetailByRepo({ owner, repo }: PackageDetailByRepoProps) {
   return (
     <div className="min-h-screen bg-surface-secondary">
       <Header>
-        <Link to="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
+        <Link
+          to="/"
+          className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
+        >
           <Logo size={36} />
           <div>
             <HeaderTitle>{pkg.npmName ?? pkg.name}</HeaderTitle>
-            <p className="text-2xs text-text-tertiary leading-tight">by Tiny Tools</p>
+            <p className="text-2xs text-text-tertiary leading-tight">
+              by Tiny Tools
+            </p>
           </div>
         </Link>
         <div className="flex items-center gap-2">
