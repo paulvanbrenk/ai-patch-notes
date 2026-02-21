@@ -119,14 +119,14 @@ export function Privacy() {
                       data="Email, subscription data"
                     />
                     <ServiceRow
-                      service="OpenAI"
+                      service="Ollama"
                       purpose="AI release summaries"
                       data="Public release text only (no user data)"
                     />
                     <ServiceRow
                       service="Microsoft Azure"
                       purpose="Hosting & monitoring"
-                      data="All app data (hosted infrastructure)"
+                      data="Operational logs (no user data)"
                     />
                     <ServiceRow
                       service="GitHub API"

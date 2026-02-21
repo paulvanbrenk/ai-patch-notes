@@ -25,7 +25,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       ...seoHead({
         title: 'My Release Notes - Track GitHub Releases | myreleasenotes.ai',
         description:
-          'Track GitHub releases for the packages you depend on. AI-powered summaries, smart filtering, dark mode, and instant notifications. Free to start.',
+          'Track GitHub releases for the packages you depend on. AI-powered summaries, smart filtering, and instant notifications. Free to start.',
         path: '/',
         jsonLd: {
           '@context': 'https://schema.org',

@@ -24,7 +24,6 @@ const PRICING_ROWS: { label: string; free: string; pro: string }[] = [
   { label: 'Packages', free: '5', pro: 'Unlimited' },
   { label: 'AI Summaries', free: '✓', pro: '✓' },
   { label: 'Grouping & Filtering', free: '✓', pro: '✓' },
-  { label: 'Dark Mode', free: '✓', pro: '✓' },
   { label: 'No Ads', free: '✗', pro: '✓' },
   { label: 'Weekly Email', free: '✗', pro: '✓' },
 ]
@@ -52,7 +51,7 @@ const features = [
     icon: MonitorSmartphone,
     title: 'Works Everywhere',
     description:
-      'Fully responsive with dark mode. Check releases from any device, any time.',
+      'Fully responsive. Check releases from any device, any time.',
   },
 ]
 

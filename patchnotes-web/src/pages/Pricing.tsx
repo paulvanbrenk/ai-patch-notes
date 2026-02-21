@@ -12,7 +12,6 @@ const FREE_FEATURES = [
   'Track up to 5 packages',
   'AI-powered release summaries',
   'Version grouping & filtering',
-  'Dark mode support',
 ]
 
 const PRO_FEATURES = [
