@@ -139,15 +139,15 @@ public static class FeedRoutes
             var summaryPackageIds = groupKeys.Select(k => k.PackageId).Distinct().ToList();
             var summaryMajorVersions = groupKeys.Select(k => k.MajorVersion).Distinct().ToList();
 
-            var summaries = await db.ReleaseSummaries
+            var summaryLookup = (await db.ReleaseSummaries
                 .AsNoTracking()
                 .Where(s => summaryPackageIds.Contains(s.PackageId)
                     && summaryMajorVersions.Contains(s.MajorVersion))
-                .ToListAsync();
-
-            var summaryLookup = summaries.ToDictionary(
-                s => (s.PackageId, s.MajorVersion, s.IsPrerelease),
-                s => s.Summary);
+                .Select(s => new { s.PackageId, s.MajorVersion, s.IsPrerelease, s.Summary })
+                .ToListAsync())
+                .ToDictionary(
+                    s => (s.PackageId, s.MajorVersion, s.IsPrerelease),
+                    s => s.Summary);
 
             var feedGroups = filteredGroups.Select(g =>
             {
