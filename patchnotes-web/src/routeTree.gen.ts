@@ -70,7 +70,7 @@ const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() => import('./routes/admin.lazy').then((d) => d.Route))
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
@@ -85,7 +85,9 @@ const ReleasesReleaseIdRoute = ReleasesReleaseIdRouteImport.update({
   id: '/releases/$releaseId',
   path: '/releases/$releaseId',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() =>
+  import('./routes/releases.$releaseId.lazy').then((d) => d.Route),
+)
 const PackagesOwnerRoute = PackagesOwnerRouteImport.update({
   id: '/packages/$owner',
   path: '/packages/$owner',
@@ -95,7 +97,7 @@ const AdminEmailsRoute = AdminEmailsRouteImport.update({
   id: '/admin_/emails',
   path: '/admin/emails',
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any).lazy(() => import('./routes/admin_.emails.lazy').then((d) => d.Route))
 const PackagesOwnerIndexRoute = PackagesOwnerIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -105,7 +107,9 @@ const PackagesOwnerRepoRoute = PackagesOwnerRepoRouteImport.update({
   id: '/$repo',
   path: '/$repo',
   getParentRoute: () => PackagesOwnerRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/packages.$owner.$repo.lazy').then((d) => d.Route),
+)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
