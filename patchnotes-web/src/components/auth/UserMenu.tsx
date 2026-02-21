@@ -1,13 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useStytch, useStytchUser } from '@stytch/react'
 import { Link, useNavigate } from '@tanstack/react-router'
-import {
-  Settings,
-  LogOut,
-  Sparkles,
-  CreditCard,
-  Shield,
-} from 'lucide-react'
+import { Settings, LogOut, Sparkles, CreditCard, Shield } from 'lucide-react'
 import { useSubscriptionStore } from '../../stores/subscriptionStore'
 import { useGeofencing } from '../../hooks/useGeofencing'
 import { useIsAdmin } from '../../utils/auth'
