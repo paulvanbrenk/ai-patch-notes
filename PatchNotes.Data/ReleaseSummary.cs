@@ -3,7 +3,7 @@ namespace PatchNotes.Data;
 public class ReleaseSummary : IHasCreatedAt, IHasUpdatedAt
 {
     public string Id { get; set; } = IdGenerator.NewId();
-    public string PackageId { get; set; } = null!;
+    public required string PackageId { get; set; }
     public int MajorVersion { get; set; }
     public bool IsPrerelease { get; set; }
     public string Summary { get; set; } = null!;

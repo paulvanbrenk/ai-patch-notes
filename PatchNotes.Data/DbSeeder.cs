@@ -107,6 +107,7 @@ public static class DbSeeder
             LastFetchedAt = now,
             Releases = sp.Releases.Select(sr => new Release
             {
+                PackageId = "", // set by EF Core when parent package is saved
                 Tag = sr.Tag,
                 Title = sr.Title,
                 Body = sr.Body,

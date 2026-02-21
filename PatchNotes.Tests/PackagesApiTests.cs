@@ -48,7 +48,7 @@ public class PackagesApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetPackages_ReturnsAllPackages()
+    public async Task GetPackages_GivenPackagesExist_ReturnsAllPackages()
     {
         // Arrange
         using var scope = _fixture.Services.CreateScope();
@@ -70,7 +70,7 @@ public class PackagesApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetPackages_ReturnsCorrectFields()
+    public async Task GetPackages_GivenPackagesExist_ReturnsCorrectFields()
     {
         // Arrange
         using var scope = _fixture.Services.CreateScope();
@@ -103,7 +103,7 @@ public class PackagesApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetPackages_RespectsLimitAndOffset()
+    public async Task GetPackages_GivenLimitAndOffset_PaginatesCorrectly()
     {
         // Arrange
         using var scope = _fixture.Services.CreateScope();
@@ -128,7 +128,7 @@ public class PackagesApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetPackages_ClampsLimitToMax100()
+    public async Task GetPackages_GivenLimitExceeds100_ClampsToMax100()
     {
         // Arrange
         using var scope = _fixture.Services.CreateScope();
@@ -150,7 +150,7 @@ public class PackagesApiTests : IAsyncLifetime
     #region POST /api/packages
 
     [Fact]
-    public async Task PostPackage_RequiresAuthentication()
+    public async Task PostPackage_GivenUnauthenticatedRequest_Returns403()
     {
         var response = await _client.PostAsJsonAsync("/api/packages", new { npmName = "test" });
 
@@ -239,7 +239,7 @@ public class PackagesApiTests : IAsyncLifetime
     #region DELETE /api/packages/{id}
 
     [Fact]
-    public async Task DeletePackage_RequiresAuthentication()
+    public async Task DeletePackage_GivenUnauthenticatedRequest_Returns403()
     {
         var response = await _client.DeleteAsync("/api/packages/nonexistent-id-1234xx");
 
@@ -301,7 +301,7 @@ public class PackagesApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetPackagesByOwner_ReturnsMatchingPackages()
+    public async Task GetPackagesByOwner_GivenOwnerWithPackages_ReturnsMatchingPackages()
     {
         // Arrange
         using var scope = _fixture.Services.CreateScope();
@@ -324,7 +324,7 @@ public class PackagesApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetPackagesByOwner_ReturnsCorrectFields()
+    public async Task GetPackagesByOwner_GivenOwnerWithPackages_ReturnsCorrectFields()
     {
         // Arrange
         using var scope = _fixture.Services.CreateScope();
@@ -350,7 +350,7 @@ public class PackagesApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetPackagesByOwner_RespectsLimitAndOffset()
+    public async Task GetPackagesByOwner_GivenLimitAndOffset_PaginatesCorrectly()
     {
         // Arrange
         using var scope = _fixture.Services.CreateScope();
@@ -435,7 +435,7 @@ public class PackagesApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetPackageByOwnerRepo_ReturnsPackageWithGroups()
+    public async Task GetPackageByOwnerRepo_GivenPackageWithGroups_ReturnsPackageAndGroups()
     {
         // Arrange
         using var scope = _fixture.Services.CreateScope();
@@ -482,7 +482,7 @@ public class PackagesApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetPackageByOwnerRepo_ReturnsAllHistoricGroups()
+    public async Task GetPackageByOwnerRepo_GivenMultipleHistoricGroups_ReturnsAllGroups()
     {
         // Arrange - multiple major versions including old ones
         using var scope = _fixture.Services.CreateScope();
@@ -531,7 +531,7 @@ public class PackagesApiTests : IAsyncLifetime
     #region POST /api/packages/bulk
 
     [Fact]
-    public async Task BulkCreatePackages_RequiresAuthentication()
+    public async Task BulkCreatePackages_GivenUnauthenticatedRequest_Returns403()
     {
         var response = await _client.PostAsJsonAsync("/api/packages/bulk", new[]
         {
@@ -564,7 +564,7 @@ public class PackagesApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task BulkCreatePackages_CreatesMultiplePackages()
+    public async Task BulkCreatePackages_GivenValidEntries_CreatesAllPackages()
     {
         var response = await _authClient.PostAsJsonAsync("/api/packages/bulk", new[]
         {
@@ -583,7 +583,7 @@ public class PackagesApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task BulkCreatePackages_DefaultsNameToOwnerRepo()
+    public async Task BulkCreatePackages_GivenNoNameProvided_DefaultsNameToOwnerRepo()
     {
         var response = await _authClient.PostAsJsonAsync("/api/packages/bulk", new[]
         {
@@ -597,7 +597,7 @@ public class PackagesApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task BulkCreatePackages_HandlesExistingPackages()
+    public async Task BulkCreatePackages_GivenPackageAlreadyExists_SkipsWithoutError()
     {
         // Arrange - seed an existing package
         using var scope = _fixture.Services.CreateScope();
@@ -625,7 +625,7 @@ public class PackagesApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task BulkCreatePackages_HandlesInvalidEntries()
+    public async Task BulkCreatePackages_GivenInvalidEntries_ReportsThemInResponse()
     {
         var response = await _authClient.PostAsJsonAsync("/api/packages/bulk", new[]
         {

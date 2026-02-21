@@ -171,7 +171,7 @@ public class ChangelogResolverTests
     #region ExtractVersionSection Tests
 
     [Fact]
-    public void ExtractVersionSection_MatchesExactVersion()
+    public void ExtractVersionSection_GivenExactVersion_ReturnsMatchingSection()
     {
         var changelog = """
             # Changelog
@@ -190,7 +190,7 @@ public class ChangelogResolverTests
     }
 
     [Fact]
-    public void ExtractVersionSection_MatchesBracketedVersion()
+    public void ExtractVersionSection_GivenBracketedVersion_ReturnsMatchingSection()
     {
         var changelog = """
             # Changelog
@@ -209,7 +209,7 @@ public class ChangelogResolverTests
     }
 
     [Fact]
-    public void ExtractVersionSection_MatchesVersionWithVPrefix()
+    public void ExtractVersionSection_GivenVersionWithVPrefix_ReturnsMatchingSection()
     {
         var changelog = """
             # Changelog
@@ -228,7 +228,7 @@ public class ChangelogResolverTests
     }
 
     [Fact]
-    public void ExtractVersionSection_MatchesVersionWithDateSuffix()
+    public void ExtractVersionSection_GivenVersionWithDateSuffix_ReturnsMatchingSection()
     {
         var changelog = """
             # Changelog
@@ -305,7 +305,7 @@ public class ChangelogResolverTests
     }
 
     [Fact]
-    public void ExtractVersionSection_StopsAtSameLevelHeading()
+    public void ExtractVersionSection_GivenSameLevelHeading_StopsExtraction()
     {
         var changelog = """
             ## 2.0.0
@@ -334,7 +334,7 @@ public class ChangelogResolverTests
     #region ResolveAsync Tests
 
     [Fact]
-    public async Task ResolveAsync_FetchesChangelogAndExtractsSection()
+    public async Task ResolveAsync_GivenValidChangelogUrl_FetchesAndExtractsSection()
     {
         var changelog = """
             ## 2.0.0
@@ -403,7 +403,7 @@ public class ChangelogResolverTests
     }
 
     [Fact]
-    public async Task ResolveAsync_TriesFallbackPaths()
+    public async Task ResolveAsync_GivenPrimaryPathFails_TriesFallbackPaths()
     {
         var changelog = """
             ## 1.0.0
@@ -454,7 +454,7 @@ public class ChangelogResolverTests
     }
 
     [Fact]
-    public async Task ResolveAsync_HandlesExceptionsGracefully()
+    public async Task ResolveAsync_GivenExceptionThrown_ReturnsNull()
     {
         _mockGitHub
             .Setup(x => x.GetFileContentAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
@@ -473,7 +473,7 @@ public class ChangelogResolverTests
     [InlineData("[Release](https://github.com/dotnet/core/releases/tag/v11.0.0-preview.1)", "dotnet", "core", "v11.0.0-preview.1")]
     [InlineData("https://github.com/dotnet/dotnet/releases/tag/v11.0.100-preview.1.26104.118", "dotnet", "dotnet", "v11.0.100-preview.1.26104.118")]
     [InlineData("[What's New](https://github.com/owner/repo/releases/tag/v2.0.0)", "owner", "repo", "v2.0.0")]
-    public void ExtractGitHubReleaseLink_ExtractsComponents(string body, string owner, string repo, string tag)
+    public void ExtractGitHubReleaseLink_GivenValidLinkBody_ExtractsOwnerRepoAndTag(string body, string owner, string repo, string tag)
     {
         var result = ChangelogResolver.ExtractGitHubReleaseLink(body);
         result.Should().NotBeNull();
@@ -497,7 +497,7 @@ public class ChangelogResolverTests
     #region FollowReleaseLinksAsync Tests
 
     [Fact]
-    public async Task FollowReleaseLinksAsync_FollowsChainOfLinks()
+    public async Task FollowReleaseLinksAsync_GivenChainedLinks_ReturnsTerminalRelease()
     {
         var body1 = "[Release](https://github.com/dotnet/core/releases/tag/v11.0.0-preview.1)";
         var body2 = "https://github.com/dotnet/dotnet/releases/tag/v11.0.100-preview.1";
@@ -516,7 +516,7 @@ public class ChangelogResolverTests
     }
 
     [Fact]
-    public async Task FollowReleaseLinksAsync_StopsAtMaxHops()
+    public async Task FollowReleaseLinksAsync_GivenChainExceedsMaxHops_StopsAndReturnsLastRelease()
     {
         // Create a chain: repo0 → repo1 → repo2 → repo3 → ...
         _mockGitHub
@@ -540,7 +540,7 @@ public class ChangelogResolverTests
     }
 
     [Fact]
-    public async Task FollowReleaseLinksAsync_DetectsCircularLinks()
+    public async Task FollowReleaseLinksAsync_GivenCircularLinks_StopsAndReturnsLastRelease()
     {
         var body = "[Release](https://github.com/owner/repo/releases/tag/v1.0.0)";
 

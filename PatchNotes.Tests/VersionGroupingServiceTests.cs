@@ -379,7 +379,7 @@ public class VersionGroupingServiceTests
     }
 
     [Fact]
-    public void GroupReleases_PackageIdPreserved()
+    public void GroupReleases_GivenReleasesFromMultiplePackages_PreservesPackageIdInEachGroup()
     {
         var releases = new[] { MakeRelease("v1.0.0", "my-package") };
 

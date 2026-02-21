@@ -29,7 +29,7 @@ public class EmailPreferencesTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetEmailPreferences_ReturnsDefaults()
+    public async Task GetEmailPreferences_GivenNewUser_ReturnsDefaults()
     {
         var response = await _authClient.GetAsync("/api/users/me/email-preferences");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -49,7 +49,7 @@ public class EmailPreferencesTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task PatchEmailPreferences_UpdatesDigest()
+    public async Task PatchEmailPreferences_GivenValidBody_UpdatesDigest()
     {
         var response = await _authClient.PatchAsJsonAsync("/api/users/me/email-preferences",
             new { EmailDigestEnabled = false });
@@ -60,7 +60,7 @@ public class EmailPreferencesTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task PatchEmailPreferences_PersistsChanges()
+    public async Task PatchEmailPreferences_GivenValidBody_PersistsChanges()
     {
         await _authClient.PatchAsJsonAsync("/api/users/me/email-preferences",
             new { EmailDigestEnabled = false });

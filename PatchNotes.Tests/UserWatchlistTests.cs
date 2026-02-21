@@ -72,7 +72,7 @@ public class UserWatchlistTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task NewUserLogin_PopulatesWatchlistWithDefaultPackages()
+    public async Task HandleLogin_GivenNewUser_PopulatesWatchlistWithDefaults()
     {
         // Login as a new user (no user record exists yet)
         var loginResponse = await _authClient.PostAsync("/api/users/login", null);
@@ -92,7 +92,7 @@ public class UserWatchlistTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task ReturningUserLogin_DoesNotModifyExistingWatchlist()
+    public async Task HandleLogin_GivenReturningUser_DoesNotModifyExistingWatchlist()
     {
         // Create user by logging in
         await _authClient.PostAsync("/api/users/login", null);
@@ -113,7 +113,7 @@ public class UserWatchlistTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task NewFreeUserLogin_CapsWatchlistAtFreeLimit()
+    public async Task HandleLogin_GivenNewFreeUser_CapsWatchlistAtFreeLimit()
     {
         // Use a non-admin client so the free tier limit applies
         // (admin users are treated as Pro and bypass the limit)
@@ -196,7 +196,7 @@ public class UserWatchlistMissingPackagesTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task NewUserLogin_SkipsMissingDefaultPackages()
+    public async Task HandleLogin_GivenMissingDefaultPackages_SkipsThem()
     {
         var loginResponse = await _authClient.PostAsync("/api/users/login", null);
         loginResponse.StatusCode.Should().Be(HttpStatusCode.OK);

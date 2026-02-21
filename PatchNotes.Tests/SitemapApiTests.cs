@@ -26,7 +26,7 @@ public class SitemapApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetSitemap_ReturnsXml()
+    public async Task GetSitemap_GivenRequest_ReturnsXmlContentType()
     {
         var response = await _client.GetAsync("/sitemap.xml");
 
@@ -35,7 +35,7 @@ public class SitemapApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetSitemap_ContainsStaticPages()
+    public async Task GetSitemap_GivenRequest_ContainsStaticPageUrls()
     {
         var response = await _client.GetAsync("/sitemap.xml");
         var xml = await response.Content.ReadAsStringAsync();
@@ -51,7 +51,7 @@ public class SitemapApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetSitemap_IncludesPackagesAndReleases()
+    public async Task GetSitemap_GivenPackagesAndReleasesExist_IncludesTheirUrls()
     {
         // Arrange
         using var scope = _fixture.Services.CreateScope();
@@ -101,7 +101,7 @@ public class SitemapApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetSitemap_SetsCacheControlHeader()
+    public async Task GetSitemap_GivenRequest_SetsCacheControlHeader()
     {
         var response = await _client.GetAsync("/sitemap.xml");
 
@@ -110,7 +110,7 @@ public class SitemapApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetSitemap_LimitsReleasesTo1000()
+    public async Task GetSitemap_GivenMoreThan1000Releases_LimitsTo1000()
     {
         // Arrange - create a package with 1010 releases
         using var scope = _fixture.Services.CreateScope();

@@ -9,7 +9,8 @@ public class ReleaseTests
     {
         var release = new Release
         {
-            Tag = "v1.0.0",
+            PackageId = "test-package-id",
+            Tag ="v1.0.0",
             PublishedAt = DateTimeOffset.UtcNow,
             FetchedAt = DateTimeOffset.UtcNow
         };
@@ -19,11 +20,12 @@ public class ReleaseTests
     }
 
     [Fact]
-    public void Release_CanSetTitleAndBody()
+    public void Release_GivenTitleAndBodySet_StoresThemCorrectly()
     {
         var release = new Release
         {
-            Tag = "v1.0.0",
+            PackageId = "test-package-id",
+            Tag ="v1.0.0",
             Title = "Initial Release",
             Body = "This is the first release",
             PublishedAt = DateTimeOffset.UtcNow,
@@ -35,11 +37,12 @@ public class ReleaseTests
     }
 
     [Fact]
-    public void Release_RequiresTag()
+    public void Release_GivenTagSet_StoresTagCorrectly()
     {
         var release = new Release
         {
-            Tag = "v2.0.0",
+            PackageId = "test-package-id",
+            Tag ="v2.0.0",
             PublishedAt = DateTimeOffset.UtcNow,
             FetchedAt = DateTimeOffset.UtcNow
         };
@@ -48,11 +51,12 @@ public class ReleaseTests
     }
 
     [Fact]
-    public void SummaryStale_DefaultsToTrue()
+    public void Release_WhenCreated_SummaryStaleDefaultsToTrue()
     {
         var release = new Release
         {
-            Tag = "v1.0.0",
+            PackageId = "test-package-id",
+            Tag ="v1.0.0",
             PublishedAt = DateTimeOffset.UtcNow,
             FetchedAt = DateTimeOffset.UtcNow
         };

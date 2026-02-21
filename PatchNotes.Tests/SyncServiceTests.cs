@@ -137,7 +137,7 @@ public class SyncServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task SyncAllAsync_PassesCancellationTokenToGitHubClient()
+    public async Task SyncAllAsync_GivenCancellationToken_PassesItToGitHubClient()
     {
         // Arrange
         var package = new Package { Name = "pkg1", Url = "https://github.com/owner1/repo1", NpmName = "pkg1", GithubOwner = "owner1", GithubRepo = "repo1" };
@@ -209,7 +209,7 @@ public class SyncServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task SyncPackageAsync_SkipsDraftReleases()
+    public async Task SyncPackageAsync_GivenDraftRelease_SkipsIt()
     {
         // Arrange
         var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", NpmName = "pkg", GithubOwner = "owner", GithubRepo = "repo" };
@@ -232,7 +232,7 @@ public class SyncServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task SyncPackageAsync_SkipsReleasesWithoutPublishedDate()
+    public async Task SyncPackageAsync_GivenReleaseWithNoPublishedDate_SkipsIt()
     {
         // Arrange
         var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", NpmName = "pkg", GithubOwner = "owner", GithubRepo = "repo" };
@@ -252,7 +252,7 @@ public class SyncServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task SyncPackageAsync_SkipsDuplicateTags()
+    public async Task SyncPackageAsync_GivenDuplicateTag_SkipsIt()
     {
         // Arrange
         var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", NpmName = "pkg", GithubOwner = "owner", GithubRepo = "repo" };
@@ -317,7 +317,7 @@ public class SyncServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task SyncPackageAsync_UpdatesLastFetchedAt()
+    public async Task SyncPackageAsync_GivenSuccessfulSync_UpdatesLastFetchedAt()
     {
         // Arrange
         var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", NpmName = "pkg", GithubOwner = "owner", GithubRepo = "repo" };
@@ -336,7 +336,7 @@ public class SyncServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task SyncPackageAsync_ReturnsNewReleasesAsNeedingSummary()
+    public async Task SyncPackageAsync_GivenNewReleases_ReturnsThemAsNeedingSummary()
     {
         // Arrange
         var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", NpmName = "pkg", GithubOwner = "owner", GithubRepo = "repo" };
@@ -404,7 +404,7 @@ public class SyncServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task SyncAllAsync_AggregatesReleasesNeedingSummary()
+    public async Task SyncAllAsync_GivenMultiplePackages_AggregatesAllReleasesNeedingSummary()
     {
         // Arrange
         var package1 = new Package { Name = "pkg1", Url = "https://github.com/owner1/repo1", NpmName = "pkg1", GithubOwner = "owner1", GithubRepo = "repo1" };
@@ -561,7 +561,7 @@ public class SyncServiceTests : IDisposable
     #region GetReleasesNeedingSummaryAsync Tests
 
     [Fact]
-    public async Task GetReleasesNeedingSummaryAsync_ReturnsReleasesWithoutSummary()
+    public async Task GetReleasesNeedingSummaryAsync_GivenReleasesWithNoSummary_ReturnsThem()
     {
         // Arrange
         var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", NpmName = "pkg", GithubOwner = "owner", GithubRepo = "repo" };
@@ -586,7 +586,7 @@ public class SyncServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task GetReleasesNeedingSummaryAsync_ReturnsOrderedByPublishedAtDescending()
+    public async Task GetReleasesNeedingSummaryAsync_GivenMultipleReleases_ReturnsNewestFirst()
     {
         // Arrange
         var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", NpmName = "pkg", GithubOwner = "owner", GithubRepo = "repo" };
@@ -611,7 +611,7 @@ public class SyncServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task GetReleasesNeedingSummaryAsync_ReturnsStaleSummaryReleases()
+    public async Task GetReleasesNeedingSummaryAsync_GivenStaleSummaryReleases_ReturnsThem()
     {
         // Arrange
         var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", NpmName = "pkg", GithubOwner = "owner", GithubRepo = "repo" };
@@ -686,7 +686,7 @@ public class SyncServiceTests : IDisposable
     #region SyncRepoAsync Tests
 
     [Fact]
-    public async Task SyncRepoAsync_CreatesPackageAndSyncsReleases()
+    public async Task SyncRepoAsync_GivenNewRepo_CreatesPackageAndSyncsReleases()
     {
         // Arrange
         SetupGitHubReleases("prettier", "prettier", [
@@ -711,7 +711,7 @@ public class SyncServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task SyncRepoAsync_UsesExistingPackage()
+    public async Task SyncRepoAsync_GivenPackageAlreadyInDb_UsesExistingPackage()
     {
         // Arrange
         var existing = new Package
@@ -806,7 +806,7 @@ public class SyncServiceTests : IDisposable
     #region BackfillVersionFieldsAsync Tests
 
     [Fact]
-    public async Task BackfillVersionFieldsAsync_SetsVersionFieldsForSemverTags()
+    public async Task BackfillVersionFieldsAsync_GivenSemverTags_SetsVersionFields()
     {
         // Arrange
         var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", GithubOwner = "owner", GithubRepo = "repo" };
@@ -866,7 +866,7 @@ public class SyncServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task BackfillVersionFieldsAsync_HandlesMonorepoTags()
+    public async Task BackfillVersionFieldsAsync_GivenMonorepoTags_SetsVersionFieldsCorrectly()
     {
         // Arrange
         var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", GithubOwner = "owner", GithubRepo = "repo" };
@@ -1016,7 +1016,7 @@ public class SyncServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task BackfillVersionFieldsAsync_OnlyUpdatesReleasesWithWrongFields()
+    public async Task BackfillVersionFieldsAsync_GivenMixOfCorrectAndWrongFields_OnlyUpdatesWrong()
     {
         // Arrange - one release already correct, one needs updating
         var package = new Package { Name = "pkg", Url = "https://github.com/owner/repo", GithubOwner = "owner", GithubRepo = "repo" };

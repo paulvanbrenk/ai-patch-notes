@@ -36,7 +36,7 @@ public class GitHubClientTests : IDisposable
     #region GetReleasesAsync Tests
 
     [Fact]
-    public async Task GetReleasesAsync_ReturnsReleases()
+    public async Task GetReleasesAsync_GivenValidRepo_ReturnsReleases()
     {
         // Arrange
         var releases = new[]
@@ -87,7 +87,7 @@ public class GitHubClientTests : IDisposable
     }
 
     [Fact]
-    public async Task GetReleasesAsync_EscapesSpecialCharacters()
+    public async Task GetReleasesAsync_GivenOwnerOrRepoWithSpecialChars_EscapesThemInUrl()
     {
         // Arrange
         _mockHandler.SetupResponse("repos/owner%2Fspecial/repo%2Fname/releases?per_page=30&page=1", Array.Empty<object>());
@@ -151,7 +151,7 @@ public class GitHubClientTests : IDisposable
     }
 
     [Fact]
-    public async Task GetAllReleasesAsync_StopsAtEmptyPage()
+    public async Task GetAllReleasesAsync_GivenEmptyPage_StopsPagination()
     {
         // Arrange
         var page1 = Enumerable.Range(1, 100)
@@ -206,7 +206,7 @@ public class GitHubClientTests : IDisposable
     #region Rate Limit Tests
 
     [Fact]
-    public async Task GetReleasesAsync_ParsesRateLimitHeaders()
+    public async Task GetReleasesAsync_GivenRateLimitHeaders_ParsesThemCorrectly()
     {
         // Arrange
         var resetTime = DateTimeOffset.UtcNow.AddMinutes(30);
@@ -233,7 +233,7 @@ public class GitHubClientTests : IDisposable
     }
 
     [Fact]
-    public async Task GetReleasesAsync_LogsWarningWhenApproachingRateLimit()
+    public async Task GetReleasesAsync_GivenRateLimitNearlyExhausted_LogsWarning()
     {
         // Arrange
         var resetTime = DateTimeOffset.UtcNow.AddMinutes(30);
@@ -264,7 +264,7 @@ public class GitHubClientTests : IDisposable
     #region SearchRepositoriesAsync Tests
 
     [Fact]
-    public async Task SearchRepositoriesAsync_ReturnsResults()
+    public async Task SearchRepositoriesAsync_GivenValidQuery_ReturnsResults()
     {
         // Arrange
         var searchResponse = new
@@ -320,7 +320,7 @@ public class GitHubClientTests : IDisposable
     }
 
     [Fact]
-    public async Task SearchRepositoriesAsync_EscapesQueryString()
+    public async Task SearchRepositoriesAsync_GivenQueryWithSpecialChars_EscapesQueryString()
     {
         // Arrange
         var searchResponse = new { total_count = 0, items = Array.Empty<object>() };
