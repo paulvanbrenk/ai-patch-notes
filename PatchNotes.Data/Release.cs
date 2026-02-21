@@ -3,7 +3,7 @@ namespace PatchNotes.Data;
 public class Release : IHasCreatedAt, IHasUpdatedAt
 {
     public string Id { get; set; } = IdGenerator.NewId();
-    public string PackageId { get; set; } = null!;
+    public required string PackageId { get; set; }
     public required string Tag { get; set; }
     public string? Title { get; set; }
     public string? Body { get; set; }

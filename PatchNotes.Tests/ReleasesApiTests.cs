@@ -43,7 +43,7 @@ public class ReleasesApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetReleases_ReturnsReleasesWithinDefaultDays()
+    public async Task GetReleases_GivenNoDaysParam_ReturnsReleasesWithinDefaultWindow()
     {
         // Arrange
         using var scope = _fixture.Services.CreateScope();
@@ -83,7 +83,7 @@ public class ReleasesApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetReleases_FiltersByDays()
+    public async Task GetReleases_GivenDaysParam_FiltersToThatWindow()
     {
         // Arrange
         using var scope = _fixture.Services.CreateScope();
@@ -109,7 +109,7 @@ public class ReleasesApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetReleases_FiltersByPackageIds()
+    public async Task GetReleases_GivenPackageIdsParam_FiltersToThosePackages()
     {
         // Arrange
         using var scope = _fixture.Services.CreateScope();
@@ -136,7 +136,7 @@ public class ReleasesApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetReleases_FiltersByMultiplePackageIds()
+    public async Task GetReleases_GivenMultiplePackageIds_ReturnsReleasesForAll()
     {
         // Arrange
         using var scope = _fixture.Services.CreateScope();
@@ -164,7 +164,7 @@ public class ReleasesApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetReleases_ReturnsOrderedByPublishedAtDescending()
+    public async Task GetReleases_GivenMultipleReleases_ReturnsNewestFirst()
     {
         // Arrange
         using var scope = _fixture.Services.CreateScope();
@@ -193,7 +193,7 @@ public class ReleasesApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetReleases_IncludesPackageInfo()
+    public async Task GetReleases_GivenReleasesWithPackages_IncludesPackageInfo()
     {
         // Arrange
         using var scope = _fixture.Services.CreateScope();

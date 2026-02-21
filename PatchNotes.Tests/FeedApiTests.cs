@@ -27,7 +27,7 @@ public class FeedApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetFeed_LimitsReleasesToSummaryWindow()
+    public async Task GetFeed_GivenReleasesOutsideWindow_ExcludesThemFromFeed()
     {
         // Arrange: create a package with releases spanning >7 days
         using var scope = _fixture.Services.CreateScope();
@@ -103,7 +103,7 @@ public class FeedApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetFeed_FiltersToCurrentStableAndFuturePrereleases()
+    public async Task GetFeed_GivenMixedReleases_FiltersToCurrentStableAndFuturePrereleases()
     {
         // Arrange: .NET-like scenario: stable v9, prereleases v10+v11, old v8/v7
         using var scope = _fixture.Services.CreateScope();
@@ -205,7 +205,7 @@ public class FeedApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetFeed_ShowsPrereleaseAtSameMajorVersion()
+    public async Task GetFeed_GivenPrereleaseAtSameMajor_IncludesPrereleaseInFeed()
     {
         // Arrange: prereleases at same major version as stable should be shown
         // (e.g. Next.js v16.2.0-canary.47 alongside stable v16.1.6)

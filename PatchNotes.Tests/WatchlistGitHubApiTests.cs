@@ -48,7 +48,7 @@ public class WatchlistGitHubApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task AddFromGitHub_CreatesPackageAndAddsToWatchlist()
+    public async Task AddFromGitHub_GivenNewGitHubRepo_CreatesPackageAndAddsToWatchlist()
     {
         var response = await _authClient.PostAsync("/api/watchlist/github/facebook/react", null);
 
@@ -119,7 +119,7 @@ public class WatchlistGitHubApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task AddFromGitHub_RejectsUnauthenticatedRequest()
+    public async Task AddFromGitHub_GivenUnauthenticatedRequest_Returns403()
     {
         // POST without Origin header gets CSRF 403; with Origin but no session gets 401
         var response = await _unauthClient.PostAsync("/api/watchlist/github/facebook/react", null);

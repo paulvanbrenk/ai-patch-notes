@@ -53,7 +53,7 @@ public class RateLimitHandlerTests : IDisposable
     }
 
     [Fact]
-    public async Task SendAsync_TracksRateLimitStateFromResponses()
+    public async Task SendAsync_GivenRateLimitHeaders_TracksRateLimitState()
     {
         // Arrange: first request returns low remaining
         _innerHandler.SetupResponse(rateLimitRemaining: 3, rateLimitLimit: 5000,
@@ -201,7 +201,7 @@ public class RateLimitHandlerTests : IDisposable
     }
 
     [Fact]
-    public async Task SendAsync_RespectsCancellationToken()
+    public async Task SendAsync_GivenCancellationRequested_ThrowsOperationCanceled()
     {
         // Arrange
         var resetTime = _timeProvider.GetUtcNow().AddSeconds(30);

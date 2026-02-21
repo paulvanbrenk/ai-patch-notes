@@ -48,7 +48,7 @@ public class WatchlistApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetWatchlist_RequiresAuthentication()
+    public async Task GetWatchlist_GivenUnauthenticatedRequest_Returns401()
     {
         var response = await _client.GetAsync("/api/watchlist");
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -65,7 +65,7 @@ public class WatchlistApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task PutWatchlist_SetsWatchlist()
+    public async Task PutWatchlist_GivenValidPackageList_SetsWatchlist()
     {
         var response = await _authClient.PutAsJsonAsync("/api/watchlist", new { packageIds = new[] { _reactPackageId, _vuePackageId } });
 
@@ -81,7 +81,7 @@ public class WatchlistApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task PutWatchlist_ReplacesExistingWatchlist()
+    public async Task PutWatchlist_GivenExistingWatchlist_ReplacesItEntirely()
     {
         // Set initial
         await _authClient.PutAsJsonAsync("/api/watchlist", new { packageIds = new[] { _reactPackageId, _vuePackageId } });
@@ -95,7 +95,7 @@ public class WatchlistApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task PostWatchlist_AddsSinglePackage()
+    public async Task PostWatchlist_GivenValidPackageId_AddsPackageToWatchlist()
     {
         var response = await _authClient.PostAsync($"/api/watchlist/{_reactPackageId}", null);
 
@@ -128,7 +128,7 @@ public class WatchlistApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task DeleteWatchlist_RemovesPackage()
+    public async Task DeleteWatchlist_GivenWatchedPackage_RemovesItFromWatchlist()
     {
         await _authClient.PostAsync($"/api/watchlist/{_reactPackageId}", null);
         await _authClient.PostAsync($"/api/watchlist/{_vuePackageId}", null);

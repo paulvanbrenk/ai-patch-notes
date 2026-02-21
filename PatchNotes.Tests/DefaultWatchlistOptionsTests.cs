@@ -6,7 +6,7 @@ namespace PatchNotes.Tests;
 public class DefaultWatchlistOptionsTests
 {
     [Fact]
-    public void Binds_All_Six_PackageNames_From_Config()
+    public void Bind_GivenValidConfig_BindsAllSixPackageNames()
     {
         var config = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
@@ -33,7 +33,7 @@ public class DefaultWatchlistOptionsTests
     }
 
     [Fact]
-    public void Empty_Packages_Array_Handled_Gracefully()
+    public void Bind_GivenEmptyPackagesArray_ReturnsEmptyList()
     {
         var config = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>())
@@ -47,7 +47,7 @@ public class DefaultWatchlistOptionsTests
     }
 
     [Fact]
-    public void SectionName_Is_DefaultWatchlist()
+    public void Bind_GivenOptions_SectionNameIsDefaultWatchlist()
     {
         Assert.Equal("DefaultWatchlist", DefaultWatchlistOptions.SectionName);
     }

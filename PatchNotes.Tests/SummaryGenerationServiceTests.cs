@@ -56,7 +56,7 @@ public class SummaryGenerationServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task GenerateGroupSummariesAsync_CreatesNewSummaryForGroup()
+    public async Task GenerateGroupSummariesAsync_GivenGroupWithNoExistingSummary_CreatesNewSummary()
     {
         var package = await CreatePackage();
         await AddRelease(package.Id, "v1.0.0", "First release", "Initial features");
@@ -78,7 +78,7 @@ public class SummaryGenerationServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task GenerateGroupSummariesAsync_CreatesMultipleGroupSummaries()
+    public async Task GenerateGroupSummariesAsync_GivenMultipleGroups_CreatesASummaryForEach()
     {
         var package = await CreatePackage();
         await AddRelease(package.Id, "v1.0.0", "v1 release", "Features");
@@ -105,7 +105,7 @@ public class SummaryGenerationServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task GenerateGroupSummariesAsync_UpdatesExistingSummary()
+    public async Task GenerateGroupSummariesAsync_GivenGroupWithExistingSummary_UpdatesIt()
     {
         var package = await CreatePackage();
         var generatedAt = DateTimeOffset.UtcNow.AddDays(-5);
@@ -137,7 +137,7 @@ public class SummaryGenerationServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task GenerateGroupSummariesAsync_SkipsGroupsWithNoStaleReleases()
+    public async Task GenerateGroupSummariesAsync_GivenGroupWithNoStaleReleases_SkipsGroup()
     {
         var package = await CreatePackage();
 
@@ -169,7 +169,7 @@ public class SummaryGenerationServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task GenerateGroupSummariesAsync_MarksReleasesAsNotStale()
+    public async Task GenerateGroupSummariesAsync_GivenStaleReleases_MarksThemNotStaleAfterSummary()
     {
         var package = await CreatePackage();
         await AddRelease(package.Id, "v1.0.0", "Release 1", "Features");
@@ -212,7 +212,7 @@ public class SummaryGenerationServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task GenerateGroupSummariesAsync_PassesAggregatedContentToAiClient()
+    public async Task GenerateGroupSummariesAsync_GivenMultipleReleases_PassesAggregatedContentToAiClient()
     {
         var package = await CreatePackage();
         await AddRelease(package.Id, "v1.0.0", "Initial Release", "First features");
@@ -242,7 +242,7 @@ public class SummaryGenerationServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task GenerateGroupSummariesAsync_RespectsCancellationToken()
+    public async Task GenerateGroupSummariesAsync_GivenCancellationRequested_StopsProcessing()
     {
         var package = await CreatePackage();
         await AddRelease(package.Id, "v1.0.0", "Release", "Body");
@@ -260,7 +260,7 @@ public class SummaryGenerationServiceTests : IDisposable
     #region GenerateAllSummariesAsync Tests
 
     [Fact]
-    public async Task GenerateAllSummariesAsync_ProcessesAllPackagesWithStaleReleases()
+    public async Task GenerateAllSummariesAsync_GivenPackagesWithStaleReleases_ProcessesAll()
     {
         var package1 = await CreatePackage("pkg1");
         var package2 = await CreatePackage("pkg2");
@@ -277,7 +277,7 @@ public class SummaryGenerationServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task GenerateAllSummariesAsync_SkipsPackagesWithNoStaleReleases()
+    public async Task GenerateAllSummariesAsync_GivenPackageWithNoStaleReleases_SkipsIt()
     {
         var package1 = await CreatePackage("pkg1");
         var package2 = await CreatePackage("pkg2");
@@ -352,7 +352,7 @@ public class SummaryGenerationServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task GenerateGroupSummaryAsync_ExcludesReleasesOutsideWindowOfLatest()
+    public async Task GenerateGroupSummaryAsync_GivenReleasesOutsideWindow_ExcludesThemFromSummary()
     {
         // Arrange: latest is 1 day old, one release is 20 days old (outside 7-day window of latest)
         var package = await CreatePackage();

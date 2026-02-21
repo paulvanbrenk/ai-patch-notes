@@ -5,7 +5,7 @@ namespace PatchNotes.Tests;
 public class PackageTests
 {
     [Fact]
-    public void Package_InitializesWithEmptyReleases()
+    public void Package_WhenCreated_InitializesWithEmptyReleasesList()
     {
         var package = new Package
         {
@@ -21,7 +21,7 @@ public class PackageTests
     }
 
     [Fact]
-    public void Package_CanAddReleases()
+    public void Package_GivenReleasesAdded_ContainsThoseReleases()
     {
         var package = new Package
         {
@@ -34,6 +34,7 @@ public class PackageTests
 
         var release = new Release
         {
+            PackageId = package.Id,
             Tag = "v1.0.0",
             PublishedAt = DateTimeOffset.UtcNow,
             FetchedAt = DateTimeOffset.UtcNow,

@@ -59,7 +59,7 @@ public class StytchWebhookTests : IAsyncLifetime
     }
 
     [Fact]
-    public void AppStartup_ThrowsWhen_WebhookSecretMissing()
+    public void AppStartup_GivenWebhookSecretMissing_ThrowsOnStartup()
     {
         // The app should refuse to start when Stytch:WebhookSecret is not configured,
         // preventing unverified webhook payloads from ever being processed.
@@ -78,7 +78,7 @@ public class StytchWebhookTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task RejectsWhenSvixHeaders_Missing_Returns401()
+    public async Task HandleWebhook_GivenSvixHeadersMissing_Returns401()
     {
         var body = """{"action":"CREATE","id":"user-test-123","object_type":"user"}""";
         var request = CreateWebhookRequest(body); // no svix headers
@@ -89,7 +89,7 @@ public class StytchWebhookTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task RejectsWhenSignature_Invalid_Returns401()
+    public async Task HandleWebhook_GivenInvalidSignature_Returns401()
     {
         var body = """{"action":"CREATE","id":"user-test-123","object_type":"user"}""";
         var request = CreateWebhookRequest(body,
@@ -103,7 +103,7 @@ public class StytchWebhookTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task CreatesUser_OnValidCreateEvent()
+    public async Task HandleWebhook_GivenValidUserCreateEvent_CreatesUser()
     {
         // Arrange
         var stytchUserId = PatchNotesApiFixture.TestUserId;
@@ -125,7 +125,7 @@ public class StytchWebhookTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task UpdatesUser_OnValidUpdateEvent()
+    public async Task HandleWebhook_GivenValidUserUpdateEvent_UpdatesUser()
     {
         // Arrange: create user first
         using (var scope = _fixture.Services.CreateScope())
@@ -160,7 +160,7 @@ public class StytchWebhookTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task DeletesUser_OnValidDeleteEvent()
+    public async Task HandleWebhook_GivenValidUserDeleteEvent_DeletesUser()
     {
         // Arrange: create user first
         using (var scope = _fixture.Services.CreateScope())
@@ -192,7 +192,7 @@ public class StytchWebhookTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task ReturnsOk_ForUnhandledEventType()
+    public async Task HandleWebhook_GivenUnhandledEventType_Returns200Ok()
     {
         var body = """{"action":"SOME_OTHER","id":"user-test-123","object_type":"organization"}""";
         var (id, ts, sig) = SignPayload(body);
