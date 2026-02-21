@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { useStytchUser } from '@stytch/react'
 import { useDebouncedValue } from '@tanstack/react-pacer'
-import { Search, X, Plus, Star, Loader2 } from 'lucide-react'
+import { Search, X, Trash2, Plus, Star, Loader2 } from 'lucide-react'
 import { Header, HeaderTitle, Container, Button, Card } from '../components/ui'
 import { ThemeToggle } from '../components/theme'
 import { UserMenu } from '../components/auth'
@@ -95,7 +95,7 @@ function WatchedPackageItem({
   const displayName = pkg.npmName ?? `${pkg.githubOwner}/${pkg.githubRepo}`
 
   return (
-    <div className="flex items-center justify-between gap-3 px-4 py-2.5 border-b border-border-muted last:border-0 group">
+    <div className="flex items-center justify-between gap-3 px-4 py-2.5 border-b border-border-muted last:border-0">
       <div className="min-w-0 flex-1">
         <Link
           to="/packages/$owner/$repo"
@@ -111,10 +111,10 @@ function WatchedPackageItem({
       <button
         onClick={onRemove}
         disabled={isRemoving}
-        className="flex-shrink-0 p-1 rounded text-text-tertiary hover:text-major hover:bg-surface-tertiary transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 disabled:opacity-50"
+        className="flex-shrink-0 p-1 rounded text-text-tertiary hover:text-major hover:bg-surface-tertiary transition-colors disabled:opacity-50"
         title="Remove from watchlist"
       >
-        <X className="w-4 h-4" />
+        <Trash2 className="w-4 h-4" />
       </button>
     </div>
   )
