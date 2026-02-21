@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { Link } from '@tanstack/react-router'
 import { useStytchUser } from '@stytch/react'
 import Markdown from 'react-markdown'
@@ -383,7 +383,7 @@ export function HomePage() {
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
 
   const { user } = useStytchUser()
-  const { isPro, checkSubscription, startCheckout } = useSubscriptionStore()
+  const { isPro, startCheckout } = useSubscriptionStore()
 
   const { data: watchlist, isLoading: watchlistLoading } = useWatchlist()
 
@@ -401,13 +401,6 @@ export function HomePage() {
     () => buildDisplayGroups(feedData?.groups ?? []),
     [feedData]
   )
-
-  // Check subscription status when user is logged in
-  useEffect(() => {
-    if (user) {
-      checkSubscription()
-    }
-  }, [user, checkSubscription])
 
   const handleUpgrade = () => {
     if (!user) {
