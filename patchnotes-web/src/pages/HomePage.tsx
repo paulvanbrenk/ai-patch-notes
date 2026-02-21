@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback, memo } from 'react'
 import { Link } from '@tanstack/react-router'
 import { useStytchUser } from '@stytch/react'
-import Markdown from 'react-markdown'
+import { LazyMarkdown as Markdown } from '../components/LazyMarkdown'
 import {
   FlaskConical,
   FlaskConicalOff,

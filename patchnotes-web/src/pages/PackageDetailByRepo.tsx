@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
-import Markdown from 'react-markdown'
+import { LazyMarkdown as Markdown } from '../components/LazyMarkdown'
 import { Header, HeaderTitle, Container, Card, Badge } from '../components/ui'
 import { ThemeToggle } from '../components/theme'
 import { UserMenu } from '../components/auth'
