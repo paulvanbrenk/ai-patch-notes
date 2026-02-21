@@ -1,5 +1,4 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { ReleaseDetail } from '../pages/ReleaseDetail'
 import { seoHead } from '../seo'
 import { getGetReleaseQueryOptions } from '../api/generated/releases/releases'
 
@@ -8,10 +7,6 @@ export const Route = createFileRoute('/releases/$releaseId')({
     context.queryClient.ensureQueryData(
       getGetReleaseQueryOptions(params.releaseId)
     ),
-  component: function ReleaseDetailWrapper() {
-    const { releaseId } = Route.useParams()
-    return <ReleaseDetail releaseId={releaseId} />
-  },
   head: ({ loaderData }) => {
     if (!loaderData || loaderData.status !== 200) {
       return {

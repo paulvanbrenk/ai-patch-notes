@@ -1,5 +1,4 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { PackageDetailByRepo } from '../pages/PackageDetailByRepo'
 import { seoHead } from '../seo'
 import { getGetPackageByOwnerRepoQueryOptions } from '../api/generated/packages/packages'
 
@@ -8,10 +7,6 @@ export const Route = createFileRoute('/packages/$owner/$repo')({
     context.queryClient.ensureQueryData(
       getGetPackageByOwnerRepoQueryOptions(params.owner, params.repo)
     ),
-  component: function PackageDetailByRepoWrapper() {
-    const { owner, repo } = Route.useParams()
-    return <PackageDetailByRepo owner={owner} repo={repo} />
-  },
   head: ({ params }) => ({
     ...seoHead({
       title: `${params.owner}/${params.repo} | My Release Notes`,
