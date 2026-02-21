@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback, memo } from 'react'
 import { Link } from '@tanstack/react-router'
 import { useStytchUser } from '@stytch/react'
 import Markdown from 'react-markdown'
@@ -169,14 +169,14 @@ function PrereleaseTag({ type }: { type?: string }) {
   )
 }
 
-function SummaryCard({
+const SummaryCard = memo(function SummaryCard({
   group,
   isExpanded,
   onToggle,
 }: {
   group: VersionGroup
   isExpanded: boolean
-  onToggle: () => void
+  onToggle: (id: string) => void
 }) {
   return (
     <Card
@@ -271,7 +271,7 @@ function SummaryCard({
             </span>
           </div>
           <button
-            onClick={onToggle}
+            onClick={() => onToggle(group.id)}
             className="flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:text-brand-700 transition-colors"
           >
             {isExpanded ? 'Hide releases' : 'Show releases'}
@@ -330,7 +330,7 @@ function SummaryCard({
       )}
     </Card>
   )
-}
+})
 
 function FilterButton({
   active,
@@ -410,7 +410,7 @@ export function HomePage() {
     startCheckout()
   }
 
-  const toggleExpanded = (groupId: string) => {
+  const toggleExpanded = useCallback((groupId: string) => {
     setExpandedGroups((prev) => {
       const next = new Set(prev)
       if (next.has(groupId)) {
@@ -420,7 +420,7 @@ export function HomePage() {
       }
       return next
     })
-  }
+  }, [])
 
   // Sort groups
   const sortedGroups = [...versionGroups].sort((a, b) => {
@@ -574,7 +574,7 @@ export function HomePage() {
                           key={group.id}
                           group={group}
                           isExpanded={expandedGroups.has(group.id)}
-                          onToggle={() => toggleExpanded(group.id)}
+                          onToggle={toggleExpanded}
                         />
                       ))}
                     </div>
@@ -589,7 +589,7 @@ export function HomePage() {
                   key={group.id}
                   group={group}
                   isExpanded={expandedGroups.has(group.id)}
-                  onToggle={() => toggleExpanded(group.id)}
+                  onToggle={toggleExpanded}
                 />
               ))}
             </div>
