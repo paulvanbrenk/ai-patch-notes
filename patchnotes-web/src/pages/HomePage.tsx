@@ -446,7 +446,10 @@ export function HomePage() {
   return (
     <div className="min-h-screen bg-surface-secondary">
       <Header>
-        <div className="flex items-center gap-2.5">
+        <Link
+          to="/"
+          className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
+        >
           <Logo size={36} />
           <div>
             <HeaderTitle>My Release Notes</HeaderTitle>
@@ -454,7 +457,7 @@ export function HomePage() {
               by Tiny Tools
             </p>
           </div>
-        </div>
+        </Link>
         <div className="flex items-center gap-2">
           {user && (
             <Link
