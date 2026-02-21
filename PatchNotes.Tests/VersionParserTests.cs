@@ -152,6 +152,8 @@ public class VersionParserTests
     [InlineData("1.0.0.rc2", 1, 0, 0, "rc2")]
     [InlineData("1.0.0beta", 1, 0, 0, "beta")]
     [InlineData("1.0.0alpha", 1, 0, 0, "alpha")]
+    [InlineData("1.0.0preview1", 1, 0, 0, "preview1")]
+    [InlineData("1.0.0preview", 1, 0, 0, "preview")]
     public void Parse_NonStandardPrerelease_ExtractsFullPrerelease(string tag, int major, int minor, int patch, string expectedPrerelease)
     {
         var result = VersionParser.Parse(tag);
